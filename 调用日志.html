@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 调用日志</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* === Top Nav === */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100;
+            height: 80px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* === Sidebar === */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* === Main Content === */
+        .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+        .forecast-layout { flex: 1; display: flex; flex-direction: column; }
+        .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        .flex-table-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* === Filter Bar === */
+        .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
+        .filter-item input, .filter-item select { width: 222px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-item .datepicker-input { width: 180px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; cursor: pointer; }
+        .filter-item .datepicker-input:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: 1px solid #f89d34; padding: 8px 20px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-primary:hover { background: #e88a2e; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 14px; cursor: pointer; color: #666666; }
+        .btn-default:hover { border-color: #f89d34; color: #f89d34; }
+        .btn-export { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 0; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; width: 72px; height: 32px; line-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn-export:hover { background: #fef5ec; }
+        .btn-export i { font-size: 14px; }
+
+        /* === Toolbar: export + tabs === */
+        .toolbar-row { display: flex; align-items: center; justify-content: space-between; padding: 0 0 10px 0; }
+        .tab-switch { display: flex; gap: 0; }
+        .tab-btn { font-size: 14px; color: #666666; padding: 7px 20px; cursor: pointer; border: 1px solid #dcdfe6; background: #fff; transition: all 0.2s; user-select: none; }
+        .tab-btn:first-child { border-radius: 4px 0 0 4px; }
+        .tab-btn:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+        .tab-btn.active { background: #f89d34; color: #fff; border-color: #f89d34; }
+        .tab-btn.active + .tab-btn { border-left-color: #f89d34; }
+
+        /* === Table === */
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; padding: 0; max-height: 460px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        /* === Status Badges === */
+        .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; }
+        .status-badge.success { background: #e6f7e6; color: #52c41a; }
+        .status-badge.fail { background: #ffe7e7; color: #f5222d; }
+        .status-badge.timeout { background: #fff7e6; color: #fa8c16; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #f5222d; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
+
+        .val-error { color: #f5222d; font-weight: 600; }
+
+        /* === Action Links === */
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 14px; margin: 0 6px; display: inline-block; background: none; border: none; font-family: inherit; }
+        .action-link:hover { text-decoration: underline; }
+        .ops-cell { display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+
+        /* === Pagination === */
+        .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+
+        /* === Detail Modal === */
+        .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .detail-modal { background: #fff; width: 720px; max-width: 90%; border-radius: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; max-height: 85vh; display: flex; flex-direction: column; }
+        .detail-modal .modal-header { padding: 16px 20px; border-bottom: 1px solid #ebeef5; display: flex; align-items: center; justify-content: space-between; }
+        .detail-modal .modal-title { font-size: 18px; font-weight: 600; color: #333; }
+        .detail-modal .modal-close { font-size: 20px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
+        .detail-modal .modal-close:hover { color: #f5222d; }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .detail-modal .modal-footer { padding: 12px 20px; border-top: 1px solid #ebeef5; display: flex; justify-content: center; gap: 12px; }
+        .btn-save { background: #f89d34; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-save:hover { background: #e68f2a; }
+        .btn-cancel-modal { background: #fff; color: #666; border: 1px solid #dcdfe6; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-cancel-modal:hover { background: #f5f7fa; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .detail-item { }
+        .detail-label { font-size: 12px; color: #909399; margin-bottom: 4px; }
+        .detail-value { font-size: 14px; color: #303133; font-weight: 500; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html">数据门户</a>
+            <a class="nav-tab" href="index.html">外源管理</a>
+            <a class="nav-tab" href="index.html">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html">监控统计</a>
+            <a class="nav-tab" href="告警管理V1.2.html#rule">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
+            <a class="nav-tab active" href="用户管理.html">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">5</span>
+            </div>
+            <div class="tenant-info">
+                <span class="tenant-name">某某金控</span>
+            </div>
+            <div class="avatar">席</div>
+        </div>
+    </nav>
+
+    <!-- 左侧菜单 -->
+    <aside class="side-menu">
+        <a class="menu-item active" href="调用日志.html"><i class="el-icon-document"></i>调用日志</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-notebook-2"></i>操作日志</a>
+        <a class="menu-item" href="用户管理.html"><i class="el-icon-user"></i>用户管理</a>
+        <a class="menu-item" href="权限管理.html"><i class="el-icon-lock"></i>权限管理</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-collection"></i>数据字典</a>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="breadcrumb">
+            <span>系统管理</span>
+            <span class="separator">/</span>
+            <span class="current">调用日志</span>
+        </div>
+        <div class="content-card">
+        <div class="forecast-layout">
+
+            <!-- 筛选栏 -->
+            <div class="filter-section" id="filterSection">
+                <!-- 调用方筛选 -->
+                <div class="filter-bar" id="filterCaller">
+                    <div class="filter-left">
+                        <div class="filter-item">
+                            <label>调用方</label>
+                            <select id="filterCallerName">
+                                <option value="">全部</option>
+                                <option>信贷审批系统</option>
+                                <option>风控决策引擎</option>
+                                <option>客户管理平台</option>
+                                <option>反欺诈中心</option>
+                                <option>报表分析系统</option>
+                                <option>合规审计系统</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>调用状态</label>
+                            <select id="filterCallerStatus">
+                                <option value="">全部</option>
+                                <option>成功</option>
+                                <option>失败</option>
+                                <option>超时</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>调用时间</label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <input class="datepicker-input" id="callerDateStart" placeholder="开始时间">
+                                <span style="color:#999;">~</span>
+                                <input class="datepicker-input" id="callerDateEnd" placeholder="结束时间">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <button class="btn-primary" onclick="doQueryCaller()">查询</button>
+                        <button class="btn-default" onclick="doResetCaller()">重置</button>
+                    </div>
+                </div>
+                <!-- 供应商筛选 -->
+                <div class="filter-bar" id="filterSupplier" style="display:none;">
+                    <div class="filter-left">
+                        <div class="filter-item">
+                            <label>供应商</label>
+                            <select id="filterSupplierName">
+                                <option value="">全部</option>
+                                <option>天眼查</option>
+                                <option>企查查</option>
+                                <option>中诚信</option>
+                                <option>百行征信</option>
+                                <option>前海征信</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>接口URL</label>
+                            <input id="filterSupplierUrl" placeholder="请输入接口URL" style="width:260px;">
+                        </div>
+                        <div class="filter-item">
+                            <label>调用状态</label>
+                            <select id="filterSupplierStatus">
+                                <option value="">全部</option>
+                                <option>成功</option>
+                                <option>失败</option>
+                                <option>超时</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>调用时间</label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <input class="datepicker-input" id="supplierDateStart" placeholder="开始时间">
+                                <span style="color:#999;">~</span>
+                                <input class="datepicker-input" id="supplierDateEnd" placeholder="结束时间">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <button class="btn-primary" onclick="doQuerySupplier()">查询</button>
+                        <button class="btn-default" onclick="doResetSupplier()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="forecast-white-card">
+                <!-- 工具栏：导出 + TAB -->
+                <div class="toolbar-row">
+                    <button class="btn-export" onclick="doExport()"><i class="el-icon-download"></i> 导出</button>
+                    <div class="tab-switch">
+                        <span class="tab-btn active" id="tabCaller" onclick="switchTab('caller')">调用方</span>
+                        <span class="tab-btn" id="tabSupplier" onclick="switchTab('supplier')">供应商</span>
+                    </div>
+                </div>
+
+                <div class="flex-table-container">
+                <!-- 调用方表格 -->
+                <div class="table-container" id="callerTableContainer">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>调用方</th>
+                                <th>服务名称</th>
+                                <th>调用方IP</th>
+                                <th>调用批次号</th>
+                                <th>是否缓存返回</th>
+                                <th>响应时间(ms)</th>
+                                <th>调用时间</th>
+                                <th>调用状态</th>
+                                <th style="width:80px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="callerTableBody"></tbody>
+                    </table>
+                </div>
+                <!-- 供应商表格 -->
+                <div class="table-container" id="supplierTableContainer" style="display:none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>供应商</th>
+                                <th>接口URL</th>
+                                <th>响应时间(ms)</th>
+                                <th>调用时间</th>
+                                <th>调用状态</th>
+                                <th style="width:80px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="paginationWrap"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal-mask" id="detailModal">
+    <div class="detail-modal">
+        <div class="modal-header">
+            <span class="modal-title" id="detailModalTitle">调用详情</span>
+            <i class="el-icon-close modal-close" onclick="closeDetailModal()"></i>
+        </div>
+        <div class="modal-body">
+            <div class="detail-grid" id="detailGrid"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel-modal" onclick="closeDetailModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 调用方数据 ==========
+    var callerData = [
+        { id: 1, caller: '信贷审批系统', service: '企业基本信息查询', ip: '192.168.1.101', batchNo: 'BATCH-20240601-001', cached: '是', respTime: 125, callTime: '2024-06-01 10:23:15', status: '成功' },
+        { id: 2, caller: '风控决策引擎', service: '司法风险查询',     ip: '192.168.1.205', batchNo: 'BATCH-20240601-002', cached: '否', respTime: 156, callTime: '2024-06-01 10:22:30', status: '成功' },
+        { id: 3, caller: '客户管理平台', service: '企业基本信息查询', ip: '192.168.2.110', batchNo: 'BATCH-20240601-003', cached: '是', respTime: 132, callTime: '2024-06-01 10:21:45', status: '成功' },
+        { id: 4, caller: '反欺诈中心',   service: '企业图谱查询',     ip: '192.168.2.302', batchNo: 'BATCH-20240601-004', cached: '否', respTime: 1250,callTime: '2024-06-01 10:20:12', status: '失败' },
+        { id: 5, caller: '信贷审批系统', service: '信用评分查询',     ip: '192.168.1.101', batchNo: 'BATCH-20240601-005', cached: '否', respTime: 98,  callTime: '2024-06-01 10:19:33', status: '成功' },
+        { id: 6, caller: '报表分析系统', service: '经营状况查询',     ip: '192.168.3.150', batchNo: 'BATCH-20240601-006', cached: '是', respTime: 145, callTime: '2024-06-01 10:18:20', status: '成功' },
+        { id: 7, caller: '合规审计系统', service: '反欺诈评分查询',   ip: '192.168.3.88',  batchNo: 'BATCH-20240601-007', cached: '否', respTime: 3200,callTime: '2024-06-01 10:17:05', status: '超时' },
+        { id: 8, caller: '风控决策引擎', service: '个人信用报告查询', ip: '192.168.1.205', batchNo: 'BATCH-20240601-008', cached: '否', respTime: 230, callTime: '2024-06-01 10:15:50', status: '成功' },
+        { id: 9, caller: '信贷审批系统', service: '企业基本信息查询', ip: '192.168.1.101', batchNo: 'BATCH-20240601-009', cached: '是', respTime: 118, callTime: '2024-06-01 09:55:15', status: '成功' },
+        { id: 10, caller: '客户管理平台', service: '司法风险查询',    ip: '192.168.2.110', batchNo: 'BATCH-20240601-010', cached: '否', respTime: 168, callTime: '2024-06-01 09:50:30', status: '成功' },
+        { id: 11, caller: '反欺诈中心',   service: '反欺诈评分查询', ip: '192.168.2.302', batchNo: 'BATCH-20240601-011', cached: '否', respTime: 890, callTime: '2024-06-01 09:45:10', status: '失败' },
+        { id: 12, caller: '报表分析系统', service: '企业图谱查询',    ip: '192.168.3.150', batchNo: 'BATCH-20240601-012', cached: '否', respTime: 320, callTime: '2024-06-01 09:40:22', status: '成功' },
+        { id: 13, caller: '合规审计系统', service: '经营状况查询',    ip: '192.168.3.88',  batchNo: 'BATCH-20240601-013', cached: '是', respTime: 142, callTime: '2024-06-01 09:35:18', status: '成功' },
+        { id: 14, caller: '信贷审批系统', service: '信用评分查询',     ip: '192.168.1.101', batchNo: 'BATCH-20240601-014', cached: '否', respTime: 105, callTime: '2024-06-01 09:30:05', status: '成功' },
+        { id: 15, caller: '风控决策引擎', service: '企业基本信息查询', ip: '192.168.1.205', batchNo: 'BATCH-20240601-015', cached: '是', respTime: 128, callTime: '2024-06-01 09:25:50', status: '成功' }
+    ];
+
+    // ========== 供应商数据 ==========
+    var supplierData = [
+        { id: 1, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 125,  callTime: '2024-06-01 10:23:15', status: '成功' },
+        { id: 2, supplier: '天眼查',   url: '/api/tianyacha/judicial/risk',     respTime: 156,  callTime: '2024-06-01 10:22:30', status: '成功' },
+        { id: 3, supplier: '企查查',   url: '/api/qichacha/enterprise/info',    respTime: 132,  callTime: '2024-06-01 10:21:45', status: '成功' },
+        { id: 4, supplier: '企查查',   url: '/api/qichacha/enterprise/graph',   respTime: 1250, callTime: '2024-06-01 10:20:12', status: '失败' },
+        { id: 5, supplier: '中诚信',   url: '/api/zhongchengxin/credit/score',  respTime: 98,   callTime: '2024-06-01 10:19:33', status: '成功' },
+        { id: 6, supplier: '天眼查',   url: '/api/tianyacha/business/status',   respTime: 145,  callTime: '2024-06-01 10:18:20', status: '成功' },
+        { id: 7, supplier: '前海征信', url: '/api/qianhai/anti-fraud/score',    respTime: 3200, callTime: '2024-06-01 10:17:05', status: '超时' },
+        { id: 8, supplier: '百行征信', url: '/api/baihang/personal/credit/report', respTime: 230, callTime: '2024-06-01 10:15:50', status: '成功' },
+        { id: 9, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 118,  callTime: '2024-06-01 09:55:15', status: '成功' },
+        { id: 10, supplier: '企查查',  url: '/api/qichacha/judicial/risk',      respTime: 168,  callTime: '2024-06-01 09:50:30', status: '成功' },
+        { id: 11, supplier: '前海征信',url: '/api/qianhai/anti-fraud/score',    respTime: 890,  callTime: '2024-06-01 09:45:10', status: '失败' },
+        { id: 12, supplier: '企查查',  url: '/api/qichacha/enterprise/graph',   respTime: 320,  callTime: '2024-06-01 09:40:22', status: '成功' },
+        { id: 13, supplier: '天眼查',  url: '/api/tianyacha/business/status',   respTime: 142,  callTime: '2024-06-01 09:35:18', status: '成功' },
+        { id: 14, supplier: '中诚信',  url: '/api/zhongchengxin/credit/score',  respTime: 105,  callTime: '2024-06-01 09:30:05', status: '成功' },
+        { id: 15, supplier: '天眼查',  url: '/api/tianyacha/enterprise/info',   respTime: 128,  callTime: '2024-06-01 09:25:50', status: '成功' }
+    ];
+
+    // ========== 当前Tab & 分页状态 ==========
+    var currentTab = 'caller';
+    var currentPage = 1;
+    var pageSize = 10;
+    var filteredCallerData = [];
+    var filteredSupplierData = [];
+
+    // ========== 初始化日期控件 ==========
+    flatpickr("#callerDateStart", { dateFormat: "Y-m-d H:i:S", locale: "zh", enableTime: true, time_24hr: true, allowInput: true });
+    flatpickr("#callerDateEnd", { dateFormat: "Y-m-d H:i:S", locale: "zh", enableTime: true, time_24hr: true, allowInput: true });
+    flatpickr("#supplierDateStart", { dateFormat: "Y-m-d H:i:S", locale: "zh", enableTime: true, time_24hr: true, allowInput: true });
+    flatpickr("#supplierDateEnd", { dateFormat: "Y-m-d H:i:S", locale: "zh", enableTime: true, time_24hr: true, allowInput: true });
+
+    // ========== URL参数：从链路实时监控跳转过来时预填筛选 ==========
+    var urlParams = new URLSearchParams(window.location.search);
+    var preTab = urlParams.get('tab');
+    var preUrl = urlParams.get('url');
+    if (preTab === 'supplier') {
+        currentTab = 'supplier';
+        document.getElementById('tabCaller').classList.remove('active');
+        document.getElementById('tabSupplier').classList.add('active');
+        document.getElementById('filterCaller').style.display = 'none';
+        document.getElementById('filterSupplier').style.display = 'flex';
+        document.getElementById('callerTableContainer').style.display = 'none';
+        document.getElementById('supplierTableContainer').style.display = '';
+        if (preUrl) {
+            document.getElementById('filterSupplierUrl').value = preUrl;
+        }
+    }
+
+    // ========== 初始化查询 ==========
+    if (currentTab === 'supplier') {
+        doQuerySupplier();
+    } else {
+        doQueryCaller();
+    }
+
+    // ========== Tab切换 ==========
+    function switchTab(tab) {
+        currentTab = tab;
+        currentPage = 1;
+        document.getElementById('tabCaller').classList.toggle('active', tab === 'caller');
+        document.getElementById('tabSupplier').classList.toggle('active', tab === 'supplier');
+        document.getElementById('filterCaller').style.display = tab === 'caller' ? 'flex' : 'none';
+        document.getElementById('filterSupplier').style.display = tab === 'supplier' ? 'flex' : 'none';
+        document.getElementById('callerTableContainer').style.display = tab === 'caller' ? '' : 'none';
+        document.getElementById('supplierTableContainer').style.display = tab === 'supplier' ? '' : 'none';
+        if (tab === 'caller') {
+            doQueryCaller();
+        } else {
+            doQuerySupplier();
+        }
+    }
+
+    // ========== 调用状态徽章 ==========
+    function getStatusBadge(status) {
+        var cls = 'success';
+        if (status === '失败') cls = 'fail';
+        else if (status === '超时') cls = 'timeout';
+        var dot = (status === '失败' || status === '超时') ? '<span class="pulse-dot"></span> ' : '';
+        return '<span class="status-badge ' + cls + '">' + dot + status + '</span>';
+    }
+
+    // ========== 渲染调用方表格 ==========
+    function renderCallerTable(data) {
+        filteredCallerData = data;
+        var total = data.length;
+        var totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        var start = (currentPage - 1) * pageSize;
+        var end = Math.min(start + pageSize, total);
+        var pageData = data.slice(start, end);
+
+        var tbody = document.getElementById('callerTableBody');
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < pageData.length; i++) {
+                var r = pageData[i];
+                var seq = start + i + 1;
+                var respClass = r.respTime > 1000 ? ' class="val-error"' : '';
+                html += '<tr>'
+                    + '<td>' + seq + '</td>'
+                    + '<td>' + r.caller + '</td>'
+                    + '<td>' + r.service + '</td>'
+                    + '<td>' + r.ip + '</td>'
+                    + '<td style="font-size:13px;">' + r.batchNo + '</td>'
+                    + '<td>' + r.cached + '</td>'
+                    + '<td' + respClass + '>' + r.respTime.toLocaleString() + '</td>'
+                    + '<td style="font-size:13px;">' + r.callTime + '</td>'
+                    + '<td>' + getStatusBadge(r.status) + '</td>'
+                    + '<td><div class="ops-cell"><button class="action-link" onclick="openCallerDetail(' + r.id + ')">详情</button></div></td>'
+                    + '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        renderPagination(total, totalPages);
+    }
+
+    // ========== 渲染供应商表格 ==========
+    function renderSupplierTable(data) {
+        filteredSupplierData = data;
+        var total = data.length;
+        var totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        var start = (currentPage - 1) * pageSize;
+        var end = Math.min(start + pageSize, total);
+        var pageData = data.slice(start, end);
+
+        var tbody = document.getElementById('supplierTableBody');
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < pageData.length; i++) {
+                var r = pageData[i];
+                var seq = start + i + 1;
+                var respClass = r.respTime > 1000 ? ' class="val-error"' : '';
+                html += '<tr>'
+                    + '<td>' + seq + '</td>'
+                    + '<td>' + r.supplier + '</td>'
+                    + '<td style="font-size:13px;text-align:left;padding-left:12px;">' + r.url + '</td>'
+                    + '<td' + respClass + '>' + r.respTime.toLocaleString() + '</td>'
+                    + '<td style="font-size:13px;">' + r.callTime + '</td>'
+                    + '<td>' + getStatusBadge(r.status) + '</td>'
+                    + '<td><div class="ops-cell"><button class="action-link" onclick="openSupplierDetail(' + r.id + ')">详情</button></div></td>'
+                    + '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        renderPagination(total, totalPages);
+    }
+
+    // ========== 渲染分页栏 ==========
+    function renderPagination(total, totalPages) {
+        var html = '<span class="total-text">共 ' + total + ' 条</span>';
+        html += '<button class="page-btn" ' + (currentPage === 1 ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage - 1) + ')">&lt;</button>';
+
+        var startP = Math.max(1, currentPage - 2);
+        var endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) startP = Math.max(1, endP - 4);
+        for (var p = startP; p <= endP; p++) {
+            html += '<span class="page-number' + (p === currentPage ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</span>';
+        }
+
+        html += '<button class="page-btn" ' + (currentPage === totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage + 1) + ')">&gt;</button>';
+
+        html += '<select class="page-size-select" onchange="changePageSize(this.value)">';
+        var sizes = [10, 20, 50];
+        for (var i = 0; i < sizes.length; i++) {
+            html += '<option' + (sizes[i] === pageSize ? ' selected' : '') + '>' + sizes[i] + '条/页</option>';
+        }
+        html += '</select>';
+
+        html += '<div class="jump-section"><span>前往</span>'
+            + '<input type="text" id="jumpPageInput" value="' + currentPage + '" onkeydown="if(event.key===\'Enter\') jumpToPage()">'
+            + '<span>页</span></div>';
+
+        document.getElementById('paginationWrap').innerHTML = html;
+    }
+
+    function goToPage(p) {
+        currentPage = p;
+        if (currentTab === 'caller') renderCallerTable(filteredCallerData);
+        else renderSupplierTable(filteredSupplierData);
+    }
+
+    function changePageSize(size) {
+        pageSize = parseInt(size) || 10;
+        currentPage = 1;
+        if (currentTab === 'caller') renderCallerTable(filteredCallerData);
+        else renderSupplierTable(filteredSupplierData);
+    }
+
+    function jumpToPage() {
+        var val = parseInt(document.getElementById('jumpPageInput').value);
+        if (!isNaN(val) && val >= 1) {
+            currentPage = val;
+            if (currentTab === 'caller') renderCallerTable(filteredCallerData);
+            else renderSupplierTable(filteredSupplierData);
+        }
+    }
+
+    // ========== 调用方查询 & 重置 ==========
+    function doQueryCaller() {
+        var callerFilter = document.getElementById('filterCallerName').value;
+        var statusFilter = document.getElementById('filterCallerStatus').value;
+        var dateStart = document.getElementById('callerDateStart').value;
+        var dateEnd = document.getElementById('callerDateEnd').value;
+        var filtered = callerData.filter(function(r) {
+            if (callerFilter && r.caller !== callerFilter) return false;
+            if (statusFilter && r.status !== statusFilter) return false;
+            if (dateStart && r.callTime < dateStart) return false;
+            if (dateEnd && r.callTime > dateEnd) return false;
+            return true;
+        });
+        currentPage = 1;
+        renderCallerTable(filtered);
+    }
+
+    function doResetCaller() {
+        document.getElementById('filterCallerName').value = '';
+        document.getElementById('filterCallerStatus').value = '';
+        if (document.getElementById('callerDateStart')._flatpickr) document.getElementById('callerDateStart')._flatpickr.clear();
+        if (document.getElementById('callerDateEnd')._flatpickr) document.getElementById('callerDateEnd')._flatpickr.clear();
+        currentPage = 1;
+        renderCallerTable(callerData);
+    }
+
+    // ========== 供应商查询 & 重置 ==========
+    function doQuerySupplier() {
+        var supplierFilter = document.getElementById('filterSupplierName').value;
+        var urlFilter = document.getElementById('filterSupplierUrl').value.trim();
+        var statusFilter = document.getElementById('filterSupplierStatus').value;
+        var dateStart = document.getElementById('supplierDateStart').value;
+        var dateEnd = document.getElementById('supplierDateEnd').value;
+        var filtered = supplierData.filter(function(r) {
+            if (supplierFilter && r.supplier !== supplierFilter) return false;
+            if (urlFilter && r.url !== urlFilter) return false;
+            if (statusFilter && r.status !== statusFilter) return false;
+            if (dateStart && r.callTime < dateStart) return false;
+            if (dateEnd && r.callTime > dateEnd) return false;
+            return true;
+        });
+        currentPage = 1;
+        renderSupplierTable(filtered);
+    }
+
+    function doResetSupplier() {
+        document.getElementById('filterSupplierName').value = '';
+        document.getElementById('filterSupplierUrl').value = '';
+        document.getElementById('filterSupplierStatus').value = '';
+        if (document.getElementById('supplierDateStart')._flatpickr) document.getElementById('supplierDateStart')._flatpickr.clear();
+        if (document.getElementById('supplierDateEnd')._flatpickr) document.getElementById('supplierDateEnd')._flatpickr.clear();
+        currentPage = 1;
+        renderSupplierTable(supplierData);
+    }
+
+    // ========== 详情弹窗：调用方 ==========
+    function openCallerDetail(id) {
+        var r = null;
+        for (var i = 0; i < callerData.length; i++) {
+            if (callerData[i].id === id) { r = callerData[i]; break; }
+        }
+        if (!r) return;
+        document.getElementById('detailModalTitle').textContent = '调用方详情';
+        document.getElementById('detailGrid').innerHTML =
+            '<div class="detail-item"><div class="detail-label">编号</div><div class="detail-value">' + r.id + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用方</div><div class="detail-value">' + r.caller + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">服务名称</div><div class="detail-value">' + r.service + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用方IP</div><div class="detail-value">' + r.ip + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用批次号</div><div class="detail-value">' + r.batchNo + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">是否缓存返回</div><div class="detail-value">' + r.cached + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">响应时间</div><div class="detail-value">' + r.respTime + 'ms</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用时间</div><div class="detail-value">' + r.callTime + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用状态</div><div class="detail-value">' + getStatusBadge(r.status) + '</div></div>';
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    // ========== 详情弹窗：供应商 ==========
+    function openSupplierDetail(id) {
+        var r = null;
+        for (var i = 0; i < supplierData.length; i++) {
+            if (supplierData[i].id === id) { r = supplierData[i]; break; }
+        }
+        if (!r) return;
+        document.getElementById('detailModalTitle').textContent = '供应商调用详情';
+        document.getElementById('detailGrid').innerHTML =
+            '<div class="detail-item"><div class="detail-label">编号</div><div class="detail-value">' + r.id + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">供应商</div><div class="detail-value">' + r.supplier + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">接口URL</div><div class="detail-value" style="font-size:13px;">' + r.url + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">响应时间</div><div class="detail-value">' + r.respTime + 'ms</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用时间</div><div class="detail-value">' + r.callTime + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">调用状态</div><div class="detail-value">' + getStatusBadge(r.status) + '</div></div>';
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
+    }
+    document.getElementById('detailModal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
+
+    // ========== 导出 ==========
+    function doExport() {
+        alert('导出功能正在开发中，敬请期待。');
+    }
+</script>
+</body>
+</html>

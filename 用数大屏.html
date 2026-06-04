@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外数 | 用数大屏</title>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #F5F7FA; min-height: 100vh; overflow-x: hidden; }
+
+/* === Top Nav === */
+.top-nav { position: sticky; top: 0; z-index: 1000; height: 80px; background: linear-gradient(135deg, #84B9FD, #E1EDFB); box-shadow: 0 1px 4px rgba(0,21,41,0.08); display: flex; align-items: center; }
+.nav-logo { width: 265px; padding: 0 24px; display: flex; flex-direction: column; justify-content: center; }
+.nav-logo .title { font-size: 18px; font-weight: bold; color: #1f2f3d; }
+.nav-logo .subtitle { font-size: 10px; color: #5a6e8c; letter-spacing: 1px; margin-top: 2px; }
+.nav-tabs { display: flex; flex: 1; height: 100%; align-items: center; }
+.nav-tab { font-size: 18px; color: #5a6e8c; text-decoration: none; padding: 0 20px; height: 100%; display: flex; align-items: center; position: relative; cursor: pointer; transition: color 0.2s; white-space: nowrap; }
+.nav-tab:hover { color: #1152c5; }
+.nav-tab.active { color: #1152c5; font-weight: bold; }
+.nav-tab.active::after { content: ''; position: absolute; bottom: 0; left: 20px; right: 20px; height: 2px; background: #1152c5; }
+.nav-user { display: flex; align-items: center; padding: 0 24px; gap: 16px; }
+.bell-wrap { position: relative; cursor: pointer; }
+.bell-wrap .el-icon-bell { font-size: 20px; color: #5a6e8c; }
+.bell-badge { position: absolute; top: -4px; right: -6px; background: #f5222d; color: #fff; font-size: 10px; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.tenant-name { font-size: 14px; color: #1f2f3d; }
+.avatar-circle { width: 33px; height: 33px; border-radius: 50%; background: #fcb53e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+
+/* === Sidebar === */
+.sidebar { position: fixed; left: 0; top: 80px; width: 240px; bottom: 0; background: #fff; overflow-y: auto; z-index: 100; border-right: 1px solid #ebeef5; }
+.sidebar-item { height: 48px; display: flex; align-items: center; padding: 0 20px; font-size: 16px; color: #5a6e8c; cursor: pointer; text-decoration: none; transition: all 0.2s; border-right: 2px solid transparent; }
+.sidebar-item:hover { background: #f5f7fa; color: #f89d34; }
+.sidebar-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; font-weight: 500; }
+
+/* === Main Content === */
+.main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+.content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+.breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+.breadcrumb span { color: #303133; }
+.forecast-layout { flex: 1; display: flex; flex-direction: column; }
+
+/* === Dark Dashboard === */
+.dashboard-wrap { background: #0d1b2a; flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0; }
+.dashboard-banner { display: flex; align-items: center; justify-content: center; position: relative; padding: 18px 24px; border-bottom: 1px solid rgba(79,195,247,0.15); }
+.dashboard-banner .banner-title { font-size: 28px; color: #4fc3f7; letter-spacing: 4px; font-weight: 600; text-align: center; }
+.dashboard-banner .banner-time { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #8899aa; }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto auto; gap: 16px; padding: 16px; }
+.dark-card { background: rgba(13,27,42,0.8); border: 1px solid rgba(79,195,247,0.2); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; }
+.dark-card .card-title { font-size: 14px; color: #4fc3f7; border-left: 3px solid #4fc3f7; padding-left: 8px; margin-bottom: 12px; line-height: 1; }
+.dark-card .card-body { flex: 1; position: relative; }
+
+/* Big Number */
+.big-number-main { font-size: 48px; font-weight: bold; color: #4fc3f7; text-align: center; margin: 16px 0 20px; font-family: 'Source Sans Pro', sans-serif; }
+.sub-stats { display: flex; justify-content: space-around; gap: 8px; }
+.sub-stat-item { text-align: center; }
+.sub-stat-label { font-size: 12px; color: #8899aa; margin-bottom: 4px; }
+.sub-stat-value { font-size: 18px; font-weight: 600; font-family: 'Source Sans Pro', sans-serif; }
+.sub-stat-value.green { color: #52c41a; }
+.sub-stat-value.red { color: #f5222d; }
+.sub-stat-value.orange { color: #f89d34; }
+.sub-stat-change { font-size: 11px; margin-top: 2px; }
+.sub-stat-change.up { color: #52c41a; }
+.sub-stat-change.down { color: #f5222d; }
+
+/* Alert stat cards */
+.alert-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; height: 100%; align-items: center; }
+.alert-stat-card { text-align: center; padding: 20px 8px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(79,195,247,0.1); }
+.alert-stat-number { font-size: 32px; font-weight: bold; font-family: 'Source Sans Pro', sans-serif; margin-bottom: 6px; }
+.alert-stat-number.orange { color: #fa8c16; }
+.alert-stat-number.green { color: #52c41a; }
+.alert-stat-number.yellow { color: #fadb14; }
+.alert-stat-number.red { color: #f5222d; }
+.alert-stat-label { font-size: 12px; color: #8899aa; }
+
+.chart-container { width: 100%; height: 230px; }
+</style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="top-nav">
+  <div class="nav-logo">
+    <div class="title">外数平台</div>
+    <div class="subtitle">EXTERNAL DATA PLATFORM</div>
+  </div>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html">数据门户</a>
+    <a class="nav-tab" href="index.html">外源管理</a>
+    <a class="nav-tab" href="index.html">服务管理</a>
+    <a class="nav-tab active" href="用数大屏.html">监控统计</a>
+    <a class="nav-tab" href="告警管理V1.2.html#rule">运营管理</a>
+    <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
+    <a class="nav-tab" href="用户管理.html">系统管理</a>
+  </div>
+  <div class="nav-user">
+    <div class="bell-wrap">
+      <i class="el-icon-bell"></i>
+      <span class="bell-badge">5</span>
+    </div>
+    <span class="tenant-name">某某金控</span>
+    <div class="avatar-circle">席</div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <a class="sidebar-item active" href="用数大屏.html">用数大屏</a>
+  <a class="sidebar-item" href="告警管理V1.2.html">用量统计</a>
+  <a class="sidebar-item" href="index.html">数据源调用统计</a>
+  <a class="sidebar-item" href="index.html">服务调用统计</a>
+  <a class="sidebar-item" href="index.html">业务单元调用统计</a>
+  <a class="sidebar-item" href="链路实时监控.html">链路实时监控</a>
+  <a class="sidebar-item" href="数据质量监控.html">数据质量监控</a>
+  <a class="sidebar-item" href="系统性能监控.html">系统性能监控</a>
+  <a class="sidebar-item" href="服务性能监控.html">服务性能监控</a>
+  <a class="sidebar-item" href="index.html">流量分析</a>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+  <div class="content-card">
+    <div class="breadcrumb">监控统计 / <span>用数大屏</span></div>
+    <div class="forecast-layout">
+      <div class="dashboard-wrap">
+    <!-- Banner -->
+    <div class="dashboard-banner">
+      <div class="banner-title">外数平台用数大屏</div>
+      <div class="banner-time" id="bannerTime"></div>
+    </div>
+
+    <!-- Grid -->
+    <div class="dashboard-grid">
+      <!-- Row 1 -->
+      <div class="dark-card">
+        <div class="card-title">今日调用总量</div>
+        <div class="card-body">
+          <div class="big-number-main">1,285,432</div>
+          <div class="sub-stats">
+            <div class="sub-stat-item">
+              <div class="sub-stat-label">查得次数</div>
+              <div class="sub-stat-value green">898,234</div>
+              <div class="sub-stat-change up">↑ 3.2%</div>
+            </div>
+            <div class="sub-stat-item">
+              <div class="sub-stat-label">失败次数</div>
+              <div class="sub-stat-value red">12,543</div>
+              <div class="sub-stat-change down">↑ 1.5%</div>
+            </div>
+            <div class="sub-stat-item">
+              <div class="sub-stat-label">缓存命中</div>
+              <div class="sub-stat-value orange">245,678</div>
+              <div class="sub-stat-change up">↑ 5.8%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dark-card">
+        <div class="card-title">调用趋势（近7天）</div>
+        <div class="card-body">
+          <div id="chartTrend" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dark-card">
+        <div class="card-title">供应商调用占比</div>
+        <div class="card-body">
+          <div id="chartVendor" class="chart-container"></div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="dark-card">
+        <div class="card-title">租户调用排行</div>
+        <div class="card-body">
+          <div id="chartTenant" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dark-card">
+        <div class="card-title">服务调用Top10</div>
+        <div class="card-body">
+          <div id="chartService" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dark-card">
+        <div class="card-title">实时调用流量</div>
+        <div class="card-body">
+          <div id="chartRealtime" class="chart-container"></div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="dark-card">
+        <div class="card-title">数据质量评分</div>
+        <div class="card-body">
+          <div id="chartGauge" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dark-card">
+        <div class="card-title">响应时间分布</div>
+        <div class="card-body">
+          <div id="chartResponse" class="chart-container"></div>
+        </div>
+      </div>
+
+      <div class="dark-card">
+        <div class="card-title">告警统计</div>
+        <div class="card-body">
+          <div class="alert-stats-row">
+            <div class="alert-stat-card">
+              <div class="alert-stat-number orange">23</div>
+              <div class="alert-stat-label">今日告警</div>
+            </div>
+            <div class="alert-stat-card">
+              <div class="alert-stat-number green">18</div>
+              <div class="alert-stat-label">已处理</div>
+            </div>
+            <div class="alert-stat-card">
+              <div class="alert-stat-number yellow">3</div>
+              <div class="alert-stat-label">待处理</div>
+            </div>
+            <div class="alert-stat-card">
+              <div class="alert-stat-number red">2</div>
+              <div class="alert-stat-label">严重告警</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+// === Clock ===
+function updateTime() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  var h = String(now.getHours()).padStart(2, '0');
+  var mi = String(now.getMinutes()).padStart(2, '0');
+  var s = String(now.getSeconds()).padStart(2, '0');
+  var weekDays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  document.getElementById('bannerTime').textContent = y + '-' + m + '-' + d + ' ' + h + ':' + mi + ':' + s + ' ' + weekDays[now.getDay()];
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+// === Common dark theme config ===
+var darkText = '#8899aa';
+var darkAxis = '#334155';
+var darkGrid = 'rgba(51,65,85,0.3)';
+
+function baseDarkOption() {
+  return {
+    backgroundColor: 'transparent',
+    textStyle: { color: darkText, fontFamily: "'Noto Sans SC','Source Sans Pro',sans-serif" }
+  };
+}
+
+// === Chart 1: 调用趋势 (Line) ===
+var chartTrend = echarts.init(document.getElementById('chartTrend'));
+chartTrend.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis' },
+  legend: { data: ['调用总量', '查得量'], textStyle: { color: darkText }, top: 0, right: 0 },
+  grid: { left: 55, right: 16, top: 36, bottom: 28 },
+  xAxis: { type: 'category', data: ['05-25','05-26','05-27','05-28','05-29','05-30','05-31'], axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 11 } },
+  yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: function(v){ return (v/10000)+'万'; } } },
+  series: [
+    { name: '调用总量', type: 'line', smooth: true, data: [1150000,1200000,1180000,1250000,1300000,1280000,1285432], lineStyle: { color: '#4fc3f7', width: 2 }, itemStyle: { color: '#4fc3f7' }, symbol: 'circle', symbolSize: 6 },
+    { name: '查得量', type: 'line', smooth: true, data: [800000,840000,825000,875000,910000,895000,898234], lineStyle: { color: '#52c41a', width: 2 }, itemStyle: { color: '#52c41a' }, symbol: 'circle', symbolSize: 6 }
+  ]
+}));
+
+// === Chart 2: 供应商调用占比 (Pie/Donut) ===
+var chartVendor = echarts.init(document.getElementById('chartVendor'));
+chartVendor.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
+  legend: { orient: 'vertical', right: 8, top: 'center', textStyle: { color: darkText, fontSize: 11 } },
+  series: [{
+    type: 'pie', radius: ['40%', '65%'], center: ['40%', '50%'],
+    label: { show: false },
+    data: [
+      { value: 35, name: '天眼查', itemStyle: { color: '#4fc3f7' } },
+      { value: 25, name: '企查查', itemStyle: { color: '#36a2eb' } },
+      { value: 20, name: '中诚信', itemStyle: { color: '#ff6384' } },
+      { value: 12, name: '百行征信', itemStyle: { color: '#ff9f40' } },
+      { value: 8, name: '前海征信', itemStyle: { color: '#9966ff' } }
+    ]
+  }]
+}));
+
+// === Chart 3: 租户调用排行 (Horizontal Bar) ===
+var chartTenant = echarts.init(document.getElementById('chartTenant'));
+var tenantNames = ['某某银行','某某保险','某某租赁','某某信托','某某金控'];
+var tenantValues = [103386, 178234, 234567, 312456, 456789];
+chartTenant.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+  grid: { left: 90, right: 40, top: 10, bottom: 16 },
+  xAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: function(v){ return (v/10000)+'万'; } } },
+  yAxis: { type: 'category', data: tenantNames, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 11 } },
+  series: [{
+    type: 'bar', barWidth: 18,
+    data: tenantValues,
+    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      { offset: 0, color: '#1890ff' }, { offset: 1, color: '#4fc3f7' }
+    ]), borderRadius: [0, 4, 4, 0] },
+    label: { show: true, position: 'right', color: darkText, fontSize: 11, formatter: function(p){ return p.value.toLocaleString(); } }
+  }]
+}));
+
+// === Chart 4: 服务调用Top10 (Horizontal Bar) ===
+var chartService = echarts.init(document.getElementById('chartService'));
+var svcNames = ['严重违法','舆情分析','反欺诈评分','企业图谱','知识产权','经营状况','融资历史','司法风险','信用评分','企业基本信息'];
+var svcValues = [45000, 58000, 72000, 89000, 105000, 134000, 167000, 198000, 245000, 285000];
+chartService.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+  grid: { left: 100, right: 55, top: 6, bottom: 10 },
+  xAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { show: false } },
+  yAxis: { type: 'category', data: svcNames, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
+  series: [{
+    type: 'bar', barWidth: 14,
+    data: svcValues,
+    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      { offset: 0, color: '#1890ff' }, { offset: 1, color: '#4fc3f7' }
+    ]), borderRadius: [0, 3, 3, 0] },
+    label: { show: true, position: 'right', color: darkText, fontSize: 10, formatter: function(p){ return (p.value/10000).toFixed(1)+'万'; } }
+  }]
+}));
+
+// === Chart 5: 实时调用流量 (Area) ===
+var chartRealtime = echarts.init(document.getElementById('chartRealtime'));
+var hours = [];
+for (var i = 0; i < 24; i++) hours.push(String(i).padStart(2,'0') + ':00');
+var trafficData = [5200,3100,2000,1500,1800,4500,15000,38000,62000,78000,85000,82000,68000,72000,80000,83000,76000,65000,48000,35000,22000,15000,10000,7500];
+chartRealtime.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis' },
+  grid: { left: 55, right: 16, top: 16, bottom: 28 },
+  xAxis: { type: 'category', data: hours, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10, interval: 3 } },
+  yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: function(v){ return (v/10000)+'万'; } } },
+  series: [{
+    type: 'line', smooth: true, data: trafficData, symbol: 'none',
+    lineStyle: { color: '#4fc3f7', width: 2 },
+    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 0, color: 'rgba(79,195,247,0.4)' },
+      { offset: 1, color: 'rgba(79,195,247,0.02)' }
+    ]) }
+  }]
+}));
+
+// === Chart 6: 数据质量评分 (Gauge) ===
+var chartGauge = echarts.init(document.getElementById('chartGauge'));
+chartGauge.setOption(Object.assign(baseDarkOption(), {
+  series: [{
+    type: 'gauge', radius: '85%', center: ['50%', '55%'],
+    min: 0, max: 100,
+    axisLine: { lineStyle: { width: 14, color: [[0.6, '#f5222d'], [0.8, '#fa8c16'], [1, '#52c41a']] } },
+    axisTick: { show: false },
+    splitLine: { length: 10, lineStyle: { color: '#334155' } },
+    axisLabel: { color: darkText, fontSize: 10, distance: 18 },
+    pointer: { width: 5, length: '60%', itemStyle: { color: '#4fc3f7' } },
+    anchor: { show: true, size: 10, itemStyle: { color: '#4fc3f7', borderColor: '#0d1b2a', borderWidth: 2 } },
+    title: { show: true, offsetCenter: [0, '75%'], fontSize: 14, color: darkText },
+    detail: { valueAnimation: true, fontSize: 28, fontWeight: 'bold', color: '#52c41a', offsetCenter: [0, '50%'], formatter: '{value}分' },
+    data: [{ value: 92.5, name: '优秀' }]
+  }]
+}));
+
+// === Chart 7: 响应时间分布 (Histogram) ===
+var chartResponse = echarts.init(document.getElementById('chartResponse'));
+chartResponse.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
+  grid: { left: 45, right: 16, top: 16, bottom: 36 },
+  xAxis: { type: 'category', data: ['<100ms','100-200ms','200-500ms','500-1000ms','1-3s','>3s'], axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10, rotate: 20 } },
+  yAxis: { type: 'value', max: 50, axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: '{value}%' } },
+  series: [{
+    type: 'bar', barWidth: 30,
+    data: [
+      { value: 45, itemStyle: { color: '#52c41a' } },
+      { value: 25, itemStyle: { color: '#52c41a' } },
+      { value: 15, itemStyle: { color: '#4fc3f7' } },
+      { value: 8, itemStyle: { color: '#fa8c16' } },
+      { value: 5, itemStyle: { color: '#fa8c16' } },
+      { value: 2, itemStyle: { color: '#f5222d' } }
+    ],
+    label: { show: true, position: 'top', color: darkText, fontSize: 11, formatter: '{c}%' },
+    itemStyle: { borderRadius: [4, 4, 0, 0] }
+  }]
+}));
+
+// === Resize handling ===
+window.addEventListener('resize', function() {
+  chartTrend.resize();
+  chartVendor.resize();
+  chartTenant.resize();
+  chartService.resize();
+  chartRealtime.resize();
+  chartGauge.resize();
+  chartResponse.resize();
+});
+</script>
+</body>
+</html>

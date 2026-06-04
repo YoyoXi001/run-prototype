@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外数 | 数据质量监控</title>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #F5F7FA; color: #333; }
+
+/* ===== Top Nav ===== */
+.top-nav { position: sticky; top: 0; z-index: 1000; height: 80px; background: linear-gradient(135deg, #84B9FD, #E1EDFB); box-shadow: 0 1px 4px rgba(0,21,41,0.08); display: flex; align-items: center; padding: 0 24px; }
+.nav-logo { display: flex; flex-direction: column; margin-right: 40px; cursor: pointer; }
+.nav-logo .title { font-size: 18px; font-weight: 700; color: #1f2f3d; }
+.nav-logo .subtitle { font-size: 10px; color: #5a6e8c; letter-spacing: 0.5px; }
+.nav-tabs { display: flex; gap: 0; flex: 1; height: 100%; align-items: center; }
+.nav-tab { position: relative; font-size: 18px; color: #1f2f3d; text-decoration: none; padding: 0 20px; height: 80px; display: flex; align-items: center; cursor: pointer; transition: color 0.2s; white-space: nowrap; }
+.nav-tab:hover { color: #1152c5; }
+.nav-tab.active { color: #1152c5; font-weight: 700; }
+.nav-tab.active::after { content: ''; position: absolute; bottom: 0; left: 20px; right: 20px; height: 2px; background: #1152c5; }
+.nav-user { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.nav-bell { position: relative; cursor: pointer; font-size: 20px; color: #1f2f3d; }
+.nav-bell .badge { position: absolute; top: -6px; right: -8px; background: #f5222d; color: #fff; font-size: 10px; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.nav-tenant { font-size: 14px; color: #1f2f3d; }
+.nav-avatar { width: 33px; height: 33px; border-radius: 50%; background: #fcb53e; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+/* ===== Sidebar ===== */
+.sidebar { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; z-index: 100; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+.sidebar-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; border-right: 2px solid transparent; }
+.sidebar-item:last-child { margin-bottom: 0; }
+.sidebar-item:hover { background: #fef5ec; color: #f89d34; }
+.sidebar-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+.sidebar-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
+
+/* ===== Main Content ===== */
+.main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+.content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+.breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+.breadcrumb span { color: #333; }
+.forecast-layout { flex: 1; display: flex; flex-direction: column; }
+.forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+.flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
+
+/* ===== Tabs ===== */
+.page-tabs { display: flex; gap: 0; border-bottom: 1px solid #e8e8e8; margin-bottom: 20px; }
+.page-tab { font-size: 16px; color: #666; padding: 12px 24px; cursor: pointer; position: relative; transition: color 0.2s; }
+.page-tab:hover { color: #f89d34; }
+.page-tab.active { color: #f89d34; font-weight: 600; }
+.page-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 24px; right: 24px; height: 2px; background: #f89d34; }
+
+/* ===== Filter Bar ===== */
+.filter-section { background: #fff; border: 1px solid #d8d8d8; border-radius: 6px; padding: 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+.filter-label { font-size: 14px; color: #666; white-space: nowrap; }
+.filter-select, .filter-input { width: 180px; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 14px; color: #333; background: #fff; outline: none; font-family: inherit; }
+.filter-select:focus, .filter-input:focus { border-color: #f89d34; }
+.btn { height: 32px; padding: 0 20px; border-radius: 4px; font-size: 14px; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: #f89d34; color: #fff; }
+.btn-default { background: #fff; color: #666; border: 1px solid #dcdfe6; }
+
+/* ===== Data Table ===== */
+.table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; padding: 0; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
+.data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+.data-table th:last-child, .data-table td:last-child { border-right: none; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #f8fafc; }
+.action-link { color: #0d6cff; cursor: pointer; text-decoration: none; margin: 0 6px; font-size: 14px; }
+.action-link:hover { text-decoration: underline; }
+.action-link.danger { color: #f5222d; }
+
+/* ===== Status Badges ===== */
+.badge-status { display: inline-block; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 500; }
+.badge-success { background: #e6f7e6; color: #52c41a; }
+.badge-danger { background: #ffe7e7; color: #f5222d; }
+.badge-warning { background: #fff7e6; color: #fa8c16; }
+.badge-info { background: #e6f7ff; color: #1890ff; }
+
+/* ===== Pagination ===== */
+.pagination { padding: 16px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
+.pagination .total-text { margin-right: 16px; color: #666666; }
+.pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+.pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+.pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+.pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+.pagination .page-number.active { color: #f89d34; font-weight: 600; }
+.pagination .page-number:hover:not(.active) { color: #f89d34; }
+.pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+.pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+.pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+.page-btn { min-width: 32px; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #333; padding: 0 8px; }
+.page-btn:hover { border-color: #f89d34; color: #f89d34; }
+.page-btn.active { background: #f89d34; color: #fff; border-color: #f89d34; }
+.page-btn.disabled { color: #c0c4cc; cursor: not-allowed; }
+.page-size-select { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 8px; font-size: 14px; outline: none; }
+.page-jump { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
+.page-jump input { width: 50px; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 14px; outline: none; }
+
+/* ===== Modal ===== */
+.modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+.modal-mask.show { display: flex; }
+.modal { background: #fff; border-radius: 8px; width: 600px; max-height: 80vh; overflow: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #ebeef5; }
+.modal-header h3 { font-size: 18px; font-weight: 700; color: #333; }
+.modal-close { font-size: 20px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
+.modal-close:hover { color: #333; }
+.modal-body { padding: 24px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid #ebeef5; }
+.form-row { display: flex; align-items: center; margin-bottom: 20px; }
+.form-row:last-child { margin-bottom: 0; }
+.form-label { width: 100px; font-size: 14px; color: #666; text-align: right; padding-right: 12px; flex-shrink: 0; }
+.form-label .required { color: #f5222d; }
+.form-control { flex: 1; }
+.form-control input, .form-control select, .form-control textarea {
+  width: 100%; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 14px; outline: none; font-family: inherit;
+}
+.form-control textarea { height: 80px; padding: 8px 10px; resize: vertical; }
+.form-control input:focus, .form-control select:focus, .form-control textarea:focus { border-color: #f89d34; }
+
+/* ===== Tab Content ===== */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== Toggle Switch ===== */
+.toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 20px; transition: 0.3s; }
+.toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.3s; }
+.toggle-switch input:checked + .toggle-slider { background: #f89d34; }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+</style>
+</head>
+<body>
+
+<!-- ===== Top Navigation ===== -->
+<div class="top-nav">
+  <div class="nav-logo">
+    <span class="title">外数平台</span>
+    <span class="subtitle">EXTERNAL DATA PLATFORM</span>
+  </div>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html">数据门户</a>
+    <a class="nav-tab" href="index.html">外源管理</a>
+    <a class="nav-tab" href="index.html">服务管理</a>
+    <a class="nav-tab active" href="用数大屏.html">监控统计</a>
+    <a class="nav-tab" href="告警管理V1.2.html#rule">运营管理</a>
+    <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
+    <a class="nav-tab" href="用户管理.html">系统管理</a>
+  </div>
+  <div class="nav-user">
+    <div class="nav-bell">
+      <i class="el-icon-bell"></i>
+      <span class="badge">3</span>
+    </div>
+    <span class="nav-tenant">某某金控</span>
+    <div class="nav-avatar">席</div>
+  </div>
+</div>
+
+<!-- ===== Sidebar ===== -->
+<div class="sidebar">
+  <a class="sidebar-item" href="用数大屏.html"><i class="el-icon-monitor"></i>用数大屏</a>
+  <a class="sidebar-item" href="告警管理V1.2.html"><i class="el-icon-document"></i>用量统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-s-data"></i>数据源调用统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-s-order"></i>服务调用统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-office-building"></i>业务单元调用统计</a>
+  <a class="sidebar-item" href="链路实时监控.html"><i class="el-icon-connection"></i>链路实时监控</a>
+  <a class="sidebar-item active" href="数据质量监控.html"><i class="el-icon-circle-check"></i>数据质量监控</a>
+  <a class="sidebar-item" href="系统性能监控.html"><i class="el-icon-cpu"></i>系统性能监控</a>
+  <a class="sidebar-item" href="服务性能监控.html"><i class="el-icon-s-operation"></i>服务性能监控</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-pie-chart"></i>流量分析</a>
+</div>
+
+<!-- ===== Main Content ===== -->
+<main class="main-content">
+  <div class="content-card">
+    <div class="breadcrumb">监控统计 / <span>数据质量监控</span></div>
+    <div class="forecast-layout">
+      <!-- Page Tabs -->
+      <div class="page-tabs">
+    <div class="page-tab active" onclick="switchTab(0)">质量检测记录</div>
+    <div class="page-tab" onclick="switchTab(1)">质量评分</div>
+    <div class="page-tab" onclick="switchTab(2)">规则管理</div>
+  </div>
+
+  <!-- ===== Tab 1: 质量检测记录 ===== -->
+  <div class="tab-panel active" id="tab-0">
+    <div class="forecast-white-card">
+      <div class="filter-section">
+      <div class="filter-group">
+        <span class="filter-label">服务名称</span>
+        <select class="filter-select">
+          <option>全部</option>
+          <option>企业基本信息</option>
+          <option>信用评分</option>
+          <option>司法风险</option>
+          <option>融资历史</option>
+          <option>经营状况</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">供应商</span>
+        <select class="filter-select">
+          <option>全部</option>
+          <option>天眼查</option>
+          <option>企查查</option>
+          <option>中诚信</option>
+          <option>百行征信</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">检测结果</span>
+        <select class="filter-select">
+          <option>全部</option>
+          <option>通过</option>
+          <option>不通过</option>
+          <option>部分通过</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">检测时间</span>
+        <input type="date" class="filter-input" style="width:150px" value="2024-05-31">
+        <span style="color:#999">~</span>
+        <input type="date" class="filter-input" style="width:150px" value="2024-06-01">
+      </div>
+      <button class="btn btn-primary">查询</button>
+      <button class="btn btn-default">重置</button>
+    </div>
+
+    <div class="flex-table-container">
+    <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>检测ID</th>
+          <th>服务名称</th>
+          <th>供应商</th>
+          <th>检测规则</th>
+          <th>检测样本数</th>
+          <th>通过数</th>
+          <th>通过率</th>
+          <th>检测结果</th>
+          <th>检测时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>QC-001</td>
+          <td>企业基本信息</td>
+          <td>天眼查</td>
+          <td>字段完整性检测</td>
+          <td>1000</td>
+          <td>992</td>
+          <td>99.2%</td>
+          <td><span class="badge-status badge-success">通过</span></td>
+          <td>2024-06-01 10:00</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-002</td>
+          <td>企业基本信息</td>
+          <td>天眼查</td>
+          <td>数据一致性检测</td>
+          <td>500</td>
+          <td>488</td>
+          <td>97.6%</td>
+          <td><span class="badge-status badge-success">通过</span></td>
+          <td>2024-06-01 10:05</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-003</td>
+          <td>信用评分</td>
+          <td>中诚信</td>
+          <td>返回值有效性检测</td>
+          <td>800</td>
+          <td>756</td>
+          <td>94.5%</td>
+          <td><span class="badge-status badge-warning">部分通过</span></td>
+          <td>2024-06-01 09:30</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-004</td>
+          <td>司法风险</td>
+          <td>天眼查</td>
+          <td>字段完整性检测</td>
+          <td>600</td>
+          <td>598</td>
+          <td>99.7%</td>
+          <td><span class="badge-status badge-success">通过</span></td>
+          <td>2024-06-01 09:00</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-005</td>
+          <td>融资历史</td>
+          <td>企查查</td>
+          <td>数据时效性检测</td>
+          <td>400</td>
+          <td>356</td>
+          <td>89.0%</td>
+          <td><span class="badge-status badge-danger">不通过</span></td>
+          <td>2024-06-01 08:30</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-006</td>
+          <td>经营状况</td>
+          <td>天眼查</td>
+          <td>数据一致性检测</td>
+          <td>300</td>
+          <td>295</td>
+          <td>98.3%</td>
+          <td><span class="badge-status badge-success">通过</span></td>
+          <td>2024-05-31 18:00</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-007</td>
+          <td>企业基本信息</td>
+          <td>企查查</td>
+          <td>字段完整性检测</td>
+          <td>1000</td>
+          <td>985</td>
+          <td>98.5%</td>
+          <td><span class="badge-status badge-success">通过</span></td>
+          <td>2024-05-31 17:00</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+        <tr>
+          <td>QC-008</td>
+          <td>信用评分</td>
+          <td>中诚信</td>
+          <td>数据时效性检测</td>
+          <td>500</td>
+          <td>425</td>
+          <td>85.0%</td>
+          <td><span class="badge-status badge-danger">不通过</span></td>
+          <td>2024-05-31 16:00</td>
+          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="pagination">
+      <span class="total">共 8 条</span>
+      <button class="page-btn disabled">&lt;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn disabled">&gt;</button>
+      <select class="page-size-select">
+        <option>10条/页</option>
+        <option>20条/页</option>
+        <option>50条/页</option>
+      </select>
+      <div class="page-jump">
+        前往 <input type="text" value="1"> 页
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ===== Tab 2: 质量评分 ===== -->
+  <div class="tab-panel" id="tab-1">
+    <div class="forecast-white-card">
+      <div class="filter-section">
+      <div class="filter-group">
+        <span class="filter-label">供应商</span>
+        <select class="filter-select">
+          <option>全部</option>
+          <option>天眼查</option>
+          <option>企查查</option>
+          <option>中诚信</option>
+          <option>百行征信</option>
+          <option>前海征信</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">评分周期</span>
+        <select class="filter-select">
+          <option>2024年5月</option>
+          <option>2024年4月</option>
+          <option>2024年3月</option>
+          <option>2024年2月</option>
+          <option>2024年1月</option>
+        </select>
+      </div>
+      <button class="btn btn-primary">查询</button>
+      <button class="btn btn-default">重置</button>
+    </div>
+
+    <div class="flex-table-container">
+    <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>供应商</th>
+          <th>服务名称</th>
+          <th>完整性评分</th>
+          <th>一致性评分</th>
+          <th>时效性评分</th>
+          <th>有效性评分</th>
+          <th>综合评分</th>
+          <th>评分等级</th>
+          <th>评分周期</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>天眼查</td>
+          <td>企业基本信息</td>
+          <td>98.5</td>
+          <td>97.2</td>
+          <td>95.8</td>
+          <td>99.1</td>
+          <td><strong>97.7</strong></td>
+          <td><span class="badge-status badge-success">优秀</span></td>
+          <td>2024年5月</td>
+        </tr>
+        <tr>
+          <td>天眼查</td>
+          <td>司法风险</td>
+          <td>99.0</td>
+          <td>96.5</td>
+          <td>94.2</td>
+          <td>98.3</td>
+          <td><strong>97.0</strong></td>
+          <td><span class="badge-status badge-success">优秀</span></td>
+          <td>2024年5月</td>
+        </tr>
+        <tr>
+          <td>企查查</td>
+          <td>企业基本信息</td>
+          <td>97.8</td>
+          <td>95.6</td>
+          <td>93.5</td>
+          <td>97.2</td>
+          <td><strong>96.0</strong></td>
+          <td><span class="badge-status badge-success">优秀</span></td>
+          <td>2024年5月</td>
+        </tr>
+        <tr>
+          <td>中诚信</td>
+          <td>信用评分</td>
+          <td>94.5</td>
+          <td>91.2</td>
+          <td>85.3</td>
+          <td>92.8</td>
+          <td><strong>91.0</strong></td>
+          <td><span class="badge-status badge-info">良好</span></td>
+          <td>2024年5月</td>
+        </tr>
+        <tr>
+          <td>百行征信</td>
+          <td>个人信用报告</td>
+          <td>92.3</td>
+          <td>88.7</td>
+          <td>82.1</td>
+          <td>90.5</td>
+          <td><strong>88.4</strong></td>
+          <td><span class="badge-status badge-info">良好</span></td>
+          <td>2024年5月</td>
+        </tr>
+        <tr>
+          <td>前海征信</td>
+          <td>反欺诈评分</td>
+          <td>85.6</td>
+          <td>82.3</td>
+          <td>78.9</td>
+          <td>84.2</td>
+          <td><strong>82.8</strong></td>
+          <td><span class="badge-status badge-info">良好</span></td>
+          <td>2024年5月</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="pagination">
+      <span class="total">共 6 条</span>
+      <button class="page-btn disabled">&lt;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn disabled">&gt;</button>
+      <select class="page-size-select">
+        <option>10条/页</option>
+        <option>20条/页</option>
+        <option>50条/页</option>
+      </select>
+      <div class="page-jump">
+        前往 <input type="text" value="1"> 页
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ===== Tab 3: 规则管理 ===== -->
+  <div class="tab-panel" id="tab-2">
+    <div class="forecast-white-card">
+      <div class="action-bar" style="margin-bottom: 16px;">
+        <button class="btn btn-primary" onclick="openRuleModal()">+ 新增规则</button>
+      </div>
+      <div class="flex-table-container">
+
+    <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>规则编号</th>
+          <th>规则名称</th>
+          <th>规则类型</th>
+          <th>检测维度</th>
+          <th>阈值</th>
+          <th>适用服务</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>R-001</td>
+          <td>字段完整性检测</td>
+          <td>完整性</td>
+          <td>字段非空率</td>
+          <td>&ge;95%</td>
+          <td>全部服务</td>
+          <td><span class="badge-status badge-success">启用</span></td>
+          <td>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
+            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link danger" href="javascript:void(0)">删除</a>
+          </td>
+        </tr>
+        <tr>
+          <td>R-002</td>
+          <td>数据一致性检测</td>
+          <td>一致性</td>
+          <td>多源比对一致率</td>
+          <td>&ge;90%</td>
+          <td>全部服务</td>
+          <td><span class="badge-status badge-success">启用</span></td>
+          <td>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
+            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link danger" href="javascript:void(0)">删除</a>
+          </td>
+        </tr>
+        <tr>
+          <td>R-003</td>
+          <td>数据时效性检测</td>
+          <td>时效性</td>
+          <td>数据更新延迟</td>
+          <td>&le;24小时</td>
+          <td>全部服务</td>
+          <td><span class="badge-status badge-success">启用</span></td>
+          <td>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
+            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link danger" href="javascript:void(0)">删除</a>
+          </td>
+        </tr>
+        <tr>
+          <td>R-004</td>
+          <td>返回值有效性检测</td>
+          <td>有效性</td>
+          <td>返回码正常率</td>
+          <td>&ge;98%</td>
+          <td>全部服务</td>
+          <td><span class="badge-status badge-success">启用</span></td>
+          <td>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
+            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link danger" href="javascript:void(0)">删除</a>
+          </td>
+        </tr>
+        <tr>
+          <td>R-005</td>
+          <td>格式规范检测</td>
+          <td>规范性</td>
+          <td>格式合规率</td>
+          <td>&ge;99%</td>
+          <td>企业基本信息</td>
+          <td><span class="badge-status badge-success">启用</span></td>
+          <td>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
+            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link danger" href="javascript:void(0)">删除</a>
+          </td>
+        </tr>
+        <tr>
+          <td>R-006</td>
+          <td>重复数据检测</td>
+          <td>唯一性</td>
+          <td>重复率</td>
+          <td>&le;1%</td>
+          <td>企业基本信息</td>
+          <td><span class="badge-status badge-danger">停用</span></td>
+          <td>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
+            <a class="action-link" href="javascript:void(0)">启用</a>
+            <a class="action-link danger" href="javascript:void(0)">删除</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="pagination">
+      <span class="total">共 6 条</span>
+      <button class="page-btn disabled">&lt;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn disabled">&gt;</button>
+      <select class="page-size-select">
+        <option>10条/页</option>
+        <option>20条/页</option>
+        <option>50条/页</option>
+      </select>
+      <div class="page-jump">
+        前往 <input type="text" value="1"> 页
+      </div>
+    </div>
+    </div>
+    </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- ===== Rule Edit Modal ===== -->
+<div class="modal-mask" id="ruleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>编辑规则</h3>
+      <button class="modal-close" onclick="closeRuleModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label"><span class="required">*</span> 规则名称</label>
+        <div class="form-control">
+          <input type="text" placeholder="请输入规则名称" value="字段完整性检测">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label"><span class="required">*</span> 规则类型</label>
+        <div class="form-control">
+          <select>
+            <option>完整性</option>
+            <option>一致性</option>
+            <option>时效性</option>
+            <option>有效性</option>
+            <option>规范性</option>
+            <option>唯一性</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label"><span class="required">*</span> 检测维度</label>
+        <div class="form-control">
+          <input type="text" placeholder="请输入检测维度" value="字段非空率">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label"><span class="required">*</span> 阈值</label>
+        <div class="form-control">
+          <input type="text" placeholder="请输入阈值" value="≥95%">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label"><span class="required">*</span> 适用服务</label>
+        <div class="form-control">
+          <select multiple style="height:100px">
+            <option selected>全部服务</option>
+            <option>企业基本信息</option>
+            <option>信用评分</option>
+            <option>司法风险</option>
+            <option>融资历史</option>
+            <option>经营状况</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">状态</label>
+        <div class="form-control">
+          <select>
+            <option>启用</option>
+            <option>停用</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeRuleModal()">取消</button>
+      <button class="btn btn-primary" onclick="closeRuleModal()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+// Tab switching
+function switchTab(index) {
+  document.querySelectorAll('.page-tab').forEach(function(tab, i) {
+    tab.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-panel').forEach(function(content, i) {
+    content.classList.toggle('active', i === index);
+  });
+}
+
+// Modal
+function openRuleModal() {
+  document.getElementById('ruleModal').classList.add('show');
+}
+function closeRuleModal() {
+  document.getElementById('ruleModal').classList.remove('show');
+}
+</script>
+</body>
+</html>

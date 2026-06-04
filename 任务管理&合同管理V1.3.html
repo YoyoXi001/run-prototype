@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 合同管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- 引入 flatpickr 时间控件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .app-layout {
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area {
+            width: 265px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2f3d;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+        .logo-sub {
+            font-size: 10px;
+            color: #5a6e8c;
+            margin-top: 2px;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 48px;
+            position: absolute;
+            left: 320px;
+        }
+        .nav-tab {
+            cursor: pointer;
+            font-size: 18px;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            color: #333333;
+            position: relative;
+            transition: 0.3s;
+            font-weight: 400;
+            padding-bottom: 4px;
+        }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active {
+            color: #1152c5;
+            font-weight: 700;
+        }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1152c5;
+            border-radius: 2px;
+        }
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .tenant-info {
+            font-size: 14px;
+            color: #5a5e66;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+        .tenant-name {
+            font-weight: 500;
+            color: #1f2f3d;
+        }
+        .avatar {
+            width: 33px;
+            height: 33px;
+            background: #fcb53e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+
+        /* 左侧菜单 */
+        .side-menu {
+            width: 240px;
+            background: #fff;
+            border-right: 0px solid #e9ecef;
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 240px;
+            height: 48px;
+            padding: 0 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            font-size: 16px;
+            color: #333333;
+            transition: 0.3s;
+            background: transparent;
+            border-radius: 0;
+        }
+        .menu-item:last-child {
+            margin-bottom: 0;
+        }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active {
+            background: linear-gradient(270deg, #fefdfb, #fef5ec);
+            color: #f89d34;
+            border-right: 2px solid #f89d34;
+        }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容面板 */
+        .main-content {
+            margin-left: 240px;
+            padding: 8px 16px 0 16px;
+            min-height: calc(100vh - 80px);
+            background: #F5F7FA;
+        }
+        .content-card {
+            background: #f5f7fa;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        /* 目录面包屑 */
+        .breadcrumb {
+            padding: 0;
+            margin-bottom: 8px;
+            background: #F5F7FA;
+            font-size: 14px;
+            color: #666666;
+            border: none;
+        }
+        .breadcrumb .separator {
+            margin: 0 8px;
+            color: #c0c4cc;
+        }
+        .breadcrumb .current {
+            color: #3a6df0;
+            font-weight: 500;
+        }
+
+        /* 筛选框 DIV */
+        .filter-section {
+            background: #fff;
+            border: 1px solid #d8d8d8;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+        }
+        .filter-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-item label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            white-space: nowrap;
+        }
+        .filter-item input, .filter-item select {
+            width: 222px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #333333;
+        }
+        .filter-item input.datepicker-input {
+            width: 142px;
+        }
+        .filter-item input:focus, .filter-item select:focus {
+            border-color: #f89d34;
+        }
+        .filter-right {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-primary {
+            background: #f89d34;
+            color: #fff;
+            border: 1px solid #f89d34;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #e88a2e;
+        }
+        .btn-default {
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #666666;
+        }
+        .btn-default:hover {
+            border-color: #f89d34;
+            color: #f89d34;
+        }
+        .btn-upload {
+            background: #fff;
+            color: #f89d34;
+            border: 1px solid #f89d34;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-upload:hover {
+            background: #fef9f0;
+        }
+
+        /* 合同筛选特殊布局 */
+        .contract-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .contract-filter-fields {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .contract-filter-date-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .contract-filter-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* 内容区域 DIV */
+        .content-section {
+            background: #fff;
+            border: none;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .action-bar {
+            padding: 16px 16px 0 16px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .table-container {
+            margin: 0 16px 16px 16px;
+            border: 1px solid #ebeef5;
+            border-radius: 8px;
+            overflow-x: auto;
+            padding: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            color: #666666;
+            text-align: center;
+        }
+        .data-table th:last-child,
+        .data-table td:last-child {
+            border-right: none;
+        }
+        .data-table th {
+            background: #fafcff;
+            font-weight: 600;
+            color: #555555;
+            font-size: 14px;
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        /* 状态徽章 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-running {
+            background: #e6f7e6;
+            color: #52c41a;
+        }
+        .status-not-enabled {
+            background: #ffe7e7;
+            color: #f5222d;
+        }
+        .status-valid {
+            background: #e6f7e6;
+            color: #52c41a;
+        }
+        .status-expired {
+            background: #ffe7e7;
+            color: #f5222d;
+        }
+        .action-link {
+            color: #0d6cff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 0 6px;
+            display: inline-block;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        .action-link.danger {
+            color: #f56c6c;
+        }
+
+        /* 分页 */
+        .pagination {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #333333;
+        }
+        .pagination .total-text {
+            margin-right: 16px;
+            color: #666666;
+        }
+        .pagination button {
+            min-width: 28px;
+            height: 28px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666666;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+        .pagination button:not(:disabled):hover {
+            background: #f5f7fa;
+            color: #f89d34;
+        }
+        .pagination .page-number {
+            min-width: 28px;
+            height: 28px;
+            padding: 0 6px;
+            border: none;
+            border-radius: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: transparent;
+            color: #666666;
+        }
+        .pagination .page-number.active {
+            background: transparent;
+            color: #f89d34;
+            cursor: default;
+            font-weight: 500;
+        }
+        .pagination .page-number:not(.active):hover {
+            background: #f5f7fa;
+            color: #f89d34;
+        }
+        .pagination .page-size-select {
+            margin-left: 16px;
+            padding: 4px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #666666;
+            background: #fff;
+            cursor: pointer;
+            outline: none;
+        }
+        .pagination .page-size-select:focus {
+            border-color: #f89d34;
+        }
+        .pagination .page-size-select option:checked {
+            color: #f89d34;
+        }
+        .pagination .jump-section {
+            margin-left: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pagination .jump-section input {
+            width: 60px;
+            height: 28px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            outline: none;
+        }
+        .pagination .jump-section input:focus {
+            border-color: #f89d34;
+        }
+
+        /* 删除确认弹窗样式 */
+        .delete-header {
+            background: #fff;
+            border-bottom: none;
+            padding: 16px 20px;
+        }
+        .delete-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            gap: 12px;
+        }
+        .delete-icon {
+            width: 40px;
+            height: 40px;
+            background: #ffe7e7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #f56c6c;
+            flex-shrink: 0;
+        }
+        .delete-message {
+            font-size: 14px;
+            color: #666666;
+        }
+        .delete-footer {
+            background: #fff;
+            border-top: none;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 弹窗 */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-mask.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-container {
+            background: #fff;
+            width: 700px;
+            max-width: 90%;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        .modal-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 16px;
+            color: #333333;
+            background: #fff;
+        }
+        .modal-body {
+            padding: 20px;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+        .form-row {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .form-row label {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666666;
+            width: 100px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .form-row .form-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .form-row input, .form-row select, .form-row textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+        }
+        .form-row textarea {
+            resize: vertical;
+        }
+        .form-row input[readonly], 
+        .form-row textarea[readonly],
+        .form-row .form-content span.readonly-value {
+            background: #f5f7fa;
+            border: 1px solid #dcdfe6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        /* 合同到期日行 - 与附件样式一致：时间控件和长期在同一行，长期在右侧 */
+        .expire-date-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .expire-date-row .date-input {
+            flex: 1;
+            min-width: 200px;
+        }
+        .long-term-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .long-term-option input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .long-term-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+            font-size: 14px;
+            color: #666;
+        }
+        /* 文件上传样式 */
+        .upload-area {
+            border: 1px dashed #dcdfe6;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafcff;
+        }
+        .upload-area:hover {
+            border-color: #f89d34;
+            background: #fef9f0;
+        }
+        .upload-area i {
+            font-size: 28px;
+            color: #8c8f99;
+            margin-bottom: 8px;
+        }
+        .upload-area p {
+            font-size: 12px;
+            color: #999;
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f5f7fa;
+            border-radius: 4px;
+        }
+        .file-name {
+            font-size: 12px;
+            color: #f89d34;
+            word-break: break-all;
+            flex: 1;
+        }
+        .delete-file {
+            color: #f56c6c;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 8px;
+        }
+        .modal-footer {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            background: #fff;
+        }
+
+        /* 模块切换 */
+        .module-view { display: none; }
+        .module-view.active { display: block; }
+
+        /* 查看详情弹窗 */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .detail-label {
+            color: #999;
+            font-weight: 500;
+        }
+        .detail-value {
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* 动态表格样式 */
+        .dynamic-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .dynamic-table th,
+        .dynamic-table td {
+            padding: 10px;
+            border: 1px solid #ebeef5;
+            text-align: left;
+        }
+        .dynamic-table th {
+            background: #fafcff;
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+        }
+        .dynamic-table .api-select {
+            width: 150px;
+            padding: 6px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .dynamic-table .quota-input {
+            width: 150px;
+            padding: 6px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .btn-add-row, .btn-remove-row {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 2px;
+        }
+        .btn-add-row {
+            background: #52c41a;
+            color: #fff;
+        }
+        .btn-add-row:hover {
+            background: #43a817;
+        }
+        .btn-remove-row {
+            background: #f56c6c;
+            color: #fff;
+        }
+        .btn-remove-row:hover {
+            background: #e45656;
+        }
+
+        /* 规则配置弹窗样式 */
+        .cron-config-section {
+            padding: 16px;
+        }
+        .cron-section-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .cron-fields {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .cron-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .cron-field label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+        .cron-field select {
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+            min-width: 120px;
+        }
+        .cron-preview {
+            background: #fafcff;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #ebeef5;
+        }
+        .cron-preview-title {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        .cron-expr-text {
+            font-size: 14px;
+            color: #333;
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            word-break: break-all;
+        }
+        .cron-preview-text {
+            font-size: 14px;
+            color: #f89d34;
+            font-weight: 500;
+        }
+
+        /* flatpickr 样式调整 */
+        .flatpickr-input {
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="showNavMenu('portal')">数据门户</div>
+            <div class="nav-tab active" onclick="showNavMenu('external')">外源管理</div>
+            <div class="nav-tab" onclick="showNavMenu('service')">服务管理</div>
+            <div class="nav-tab" onclick="showNavMenu('monitor')">监控统计</div>
+            <div class="nav-tab" onclick="showNavMenu('operation')">运营管理</div>
+            <div class="nav-tab" onclick="showNavMenu('personal')">个人中心</div>
+            <div class="nav-tab" onclick="showNavMenu('system')">系统管理</div>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper"><i class="el-icon-bell message-icon"></i><span class="unread-badge-icon">3</span></div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar" style="width:33px;height:33px;font-size:16px;">席</div>
+        </div>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-item" onclick="navigateTo('index.html')"><i class="el-icon-building"></i>供应商管理</div>
+        <div class="menu-item active" data-module="contract"><i class="el-icon-document"></i>合同管理</div>
+        <div class="menu-item" onclick="navigateTo('index.html')"><i class="el-icon-cpu"></i>API服务配置</div>
+        <div class="menu-item" onclick="navigateTo('index.html')"><i class="el-icon-database"></i>数据库服务配置</div>
+        <div class="menu-item" onclick="navigateTo('index.html')"><i class="el-icon-settings"></i>数据库配置</div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <div class="content-card">
+            <!-- 面包屑 -->
+            <div class="breadcrumb">
+                <span id="currentNavName">外源管理</span>
+                <span class="separator">/</span>
+                <span class="current" id="currentModuleName">合同管理</span>
+            </div>
+
+            <!-- 任务管理模块 -->
+            <div id="taskModule" class="module-view">
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="filter-left">
+                            <div class="filter-item"><label>任务名称</label><input type="text" id="taskNameFilter" placeholder="请输入任务名称"></div>
+                            <div class="filter-item"><label>Bean名称</label><input type="text" id="beanNameFilter" placeholder="请输入Bean名称"></div>
+                        </div>
+                        <div class="filter-right"><button class="btn-primary" id="taskSearchBtn">查询</button><button class="btn-default" id="taskResetBtn">重置</button></div>
+                    </div>
+                </div>
+                <div class="content-section">
+                    <div class="action-bar"><button class="btn-upload" id="addTaskBtn">新增</button></div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><th>编号</th><th>任务名称</th><th>任务描述</th><th>Bean名称</th><th>参数</th><th>调度规则</th><th>最近执行</th><th>状态</th><th>操作</th></thead>
+                            <tbody id="taskTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="taskPagination" class="pagination"></div>
+                </div>
+            </div>
+
+            <!-- 合同管理模块 -->
+            <div id="contractModule" class="module-view active">
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="contract-filter-row">
+                            <div class="contract-filter-fields">
+                                <div class="filter-item"><label>合同编号</label><input type="text" id="contractNoFilter" placeholder="请输入合同编号"></div>
+                                <div class="filter-item"><label>合同名称</label><input type="text" id="contractNameFilter" placeholder="请输入合同名称"></div>
+                                <div class="filter-item"><label>供应商</label><input type="text" id="supplierFilter" placeholder="请输入供应商"></div>
+                            </div>
+                            <div class="contract-filter-buttons">
+                                <button class="btn-primary" id="contractSearchBtn">查询</button>
+                                <button class="btn-default" id="contractResetBtn">重置</button>
+                            </div>
+                        </div>
+                        <div class="contract-filter-date-row">
+                            <div class="filter-item"><label>合同起始日</label><input type="text" id="startDateStart" placeholder="开始时间" style="width:150px;" class="datepicker-input"> 至 <input type="text" id="startDateEnd" placeholder="结束时间" style="width:150px;" class="datepicker-input"></div>
+                            <div class="filter-item"><label>合同到期日</label><input type="text" id="expireDateStart" placeholder="开始时间" style="width:150px;" class="datepicker-input"> 至 <input type="text" id="expireDateEnd" placeholder="结束时间" style="width:150px;" class="datepicker-input"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-section">
+                    <div class="action-bar"><button class="btn-upload" id="addContractBtn">新增</button></div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><th>编号</th><th>租户</th><th>合同编号</th><th>合同名称</th><th>合同类型</th><th>供应商</th><th>对接人</th><th>附件数量</th><th>合同起始日</th><th>合同到期日</th><th>合同履约状态</th><th>备注</th><th>操作</th></thead>
+                            <tbody id="contractTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="contractPagination" class="pagination"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务新增/编辑弹窗 -->
+    <div id="taskModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span id="taskModalTitle">新增任务</span><i class="el-icon-close" id="closeTaskModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="form-row"><label>任务名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="taskName" placeholder="请输入任务名称"></div></div>
+                <div class="form-row"><label>任务描述</label><div class="form-content"><input type="text" id="taskDesc" placeholder="请输入任务描述"></div></div>
+                <div class="form-row"><label>Bean名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="beanNameSelect" onchange="onBeanChange()"><option value="">请选择调度类</option></select></div></div>
+                <div class="form-row"><label>参数</label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{"key": "value"}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
+                <div class="form-row"><label>调度规则 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
+                <input type="hidden" id="cronExpr">
+                <div class="form-row"><label>状态</label><div class="form-content"><select id="taskStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div></div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="cancelTaskModal">取消</button><button class="btn-primary" id="saveTaskBtn">保存</button></div>
+        </div>
+    </div>
+    
+    <!-- 执行一次弹窗 -->
+    <div id="runOnceModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span>执行一次</span><i class="el-icon-close" id="closeRunOnceModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="form-row"><label>任务名称</label><div class="form-content"><input type="text" id="runOnceTaskName" readonly></div></div>
+                <div class="form-row"><label>参数</label><div class="form-content"><textarea id="runOnceParams" rows="4" placeholder='{"key": "value"}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="cancelRunOnceModal">取消</button><button class="btn-primary" id="confirmRunOnceBtn">确认执行</button></div>
+        </div>
+    </div>
+
+    <!-- 任务查看弹窗 -->
+    <div id="taskViewModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span>任务详情</span><i class="el-icon-close" id="closeTaskViewModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="form-row"><label>任务名称：</label><div class="form-content"><span id="viewTaskName" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>任务描述：</label><div class="form-content"><span id="viewTaskDesc" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>Bean名称：</label><div class="form-content"><span id="viewBeanName" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>参数：</label><div class="form-content"><span id="viewTaskParams" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>调度规则：</label><div class="form-content"><span id="viewCronDesc" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>最近执行：</label><div class="form-content"><span id="viewLastExecute" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>状态：</label><div class="form-content"><span id="viewTaskStatus" class="readonly-value"></span></div></div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="closeTaskViewBtn">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 任务日志弹窗 -->
+    <div id="taskLogModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span>执行日志</span><i class="el-icon-close" id="closeTaskLogModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="form-row"><label>任务名称</label><div class="form-content"><input type="text" id="logTaskName" readonly></div></div>
+                <div class="form-row"><label>日志内容</label><div class="form-content"><textarea id="taskLogContent" rows="10" readonly style="font-family: monospace;font-size:12px;background:#f5f7fa;"></textarea></div></div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="closeTaskLogBtn">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 规则配置弹窗 -->
+    <div id="cronConfigModal" class="modal-mask"><div class="modal-container" style="width: 800px;"><div class="modal-header"><span>规则配置</span><i class="el-icon-close" id="closeCronConfigModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="cron-config-section"><div class="cron-section-title">配置调度规则</div><div class="cron-fields"><div class="cron-field"><label>秒</label><select id="cronSecond" onchange="updateCronDesc()"><option value="*">*</option><option value="0">0</option><option value="30">30</option></select></div><div class="cron-field"><label>分</label><select id="cronMinute" onchange="updateCronDesc()"><option value="*">*</option><option value="0">0</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select></div><div class="cron-field"><label>时</label><select id="cronHour" onchange="updateCronDesc()"><option value="*">*</option><option value="0">0</option><option value="6">6</option><option value="9">9</option><option value="12">12</option><option value="18">18</option><option value="23">23</option></select></div><div class="cron-field"><label>日</label><select id="cronDay" onchange="updateCronDesc()"><option value="*">*</option><option value="1">1</option><option value="15">15</option><option value="L">L(月末)</option></select></div><div class="cron-field"><label>月</label><select id="cronMonth" onchange="updateCronDesc()"><option value="*">*</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div><div class="cron-field"><label>周</label><select id="cronWeek" onchange="updateCronDesc()"><option value="?">?</option><option value="1">1(周一)</option><option value="2">2(周二)</option><option value="3">3(周三)</option><option value="4">4(周四)</option><option value="5">5(周五)</option><option value="6">6(周六)</option><option value="7">7(周日)</option></select></div><div class="cron-field"><label>年(可选)</label><select id="cronYear" onchange="updateCronDesc()"><option value="">(不指定)</option><option value="*">*</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option></select></div></div><div class="cron-preview"><div class="cron-preview-title">Cron表达式</div><div id="cronExprText" class="cron-expr-text">0 0 9 * * ?</div><div class="cron-preview-title">规则描述</div><div id="cronPreviewText" class="cron-preview-text">请选择调度规则</div></div></div></div><div class="modal-footer"><button class="btn-default" id="cancelCronConfigModal">取消</button><button class="btn-primary" id="saveCronConfigBtn">确认配置</button></div></div></div>
+
+    <!-- 合同上传弹窗 -->
+    <div id="contractModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span id="contractModalTitle">新增合同</span><i class="el-icon-close" id="closeContractModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="form-row"><label>合同编号</label><div class="form-content"><input type="text" id="contractCode" placeholder="请输入合同编号"></div></div>
+                <div class="form-row"><label>合同名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="contractName" placeholder="请输入合同名称"></div></div>
+                <div class="form-row"><label>合同类型</label><div class="form-content"><select id="contractType"><option value="采购框架协议">采购框架协议</option><option value="采购合同">采购合同</option></select></div></div>
+                <div class="form-row"><label>供应商</label><div class="form-content"><select id="supplier"><option value="">请选择供应商</option><option value="某某科技公司">某某科技公司</option><option value="某某数据公司">某某数据公司</option><option value="某某风控公司">某某风控公司</option><option value="某某云厂商">某某云厂商</option></select></div></div>
+                <div id="apiQuotaTableContainer" style="display: none;">
+                    <div class="form-row"><label>API额度</label>
+                        <div class="form-content">
+                            <table id="apiQuotaTable" class="dynamic-table">
+                                <thead>
+                                    <tr>
+                                        <th>API</th>
+                                        <th>购买额度（次）</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="apiQuotaTableBody">
+                                    <tr>
+                                        <td><select class="api-select"><option value="">请选择API</option><option value="__supplier_total__">供应商总量</option></select></td>
+                                        <td><input type="number" class="quota-input" placeholder="请输入额度" min="0"></td>
+                                        <td><button class="btn-add-row" onclick="addApiQuotaRow(this)">+</button><button class="btn-remove-row" onclick="removeApiQuotaRow(this)">-</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row"><label>对接人</label><div class="form-content"><input type="text" id="contactPerson" placeholder="请输入对接人"></div></div>
+                <div class="form-row"><label>起讫时间</label><div class="form-content" style="display: table; width: 100%;">
+                    <div style="display: table-cell; width: 220px; padding-right: 8px;">
+                        <input type="text" id="startDate" class="datepicker-input" placeholder="开始时间" style="width: 100%;">
+                    </div>
+                    <div style="display: table-cell; width: 24px; text-align: center; vertical-align: middle;">至</div>
+                    <div style="display: table-cell; width: 220px; padding-left: 8px;">
+                        <input type="text" id="expireDate" class="datepicker-input" placeholder="结束时间" style="width: 100%;">
+                    </div>
+                    <div style="display: table-cell; text-align: right; vertical-align: middle; padding-left: 16px;">
+                        <label style="white-space: nowrap; cursor: pointer;">
+                            <input type="checkbox" id="isLongTerm" onchange="toggleLongTerm()" style="margin: 0 4px 0 0; vertical-align: middle; width: 13px; height: 13px;">
+                            <span style="vertical-align: middle;">长期</span>
+                        </label>
+                    </div>
+                </div></div>
+                <div class="form-row"><label>合同履约状态</label><div class="form-content"><select id="contractStatus"><option value="正常">正常</option><option value="已到期">已到期</option></select></div></div>
+                <div class="form-row"><label>备注</label><div class="form-content"><textarea id="contractRemark" rows="3" placeholder="请输入备注"></textarea></div></div>
+                <div class="form-row"><label>合同文件</label>
+                    <div class="form-content">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="el-icon-upload2"></i>
+                            <p>点击或拖拽文件到此区域上传</p>
+                            <p style="font-size: 11px;">支持 doc、docx、xls、xlsx、pdf、txt 格式，单个文件不超过100MB</p>
+                        </div>
+                        <input type="file" id="contractFileInput" accept=".doc,.docx,.xls,.xlsx,.pdf,.txt" style="display: none;" multiple>
+                        <div id="fileInfoContainer" style="display: none;" class="file-info">
+                            <div id="fileList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="cancelContractModal">取消</button><button class="btn-primary" id="saveContractBtn">保存</button></div>
+        </div>
+    </div>
+
+    <!-- 合同查看详情弹窗 -->
+    <div id="contractDetailModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span>合同详情</span><i class="el-icon-close" id="closeDetailModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body" id="detailBody"></div>
+            <div class="modal-footer"><button class="btn-default" id="closeDetailModalBtn">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div id="deleteConfirmModal" class="modal-mask">
+        <div class="modal-container" style="width: 380px;">
+            <div class="modal-header delete-header">
+                <span>提示</span>
+                <i class="el-icon-close" id="closeDeleteModal" style="cursor:pointer;"></i>
+            </div>
+            <div class="modal-body delete-body">
+                <div class="delete-icon"><i class="el-icon-warning"></i></div>
+                <div class="delete-message">是否删除该数据?</div>
+            </div>
+            <div class="modal-footer delete-footer">
+                <button class="btn-default" id="cancelDeleteBtn">取消</button>
+                <button class="btn-primary" id="confirmDeleteBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+// 初始化 flatpickr 时间控件
+function initDatepickers() {
+    const commonConfig = { dateFormat: "Y-m-d", locale: "zh", allowInput: true };
+    flatpickr(".datepicker-input", commonConfig);
+}
+
+// ======================== Bean类配置 ========================
+let beanClassList = [
+    { 
+        id: "businessChangeTask", 
+        name: "工商变更任务", 
+        className: "com.deepseek.task.BusinessChangeTask",
+        description: "工商信息变更消息推送",
+        params: [
+            { key: "tenantId", name: "租户ID", required: true, type: "string" },
+            { key: "serviceName", name: "服务名称", required: false, type: "string" }
+        ]
+    },
+    { 
+        id: "serviceUsageTask", 
+        name: "服务用量预警任务", 
+        className: "com.deepseek.task.ServiceUsageTask",
+        description: "服务用量预警提醒",
+        params: [
+            { key: "tenantId", name: "租户ID", required: true, type: "string" },
+            { key: "threshold", name: "阈值", required: true, type: "number" }
+        ]
+    },
+    { 
+        id: "enterpriseViolationTask", 
+        name: "企业违法记录任务", 
+        className: "com.deepseek.task.EnterpriseViolationTask",
+        description: "企业严重违法记录推送",
+        params: [
+            { key: "tenantId", name: "租户ID", required: true, type: "string" },
+            { key: "alertLevel", name: "告警级别", required: false, type: "string" }
+        ]
+    },
+    { 
+        id: "dataCleanTask", 
+        name: "数据清理任务", 
+        className: "com.deepseek.task.DataCleanTask",
+        description: "清理过期数据",
+        params: [
+            { key: "keepDays", name: "保留天数", required: true, type: "number" }
+        ]
+    },
+    { 
+        id: "reportGenTask", 
+        name: "报表生成任务", 
+        className: "com.deepseek.task.ReportGenTask",
+        description: "生成日报表",
+        params: [
+            { key: "reportType", name: "报表类型", required: true, type: "string" },
+            { key: "dateRange", name: "日期范围", required: false, type: "string" }
+        ]
+    }
+];
+
+// ======================== 任务数据 ========================
+let taskList = [
+    { id: 1, taskName: "工商变更", beanName: "businessChangeTask", beanNameCn: "工商变更任务", beanClassName: "com.deepseek.task.BusinessChangeTask", description: "工商信息变更消息推送", params: JSON.stringify({ tenantId: "T001", serviceName: "" }, null, 2), cron: "0 0 9 1 * ?", cronDesc: "每月1号09:00", lastExecute: "2026/4/1", status: "启用" },
+    { id: 2, taskName: "服务用量", beanName: "serviceUsageTask", beanNameCn: "服务用量预警任务", beanClassName: "com.deepseek.task.ServiceUsageTask", description: "服务用量预警提醒", params: JSON.stringify({ tenantId: "T001", threshold: 80 }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
+    { id: 3, taskName: "企业违法", beanName: "enterpriseViolationTask", beanNameCn: "企业违法记录任务", beanClassName: "com.deepseek.task.EnterpriseViolationTask", description: "企业严重违法记录推送", params: JSON.stringify({ tenantId: "T001", alertLevel: "high" }, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
+    { id: 4, taskName: "数据清理", beanName: "dataCleanTask", beanNameCn: "数据清理任务", beanClassName: "com.deepseek.task.DataCleanTask", description: "清理过期数据", params: JSON.stringify({ keepDays: 30 }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" }
+];
+
+// ======================== 合同数据 ========================
+let contractList = [
+    { id: 1, tenant: "某某金控", contractNo: "CT2024001", contractName: "数据服务协议", summary: "提供企业数据查询服务", contractType: "采购框架协议", supplier: "某某科技公司", contactPerson: "张三", attachmentCount: 2, startDate: "2024-01-15", expireDate: "2025-01-14", isLongTerm: false, status: "正常", files: [{name: "数据服务协议.pdf", size: 102400}, {name: "补充协议.pdf", size: 51200}], remark: "年度协议，已完成备案", apiQuota: [] },
+    { id: 2, tenant: "某某金控", contractNo: "CT2024002", contractName: "API接入合同", summary: "API接口授权使用", contractType: "采购合同", supplier: "某某数据公司", contactPerson: "李四", attachmentCount: 1, startDate: "2024-03-20", expireDate: "2025-03-19", isLongTerm: false, status: "正常", files: [{name: "API接入合同.pdf", size: 204800}], remark: "", apiQuota: [{api: "严重违法记录", quota: 10000}, {api: "企业基本信息", quota: 5000}] },
+    { id: 3, tenant: "某某金控", contractNo: "CT2023005", contractName: "风险监测服务", summary: "企业风险实时监测", contractType: "采购合同", supplier: "某某风控公司", contactPerson: "王五", attachmentCount: 3, startDate: "2023-06-01", expireDate: "2024-05-31", isLongTerm: false, status: "已到期", files: [{name: "风险监测服务.pdf", size: 153600}, {name: "技术规范.docx", size: 76800}, {name: "验收报告.xlsx", size: 25600}], remark: "合同已到期，正在续签中", apiQuota: [{api: "风险监测", quota: 20000}] },
+    { id: 4, tenant: "某某金控", contractNo: "CT2024005", contractName: "云计算服务", summary: "云资源租赁服务", contractType: "采购框架协议", supplier: "某某云厂商", contactPerson: "赵六", attachmentCount: 0, startDate: "2024-02-10", expireDate: "", isLongTerm: true, status: "正常", files: [], remark: "长期合作协议", apiQuota: [] }
+];
+
+let taskFiltered = [...taskList], contractFiltered = [...contractList];
+let taskPage = 1, contractPage = 1, pageSize = 10;
+let currentTaskId = null, currentContractId = null;
+let selectedFile = null;
+
+// 格式化参数字段
+function formatParams(paramsStr) {
+    if (!paramsStr) return '-';
+    try {
+        const params = JSON.parse(paramsStr);
+        return JSON.stringify(params, null, 2);
+    } catch(e) {
+        return paramsStr;
+    }
+}
+
+// 任务表格渲染
+function renderTaskTable() {
+    const taskName = document.getElementById('taskNameFilter')?.value.trim() || '';
+    const beanName = document.getElementById('beanNameFilter')?.value.trim() || '';
+    taskFiltered = taskList.filter(i => (!taskName || i.taskName.includes(taskName)) && (!beanName || i.beanName.includes(beanName)));
+    const total = Math.ceil(taskFiltered.length / pageSize) || 1;
+    if (taskPage > total) taskPage = total;
+    const pageData = taskFiltered.slice((taskPage-1)*pageSize, taskPage*pageSize);
+    const tbody = document.getElementById('taskTableBody');
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateTaskPagination(total, taskFiltered.length); return; }
+    tbody.innerHTML = pageData.map(i => `<tr>
+        <td>${i.id}</td>
+        <td>${escapeHtml(i.taskName)}</td>
+        <td>${escapeHtml(i.description || '-')}</td>
+        <td style="font-size:12px;max-width:200px;word-break:break-all;">${escapeHtml(i.beanClassName || i.beanNameCn || i.beanName)}</td>
+        <td style="font-size:12px;max-width:150px;word-break:break-all;">${formatParams(i.params)}</td>
+        <td><a class="action-link" onclick="openCronConfigForTask(${i.id})">${escapeHtml(i.cronDesc || '点击配置')}</a></td>
+        <td>${escapeHtml(i.lastExecute || '-')}</td>
+        <td><span class="status-badge ${i.status==='启用'?'status-running':'status-not-enabled'}">${i.status}</span></td>
+        <td><a class="action-link" onclick="viewTask(${i.id})">查看</a><a class="action-link" onclick="editTask(${i.id})">编辑</a><a class="action-link" onclick="runOnceTask(${i.id})">执行一次</a><a class="action-link" onclick="viewTaskLog(${i.id})">查看日志</a><a class="action-link danger" onclick="deleteTask(${i.id})">删除</a></td>
+    </tr>`).join('');
+    updateTaskPagination(total, taskFiltered.length);
+}
+function updateTaskPagination(total, totalCount) {
+    const cp = taskPage;
+    const container = document.getElementById('taskPagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span>`;
+    html += `<button ${cp===1?'disabled':''} onclick="changeTaskPage(${cp-1})"><i class="el-icon-arrow-left"></i></button>`;
+    const start = Math.max(1, cp-2), end = Math.min(total, cp+2);
+    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===cp?'active':''}" onclick="changeTaskPage(${i})">${i}</span>`;
+    html += `<button ${cp===total?'disabled':''} onclick="changeTaskPage(${cp+1})"><i class="el-icon-arrow-right"></i></button>`;
+    html += `<select class="page-size-select" onchange="changeTaskPageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="taskJumpPage" min="1" max="${total}" value="${cp}" onkeydown="if(event.keyCode===13) jumpTaskPage()"><span>页</span></div>`;
+    container.innerHTML = html;
+}
+function changeTaskPage(page) { taskPage = page; renderTaskTable(); }
+function changeTaskPageSize(size) { pageSize = parseInt(size); taskPage = 1; renderTaskTable(); }
+function jumpTaskPage() { let p = parseInt(document.getElementById('taskJumpPage')?.value); if(p>=1 && p<=Math.ceil(taskFiltered.length/pageSize)) { taskPage = p; renderTaskTable(); } }
+
+// 合同表格渲染
+function renderContractTable() {
+    const contractNo = document.getElementById('contractNoFilter')?.value.trim() || '';
+    const contractName = document.getElementById('contractNameFilter')?.value.trim() || '';
+    const supplier = document.getElementById('supplierFilter')?.value.trim() || '';
+    const startStart = document.getElementById('startDateStart')?.value || '';
+    const startEnd = document.getElementById('startDateEnd')?.value || '';
+    const expireStart = document.getElementById('expireDateStart')?.value || '';
+    const expireEnd = document.getElementById('expireDateEnd')?.value || '';
+    contractFiltered = contractList.filter(i => {
+        if (contractNo && !i.contractNo.includes(contractNo)) return false;
+        if (contractName && !i.contractName.includes(contractName)) return false;
+        if (supplier && !i.supplier.includes(supplier)) return false;
+        if (startStart && i.startDate < startStart) return false;
+        if (startEnd && i.startDate > startEnd) return false;
+        if (expireStart && !i.isLongTerm && i.expireDate < expireStart) return false;
+        if (expireEnd && !i.isLongTerm && i.expireDate > expireEnd) return false;
+        return true;
+    });
+    const total = Math.ceil(contractFiltered.length / pageSize) || 1;
+    if (contractPage > total) contractPage = total;
+    const pageData = contractFiltered.slice((contractPage-1)*pageSize, contractPage*pageSize);
+    const tbody = document.getElementById('contractTableBody');
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateContractPagination(total, contractFiltered.length); return; }
+    tbody.innerHTML = pageData.map(i => `<tr>
+        <td>${i.id}</td>
+        <td>${escapeHtml(i.tenant)}</td>
+        <td>${escapeHtml(i.contractNo)}</td>
+        <td>${escapeHtml(i.contractName)}</td>
+        <td>${escapeHtml(i.contractType || '-')}</td>
+        <td>${escapeHtml(i.supplier || '-')}</td>
+        <td>${escapeHtml(i.contactPerson || '-')}</td>
+        <td>${i.attachmentCount || 0}</td>
+        <td>${escapeHtml(i.startDate || '-')}</td>
+        <td>${i.isLongTerm ? '长期' : escapeHtml(i.expireDate || '-')}</td>
+        <td><span class="status-badge ${i.status==='正常'?'status-running':'status-expired'}">${i.status}</span></td>
+        <td style="font-size:12px;max-width:150px;word-break:break-all;">${escapeHtml(i.remark || '-')}</td>
+        <td><a class="action-link" onclick="viewContract(${i.id})">查看</a><a class="action-link" onclick="editContract(${i.id})">编辑</a><a class="action-link danger" onclick="deleteContract(${i.id})">删除</a></td>
+    </tr>`).join('');
+    updateContractPagination(total, contractFiltered.length);
+}
+function updateContractPagination(total, totalCount) {
+    const cp = contractPage;
+    const container = document.getElementById('contractPagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span>`;
+    html += `<button ${cp===1?'disabled':''} onclick="changeContractPage(${cp-1})"><i class="el-icon-arrow-left"></i></button>`;
+    const start = Math.max(1, cp-2), end = Math.min(total, cp+2);
+    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===cp?'active':''}" onclick="changeContractPage(${i})">${i}</span>`;
+    html += `<button ${cp===total?'disabled':''} onclick="changeContractPage(${cp+1})"><i class="el-icon-arrow-right"></i></button>`;
+    html += `<select class="page-size-select" onchange="changeContractPageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="contractJumpPage" min="1" max="${total}" value="${cp}" onkeydown="if(event.keyCode===13) jumpContractPage()"><span>页</span></div>`;
+    container.innerHTML = html;
+}
+function changeContractPage(page) { contractPage = page; renderContractTable(); }
+function changeContractPageSize(size) { pageSize = parseInt(size); contractPage = 1; renderContractTable(); }
+function jumpContractPage() { let p = parseInt(document.getElementById('contractJumpPage')?.value); if(p>=1 && p<=Math.ceil(contractFiltered.length/pageSize)) { contractPage = p; renderContractTable(); } }
+
+// 查看合同详情（包含多文件预览和下载功能）
+function viewContract(id) {
+    const item = contractList.find(i => i.id === id);
+    if (item) {
+        const filesHtml = item.files && item.files.length > 0 ? `
+            <div class="form-row"><label>附件文件：</label>
+                <div class="form-content">
+                    <div style="max-height:200px; overflow-y:auto;">
+                        ${item.files.map((file, idx) => `
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                                <div style="display:flex; align-items:center;">
+                                    <i class="el-icon-document"></i>
+                                    <span style="margin-left:8px;">${escapeHtml(file.name)} (${(file.size/1024).toFixed(2)} KB)</span>
+                                </div>
+                                <div style="display:flex; align-items:center;">
+                                    <a class="action-link" onclick="previewContractFile(${id}, ${idx})" style="margin-right:12px;">预览</a>
+                                    <a class="action-link" onclick="downloadContractFile(${id}, ${idx})">下载</a>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        ` : '';
+        const detailHtml = `
+            <div class="form-row"><label>编号：</label><div class="form-content"><span class="readonly-value">${item.id}</span></div></div>
+            <div class="form-row"><label>合同编号：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.contractNo)}</span></div></div>
+            <div class="form-row"><label>合同名称：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.contractName)}</span></div></div>
+            <div class="form-row"><label>合同类型：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.contractType || '-')}</span></div></div>
+            <div class="form-row"><label>供应商：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.supplier || '-')}</span></div></div>
+            <div class="form-row"><label>对接人：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.contactPerson || '-')}</span></div></div>
+            <div class="form-row"><label>起讫时间：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.startDate || '-')} 至 ${item.isLongTerm ? '长期' : escapeHtml(item.expireDate || '-')}</span></div></div>
+            <div class="form-row"><label>合同履约状态：</label><div class="form-content"><span class="readonly-value">${item.status}</span></div></div>
+            <div class="form-row"><label>备注：</label><div class="form-content"><span class="readonly-value">${escapeHtml(item.remark || '-')}</span></div></div>
+            ${filesHtml}
+        `;
+        document.getElementById('detailBody').innerHTML = detailHtml;
+        document.getElementById('contractDetailModal').classList.add('active');
+    }
+}
+function previewContractFile(id, fileIndex) {
+    const item = contractList.find(i => i.id === id);
+    if (item && item.files && item.files[fileIndex]) {
+        const file = item.files[fileIndex];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext === 'pdf') {
+            alert(`预览 PDF 文件: ${file.name}`);
+        } else {
+            alert(`暂不支持预览 ${ext.toUpperCase()} 文件，可下载查看`);
+        }
+    }
+}
+function downloadContractFile(id, fileIndex) {
+    const item = contractList.find(i => i.id === id);
+    if (item && item.files && item.files[fileIndex]) {
+        const file = item.files[fileIndex];
+        alert(`下载文件: ${file.name}`);
+    } else {
+        alert(`合同 #${id} 暂无附件文件`);
+    }
+}
+
+// 文件上传相关函数
+let selectedFiles = [];
+function handleFileSelect(files) {
+    const allowedTypes = ['.doc', '.docx', '.xls', '.xlsx', '.pdf', '.txt'];
+    const newFiles = [];
+    for (const file of files) {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!allowedTypes.includes(ext)) { alert(`不支持的文件类型: ${file.name}，请上传 doc、docx、xls、xlsx、pdf、txt 格式`); continue; }
+        if (file.size > 100 * 1024 * 1024) { alert(`文件 ${file.name} 大小超过100MB限制`); continue; }
+        newFiles.push(file);
+    }
+    selectedFiles = [...selectedFiles, ...newFiles];
+    renderFileList();
+    document.getElementById('uploadArea').style.borderColor = '#52c41a';
+}
+function renderFileList() {
+    const fileList = document.getElementById('fileList');
+    if (!fileList) return;
+    if (selectedFiles.length === 0) {
+        document.getElementById('fileInfoContainer').style.display = 'none';
+        return;
+    }
+    document.getElementById('fileInfoContainer').style.display = 'block';
+    fileList.innerHTML = selectedFiles.map((file, index) => `
+        <div class="file-item" style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center;">
+                <i class="el-icon-document"></i>
+                <span class="file-name" style="margin-left: 8px;">${escapeHtml(file.name)} (${(file.size/1024).toFixed(2)} KB)</span>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <a class="action-link" onclick="previewFile(${index})" style="margin-right: 12px;">预览</a>
+                <a class="action-link" onclick="downloadFile(${index})" style="margin-right: 12px;">下载</a>
+                <i class="el-icon-delete delete-file" onclick="removeFile(${index})" style="cursor: pointer;"></i>
+            </div>
+        </div>
+    `).join('');
+}
+function previewFile(index) {
+    const file = selectedFiles[index];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext === 'pdf') {
+                window.open(e.target.result, '_blank');
+            } else {
+                alert(`暂不支持预览 ${ext.toUpperCase()} 文件，可下载查看`);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+function downloadFile(index) {
+    const file = selectedFiles[index];
+    if (file) {
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+}
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    renderFileList();
+    if (selectedFiles.length === 0) {
+        document.getElementById('uploadArea').style.borderColor = '#dcdfe6';
+    }
+}
+function initFileUpload() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('contractFileInput');
+    if (uploadArea) {
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#f89d34'; });
+        uploadArea.addEventListener('dragleave', () => uploadArea.style.borderColor = '#dcdfe6');
+        uploadArea.addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(Array.from(e.dataTransfer.files)); });
+    }
+    if (fileInput) { fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFileSelect(Array.from(e.target.files)); }); }
+}
+function toggleLongTerm() {
+    const isChecked = document.getElementById('isLongTerm').checked;
+    const expireDateInput = document.getElementById('expireDate');
+    if (isChecked) {
+        expireDateInput.value = '9999-12-31';
+        expireDateInput.disabled = true;
+        expireDateInput.style.backgroundColor = '#f5f7fa';
+    } else {
+        expireDateInput.value = '';
+        expireDateInput.disabled = false;
+        expireDateInput.style.backgroundColor = '#fff';
+    }
+}
+
+function editContract(id) { 
+    const item = contractList.find(i=>i.id===id); 
+    if(item){ 
+        currentContractId=id; 
+        selectedFiles = [];
+        document.getElementById('contractModalTitle').innerText='编辑合同'; 
+        document.getElementById('contractCode').value=item.contractNo; 
+        document.getElementById('contractName').value=item.contractName; 
+        document.getElementById('contractType').value=item.contractType || '采购框架协议'; 
+        document.getElementById('supplier').value=item.supplier || ''; 
+        document.getElementById('contactPerson').value=item.contactPerson || ''; 
+        document.getElementById('startDate').value=item.startDate || ''; 
+        document.getElementById('isLongTerm').checked = item.isLongTerm;
+        const expireDateInput = document.getElementById('expireDate');
+        if (item.isLongTerm) {
+            expireDateInput.value = '9999-12-31';
+            expireDateInput.disabled = true;
+            expireDateInput.style.backgroundColor = '#f5f7fa';
+        } else {
+            expireDateInput.value = item.expireDate || '';
+            expireDateInput.disabled = false;
+            expireDateInput.style.backgroundColor = '#fff';
+        }
+        document.getElementById('contractStatus').value=item.status;
+        document.getElementById('contractRemark').value=item.remark || '';
+        if (item.files && item.files.length > 0) {
+            item.files.forEach(f => selectedFiles.push({name: f.name, size: f.size, isExisting: true}));
+            renderFileList();
+            document.getElementById('uploadArea').style.borderColor = '#52c41a';
+        } else {
+            document.getElementById('fileInfoContainer').style.display = 'none';
+        }
+        
+        toggleApiQuotaTable();
+        setApiQuotaData(item.apiQuota || []);
+        
+        document.getElementById('contractModal').classList.add('active'); 
+    } 
+}
+function addContract() { 
+    currentContractId=null; 
+    selectedFiles = [];
+    document.getElementById('contractModalTitle').innerText='新增合同'; 
+    document.getElementById('contractCode').value=''; 
+    document.getElementById('contractName').value=''; 
+    document.getElementById('contractType').value='采购框架协议'; 
+    document.getElementById('supplier').value=''; 
+    document.getElementById('contactPerson').value=''; 
+    document.getElementById('startDate').value=''; 
+    document.getElementById('expireDate').value=''; 
+    document.getElementById('isLongTerm').checked = false;
+    document.getElementById('contractStatus').value='正常'; 
+    document.getElementById('contractRemark').value=''; 
+    document.getElementById('fileInfoContainer').style.display='none';
+    document.getElementById('uploadArea').style.borderColor = '#dcdfe6';
+    document.getElementById('expireDate').disabled = false;
+    document.getElementById('expireDate').style.backgroundColor = '#fff';
+    document.getElementById('apiQuotaTableContainer').style.display = 'none';
+    setApiQuotaData([]);
+    document.getElementById('contractModal').classList.add('active'); 
+}
+function saveContract() { 
+    const code = document.getElementById('contractCode').value.trim(); 
+    const name = document.getElementById('contractName').value.trim(); 
+    if(!code||!name){ alert('请填写合同编号和合同名称'); return; } 
+    const isLongTerm = document.getElementById('isLongTerm').checked;
+    const expireDateRaw = isLongTerm ? '' : document.getElementById('expireDate').value;
+    const existingItem = currentContractId ? contractList.find(i=>i.id===currentContractId) : null;
+    const existingFiles = existingItem?.files || [];
+    const newFiles = selectedFiles.filter(f => !f.isExisting);
+    const retainedFiles = selectedFiles.filter(f => f.isExisting);
+    const allFiles = [...retainedFiles, ...newFiles.map(f => ({name: f.name, size: f.size}))];
+    const apiQuota = getApiQuotaData();
+    const data = {
+        contractNo: code, contractName: name,
+        contractType: document.getElementById('contractType').value,
+        supplier: document.getElementById('supplier').value,
+        contactPerson: document.getElementById('contactPerson').value,
+        startDate: document.getElementById('startDate').value,
+        expireDate: expireDateRaw,
+        isLongTerm: isLongTerm,
+        status: document.getElementById('contractStatus').value,
+        remark: document.getElementById('contractRemark').value,
+        files: allFiles,
+        attachmentCount: allFiles.length,
+        apiQuota: apiQuota
+    }; 
+    if (newFiles.length > 0) alert(`${newFiles.length} 个文件已选择，将在保存时上传`);
+    if(currentContractId){ 
+        const idx = contractList.findIndex(i=>i.id===currentContractId); 
+        if(idx!==-1) contractList[idx]={...contractList[idx], ...data, id:currentContractId}; 
+        alert('修改成功'); 
+    } else { 
+        const newId = Date.now(); 
+        contractList.push({id:newId, tenant: '某某金控', ...data}); 
+        alert('新增成功'); 
+    } 
+    closeContractModal(); 
+    renderContractTable(); 
+}
+function closeContractModal() { document.getElementById('contractModal').classList.remove('active'); }
+function closeDetailModal() { document.getElementById('contractDetailModal').classList.remove('active'); }
+
+// 初始化Bean下拉选择
+function initBeanSelect() {
+    const select = document.getElementById('beanNameSelect');
+    select.innerHTML = '<option value="">请选择调度类</option>';
+    beanClassList.forEach(bean => {
+        select.innerHTML += `<option value="${bean.id}">${bean.name} (${bean.className})</option>`;
+    });
+}
+
+// Bean选择变更
+function onBeanChange() {
+    const beanId = document.getElementById('beanNameSelect').value;
+    const paramTextarea = document.getElementById('taskParams');
+    
+    if(!beanId) {
+        paramTextarea.value = '';
+        return;
+    }
+    
+    const bean = beanClassList.find(b => b.id === beanId);
+    if(!bean || !bean.params || bean.params.length === 0) {
+        paramTextarea.value = '';
+        return;
+    }
+    
+    // 生成默认JSON模板
+    const defaultParams = {};
+    bean.params.forEach(param => {
+        defaultParams[param.key] = '';
+    });
+    paramTextarea.value = JSON.stringify(defaultParams, null, 2);
+}
+
+// 获取参数JSON
+function getParamJson() {
+    const paramTextarea = document.getElementById('taskParams');
+    if(!paramTextarea.value.trim()) return '';
+    try {
+        JSON.parse(paramTextarea.value);
+        return paramTextarea.value;
+    } catch(e) {
+        alert('参数格式不正确，请输入有效的JSON格式');
+        return null;
+    }
+}
+
+// 任务操作
+function editTask(id) { 
+    const item = taskList.find(i=>i.id===id); 
+    if(item){ 
+        currentTaskId=id; 
+        document.getElementById('taskModalTitle').innerText='编辑任务'; 
+        document.getElementById('taskName').value=item.taskName; 
+        document.getElementById('taskDesc').value=item.description||''; 
+        document.getElementById('beanNameSelect').value=item.beanName; 
+        document.getElementById('taskParams').value=item.params||''; 
+        document.getElementById('cronDesc').value=item.cronDesc||''; 
+        document.getElementById('cronExpr').value=item.cron; 
+        document.getElementById('taskStatus').value=item.status; 
+        document.getElementById('taskModal').classList.add('active'); 
+    } 
+}
+function toggleTaskStatus(id) { const item = taskList.find(i=>i.id===id); if(item){ item.status = item.status==='启用'?'停用':'启用'; renderTaskTable(); alert(`任务已${item.status}`); } }
+function runOnceTask(id) { 
+    const item = taskList.find(i=>i.id===id); 
+    if(item){ 
+        currentTaskId = id;
+        document.getElementById('runOnceTaskName').value = item.taskName;
+        document.getElementById('runOnceParams').value = item.params||'';
+        document.getElementById('runOnceModal').classList.add('active');
+    } 
+}
+function confirmRunOnce() {
+    const params = document.getElementById('runOnceParams').value;
+    if(params.trim()) {
+        try {
+            JSON.parse(params);
+        } catch(e) {
+            alert('参数格式不正确，请输入有效的JSON格式');
+            return;
+        }
+    }
+    alert(`任务 #${currentTaskId} 已执行一次，参数：${params || '无'}`);
+    closeRunOnceModal();
+}
+function viewTaskLog(id) {
+    const item = taskList.find(i => i.id === id);
+    if (item) {
+        document.getElementById('logTaskName').value = item.taskName;
+        document.getElementById('taskLogContent').value = `2026-04-19 02:00:00 执行成功
+2026-04-18 02:00:00 执行成功
+2026-04-17 02:00:00 执行成功
+2026-04-16 02:00:00 执行成功
+2026-04-15 02:00:00 执行成功`;
+        document.getElementById('taskLogModal').classList.add('active');
+    }
+}
+function closeTaskLogModal() {
+    document.getElementById('taskLogModal').classList.remove('active');
+}
+function addTask() { 
+    currentTaskId=null; 
+    document.getElementById('taskModalTitle').innerText='新增任务'; 
+    document.getElementById('taskName').value=''; 
+    document.getElementById('taskDesc').value=''; 
+    document.getElementById('beanNameSelect').value=''; 
+    document.getElementById('taskParams').value=''; 
+    document.getElementById('cronDesc').value=''; 
+    document.getElementById('cronExpr').value=''; 
+    document.getElementById('taskStatus').value='启用'; 
+    document.getElementById('taskModal').classList.add('active'); 
+}
+function viewTask(id) { 
+    const item = taskList.find(i=>i.id===id); 
+    if(item){ 
+        document.getElementById('viewTaskName').textContent = item.taskName;
+        document.getElementById('viewTaskDesc').textContent = item.description || '-';
+        document.getElementById('viewBeanName').textContent = item.beanClassName || item.beanNameCn || item.beanName;
+        document.getElementById('viewTaskParams').textContent = item.params || '-';
+        document.getElementById('viewCronDesc').textContent = item.cronDesc || item.cron || '-';
+        document.getElementById('viewLastExecute').textContent = item.lastExecute || '-';
+        document.getElementById('viewTaskStatus').textContent = item.status;
+        document.getElementById('taskViewModal').classList.add('active');
+    } 
+}
+function closeTaskViewModal() {
+    document.getElementById('taskViewModal').classList.remove('active');
+}
+let deleteCallback = null;
+function deleteTask(id) { 
+    deleteCallback = function() {
+        taskList = taskList.filter(i => i.id !== id);
+        renderTaskTable();
+        alert('删除成功');
+    };
+    document.getElementById('deleteConfirmModal').classList.add('active');
+}
+function deleteContract(id) { 
+    deleteCallback = function() {
+        contractList = contractList.filter(i => i.id !== id);
+        renderContractTable();
+        alert('删除成功');
+    };
+    document.getElementById('deleteConfirmModal').classList.add('active');
+}
+function closeDeleteModal() {
+    document.getElementById('deleteConfirmModal').classList.remove('active');
+    deleteCallback = null;
+}
+function confirmDelete() {
+    if (deleteCallback) {
+        deleteCallback();
+    }
+    closeDeleteModal();
+}
+function saveTask() { 
+    const name=document.getElementById('taskName').value.trim(); 
+    const beanId=document.getElementById('beanNameSelect').value.trim(); 
+    const cron=document.getElementById('cronExpr').value.trim(); 
+    const cronDesc=document.getElementById('cronDesc').value.trim(); 
+    if(!name||!beanId||!cron){ alert('请填写任务名称、选择Bean名称和配置调度规则'); return; } 
+    const params = getParamJson();
+    if(params === null) return;
+    const bean=beanClassList.find(b=>b.id===beanId);
+    const data={
+        taskName:name, 
+        beanName:beanId, 
+        beanNameCn:bean?.name||beanId, 
+        beanClassName:bean?.className||beanId, 
+        description:document.getElementById('taskDesc').value, 
+        params:params, 
+        cron:cron, 
+        cronDesc:cronDesc, 
+        lastExecute:'', 
+        status:document.getElementById('taskStatus').value
+    }; 
+    if(currentTaskId){ 
+        const idx = taskList.findIndex(i=>i.id===currentTaskId); 
+        if(idx!==-1) taskList[idx]={...taskList[idx], ...data, id:currentTaskId}; 
+        alert('修改成功'); 
+    } else { 
+        const newId = Date.now(); 
+        taskList.push({id:newId, ...data}); 
+        alert('新增成功'); 
+    } 
+    closeTaskModal(); 
+    renderTaskTable(); 
+}
+
+// Cron配置相关函数
+function openCronConfig() {
+    document.getElementById('cronConfigModal').classList.add('active');
+    // 默认值
+    document.getElementById('cronSecond').value = '0';
+    document.getElementById('cronMinute').value = '0';
+    document.getElementById('cronHour').value = '9';
+    document.getElementById('cronDay').value = '*';
+    document.getElementById('cronMonth').value = '*';
+    document.getElementById('cronWeek').value = '?';
+    document.getElementById('cronYear').value = '';
+    updateCronDesc();
+}
+
+function openCronConfigForTask(taskId) {
+    const item = taskList.find(i => i.id === taskId);
+    if(item) {
+        currentTaskId = taskId;
+        document.getElementById('cronConfigModal').classList.add('active');
+        
+        // 如果有现有的Cron表达式，解析并填充
+        if(item.cron) {
+            parseCronString(item.cron);
+            document.getElementById('cronPreviewText').innerText = item.cronDesc || item.cron;
+        }
+    }
+}
+
+function closeCronConfigModal() {
+    document.getElementById('cronConfigModal').classList.remove('active');
+}
+
+function closeRunOnceModal() {
+    document.getElementById('runOnceModal').classList.remove('active');
+}
+
+// 解析Cron表达式并填充到表单
+function parseCronString(cron) {
+    const parts = cron.split(' ');
+    if(parts.length >= 6) {
+        document.getElementById('cronSecond').value = parts[0];
+        document.getElementById('cronMinute').value = parts[1];
+        document.getElementById('cronHour').value = parts[2];
+        document.getElementById('cronDay').value = parts[3];
+        document.getElementById('cronMonth').value = parts[4];
+        document.getElementById('cronWeek').value = parts[5];
+        if(parts.length >= 7) {
+            document.getElementById('cronYear').value = parts[6];
+        }
+    }
+}
+    
+function updateCronDesc() {
+    const second = document.getElementById('cronSecond').value;
+    const minute = document.getElementById('cronMinute').value;
+    const hour = document.getElementById('cronHour').value;
+    const day = document.getElementById('cronDay').value;
+    const month = document.getElementById('cronMonth').value;
+    const week = document.getElementById('cronWeek').value;
+    const cronYear = document.getElementById('cronYear').value;
+    
+    // 构建Cron表达式
+    let cronParts = [second, minute, hour, day, month, week];
+    if(cronYear && cronYear !== '') {
+        cronParts.push(cronYear);
+    }
+    const cron = cronParts.join(' ');
+    
+    // 生成中文描述
+    const desc = generateCronDescription(second, minute, hour, day, month, week, cronYear);
+    
+    document.getElementById('cronExprText').innerText = cron;
+    document.getElementById('cronPreviewText').innerText = desc;
+    document.getElementById('cronExpr').value = cron;
+}
+
+// 生成Cron表达式中文描述
+function generateCronDescription(second, minute, hour, day, month, week, cronYear) {
+    const descParts = [];
+    
+    // 年份描述
+    if(cronYear && cronYear !== '' && cronYear !== '*') {
+        descParts.push(`在${cronYear}年`);
+    }
+    
+    // 月份描述
+    if(month !== '*') {
+        const monthNames = ['', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        descParts.push(monthNames[parseInt(month)] || month + '月');
+    }
+    
+    // 日期/星期描述
+    if(week !== '?') {
+        const weekNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+        const weekVal = parseInt(week);
+        if(weekVal >= 1 && weekVal <= 7) {
+            descParts.push(weekNames[weekVal]);
+        } else {
+            descParts.push('星期' + week);
+        }
+    } else if(day !== '*') {
+        if(day === 'L') {
+            descParts.push('月末');
+        } else {
+            descParts.push(day + '号');
+        }
+    }
+    
+    // 时间描述
+    const timeParts = [];
+    if(hour !== '*') {
+        timeParts.push(hour + '时');
+    }
+    if(minute !== '*') {
+        timeParts.push(minute + '分');
+    }
+    if(second !== '*' && second !== '0') {
+        timeParts.push(second + '秒');
+    }
+    
+    if(timeParts.length > 0) {
+        descParts.push(timeParts.join(''));
+    }
+    
+    // 如果什么都没选，显示默认
+    if(descParts.length === 0) {
+        return '每分钟执行';
+    }
+    
+    return descParts.join(' ');
+}
+
+function saveCronConfig() {
+    updateCronDesc();
+    
+    const cron = document.getElementById('cronExpr').value;
+    if (!cron) {
+        alert('请配置调度规则');
+        return;
+    }
+    
+    const desc = document.getElementById('cronPreviewText').innerText;
+    
+    const taskModal = document.getElementById('taskModal');
+    if (taskModal && taskModal.classList.contains('active')) {
+        document.getElementById('cronDesc').value = desc;
+    } else {
+        const idx = taskList.findIndex(i => i.id === currentTaskId);
+        if (idx !== -1) {
+            taskList[idx].cron = cron;
+            taskList[idx].cronDesc = desc;
+            alert('调度规则更新成功');
+            renderTaskTable();
+        }
+    }
+    closeCronConfigModal();
+}
+function closeTaskModal() { document.getElementById('taskModal').classList.remove('active'); }
+
+// 长期复选框联动 - 勾选后日期变为9999/12/31，且禁用时间控件
+function initLongTermListener() {
+    const isLongTermCheckbox = document.getElementById('isLongTerm');
+    const expireDateInput = document.getElementById('expireDate');
+    if (isLongTermCheckbox && expireDateInput) {
+        isLongTermCheckbox.addEventListener('change', function(e) {
+            if (e.target.checked) {
+                expireDateInput.value = '9999/12/31';
+                expireDateInput.disabled = true;
+            } else {
+                expireDateInput.value = '';
+                expireDateInput.disabled = false;
+            }
+        });
+        // 初始状态检查
+        if (isLongTermCheckbox.checked) {
+            expireDateInput.value = '9999/12/31';
+            expireDateInput.disabled = true;
+        }
+    }
+}
+
+// 模块切换
+function switchModule(module) {
+    document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+    document.getElementById(module + 'Module').classList.add('active');
+    document.getElementById('currentModuleName').innerText = module === 'task' ? '任务管理' : '合同管理';
+    document.getElementById('currentNavName').innerText = module === 'task' ? '运营管理' : '外源管理';
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    const menuItem = document.querySelector(`.menu-item[data-module="${module}"]`);
+    if (menuItem) {
+        menuItem.classList.add('active');
+    }
+    if (module === 'task') {
+        document.querySelector('.nav-tab[onclick="showNavMenu(\'operation\')"]')?.classList.add('active');
+        document.querySelector('.nav-tab[onclick="showNavMenu(\'external\')"]')?.classList.remove('active');
+        window.location.hash = 'task';
+        renderTaskTable();
+    } else {
+        document.querySelector('.nav-tab[onclick="showNavMenu(\'external\')"]')?.classList.add('active');
+        document.querySelector('.nav-tab[onclick="showNavMenu(\'operation\')"]')?.classList.remove('active');
+        window.location.hash = 'contract';
+        renderContractTable();
+    }
+}
+
+// 事件绑定 - 使用事件委托处理动态菜单
+document.getElementById('sideMenu').addEventListener('click', function(e) {
+    const menuItem = e.target.closest('.menu-item');
+    if (menuItem && menuItem.dataset.module) {
+        const module = menuItem.dataset.module;
+        if (module) {
+            switchModule(module);
+        }
+    }
+});
+document.getElementById('taskSearchBtn')?.addEventListener('click', () => { taskPage=1; renderTaskTable(); });
+document.getElementById('taskResetBtn')?.addEventListener('click', () => { document.getElementById('taskNameFilter').value=''; document.getElementById('beanNameFilter').value=''; taskPage=1; renderTaskTable(); });
+document.getElementById('addTaskBtn')?.addEventListener('click', addTask);
+document.getElementById('saveTaskBtn')?.addEventListener('click', saveTask);
+document.getElementById('cancelTaskModal')?.addEventListener('click', closeTaskModal);
+document.getElementById('closeTaskModal')?.addEventListener('click', closeTaskModal);
+document.getElementById('cancelCronConfigModal')?.addEventListener('click', closeCronConfigModal);
+document.getElementById('closeCronConfigModal')?.addEventListener('click', closeCronConfigModal);
+document.getElementById('saveCronConfigBtn')?.addEventListener('click', saveCronConfig);
+document.getElementById('cancelRunOnceModal')?.addEventListener('click', closeRunOnceModal);
+document.getElementById('closeRunOnceModal')?.addEventListener('click', closeRunOnceModal);
+document.getElementById('confirmRunOnceBtn')?.addEventListener('click', confirmRunOnce);
+document.getElementById('closeTaskViewModal')?.addEventListener('click', closeTaskViewModal);
+document.getElementById('closeTaskViewBtn')?.addEventListener('click', closeTaskViewModal);
+document.getElementById('closeTaskLogModal')?.addEventListener('click', closeTaskLogModal);
+document.getElementById('closeTaskLogBtn')?.addEventListener('click', closeTaskLogModal);
+document.getElementById('contractSearchBtn')?.addEventListener('click', () => { contractPage=1; renderContractTable(); });
+document.getElementById('contractResetBtn')?.addEventListener('click', () => { 
+    document.getElementById('contractNoFilter').value=''; document.getElementById('contractNameFilter').value=''; document.getElementById('supplierFilter').value='';
+    document.getElementById('startDateStart').value=''; document.getElementById('startDateEnd').value=''; document.getElementById('expireDateStart').value=''; document.getElementById('expireDateEnd').value='';
+    contractPage=1; renderContractTable(); 
+});
+document.getElementById('addContractBtn')?.addEventListener('click', addContract);
+document.getElementById('saveContractBtn')?.addEventListener('click', saveContract);
+document.getElementById('cancelContractModal')?.addEventListener('click', closeContractModal);
+document.getElementById('closeContractModal')?.addEventListener('click', closeContractModal);
+document.getElementById('closeDetailModal')?.addEventListener('click', closeDetailModal);
+document.getElementById('closeDetailModalBtn')?.addEventListener('click', closeDetailModal);
+document.getElementById('closeDeleteModal')?.addEventListener('click', closeDeleteModal);
+document.getElementById('cancelDeleteBtn')?.addEventListener('click', closeDeleteModal);
+document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+document.getElementById('contractType')?.addEventListener('change', toggleApiQuotaTable);
+document.getElementById('supplier')?.addEventListener('change', updateApiOptions);
+
+const supplierApiOptions = {
+    "": [],
+    "某某科技公司": ["融资历史", "企业基本信息"],
+    "某某数据公司": ["严重违法记录", "企业基本信息", "舆情"],
+    "某某风控公司": ["风险监测", "企业基本信息"],
+    "某某云厂商": ["云存储", "云数据库"]
+};
+
+function updateApiOptions() {
+    const supplier = document.getElementById('supplier').value;
+    const apis = supplierApiOptions[supplier] || [];
+    document.querySelectorAll('.api-select').forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">请选择API</option><option value="__supplier_total__">供应商总量</option>';
+        apis.forEach(api => {
+            select.innerHTML += `<option value="${api}">${api}</option>`;
+        });
+        if (currentValue === '__supplier_total__' || apis.includes(currentValue)) {
+            select.value = currentValue;
+        }
+    });
+}
+
+function toggleApiQuotaTable() {
+    const contractType = document.getElementById('contractType').value;
+    const container = document.getElementById('apiQuotaTableContainer');
+    if (contractType === '采购合同') {
+        container.style.display = 'block';
+        updateApiOptions();
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+function addApiQuotaRow(btn) {
+    const row = btn.closest('tr');
+    const newRow = row.cloneNode(true);
+    newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelectorAll('select').forEach(select => select.value = '');
+    row.parentNode.appendChild(newRow);
+    updateApiOptions();
+}
+
+function removeApiQuotaRow(btn) {
+    const tbody = document.getElementById('apiQuotaTableBody');
+    if (tbody.children.length > 1) {
+        btn.closest('tr').remove();
+    }
+}
+
+function getApiQuotaData() {
+    const rows = document.querySelectorAll('#apiQuotaTableBody tr');
+    const data = [];
+    rows.forEach(row => {
+        const api = row.querySelector('.api-select').value;
+        const quota = parseInt(row.querySelector('.quota-input').value) || 0;
+        if (api) {
+            data.push({ api, quota });
+        }
+    });
+    return data;
+}
+
+function setApiQuotaData(apiQuotaList) {
+    const tbody = document.getElementById('apiQuotaTableBody');
+    tbody.innerHTML = '';
+    if (!apiQuotaList || apiQuotaList.length === 0) {
+        tbody.innerHTML = '<tr><td><select class="api-select"><option value="">请选择API</option></select></td><td><input type="number" class="quota-input" placeholder="请输入额度" min="0"></td><td><button class="btn-add-row" onclick="addApiQuotaRow(this)">+</button><button class="btn-remove-row" onclick="removeApiQuotaRow(this)">-</button></td></tr>';
+        return;
+    }
+    apiQuotaList.forEach((item, index) => {
+        tbody.innerHTML += `<tr>
+            <td><select class="api-select"><option value="">请选择API</option></select></td>
+            <td><input type="number" class="quota-input" placeholder="请输入额度" min="0" value="${item.quota || ''}"></td>
+            <td><button class="btn-add-row" onclick="addApiQuotaRow(this)">+</button><button class="btn-remove-row" onclick="removeApiQuotaRow(this)">-</button></td>
+        </tr>`;
+    });
+    setTimeout(() => {
+        updateApiOptions();
+        apiQuotaList.forEach((item, index) => {
+            const rows = tbody.querySelectorAll('tr');
+            if (rows[index]) {
+                rows[index].querySelector('.api-select').value = item.api;
+            }
+        });
+    }, 0);
+}
+
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+function navigateTo(url) { window.location.href = url; }
+
+const navMenus = {
+    portal: [
+        { name: '数据门户', url: 'index.html' }
+    ],
+    external: [
+        { name: '供应商管理', url: 'index.html' },
+        { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+        { name: 'API服务配置', url: 'index.html' },
+        { name: '数据库服务配置', url: 'index.html' },
+        { name: '数据库配置', url: 'index.html' }
+    ],
+    service: [
+        { name: '服务管理', url: 'index.html' },
+        { name: '调用方管理', url: 'index.html' },
+        { name: '目录管理', url: 'index.html' },
+        { name: '状态码映射', url: 'index.html' }
+    ],
+    monitor: [
+        { name: '用数大屏', url: '用数大屏.html' },
+        { name: '用量统计', url: '告警管理V1.2.html' },
+        { name: '数据源调用统计', url: 'index.html' },
+        { name: '服务调用统计', url: 'index.html' },
+        { name: '业务单元调用统计', url: 'index.html' },
+        { name: '链路实时监控', url: '链路实时监控.html' },
+        { name: '数据质量监控', url: '数据质量监控.html' },
+        { name: '系统性能监控', url: '系统性能监控.html' },
+        { name: '服务性能监控', url: '服务性能监控.html' },
+        { name: '流量分析', url: 'index.html' }
+    ],
+    operation: [
+        { name: '告警管理', url: '告警管理V1.2.html#rule' },
+        { name: '用量预测', url: '告警管理V1.2.html#forecast' },
+        { name: '告警渠道管理', url: '告警管理V1.2.html#channel' },
+        { name: '配额管理', url: '配额管理V1.1.html' },
+        { name: '计费管理', url: '计费管理.html' },
+        { name: '账单管理', url: '账单管理.html' },
+        { name: '对账管理', url: '对账管理.html' },
+        { name: '任务管理', url: '任务管理&合同管理V1.3.html#task' }
+    ],
+    personal: [
+        { name: '我的审批', url: '个人中心V1.3.html#approval' },
+        { name: '我的收藏', url: '个人中心V1.3.html#favorites' },
+        { name: '消息通知', url: '个人中心V1.3.html#message' }
+    ],
+    system: [
+        { name: '调用日志', url: '调用日志.html' },
+        { name: '操作日志', url: 'index.html' },
+        { name: '用户管理', url: '用户管理.html' },
+        { name: '权限管理', url: '权限管理.html' },
+        { name: '数据字典', url: 'index.html' }
+    ]
+};
+
+function showNavMenu(menuKey) {
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    if (event && event.target) {
+        event.target.classList.add('active');
+    } else {
+        document.querySelector(`.nav-tab[onclick="showNavMenu('${menuKey}')"]`)?.classList.add('active');
+    }
+    
+    const menu = navMenus[menuKey] || [];
+    const sideMenu = document.getElementById('sideMenu');
+    
+    if (menu.length === 0) {
+        sideMenu.innerHTML = '<div class="menu-item active" onclick="navigateTo(\'index.html\')"><i class="el-icon-home"></i>首页</div>';
+        return;
+    }
+    
+    const isTaskContractPage = window.location.pathname.includes('任务管理') || 
+                               window.location.pathname.includes('%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86') ||
+                               window.location.pathname.includes('contract');
+    
+    let html = '';
+    menu.forEach((item, index) => {
+        if (item.name === '任务管理' && isTaskContractPage) {
+            html += `<div class="menu-item" data-module="task" onclick="switchModule('task')"><i class="el-icon-setting"></i>${item.name}</div>`;
+        } else if (item.name === '合同管理' && isTaskContractPage) {
+            html += `<div class="menu-item" data-module="contract" onclick="switchModule('contract')"><i class="el-icon-document"></i>${item.name}</div>`;
+        } else {
+            html += `<div class="menu-item" onclick="navigateTo('${item.url}')"><i class="el-icon-document"></i>${item.name}</div>`;
+        }
+    });
+    sideMenu.innerHTML = html;
+    
+    if (isTaskContractPage && menuKey === 'operation') {
+        setTimeout(() => {
+            document.querySelector('.menu-item[data-module="task"]')?.classList.add('active');
+        }, 0);
+    }
+}
+
+initDatepickers();
+initFileUpload();
+initLongTermListener();
+initBeanSelect();
+
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash;
+    if (hash === '#contract') {
+        showNavMenu('external');
+        document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('contractModule').classList.add('active');
+        document.getElementById('taskModule').classList.remove('active');
+        document.getElementById('currentModuleName').innerText = '合同管理';
+        document.getElementById('currentNavName').innerText = '外源管理';
+        renderContractTable();
+    } else if (hash === '#task') {
+        showNavMenu('operation');
+        document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('taskModule').classList.add('active');
+        document.getElementById('contractModule').classList.remove('active');
+        document.getElementById('currentModuleName').innerText = '任务管理';
+        document.getElementById('currentNavName').innerText = '运营管理';
+        renderTaskTable();
+    } else {
+        showNavMenu('external');
+        document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('contractModule').classList.add('active');
+        document.getElementById('taskModule').classList.remove('active');
+        document.getElementById('currentModuleName').innerText = '合同管理';
+        document.getElementById('currentNavName').innerText = '外源管理';
+        renderContractTable();
+    }
+});
+</script>
+</body>
+</html>

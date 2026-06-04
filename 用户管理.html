@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 用户管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f6; color: #666666; font-size: 14px; }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100; height: 80px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-img { height: 40px; width: auto; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; display: none; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 16px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* 左侧菜单 */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; color: #f89d34; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
+
+        /* 右侧内容区域 - flex布局 */
+        .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+
+        /* 面包屑 */
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* 布局容器 */
+        .forecast-layout { flex: 1; display: flex; flex-direction: column; }
+        /* 白色卡片 - 填满剩余高度 */
+        .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        /* flex表格容器 */
+        .flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
+        /* 筛选栏 */
+        .filter-section { background: #fff; border: 1px solid #d8d8d8; border-radius: 6px; margin-bottom: 16px; }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
+        .filter-item input, .filter-item select { width: 180px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+        .btn-primary:hover { background: #e68f28; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; color: #666666; }
+        .btn-default:hover { background: #f5f7fa; }
+        .btn-add { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-add:hover { background: #fef5ec; }
+        .btn-export { background: #fff; color: #0d6cff; border: 1px solid #0d6cff; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-export:hover { background: #e6f0ff; }
+        .btn-import { background: #fff; color: #52c41a; border: 1px solid #52c41a; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-import:hover { background: #f0fff0; }
+
+        /* 内容区域 */
+        .action-bar { padding: 0 0 0 0; display: flex; justify-content: flex-start; gap: 12px; margin-bottom: 10px; }
+        .table-container { margin: 0 0 16px 0; border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; padding: 0; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-enabled { background: #e6f7e6; color: #52c41a; }
+        .status-disabled { background: #ffe7e7; color: #f5222d; }
+        .status-locked { background: #f0f0f0; color: #999; }
+
+        .badge-sso { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; background: #e6f7ff; color: #1890ff; }
+        .badge-local { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; background: #f0f0f0; color: #666; }
+
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 14px; margin: 0 4px; display: inline-block; }
+        .action-link:hover { text-decoration: underline; }
+        .action-link.danger { color: #f5222d; }
+        .action-link.warning { color: #fa8c16; }
+
+        /* 分页栏 */
+        .pagination { padding: 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+
+        /* 弹窗 */
+        .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .modal-container { background: #fff; width: 600px; max-width: 90%; border-radius: 2px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); overflow: hidden; }
+        .modal-container.wide { width: 800px; }
+        .modal-header { padding: 16px 20px; border-bottom: 0; display: flex; justify-content: space-between; font-weight: 600; font-size: 18px; color: #333333; background: transparent; }
+        .modal-header .close-btn { cursor: pointer; font-size: 20px; color: #999; background: none; border: none; }
+        .modal-header .close-btn:hover { color: #333; }
+        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+        .modal-footer { padding: 12px 20px; border-top: 0; display: flex; justify-content: center; gap: 12px; background: transparent; }
+
+        /* 表单 */
+        .form-row-horizontal { display: flex; align-items: center; margin-bottom: 20px; }
+        .form-row-horizontal label { width: 100px; flex-shrink: 0; text-align: right; font-size: 14px; font-weight: 500; color: #666666; margin-right: 12px; }
+        .form-row-horizontal .required { color: #f5222d; margin-left: 2px; }
+        .form-row-horizontal .form-control { flex: 1; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #666666; background: #fff; }
+        .form-row-horizontal .form-control:focus { border-color: #f89d34; }
+
+        /* 复选框组 */
+        .checkbox-group { flex: 1; display: flex; flex-wrap: wrap; gap: 16px; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #333; }
+        .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #f89d34; }
+
+        /* 单选框组 */
+        .radio-group { flex: 1; display: flex; flex-wrap: wrap; gap: 20px; }
+        .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #333; }
+        .radio-item input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: #f89d34; }
+
+        /* 弹窗内表格 */
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .detail-table th { padding: 0 10px; height: 42px; background: #F5F7FA; font-weight: 600; color: #777; font-size: 13px; border: 1px solid #ebeef5; text-align: center; }
+        .detail-table td { padding: 0 10px; height: 38px; border: 1px solid #ebeef5; color: #666; text-align: center; vertical-align: middle; }
+        .detail-table tr:hover td { background: #f8fafc; }
+
+        .result-success { color: #52c41a; font-weight: 500; }
+        .result-fail { color: #f5222d; font-weight: 500; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <div class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
+            <a class="nav-tab" href="告警管理V1.2.html#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html#approval" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab active" href="用户管理.html" style="text-decoration:none;">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">3</span>
+            </div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar">席</div>
+        </div>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="side-menu" id="sideMenu">
+        <a class="menu-item" href="调用日志.html"><i class="el-icon-document"></i>调用日志</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-notebook-2"></i>操作日志</a>
+        <a class="menu-item active" href="用户管理.html"><i class="el-icon-user"></i>用户管理</a>
+        <a class="menu-item" href="权限管理.html"><i class="el-icon-lock"></i>权限管理</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-collection"></i>数据字典</a>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <div class="content-card">
+            <div class="breadcrumb"><span>系统管理</span><span class="separator">/</span><span class="current">用户管理</span></div>
+
+            <div class="forecast-layout">
+                <!-- 筛选栏 -->
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="filter-left">
+                            <div class="filter-item">
+                                <label>用户名</label>
+                                <input type="text" placeholder="请输入用户名">
+                            </div>
+                            <div class="filter-item">
+                                <label>姓名</label>
+                                <input type="text" placeholder="请输入姓名">
+                            </div>
+                            <div class="filter-item">
+                                <label>所属公司</label>
+                                <select>
+                                    <option value="">全部</option>
+                                    <option value="jinkong">某某金控</option>
+                                    <option value="xintuo">某某信托</option>
+                                    <option value="zulin">某某租赁</option>
+                                    <option value="baoxian">某某保险</option>
+                                    <option value="yinhang">某某银行</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>角色</label>
+                                <select>
+                                    <option value="">全部</option>
+                                    <option value="admin">系统管理员</option>
+                                    <option value="ops">运营管理员</option>
+                                    <option value="data">数据管理员</option>
+                                    <option value="user">普通用户</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>状态</label>
+                                <select>
+                                    <option value="">全部</option>
+                                    <option value="enabled">启用</option>
+                                    <option value="disabled">停用</option>
+                                    <option value="locked">已锁定</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-right">
+                            <button class="btn-primary">查询</button>
+                            <button class="btn-default">重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="forecast-white-card">
+                    <div class="action-bar">
+                        <button class="btn-add" onclick="openUserModal('新增用户')">+ 新增用户</button>
+                        <button class="btn-import" onclick="alert('批量导入')">批量导入</button>
+                        <button class="btn-export" onclick="alert('导出')">导出</button>
+                    </div>
+                    <div class="flex-table-container">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>姓名</th>
+                                    <th>所属公司</th>
+                                    <th>部门</th>
+                                    <th>手机号</th>
+                                    <th>角色</th>
+                                    <th>登录方式</th>
+                                    <th>状态</th>
+                                    <th>最近登录</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>admin</td>
+                                    <td>管理员</td>
+                                    <td>某某金控</td>
+                                    <td>信息技术部</td>
+                                    <td>138****1234</td>
+                                    <td>系统管理员</td>
+                                    <td><span class="badge-local">本地</span></td>
+                                    <td><span class="status-badge status-enabled">启用</span></td>
+                                    <td>2024-06-01 09:30</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>zhangsan</td>
+                                    <td>张三</td>
+                                    <td>某某信托</td>
+                                    <td>风控中心</td>
+                                    <td>139****5678</td>
+                                    <td>运营管理员</td>
+                                    <td><span class="badge-sso">SSO</span></td>
+                                    <td><span class="status-badge status-enabled">启用</span></td>
+                                    <td>2024-06-01 08:45</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" href="javascript:void(0)">分配角色</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>lisi</td>
+                                    <td>李四</td>
+                                    <td>某某租赁</td>
+                                    <td>技术研发部</td>
+                                    <td>137****9012</td>
+                                    <td>数据管理员</td>
+                                    <td><span class="badge-sso">SSO</span></td>
+                                    <td><span class="status-badge status-enabled">启用</span></td>
+                                    <td>2024-05-31 17:20</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" href="javascript:void(0)">分配角色</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>wangwu</td>
+                                    <td>王五</td>
+                                    <td>某某保险</td>
+                                    <td>产品运营部</td>
+                                    <td>136****3456</td>
+                                    <td>普通用户</td>
+                                    <td><span class="badge-sso">SSO</span></td>
+                                    <td><span class="status-badge status-enabled">启用</span></td>
+                                    <td>2024-05-30 14:15</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" href="javascript:void(0)">分配角色</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>zhaoliu</td>
+                                    <td>赵六</td>
+                                    <td>某某银行</td>
+                                    <td>信贷审批部</td>
+                                    <td>135****7890</td>
+                                    <td>普通用户</td>
+                                    <td><span class="badge-local">本地</span></td>
+                                    <td><span class="status-badge status-disabled">停用</span></td>
+                                    <td>2024-04-15 10:30</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" style="color:#52c41a" href="javascript:void(0)">启用</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>sunqi</td>
+                                    <td>孙七</td>
+                                    <td>某某金控</td>
+                                    <td>数据治理部</td>
+                                    <td>134****2345</td>
+                                    <td>数据管理员</td>
+                                    <td><span class="badge-sso">SSO</span></td>
+                                    <td><span class="status-badge status-enabled">启用</span></td>
+                                    <td>2024-06-01 10:00</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" href="javascript:void(0)">分配角色</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>zhouba</td>
+                                    <td>周八</td>
+                                    <td>某某信托</td>
+                                    <td>合规部</td>
+                                    <td>133****6789</td>
+                                    <td>普通用户</td>
+                                    <td><span class="badge-sso">SSO</span></td>
+                                    <td><span class="status-badge status-locked">已锁定</span></td>
+                                    <td>2024-03-20 16:45</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" style="color:#52c41a" href="javascript:void(0)">启用</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>wujiu</td>
+                                    <td>吴九</td>
+                                    <td>某某金控</td>
+                                    <td>信息技术部</td>
+                                    <td>132****0123</td>
+                                    <td>运营管理员</td>
+                                    <td><span class="badge-local">本地</span></td>
+                                    <td><span class="status-badge status-enabled">启用</span></td>
+                                    <td>2024-05-31 11:30</td>
+                                    <td>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openUserModal('编辑用户')">编辑</a>
+                                        <a class="action-link warning" href="javascript:void(0)">重置密码</a>
+                                        <a class="action-link" href="javascript:void(0)">停用</a>
+                                        <a class="action-link" href="javascript:void(0)">分配角色</a>
+                                        <a class="action-link" href="javascript:void(0)" onclick="openLoginLogModal()">登录日志</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 分页 -->
+                    <div class="pagination">
+                        <span class="total-text">共 8 条</span>
+                        <button class="page-btn" disabled>&lt;</button>
+                        <span class="page-number active">1</span>
+                        <button class="page-btn" disabled>&gt;</button>
+                        <select class="page-size-select">
+                            <option>10条/页</option>
+                            <option>20条/页</option>
+                            <option>50条/页</option>
+                        </select>
+                        <span class="jump-section">
+                            前往 <input type="text" value="1"> 页
+                        </span>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增/编辑用户弹窗 -->
+<div class="modal-mask" id="userModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <span id="userModalTitle">新增用户</span>
+            <button class="close-btn" onclick="closeModal('userModal')"><i class="el-icon-close"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row-horizontal">
+                <label>用户名<span class="required">*</span></label>
+                <input class="form-control" type="text" placeholder="请输入用户名">
+            </div>
+            <div class="form-row-horizontal">
+                <label>姓名<span class="required">*</span></label>
+                <input class="form-control" type="text" placeholder="请输入姓名">
+            </div>
+            <div class="form-row-horizontal">
+                <label>所属公司<span class="required">*</span></label>
+                <select class="form-control">
+                    <option value="">请选择所属公司</option>
+                    <option value="jinkong">某某金控</option>
+                    <option value="xintuo">某某信托</option>
+                    <option value="zulin">某某租赁</option>
+                    <option value="baoxian">某某保险</option>
+                    <option value="yinhang">某某银行</option>
+                </select>
+            </div>
+            <div class="form-row-horizontal">
+                <label>部门</label>
+                <select class="form-control">
+                    <option value="">请选择部门</option>
+                    <option value="it">信息技术部</option>
+                    <option value="risk">风控中心</option>
+                    <option value="tech">技术研发部</option>
+                    <option value="ops">产品运营部</option>
+                    <option value="credit">信贷审批部</option>
+                    <option value="data">数据治理部</option>
+                    <option value="compliance">合规部</option>
+                </select>
+            </div>
+            <div class="form-row-horizontal">
+                <label>手机号</label>
+                <input class="form-control" type="text" placeholder="请输入手机号">
+            </div>
+            <div class="form-row-horizontal">
+                <label>邮箱</label>
+                <input class="form-control" type="email" placeholder="请输入邮箱">
+            </div>
+            <div class="form-row-horizontal">
+                <label>角色</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item"><input type="checkbox" value="admin"> 系统管理员</label>
+                    <label class="checkbox-item"><input type="checkbox" value="ops"> 运营管理员</label>
+                    <label class="checkbox-item"><input type="checkbox" value="data" checked> 数据管理员</label>
+                    <label class="checkbox-item"><input type="checkbox" value="user"> 普通用户</label>
+                </div>
+            </div>
+            <div class="form-row-horizontal">
+                <label>登录方式</label>
+                <div class="radio-group">
+                    <label class="radio-item"><input type="radio" name="loginType" value="local" checked> 本地</label>
+                    <label class="radio-item"><input type="radio" name="loginType" value="sso"> SSO华润集团统一认证</label>
+                </div>
+            </div>
+            <div class="form-row-horizontal">
+                <label>状态</label>
+                <select class="form-control">
+                    <option value="enabled">启用</option>
+                    <option value="disabled">停用</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-default" onclick="closeModal('userModal')">取消</button>
+            <button class="btn-primary" onclick="closeModal('userModal')">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 登录日志弹窗 -->
+<div class="modal-mask" id="loginLogModal">
+    <div class="modal-container wide">
+        <div class="modal-header">
+            <span>登录日志 - admin（管理员）</span>
+            <button class="close-btn" onclick="closeModal('loginLogModal')"><i class="el-icon-close"></i></button>
+        </div>
+        <div class="modal-body">
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>登录时间</th>
+                        <th>登录IP</th>
+                        <th>登录方式</th>
+                        <th>登录结果</th>
+                        <th>浏览器</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-06-01 09:30:22</td>
+                        <td>10.28.101.55</td>
+                        <td><span class="badge-local">本地</span></td>
+                        <td><span class="result-success">成功</span></td>
+                        <td>Chrome 125.0</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-31 08:15:47</td>
+                        <td>10.28.101.55</td>
+                        <td><span class="badge-local">本地</span></td>
+                        <td><span class="result-success">成功</span></td>
+                        <td>Chrome 125.0</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-30 18:42:10</td>
+                        <td>10.28.101.102</td>
+                        <td><span class="badge-local">本地</span></td>
+                        <td><span class="result-success">成功</span></td>
+                        <td>Firefox 126.0</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-29 09:05:33</td>
+                        <td>192.168.1.88</td>
+                        <td><span class="badge-local">本地</span></td>
+                        <td><span class="result-fail">密码错误</span></td>
+                        <td>Chrome 125.0</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-29 09:06:01</td>
+                        <td>192.168.1.88</td>
+                        <td><span class="badge-local">本地</span></td>
+                        <td><span class="result-success">成功</span></td>
+                        <td>Chrome 125.0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-default" onclick="closeModal('loginLogModal')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 弹窗控制
+    function openUserModal(title) {
+        document.getElementById('userModalTitle').textContent = title;
+        document.getElementById('userModal').classList.add('active');
+    }
+    function openLoginLogModal() {
+        document.getElementById('loginLogModal').classList.add('active');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // 点击弹窗遮罩关闭
+    document.querySelectorAll('.modal-mask').forEach(function(mask) {
+        mask.addEventListener('click', function(e) {
+            if (e.target === mask) mask.classList.remove('active');
+        });
+    });
+
+    // 导航由顶部Tab链接直接跳转
+</script>
+</body>
+</html>

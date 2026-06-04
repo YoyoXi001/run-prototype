@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 配额管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .app-layout {
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area {
+            width: 265px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2f3d;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+        .logo-sub {
+            font-size: 10px;
+            color: #5a6e8c;
+            margin-top: 2px;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 48px;
+            position: absolute;
+            left: 320px;
+        }
+        .nav-tab {
+            cursor: pointer;
+            font-size: 18px;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            color: #333333;
+            position: relative;
+            transition: 0.3s;
+            font-weight: 400;
+            padding-bottom: 4px;
+        }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active {
+            color: #1152c5;
+            font-weight: 700;
+        }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1152c5;
+            border-radius: 2px;
+        }
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+        .message-icon-wrapper {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .message-icon {
+            font-size: 20px;
+            color: #5a5e66;
+        }
+        .message-icon:hover {
+            color: #1152c5;
+        }
+        .unread-badge-icon {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: #f5222d;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 5px;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
+            border: 1px solid #fff;
+            display: none;
+            line-height: 1.2;
+        }
+        .tenant-info {
+            font-size: 14px;
+            color: #5a5e66;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+        .tenant-name {
+            font-weight: 500;
+            color: #1f2f3d;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #fcb53e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+
+        /* 左侧菜单 */
+        .side-menu {
+            width: 240px;
+            background: #fff;
+            border-right: 0;
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 16px 0;
+            box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02);
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 240px;
+            height: 48px;
+            padding: 0 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            font-size: 16px;
+            color: #333333;
+            transition: 0.3s;
+            background: transparent;
+            border-radius: 0;
+        }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active {
+            background: linear-gradient(270deg, #fefdfb, #fef5ec);
+            color: #f89d34;
+            border-right: 2px solid #f89d34;
+        }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容面板 */
+        .main-content {
+            margin-left: 240px;
+            padding: 8px 16px 0 16px;
+            min-height: calc(100vh - 80px);
+            background: #F5F7FA;
+        }
+        .content-card {
+            background: #f5f7fa;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        /* 面包屑 */
+        .breadcrumb {
+            padding: 0;
+            margin: 0 0 8px 0;
+            background: #f5f7fa;
+            font-size: 14px;
+            color: #666;
+            border: none;
+        }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* 筛选栏div和查询列表div共同所在的div背景色 #F5F7FA */
+        .outer-container {
+            background: #F5F7FA;
+            padding: 0;
+        }
+        /* 筛选框 DIV */
+        .filter-section {
+            background: #fff;
+            border: 1px solid #d8d8d8;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+        }
+        .filter-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-item label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            white-space: nowrap;
+        }
+        .filter-item input, .filter-item select {
+            width: 180px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #333333;
+        }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary {
+            background: #f89d34;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .btn-default {
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #666666;
+        }
+        .btn-default:hover { background: #f5f7fa; }
+
+        .btn-add {
+            background: #fff;
+            color: #f89d34;
+            border: 1px solid #f89d34;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-add:hover { background: #fef5ec; }
+
+        /* 内容区域 DIV */
+        .content-section {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+        .action-bar {
+            padding: 16px 16px 0 16px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .table-container {
+            margin: 0 16px 16px 16px;
+            border: 1px solid #ebeef5;
+            border-radius: 2px;
+            overflow-x: auto;
+            padding: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th {
+            padding: 0 12px;
+            height: 48px;
+            background: #F5F7FA;
+            font-weight: 600;
+            color: #777777;
+            font-size: 14px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            text-align: center;
+        }
+        .data-table td {
+            padding: 0 12px;
+            height: 40px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            color: #666666;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-enabled { background: #e6f7e6; color: #52c41a; }
+        .status-disabled { background: #ffe7e7; color: #f5222d; }
+        .status-expired { background: #fff7e6; color: #fa8c16; }
+        .help-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .help-icon:hover {
+            background: #f89d34;
+            color: #fff;
+        }
+        .help-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .help-tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 9999;
+            top: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .help-tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #333 transparent;
+        }
+        .help-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .action-link {
+            color: #0d6cff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 0 6px;
+            display: inline-block;
+        }
+        .action-link:hover { text-decoration: underline; }
+        .action-link.danger { color: #f5222d; }
+
+        /* 分页栏 */
+        .pagination {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #333333;
+        }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn {
+            min-width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666666;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number {
+            min-width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666666;
+            background: transparent;
+            border: none;
+        }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select {
+            padding: 5px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333333;
+            background: #fff;
+            cursor: pointer;
+            margin-left: 16px;
+        }
+        .pagination .jump-section {
+            margin-left: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pagination .jump-section input {
+            width: 60px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        /* 弹窗 */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .modal-container {
+            background: #fff;
+            width: 600px;
+            max-width: 90%;
+            border-radius: 2px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 18px;
+            color: #333333;
+            background: transparent;
+        }
+        .modal-body { padding: 20px; max-height: 55vh; overflow-y: auto; }
+        /* 水平排列表单 - 字段右对齐，间隔12px */
+        .form-row-horizontal {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .form-row-horizontal label {
+            width: 100px;
+            flex-shrink: 0;
+            text-align: right;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            margin-right: 12px;
+        }
+        .form-row-horizontal .required { color: #f5222d; margin-left: 2px; }
+        .form-row-horizontal .form-control {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #666666;
+            background: #fff;
+        }
+        .form-row-horizontal .form-control:disabled {
+            background: #f5f7fa;
+            color: #8c8f99;
+            cursor: not-allowed;
+        }
+        .date-range { display: flex; gap: 8px; flex: 1; }
+        .date-range input { flex: 1; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; }
+        .select-with-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .select-with-info .form-control {
+            width: 100%;
+        }
+        .quota-info {
+            font-size: 12px;
+            color: #f89d34;
+        }
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 0;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            background: transparent;
+        }
+
+        /* 删除确认弹窗样式 */
+        .delete-header {
+            background: #fff;
+            border-bottom: none;
+            padding: 16px 20px;
+        }
+        .delete-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            gap: 12px;
+        }
+        .delete-icon {
+            width: 40px;
+            height: 40px;
+            background: #ffe7e7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #f56c6c;
+            flex-shrink: 0;
+        }
+        .delete-message {
+            font-size: 14px;
+            color: #666666;
+        }
+        .delete-footer {
+            padding: 12px 20px;
+            border-top: 0;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            background: transparent;
+        }
+
+        /* 注意事项 */
+        .info-banner {
+            padding: 12px 16px;
+            margin: 0 16px 16px 16px;
+            font-size: 12px;
+            color: #5a5e66;
+        }
+        .info-banner .warning-title { color: #f89d34; font-weight: 500; margin-bottom: 6px; }
+        .info-banner p { line-height: 1.6; margin-bottom: 4px; }
+
+        /* 已用明细表格 */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .detail-table th {
+            padding: 0 12px;
+            height: 48px;
+            background: #F5F7FA;
+            font-weight: 600;
+            color: #777777;
+            border: 1px solid #ebeef5;
+            text-align: center;
+        }
+        .detail-table td {
+            padding: 0 12px;
+            height: 40px;
+            border: 1px solid #ebeef5;
+            text-align: center;
+        }
+
+        .module-view { display: none; }
+        .module-view.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <div class="top-nav">
+        <div class="logo-area"><div class="logo-text"><div class="logo-title">外数平台</div><div class="logo-sub">EXTERNAL DATA PLATFORM</div></div></div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="showNavMenu('portal')">数据门户</div>
+            <div class="nav-tab" onclick="showNavMenu('external')">外源管理</div>
+            <div class="nav-tab" onclick="showNavMenu('service')">服务管理</div>
+            <div class="nav-tab" onclick="showNavMenu('monitor')">监控统计</div>
+            <div class="nav-tab active" onclick="showNavMenu('operation')">运营管理</div>
+            <div class="nav-tab" onclick="showNavMenu('personal')">个人中心</div>
+            <div class="nav-tab" onclick="showNavMenu('system')">系统管理</div>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper"><i class="el-icon-bell message-icon"></i><span class="unread-badge-icon">3</span></div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar" style="width:33px;height:33px;font-size:16px;">席</div>
+        </div>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-item" onclick="navigateTo('告警管理V1.2.html#rule')"><i class="el-icon-bell"></i>告警管理</div>
+        <div class="menu-item" onclick="navigateTo('告警管理V1.2.html#forecast')"><i class="el-icon-trending-up"></i>用量预测</div>
+        <div class="menu-item" onclick="navigateTo('告警管理V1.2.html#channel')"><i class="el-icon-message"></i>告警渠道</div>
+        <div class="menu-item active" onclick="navigateTo('配额管理V1.1.html')"><i class="el-icon-tickets"></i>配额管理</div>
+        <div class="menu-item" onclick="navigateTo('计费管理.html')"><i class="el-icon-wallet"></i>计费管理</div>
+        <div class="menu-item" onclick="navigateTo('账单管理.html')"><i class="el-icon-file-text"></i>账单管理</div>
+        <div class="menu-item" onclick="navigateTo('对账管理.html')"><i class="el-icon-settlement"></i>对账管理</div>
+        <div class="menu-item" onclick="navigateTo('任务管理&合同管理V1.3.html#task')"><i class="el-icon-setting"></i>任务管理</div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-card">
+            <div class="breadcrumb"><span>运营管理</span><span class="separator">/</span><span class="current">配额管理</span></div>
+            <div class="outer-container">
+                <div id="quotaModule" class="module-view active">
+                    <div class="filter-section">
+                        <div class="filter-bar">
+                            <div class="filter-left">
+                                <div class="filter-item"><label>租户</label><select id="filterTenant"><option value="">全部</option><option value="某某金控">某某金控</option><option value="某某信托">某某信托</option><option value="某某租赁">某某租赁</option><option value="某某保险">某某保险</option><option value="某某银行">某某银行</option></select></div>
+                                <div class="filter-item"><label>供应商</label><select id="filterSupplier"><option value="">全部</option><option value="外部数据供应商">外部数据供应商</option><option value="数据服务提供商">数据服务提供商</option><option value="第三方数据公司">第三方数据公司</option><option value="天眼查">天眼查</option><option value="企查查">企查查</option></select></div>
+                                <div class="filter-item"><label>API</label><select id="filterApi"><option value="">不限</option><option value="融资历史">融资历史</option><option value="严重违法记录">严重违法记录</option><option value="企业基本信息">企业基本信息</option><option value="企业规模">企业规模</option><option value="舆情">舆情</option></select></div>
+                                <div class="filter-item"><label>状态</label><select id="filterStatus"><option value="全部">全部</option><option value="启用">启用</option><option value="停用">停用</option><option value="停用">过期</option></select></div>
+                            </div>
+                            <div class="filter-right"><button class="btn-primary" id="searchBtn">查询</button><button class="btn-default" id="resetBtn">重置</button></div>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <div class="action-bar"><button class="btn-add" id="addQuotaBtn">新增</button></div>
+                        <div class="table-container">
+                            <table class="data-table"><thead><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>配额</th><th>已用</th><th>周期范围</th><th>状态 <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">启用时有配额限制，停用时无配额限制</span></span></th><th>创建人</th><th>操作</th></thead><tbody id="quotaTableBody"></tbody></table>
+                        </div>
+                        <div id="quotaPagination" class="pagination"></div>
+                        <div class="info-banner"><div class="warning-title">注意事项：</div><p>1. 缓存命中仍计入“已用次数”；但计费为 0。</p><p>2. 超配额/过期：请求直接拒绝，且不计费。</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 配额弹窗 -->
+    <div id="quotaModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header"><span id="quotaModalTitle">新增配额</span><i class="el-icon-close" id="closeQuotaModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="form-row-horizontal"><label>租户 <span class="required">*</span></label><select id="modalTenant" class="form-control"><option value="">请选择租户</option><option value="某某金控">某某金控</option><option value="某某信托">某某信托</option><option value="某某租赁">某某租赁</option><option value="某某保险">某某保险</option><option value="某某银行">某某银行</option></select></div>
+                <div class="form-row-horizontal">
+                    <label>供应商 <span class="required">*</span></label>
+                    <div class="select-with-info">
+                        <select id="modalSupplier" class="form-control"><option value="">请选择供应商</option></select>
+                        <span id="supplierQuotaInfo" class="quota-info"></span>
+                    </div>
+                </div>
+                <div class="form-row-horizontal">
+                    <label>API <span class="required">*</span></label>
+                    <div class="select-with-info">
+                        <select id="modalApi" class="form-control"><option value="">请选择API</option></select>
+                        <span id="apiQuotaInfo" class="quota-info"></span>
+                    </div>
+                </div>
+                <div class="form-row-horizontal"><label>配额(次) <span class="required">*</span></label><input type="number" id="modalQuota" class="form-control" placeholder="请输入配额数量"></div>
+                <div class="form-row-horizontal"><label>周期范围</label><div class="date-range"><input type="text" id="modalStartDate" class="datepicker" placeholder="起始日期" readonly><span>-</span><input type="text" id="modalEndDate" class="datepicker" placeholder="结束日期" readonly></div></div>
+                <div class="form-row-horizontal"><label>已用(次)</label><input type="number" id="modalUsed" class="form-control" placeholder="选择时间后自动计算" value="0" disabled></div>
+                <div class="form-row-horizontal"><label>状态 <span class="required">*</span></label><select id="modalStatus" class="form-control"><option>启用</option><option>停用</option><option>过期</option></select></div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="cancelQuotaModal">取消</button><button class="btn-primary" id="saveQuotaBtn">保存</button></div>
+        </div>
+    </div>
+
+    <!-- 已用明细弹窗 -->
+    <div id="usageDetailModal" class="modal-mask">
+        <div class="modal-container" style="width: 850px;">
+            <div class="modal-header"><span>已用明细</span><i class="el-icon-close" id="closeUsageModal" style="cursor:pointer;"></i></div>
+            <div id="usageDetailNote" style="padding: 0 20px; font-size:12px;color:#999;margin-top:8px;"></div>
+            <div class="modal-body" id="usageDetailContent" style="max-height: 480px; overflow-y: auto;"></div>
+            <div class="modal-footer"><button class="btn-default" id="closeUsageModalBtn">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div id="deleteConfirmModal" class="modal-mask">
+        <div class="modal-container" style="width: 380px;">
+            <div class="modal-header delete-header">
+                <span>提示</span>
+                <i class="el-icon-close" id="closeDeleteModal" style="cursor:pointer;"></i>
+            </div>
+            <div class="modal-body delete-body">
+                <div class="delete-icon"><i class="el-icon-warning"></i></div>
+                <div class="delete-message">是否删除该数据?</div>
+            </div>
+            <div class="modal-footer delete-footer">
+                <button class="btn-default" id="cancelDeleteBtn">取消</button>
+                <button class="btn-primary" id="confirmDeleteBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史记录弹窗 -->
+    <div id="historyModal" class="modal-mask">
+        <div class="modal-container" style="width: 850px;">
+            <div class="modal-header"><span>历史记录</span><i class="el-icon-close" id="closeHistoryModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body" id="historyContent" style="max-height: 480px; overflow-y: auto;">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>操作类型</th>
+                            <th>供应商</th>
+                            <th>API</th>
+                            <th>配额</th>
+                            <th>周期范围</th>
+                            <th>状态</th>
+                            <th>操作人</th>
+                            <th>操作时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="closeHistoryModalBtn">关闭</button></div>
+        </div>
+    </div>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+flatpickr(".datepicker", { 
+    dateFormat: "Y-m-d", 
+    locale: "zh", 
+    allowInput: true,
+    onChange: function(selectedDates, dateStr, instance) {
+        const startDate = document.getElementById('modalStartDate')?.value;
+        const endDate = document.getElementById('modalEndDate')?.value;
+        const tenant = document.getElementById('modalTenant')?.value;
+        const api = document.getElementById('modalApi')?.value;
+        if (startDate && endDate && tenant && api) {
+            calculateUsedCount();
+        }
+    }
+});
+
+function calculateUsedCount() {
+    const startDate = document.getElementById('modalStartDate').value;
+    const endDate = document.getElementById('modalEndDate').value;
+    const tenant = document.getElementById('modalTenant').value;
+    const api = document.getElementById('modalApi').value;
+    
+    if (!startDate || !endDate || !tenant || !api) {
+        document.getElementById('modalUsed').value = '0';
+        return;
+    }
+    
+    let totalUsed = 0;
+    usageDetails.forEach(detail => {
+        if (detail.tenant === tenant && detail.service === api) {
+            totalUsed += detail.used;
+        }
+    });
+    
+    document.getElementById('modalUsed').value = totalUsed.toString();
+}
+
+const supplierApiMap = {
+    "外部数据供应商": ["融资历史", "严重违法记录", "企业基本信息"],
+    "数据服务提供商": ["企业基本信息", "企业规模", "融资历史"],
+    "第三方数据公司": ["舆情", "企业规模"],
+    "天眼查": ["企业基本信息", "司法风险", "经营状况", "知识产权"],
+    "企查查": ["企业基本信息", "企业图谱", "风险预警", "资质荣誉"]
+};
+
+const supplierQuotaMap = {
+    "外部数据供应商": { total: 5000000, used: 1344086 },
+    "数据服务提供商": { total: 5000000, used: 1357912 },
+    "第三方数据公司": { total: 2000000, used: 1152000 },
+    "天眼查": { total: 3000000, used: 1500000 },
+    "企查查": { total: 3000000, used: 800000 }
+};
+
+const apiQuotaMap = {
+    "外部数据供应商": {
+        "融资历史": { total: 2000000, used: 856432 },
+        "严重违法记录": { total: 1500000, used: 487654 },
+        "企业基本信息": { total: 1500000, used: 0 }
+    },
+    "数据服务提供商": {
+        "企业基本信息": { total: 2500000, used: 1234567 },
+        "企业规模": { total: 1500000, used: 123345 },
+        "融资历史": { total: 1000000, used: 0 }
+    },
+    "第三方数据公司": {
+        "舆情": { total: 1500000, used: 1152000 },
+        "企业规模": { total: 500000, used: 0 }
+    },
+    "天眼查": {
+        "企业基本信息": { total: 1000000, used: 500000 },
+        "司法风险": { total: 800000, used: 300000 },
+        "经营状况": { total: 600000, used: 400000 },
+        "知识产权": { total: 600000, used: 300000 }
+    },
+    "企查查": {
+        "企业基本信息": { total: 1200000, used: 400000 },
+        "企业图谱": { total: 800000, used: 200000 },
+        "风险预警": { total: 500000, used: 150000 },
+        "资质荣誉": { total: 500000, used: 50000 }
+    }
+};
+
+let quotaList = [
+    { id: 1, tenant: "某某金控", supplier: "外部数据供应商", api: "融资历史", quota: 1000000, used: 856432, status: "启用", startDate: "2024-01-01", endDate: "2024-12-31", creator: "某某金控-管理员" },
+    { id: 2, tenant: "某某金控", supplier: "外部数据供应商", api: "严重违法记录", quota: 500000, used: 487654, status: "启用", startDate: "2024-01-01", endDate: "2024-12-31", creator: "某某金控-管理员" },
+    { id: 3, tenant: "某某信托", supplier: "数据服务提供商", api: "企业基本信息", quota: 2000000, used: 1234567, status: "启用", startDate: "2024-02-01", endDate: "2025-01-31", creator: "某某信托-李四" },
+    { id: 4, tenant: "某某租赁", supplier: "数据服务提供商", api: "企业规模", quota: 800000, used: 123345, status: "停用", startDate: "2024-03-01", endDate: "2024-09-30", creator: "某某租赁-张三" },
+    { id: 5, tenant: "某某保险", supplier: "第三方数据公司", api: "舆情", quota: 1200000, used: 1152000, status: "停用", startDate: "2023-10-01", endDate: "2024-03-31", creator: "某某保险-王五" }
+];
+
+let historyList = [
+    { id: 1, quotaId: 1, tenant: "某某金控", supplier: "外部数据供应商", api: "融资历史", action: "新增", quota: 500000, startDate: "2024-01-01", endDate: "2024-06-30", status: "启用", operator: "某某金控-管理员", operateTime: "2024-01-05 10:30:00" },
+    { id: 2, quotaId: 1, tenant: "某某金控", supplier: "外部数据供应商", api: "融资历史", action: "编辑", quota: 1000000, startDate: "2024-01-01", endDate: "2024-06-30", status: "启用", operator: "某某金控-管理员", operateTime: "2024-03-15 14:20:00" },
+    { id: 3, quotaId: 1, tenant: "某某金控", supplier: "外部数据供应商", api: "融资历史", action: "编辑", quota: 1000000, startDate: "2024-01-01", endDate: "2024-12-31", status: "启用", operator: "某某金控-管理员", operateTime: "2024-06-20 09:15:00" },
+    { id: 4, quotaId: 2, tenant: "某某金控", supplier: "外部数据供应商", api: "严重违法记录", action: "新增", quota: 500000, startDate: "2024-01-01", endDate: "2024-12-31", status: "启用", operator: "某某金控-管理员", operateTime: "2024-01-10 11:00:00" },
+    { id: 5, quotaId: 3, tenant: "某某信托", supplier: "数据服务提供商", api: "企业基本信息", action: "新增", quota: 1500000, startDate: "2024-02-01", endDate: "2025-01-31", status: "启用", operator: "某某信托-李四", operateTime: "2024-01-25 16:45:00" },
+    { id: 6, quotaId: 3, tenant: "某某信托", supplier: "数据服务提供商", api: "企业基本信息", action: "编辑", quota: 2000000, startDate: "2024-02-01", endDate: "2025-01-31", status: "启用", operator: "某某信托-李四", operateTime: "2024-04-10 13:30:00" },
+    { id: 7, quotaId: 4, tenant: "某某租赁", supplier: "数据服务提供商", api: "企业规模", action: "新增", quota: 800000, startDate: "2024-03-01", endDate: "2024-09-30", status: "启用", operator: "某某租赁-张三", operateTime: "2024-02-28 10:00:00" },
+    { id: 8, quotaId: 4, tenant: "某某租赁", supplier: "数据服务提供商", api: "企业规模", action: "停用", quota: 800000, startDate: "2024-03-01", endDate: "2024-09-30", status: "停用", operator: "某某租赁-张三", operateTime: "2024-09-15 15:20:00" },
+    { id: 9, quotaId: 5, tenant: "某某保险", supplier: "第三方数据公司", api: "舆情", action: "新增", quota: 1200000, startDate: "2023-10-01", endDate: "2024-03-31", status: "启用", operator: "某某保险-王五", operateTime: "2023-09-25 09:30:00" },
+    { id: 10, quotaId: 5, tenant: "某某保险", supplier: "第三方数据公司", api: "舆情", action: "停用", quota: 1200000, startDate: "2023-10-01", endDate: "2024-03-31", status: "停用", operator: "某某保险-王五", operateTime: "2024-03-20 14:00:00" },
+    { id: 11, quotaId: 2, tenant: "某某金控", supplier: "外部数据供应商", api: "严重违法记录", action: "启用", quota: 500000, startDate: "2024-01-01", endDate: "2024-12-31", status: "启用", operator: "某某金控-管理员", operateTime: "2024-07-01 10:00:00" },
+    { id: 12, quotaId: 4, tenant: "某某租赁", supplier: "数据服务提供商", api: "企业规模", action: "删除", quota: 800000, startDate: "2024-03-01", endDate: "2024-09-30", status: "停用", operator: "某某租赁-张三", operateTime: "2024-10-01 11:30:00" }
+];
+
+const usageDetails = [
+    { api: "融资历史查询", tenant: "某某金控", company: "华润置地", department: "技术研发部", system: "ERP系统", service: "融资历史", used: 428216 },
+    { api: "融资历史查询", tenant: "某某金控", company: "华润置地", department: "产品运营部", system: "营销平台", service: "融资历史", used: 428216 },
+    { api: "违法记录查询", tenant: "某某金控", company: "华润燃气", department: "智慧能源部", system: "燃气监控平台", service: "严重违法记录", used: 487654 },
+    { api: "企业信息查询", tenant: "某某金控", company: "华润置地", department: "技术研发部", system: "CRM系统", service: "企业基本信息", used: 617283 },
+    { api: "企业信息查询", tenant: "某某信托", company: "信托业务部", department: "风控中心", system: "风控系统", service: "企业基本信息", used: 617284 }
+];
+
+let filteredQuota = [...quotaList];
+let currentPage = 1, pageSize = 10;
+let currentEditId = null;
+let isViewMode = false;
+
+function getStatusClass(status) {
+    if (status === '启用') return 'status-enabled';
+    if (status === '停用') return 'status-disabled';
+    return 'status-expired';
+}
+
+function renderQuotaTable() {
+    const tenant = document.getElementById('filterTenant')?.value || '';
+    const supplier = document.getElementById('filterSupplier')?.value || '';
+    const api = document.getElementById('filterApi')?.value || '';
+    const status = document.getElementById('filterStatus')?.value || '全部';
+    filteredQuota = quotaList.filter(item => {
+        if (tenant && item.tenant !== tenant) return false;
+        if (supplier && item.supplier !== supplier) return false;
+        if (api && item.api !== api) return false;
+        if (status !== '全部' && item.status !== status) return false;
+        return true;
+    });
+    const total = Math.ceil(filteredQuota.length / pageSize) || 1;
+    if (currentPage > total) currentPage = total;
+    const start = (currentPage - 1) * pageSize;
+    const pageData = filteredQuota.slice(start, start + pageSize);
+    const tbody = document.getElementById('quotaTableBody');
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updatePagination(total, filteredQuota.length); return; }
+    tbody.innerHTML = pageData.map(item => {
+        const usagePercent = ((item.used / item.quota) * 100).toFixed(1);
+        const cycleRange = `${item.startDate || '未设置'} ~ ${item.endDate || '未设置'}`;
+        return `<tr>
+            <td>${item.id}</td>
+            <td>${escapeHtml(item.tenant)}</td>
+            <td>${escapeHtml(item.supplier)}</td>
+            <td>${escapeHtml(item.api)}</td>
+            <td>${item.quota.toLocaleString()}次</td>
+            <td><div style="display:flex;align-items:center;justify-content:center;gap:8px;"><span>${item.used.toLocaleString()}</span><div style="background:#e9ecef;border-radius:10px;height:6px;width:70px;"><div style="background:#3a6df0;height:6px;border-radius:10px;width:${Math.min(usagePercent,100)}%"></div></div><span style="font-size:11px;">${usagePercent}%</span></div></td>
+            <td>${cycleRange}</td>
+            <td><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></td>
+            <td>${escapeHtml(item.creator || '')}</td>
+            <td class="action-icons"><a class="action-link" onclick="editQuota(${item.id}, false)">编辑</a><a class="action-link ${item.status === '启用' ? 'danger' : ''}" onclick="toggleStatus(${item.id})">${item.status === '启用' ? '停用' : '启用'}</a><a class="action-link" onclick="showUsageDetail(${item.id})">已用明细</a><a class="action-link" onclick="showHistory(${item.id})">历史记录</a><a class="action-link" style="color:#f56c6c;" onclick="deleteQuota(${item.id})">删除</a></td>
+        </tr>`;
+    }).join('');
+    updatePagination(total, filteredQuota.length);
+}
+
+function updatePagination(total, totalCount) {
+    const cp = currentPage;
+    const container = document.getElementById('quotaPagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span>`;
+    html += `<button class="page-btn" ${cp===1?'disabled':''} onclick="changePage(${cp-1})">‹</button>`;
+    const start = Math.max(1, cp-2), end = Math.min(total, cp+2);
+    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===cp?'active':''}" onclick="changePage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${cp===total?'disabled':''} onclick="changePage(${cp+1})">›</button>`;
+    html += `<select class="page-size-select" onchange="changePageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option><option value="100" ${pageSize===100?'selected':''}>100条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="jumpPage" min="1" max="${total}" value="${cp}"><span>页</span></div>`;
+    container.innerHTML = html;
+    document.getElementById('jumpPage')?.addEventListener('change', function() { let p = parseInt(this.value); if(p>=1 && p<=total) changePage(p); });
+}
+function changePage(page) { currentPage = page; renderQuotaTable(); }
+function changePageSize(size) { pageSize = parseInt(size); currentPage = 1; renderQuotaTable(); }
+
+function toggleStatus(id) {
+    const item = quotaList.find(i => i.id === id);
+    if (item) { item.status = item.status === '启用' ? '停用' : '启用'; renderQuotaTable(); alert(`状态已更新为「${item.status}」`); }
+}
+
+function editQuota(id, isView) {
+    const item = quotaList.find(i => i.id === id);
+    if (!item) return;
+    currentEditId = id;
+    isViewMode = isView;
+    document.getElementById('quotaModalTitle').innerText = isView ? '查看配额' : '编辑配额';
+    const disabled = isView;
+    document.getElementById('modalTenant').disabled = true;
+    document.getElementById('modalSupplier').disabled = true;
+    document.getElementById('modalApi').disabled = true;
+    document.getElementById('modalUsed').disabled = true;
+    document.getElementById('modalQuota').disabled = disabled;
+    document.getElementById('modalStatus').disabled = disabled;
+    document.getElementById('modalStartDate').disabled = true;
+    document.getElementById('modalEndDate').disabled = true;
+    document.getElementById('modalTenant').value = item.tenant;
+    document.getElementById('modalSupplier').value = item.supplier;
+    document.getElementById('modalApi').value = item.api;
+    document.getElementById('modalQuota').value = item.quota;
+    document.getElementById('modalUsed').value = item.used;
+    document.getElementById('modalStatus').value = item.status;
+    document.getElementById('modalStartDate').value = item.startDate || '';
+    document.getElementById('modalEndDate').value = item.endDate || '';
+    
+    const supplierQuota = supplierQuotaMap[item.supplier];
+    if (supplierQuota) {
+        const available = supplierQuota.total - supplierQuota.used;
+        document.getElementById('supplierQuotaInfo').textContent = `可分配次数/总数：${available.toLocaleString()}/${supplierQuota.total.toLocaleString()}`;
+    }
+    
+    const apiQuota = apiQuotaMap[item.supplier]?.[item.api];
+    if (apiQuota) {
+        const available = apiQuota.total - apiQuota.used;
+        document.getElementById('apiQuotaInfo').textContent = `可分配次数/总数：${available.toLocaleString()}/${apiQuota.total.toLocaleString()}`;
+    }
+    
+    document.getElementById('quotaModal').classList.add('active');
+}
+function addQuota() {
+    currentEditId = null;
+    isViewMode = false;
+    document.getElementById('quotaModalTitle').innerText = '新增配额';
+    const disabled = false;
+    document.getElementById('modalTenant').disabled = disabled;
+    document.getElementById('modalSupplier').disabled = disabled;
+    document.getElementById('modalApi').disabled = disabled;
+    document.getElementById('modalUsed').disabled = true;
+    document.getElementById('modalQuota').disabled = disabled;
+    document.getElementById('modalStatus').disabled = disabled;
+    document.getElementById('modalStartDate').disabled = disabled;
+    document.getElementById('modalEndDate').disabled = disabled;
+    document.getElementById('modalTenant').value = '';
+    document.getElementById('modalSupplier').value = '';
+    document.getElementById('modalApi').value = '';
+    document.getElementById('modalQuota').value = '';
+    document.getElementById('modalUsed').value = '0';
+    document.getElementById('modalStatus').value = '启用';
+    document.getElementById('modalStartDate').value = '';
+    document.getElementById('modalEndDate').value = '';
+    document.getElementById('quotaModal').classList.add('active');
+}
+function saveQuota() {
+    if (isViewMode) { closeQuotaModal(); return; }
+    const tenant = document.getElementById('modalTenant').value;
+    const supplier = document.getElementById('modalSupplier').value;
+    const api = document.getElementById('modalApi').value;
+    const quota = parseInt(document.getElementById('modalQuota').value);
+    if (!tenant || !supplier || !api || !quota) { alert('请填写租户、供应商、API和配额'); return; }
+    
+    const apiQuota = apiQuotaMap[supplier]?.[api];
+    if (apiQuota) {
+        const available = apiQuota.total - apiQuota.used;
+        if (quota > available) {
+            alert(`配额不能超过可分配次数，当前可分配次数为 ${available.toLocaleString()} 次`);
+            return;
+        }
+    }
+    
+    const data = { tenant, supplier, api, quota, used: 0, status: document.getElementById('modalStatus').value, startDate: document.getElementById('modalStartDate').value, endDate: document.getElementById('modalEndDate').value };
+    if (currentEditId) {
+        const idx = quotaList.findIndex(i => i.id === currentEditId);
+        if (idx !== -1) { quotaList[idx] = { ...quotaList[idx], ...data, id: currentEditId }; alert('修改成功'); }
+    } else { quotaList.push({ id: Date.now(), ...data }); alert('新增成功'); }
+    closeQuotaModal(); renderQuotaTable();
+}
+function closeQuotaModal() { document.getElementById('quotaModal').classList.remove('active'); }
+
+let deleteQuotaId = null;
+function deleteQuota(id) {
+    deleteQuotaId = id;
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        quotaList = quotaList.filter(i => i.id !== deleteQuotaId);
+        renderQuotaTable();
+        closeDeleteModal();
+        alert('删除成功');
+    };
+    document.getElementById('deleteConfirmModal').classList.add('active');
+}
+function closeDeleteModal() { document.getElementById('deleteConfirmModal').classList.remove('active'); }
+
+function showUsageDetail(quotaId) {
+    const quotaItem = quotaList.find(i => i.id === quotaId);
+    if (!quotaItem) return;
+    const cycleRange = `${quotaItem.startDate || '未设置'} ~ ${quotaItem.endDate || '未设置'}`;
+    document.getElementById('usageDetailNote').innerHTML = `注：该明细为${escapeHtml(quotaItem.supplier)}下的${escapeHtml(quotaItem.api)}在各服务的调用明细`;
+    const details = usageDetails.filter(d => d.service === quotaItem.api && d.tenant === quotaItem.tenant);
+    if (details.length === 0) { document.getElementById('usageDetailContent').innerHTML = '<div style="text-align:center;padding:40px;">暂无明细数据</div>'; }
+    else {
+        let tableHtml = `<div style="display:flex;justify-content:flex-end;margin-bottom:12px;"><button class="btn-primary" id="exportUsageBtn" style="background:#f89d34;">导出</button></div><table class="detail-table"><thead><th>租户</th><th>公司</th><th>部门</th><th>系统</th><th>服务</th><th>已用</th><th>周期范围</th></thead><tbody>`;
+        details.forEach(d => { tableHtml += `<tr><td>${escapeHtml(d.tenant)}</td><td>${escapeHtml(d.company)}</td><td>${escapeHtml(d.department)}</td><td>${escapeHtml(d.system)}</td><td>${escapeHtml(d.service)}</td><td>${d.used.toLocaleString()}次</td><td>${cycleRange}</td></tr>`; });
+        tableHtml += `</tbody></table>`;
+        document.getElementById('usageDetailContent').innerHTML = tableHtml;
+        document.getElementById('exportUsageBtn')?.addEventListener('click', exportUsageDetail);
+    }
+    document.getElementById('usageDetailModal').classList.add('active');
+}
+function exportUsageDetail() { alert('导出功能：可将明细数据导出为Excel文件'); }
+function closeUsageModal() { document.getElementById('usageDetailModal').classList.remove('active'); }
+
+function showHistory(quotaId) {
+    const quotaItem = quotaList.find(i => i.id === quotaId);
+    if (!quotaItem) return;
+    
+    const filteredHistory = historyList.filter(h => h.quotaId === quotaId);
+    
+    let tableHtml = '';
+    if (filteredHistory.length === 0) {
+        tableHtml = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无历史记录</td></tr>';
+    } else {
+        filteredHistory.forEach(h => {
+            tableHtml += `<tr>
+                <td>${escapeHtml(h.action)}</td>
+                <td>${escapeHtml(h.supplier)}</td>
+                <td>${escapeHtml(h.api)}</td>
+                <td>${h.quota?.toLocaleString() || '-'}</td>
+                <td>${h.startDate && h.endDate ? `${h.startDate} ~ ${h.endDate}` : '-'}</td>
+                <td><span class="status-badge ${h.status === '启用' ? 'status-active' : 'status-inactive'}">${escapeHtml(h.status)}</span></td>
+                <td>${escapeHtml(h.operator)}</td>
+                <td>${escapeHtml(h.operateTime)}</td>
+            </tr>`;
+        });
+    }
+    
+    document.getElementById('historyTableBody').innerHTML = tableHtml;
+    document.getElementById('historyModal').classList.add('active');
+}
+
+function closeHistoryModal() { document.getElementById('historyModal').classList.remove('active'); }
+
+document.getElementById('searchBtn')?.addEventListener('click', () => { currentPage = 1; renderQuotaTable(); });
+document.getElementById('resetBtn')?.addEventListener('click', () => { document.getElementById('filterTenant').value = ''; document.getElementById('filterSupplier').value = ''; document.getElementById('filterApi').value = ''; document.getElementById('filterStatus').value = '全部'; currentPage = 1; renderQuotaTable(); });
+document.getElementById('addQuotaBtn')?.addEventListener('click', addQuota);
+document.getElementById('saveQuotaBtn')?.addEventListener('click', saveQuota);
+document.getElementById('cancelQuotaModal')?.addEventListener('click', closeQuotaModal);
+document.getElementById('closeQuotaModal')?.addEventListener('click', closeQuotaModal);
+document.getElementById('exportUsageBtn')?.addEventListener('click', exportUsageDetail);
+document.getElementById('closeUsageModal')?.addEventListener('click', closeUsageModal);
+document.getElementById('closeUsageModalBtn')?.addEventListener('click', closeUsageModal);
+document.getElementById('closeDeleteModal')?.addEventListener('click', closeDeleteModal);
+document.getElementById('cancelDeleteBtn')?.addEventListener('click', closeDeleteModal);
+document.getElementById('closeHistoryModal')?.addEventListener('click', closeHistoryModal);
+document.getElementById('closeHistoryModalBtn')?.addEventListener('click', closeHistoryModal);
+function initSupplierSelect() {
+    const supplierSelect = document.getElementById('modalSupplier');
+    supplierSelect.innerHTML = '<option value="">请选择供应商</option>';
+    Object.keys(supplierApiMap).forEach(supplier => {
+        supplierSelect.innerHTML += `<option value="${supplier}">${supplier}</option>`;
+    });
+}
+
+function onSupplierChange() {
+    const supplier = document.getElementById('modalSupplier').value;
+    const apiSelect = document.getElementById('modalApi');
+    
+    apiSelect.innerHTML = '<option value="">请选择API</option>';
+    
+    if (supplier) {
+        const apis = supplierApiMap[supplier] || [];
+        apiSelect.innerHTML += '<option value="不限">不限</option>';
+        apis.forEach(api => {
+            apiSelect.innerHTML += `<option value="${api}">${api}</option>`;
+        });
+        
+        const quota = supplierQuotaMap[supplier];
+        if (quota) {
+            const available = quota.total - quota.used;
+            document.getElementById('supplierQuotaInfo').textContent = `可分配次数/总数：${available.toLocaleString()}/${quota.total.toLocaleString()}`;
+        } else {
+            document.getElementById('supplierQuotaInfo').textContent = '';
+        }
+    } else {
+        document.getElementById('supplierQuotaInfo').textContent = '';
+    }
+    
+    document.getElementById('modalApi').value = '';
+    document.getElementById('apiQuotaInfo').textContent = '';
+}
+
+function onApiChange() {
+    const supplier = document.getElementById('modalSupplier').value;
+    const api = document.getElementById('modalApi').value;
+    
+    if (supplier && api && api !== '不限') {
+        const apiQuota = apiQuotaMap[supplier]?.[api];
+        if (apiQuota) {
+            const available = apiQuota.total - apiQuota.used;
+            document.getElementById('apiQuotaInfo').textContent = `可分配次数/总数：${available.toLocaleString()}/${apiQuota.total.toLocaleString()}`;
+            document.getElementById('modalQuota').max = available;
+        } else {
+            document.getElementById('apiQuotaInfo').textContent = '';
+            document.getElementById('modalQuota').max = '';
+        }
+        
+        const now = new Date();
+        const startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const endDate = `${now.getFullYear() + 1}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        document.getElementById('modalStartDate').value = startDate;
+        document.getElementById('modalEndDate').value = endDate;
+    } else {
+        document.getElementById('apiQuotaInfo').textContent = '';
+        document.getElementById('modalStartDate').value = '';
+        document.getElementById('modalEndDate').value = '';
+    }
+}
+
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+function navigateTo(url) { window.location.href = url; }
+
+const navMenus = {
+    portal: [
+        { name: '数据门户', url: 'index.html' }
+    ],
+    external: [
+        { name: '供应商管理', url: 'index.html' },
+        { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+        { name: 'API服务配置', url: 'index.html' },
+        { name: '数据库服务配置', url: 'index.html' },
+        { name: '数据库配置', url: 'index.html' }
+    ],
+    service: [
+        { name: '服务管理', url: 'index.html' },
+        { name: '调用方管理', url: 'index.html' },
+        { name: '目录管理', url: 'index.html' },
+        { name: '状态码映射', url: 'index.html' }
+    ],
+    monitor: [
+        { name: '用数大屏', url: 'index.html' },
+        { name: '用量统计', url: '告警管理V1.2.html' },
+        { name: '数据源调用统计', url: 'index.html' },
+        { name: '服务调用统计', url: 'index.html' },
+        { name: '业务单元调用统计', url: 'index.html' },
+        { name: '链路实时监控', url: 'index.html' },
+        { name: '数据质量监控', url: 'index.html' },
+        { name: '系统性能监控', url: 'index.html' },
+        { name: '服务性能监控', url: 'index.html' },
+        { name: '流量分析', url: 'index.html' }
+    ],
+    operation: [
+        { name: '告警管理', url: '告警管理V1.2.html#rule' },
+        { name: '用量预测', url: '告警管理V1.2.html#forecast' },
+        { name: '告警渠道', url: '告警管理V1.2.html#channel' },
+        { name: '配额管理', url: '配额管理V1.1.html' },
+        { name: '计费管理', url: 'index.html' },
+        { name: '账单管理', url: 'index.html' },
+        { name: '对账管理', url: 'index.html' },
+        { name: '任务管理', url: '任务管理&合同管理V1.3.html#task' }
+    ],
+    personal: [
+        { name: '我的审批', url: '个人中心V1.3.html#approval' },
+        { name: '我的收藏', url: '个人中心V1.3.html#favorites' },
+        { name: '消息通知', url: '个人中心V1.3.html#message' }
+    ],
+    system: [
+        { name: '调用日志', url: '调用日志.html' },
+        { name: '操作日志', url: 'index.html' },
+        { name: '用户管理', url: 'index.html' },
+        { name: '权限管理', url: 'index.html' },
+        { name: '数据字典', url: 'index.html' }
+    ]
+};
+
+function showNavMenu(menuKey) {
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const menu = navMenus[menuKey] || [];
+    const sideMenu = document.getElementById('sideMenu');
+    
+    if (menu.length === 0) {
+        sideMenu.innerHTML = '<div class="menu-item active" onclick="navigateTo(\'index.html\')"><i class="el-icon-home"></i>首页</div>';
+        return;
+    }
+    
+    let html = '';
+    menu.forEach((item, index) => {
+        html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><i class="el-icon-document"></i>${item.name}</div>`;
+    });
+    sideMenu.innerHTML = html;
+}
+
+document.getElementById('modalSupplier')?.addEventListener('change', onSupplierChange);
+document.getElementById('modalApi')?.addEventListener('change', onApiChange);
+initSupplierSelect();
+renderQuotaTable();
+</script>
+</body>
+</html>

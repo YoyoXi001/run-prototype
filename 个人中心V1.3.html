@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 个人中心</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .app-layout {
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area {
+            width: 265px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2f3d;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+        .logo-sub {
+            font-size: 10px;
+            color: #5a6e8c;
+            margin-top: 2px;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 48px;
+            position: absolute;
+            left: 320px;
+        }
+        .nav-tab {
+            cursor: pointer;
+            font-size: 18px;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            color: #333333;
+            position: relative;
+            transition: all 0.3s;
+            font-weight: 400;
+            padding-bottom: 4px;
+        }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active {
+            color: #1152c5;
+            font-weight: 700;
+        }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1152c5;
+            border-radius: 2px;
+        }
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+        .message-icon-wrapper {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .message-icon {
+            font-size: 20px;
+            color: #5a5e66;
+        }
+        .message-icon:hover {
+            color: #1152c5;
+        }
+        .unread-badge-icon {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: #f5222d;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 5px;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
+            border: 1px solid #fff;
+            display: none;
+            line-height: 1.2;
+        }
+        .tenant-info {
+            font-size: 14px;
+            color: #5a5e66;
+            font-family: 'Source Han Sans SC', sans-serif;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .tenant-name {
+            font-weight: 500;
+            color: #1f2f3d;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #fcb53e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+
+        /* 个人中心左侧菜单 */
+        .personal-sidebar {
+            width: 241px;
+            background: #fff;
+            border-right: 1px solid #e9ecef;
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            overflow-y: hidden;
+            padding: 16px 0;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 240px;
+            height: 48px;
+            padding: 0 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            font-size: 16px;
+            color: #333333;
+            transition: all 0.3s;
+            background: transparent;
+            border-radius: 0;
+            position: relative;
+        }
+        .menu-item:last-child {
+            margin-bottom: 0;
+        }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active {
+            background: linear-gradient(270deg, #fefdfb, #fef5ec);
+            color: #f89d34;
+            border-right: 2px solid #f89d34;
+        }
+        .menu-item .menu-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容面板 */
+        .main-content {
+            margin-left: 240px;
+            padding: 8px 16px 0 16px;
+            min-height: calc(100vh - 80px);
+            background: #F5F7FA;
+        }
+        .content-card {
+            background: #fff;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        /* 目录面包屑 */
+        .breadcrumb {
+            padding: 12px 0 12px 0;
+            background: #F5F7FA;
+            font-size: 14px;
+            font-family: 'Noto Sans SC', sans-serif;
+            color: #666666;
+            border: none;
+        }
+        .breadcrumb .separator {
+            margin: 0 8px;
+            color: #c0c4cc;
+        }
+        .breadcrumb .current {
+            color: #3a6df0;
+            font-weight: 500;
+        }
+
+        /* 筛选框 */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #fff;
+            border: 1px solid #d8d8d8;
+            border-radius: 6px;
+        }
+        .filter-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 24px;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .filter-item label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            white-space: nowrap;
+        }
+        .filter-item input, .filter-item select {
+            width: 200px;
+            height: 36px;
+            padding: 0 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #333333;
+        }
+        .filter-item input:focus, .filter-item select:focus {
+            border-color: #f89d34;
+        }
+        .filter-right {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-primary {
+            background: #f89d34;
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-default {
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            padding: 8px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #666666;
+        }
+        .btn-default:hover {
+            background: #f5f7fa;
+        }
+
+        /* Tab标签样式 */
+        .tab-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .tab-item {
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-item:hover {
+            color: #f89d34;
+        }
+        .tab-item.active {
+            color: #f89d34;
+            border-bottom-color: #f89d34;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            margin: 16px;
+            border: 1px solid #ebeef5;
+            border-radius: 8px;
+            overflow-x: auto;
+            padding: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            color: #666666;
+            text-align: center;
+        }
+        .data-table th:last-child,
+        .data-table td:last-child {
+            border-right: none;
+        }
+        .data-table th {
+            background: #fafcff;
+            font-weight: 600;
+            color: #555555;
+            font-size: 14px;
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        .data-table tr:hover td { background: #f8fafc; }
+        .service-link {
+            color: #0d6cff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .service-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 状态徽章 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-pending {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+        .status-approved {
+            background: #e6f7e6;
+            color: #52c41a;
+        }
+        .status-unread {
+            background: #fee2e2;
+            color: #f5222d;
+        }
+        .status-read {
+            background: #e6f7e6;
+            color: #52c41a;
+        }
+        .level-high {
+            background: #fee2e2;
+            color: #f5222d;
+        }
+        .level-medium {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+        .level-low {
+            background: #e6f7e6;
+            color: #52c41a;
+        }
+        .action-link {
+            color: #0d6cff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        .action-link.danger {
+            color: #f5222d;
+        }
+
+        /* 分页 */
+        .pagination {
+            margin: 16px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #333333;
+        }
+        .pagination .total-text {
+            margin-right: 16px;
+            color: #666666;
+        }
+        .pagination button {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333333;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background: #f5f7fa;
+        }
+        .pagination button:not(:disabled):hover {
+            background: #f89d34;
+            border-color: #f89d34;
+            color: #fff;
+        }
+        .pagination .page-number {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fff;
+            color: #333333;
+        }
+        .pagination .page-number.active {
+            background: #f89d34;
+            border-color: #f89d34;
+            color: #fff;
+            cursor: default;
+        }
+        .pagination .page-number:not(.active):hover {
+            background: #f89d34;
+            border-color: #f89d34;
+            color: #fff;
+        }
+        .pagination .page-size-select {
+            margin-left: 16px;
+            padding: 5px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333333;
+            background: #fff;
+            cursor: pointer;
+        }
+        .pagination .jump-section {
+            margin-left: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pagination .jump-section input {
+            width: 60px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .pagination .jump-section button {
+            min-width: 48px;
+        }
+
+        /* 弹窗 */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-mask.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-container {
+            background: #fff;
+            width: 520px;
+            max-width: 90%;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 20px 24px 12px 24px;
+            border-bottom: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333333;
+            text-align: left;
+            background: #fff;
+        }
+        .modal-body {
+            padding: 0 24px 20px 24px;
+            background: #fff;
+        }
+        .message-detail-content {
+            text-align: left;
+        }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .detail-type {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333333;
+        }
+        .detail-level-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .detail-level-label {
+            font-size: 14px;
+            color: #666666;
+        }
+        .detail-level {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .detail-level-high {
+            background: #fee2e2;
+            color: #f5222d;
+        }
+        .detail-level-medium {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+        .detail-level-low {
+            background: #e6f7e6;
+            color: #52c41a;
+        }
+        .detail-content-text {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.6;
+            text-indent: 2em;
+            margin-bottom: 16px;
+        }
+        .detail-time {
+            text-align: right;
+            font-size: 12px;
+            color: #999999;
+            margin-top: 8px;
+        }
+        .modal-footer {
+            padding: 0 24px 24px 24px;
+            display: flex;
+            justify-content: center;
+            background: #fff;
+            border-top: none;
+        }
+        .btn-confirm {
+            background: #f89d34;
+            color: #fff;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        .btn-confirm:hover {
+            background: #e8891a;
+        }
+
+        /* 模块切换 */
+        .module-view { display: none; }
+        .module-view.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="showNavMenu('portal')">数据门户</div>
+            <div class="nav-tab" onclick="showNavMenu('external')">外源管理</div>
+            <div class="nav-tab" onclick="showNavMenu('service')">服务管理</div>
+            <div class="nav-tab" onclick="showNavMenu('monitor')">监控统计</div>
+            <div class="nav-tab" onclick="showNavMenu('operation')">运营管理</div>
+            <div class="nav-tab active" onclick="showNavMenu('personal')">个人中心</div>
+            <div class="nav-tab" onclick="showNavMenu('system')">系统管理</div>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper" id="messageIconWrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon" id="messageIconBadge"></span>
+            </div>
+            <div class="tenant-info" id="tenantInfo">
+                <span class="tenant-name">某某金控</span>
+            </div>
+            <div class="avatar" style="width:33px;height:33px;font-size:16px;">席</div>
+        </div>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="personal-sidebar" id="sideMenu">
+        <div class="menu-item" data-module="approval">
+            <div class="menu-left"><i class="el-icon-document-checked"></i>我的审批</div>
+        </div>
+        <div class="menu-item" data-module="favorites">
+            <div class="menu-left"><i class="el-icon-star-on"></i>我的收藏</div>
+        </div>
+        <div class="menu-item active" data-module="message" id="messageMenuItem">
+            <div class="menu-left"><i class="el-icon-message"></i>我的消息</div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <div class="content-card">
+            <!-- 目录面包屑 -->
+            <div class="breadcrumb">
+                <span>个人中心</span>
+                <span class="separator">/</span>
+                <span class="current" id="currentModuleName">我的消息</span>
+            </div>
+
+            <!-- 我的消息模块 - 增加状态筛选条件 -->
+            <div id="messageModule" class="module-view active">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item"><label>租户</label><input type="text" id="msgFilterTenant" placeholder="请输入租户名称"></div>
+                        <div class="filter-item"><label>消息类型</label><select id="msgFilterType"><option value="全部">全部</option><option value="服务用量预警">服务用量预警</option><option value="服务审批通知">服务审批通知</option><option value="服务异常告警">服务异常告警</option><option value="合同账单提醒">合同账单提醒</option></select></div>
+                        <div class="filter-item"><label>状态</label><select id="msgFilterReadStatus"><option value="全部">全部</option><option value="已读">已读</option><option value="未读">未读</option></select></div>
+                    </div>
+                    <div class="filter-right"><button class="btn-primary" id="msgSearchBtn">查询</button><button class="btn-default" id="msgResetBtn">重置</button></div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead><th>编号</th><th>租户</th><th>消息类型</th><th>消息概要</th><th>接收时间</th><th>严重程度</th><th>状态</th><th>操作</th></thead>
+                        <tbody id="messageTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="messagePagination" class="pagination"></div>
+            </div>
+
+            <!-- 我的审批模块 -->
+            <div id="approvalModule" class="module-view">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item"><label>申请人</label><input type="text" id="approvalFilterApplicant" placeholder="请输入申请人"></div>
+                        <div class="filter-item"><label>申请用途</label><input type="text" id="approvalFilterPurpose" placeholder="请输入申请用途"></div>
+                    </div>
+                    <div class="filter-right"><button class="btn-primary" id="approvalSearchBtn">查询</button><button class="btn-default" id="approvalResetBtn">重置</button></div>
+                </div>
+                <div class="tab-bar" id="approvalTabBar">
+                    <div class="tab-item active" data-tab="my">我的申请</div>
+                    <div class="tab-item" data-tab="pending">待审批</div>
+                    <div class="tab-item" data-tab="completed">已完成</div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead><th>编号</th><th>申请单号</th><th>申请人</th><th>申请人租户</th><th>申请人系统</th><th>申请用途</th><th>申请时间</th><th>审批状态</th><th>操作</th></thead>
+                        <tbody id="approvalTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="approvalPagination" class="pagination"></div>
+            </div>
+
+            <!-- 我的收藏模块 -->
+            <div id="favoritesModule" class="module-view">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item"><label>服务名称</label><input type="text" id="favFilterName" placeholder="请输入服务名称"></div>
+                        <div class="filter-item"><label>服务发布者</label><input type="text" id="favFilterPublisher" placeholder="请输入发布者"></div>
+                        <div class="filter-item"><label>服务域</label><select id="favFilterDomain"><option value="全部">全部</option><option value="金融公共服务">金融公共服务</option><option value="租户私有">租户私有</option></select></div>
+                        <div class="filter-item"><label>授权状态</label><select id="favFilterAuthStatus"><option value="全部">全部</option><option value="未授权">未授权</option><option value="审批中">审批中</option><option value="已授权">已授权</option></select></div>
+                        <div class="filter-item"><label>服务状态</label><select id="favFilterServiceStatus"><option value="全部">全部</option><option value="已发布">已发布</option><option value="已下线">已下线</option></select></div>
+                    </div>
+                    <div class="filter-right"><button class="btn-primary" id="favSearchBtn">查询</button><button class="btn-default" id="favResetBtn">重置</button></div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead><th>编号</th><th>服务名称</th><th>版本</th><th>服务发布者</th><th>服务域</th><th>授权状态</th><th>服务状态</th><th>操作</th></thead>
+                        <tbody id="favoritesTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="favoritesPagination" class="pagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息详情弹窗 -->
+    <div id="detailModal" class="modal-mask">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span>消息详情</span>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-confirm" id="closeModalBtn">我知道了</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+// 当前登录用户
+const currentUser = "席某";
+
+// ======================== 我的消息数据 ========================
+let messageList = [
+    { id: 1, tenant: "某某金控", type: "服务用量预警", summary: "企业画像查询服务配额即将用尽，当前使用率92%", time: "2026-04-15 10:23:15", level: "medium", levelText: "警告", read: false },
+    { id: 2, tenant: "某某金控", type: "服务审批通知", summary: "您有一条新的服务申请待审批：金融风控API", time: "2026-04-15 09:15:42", level: "low", levelText: "提示", read: false },
+    { id: 3, tenant: "某某金控", type: "服务异常告警", summary: "数据源连接异常：MySQL数据源「某某主库」连接池耗尽", time: "2026-04-14 08:30:22", level: "high", levelText: "严重", read: true },
+    { id: 4, tenant: "某某金控", type: "合同账单提醒", summary: "服务合同即将到期：企业画像查询服务2026-05-31到期", time: "2026-04-14 11:05:47", level: "medium", levelText: "警告", read: false }
+];
+
+// ======================== 我的审批数据 ========================
+let approvalList = [
+    { id: 1, applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "测试", applyTime: "2026-04-15 10:23:15", status: "待审批" },
+    { id: 2, applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某金控", applicantSystem: "风险管理系统", purpose: "需要调用数据", applyTime: "2026-04-15 09:23:15", status: "待审批" },
+    { id: 3, applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某租赁", applicantSystem: "外数平台", purpose: "租赁调用接口", applyTime: "2026-04-15 08:23:15", status: "待审批" },
+    { id: 4, applyNo: "APsmL5FTk", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "企业画像查询", applyTime: "2026-04-08 09:53:11", status: "待审批" },
+    { id: 5, applyNo: "APcSU7Dn", applicant: "李四", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "金融风控API", applyTime: "2026-03-24 09:19:59", status: "已完成" },
+    { id: 6, applyNo: "APAIYRl4A", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "数据清洗服务", applyTime: "2026-03-23 09:58:07", status: "已完成" }
+];
+
+// ======================== 我的收藏数据 ========================
+let favoritesList = [
+    { id: 1, name: "企业画像查询", version: "v2.1", publisher: "某某金控", domain: "金融公共服务", authStatus: "已授权", serviceStatus: "已发布" },
+    { id: 2, name: "金融风控API", version: "v3.0", publisher: "某某金控", domain: "租户私有", authStatus: "审批中", serviceStatus: "已发布" },
+    { id: 3, name: "身份核验服务", version: "v1.5", publisher: "天眼查", domain: "金融公共服务", authStatus: "未授权", serviceStatus: "已下线" }
+];
+
+let currentPage = { message: 1, approval: 1, favorites: 1 }, pageSize = 10;
+let filteredMessage = [...messageList], filteredApproval = [...approvalList], filteredFavorites = [...favoritesList];
+let currentApprovalTab = "my";
+
+// 更新消息图标未读数量标记
+function updateMessageIconBadge() {
+    const unreadCount = messageList.filter(m => !m.read).length;
+    const badge = document.getElementById('messageIconBadge');
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.style.display = 'block';
+            badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// 渲染我的消息 - 增加状态筛选
+function renderMessageTable() {
+    const tenant = document.getElementById('msgFilterTenant')?.value.trim() || '';
+    const type = document.getElementById('msgFilterType')?.value || '全部';
+    const readStatus = document.getElementById('msgFilterReadStatus')?.value || '全部';
+    
+    filteredMessage = messageList.filter(i => {
+        if (tenant && !i.tenant.includes(tenant)) return false;
+        if (type !== '全部' && i.type !== type) return false;
+        if (readStatus !== '全部') {
+            if (readStatus === '已读' && !i.read) return false;
+            if (readStatus === '未读' && i.read) return false;
+        }
+        return true;
+    });
+    const total = Math.ceil(filteredMessage.length / pageSize) || 1;
+    if (currentPage.message > total) currentPage.message = total;
+    const pageData = filteredMessage.slice((currentPage.message-1)*pageSize, currentPage.message*pageSize);
+    const tbody = document.getElementById('messageTableBody');
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</div></div></div></div></td></tr>';
+    } else {
+        tbody.innerHTML = pageData.map(i => `<tr>
+            <td>${i.id}</td>
+            <td>${escapeHtml(i.tenant)}</div></td>
+            <td>${escapeHtml(i.type)}</div></td>
+            <td>${escapeHtml(i.summary)}</div></td>
+            <td>${escapeHtml(i.time)}</div></td>
+            <td><span class="status-badge ${i.level==='high'?'level-high':(i.level==='medium'?'level-medium':'level-low')}">${i.levelText}</span></td>
+            <td><span class="status-badge ${i.read?'status-read':'status-unread'}">${i.read?'已读':'未读'}</span></td>
+            <td><a class="action-link" onclick="viewMessageDetail(${i.id})">查看详情</a></td>
+        </tr>`).join('');
+    }
+    updatePagination('message', total, filteredMessage.length);
+    updateMessageIconBadge();
+}
+
+// 查看详情
+function viewMessageDetail(id) {
+    const item = messageList.find(m => m.id === id);
+    if (item && !item.read) {
+        item.read = true;
+        renderMessageTable();
+    }
+    let levelClass = '';
+    if (item.level === 'high') levelClass = 'detail-level-high';
+    else if (item.level === 'medium') levelClass = 'detail-level-medium';
+    else levelClass = 'detail-level-low';
+    
+    document.getElementById('modalBody').innerHTML = `
+        <div class="message-detail-content">
+            <div class="detail-header">
+                <span class="detail-type">消息类型：${escapeHtml(item.type)}</span>
+                <div class="detail-level-wrapper">
+                    <span class="detail-level-label">严重程度：</span>
+                    <span class="detail-level ${levelClass}">${item.levelText}</span>
+                </div>
+            </div>
+            <div class="detail-content-text">
+                【${escapeHtml(item.tenant)}】${escapeHtml(item.summary)}，请及时处理！
+            </div>
+            <div class="detail-time">${escapeHtml(item.time)}</div>
+        </div>
+    `;
+    document.getElementById('detailModal').classList.add('active');
+}
+
+// 渲染我的审批
+function renderApprovalTable() {
+    const applicant = document.getElementById('approvalFilterApplicant')?.value.trim() || '';
+    const purpose = document.getElementById('approvalFilterPurpose')?.value.trim() || '';
+    
+    let filtered = [...approvalList];
+    if (currentApprovalTab === 'my') {
+        filtered = filtered.filter(i => i.applicant === currentUser);
+    } else if (currentApprovalTab === 'pending') {
+        filtered = filtered.filter(i => i.status === '待审批');
+    } else if (currentApprovalTab === 'completed') {
+        filtered = filtered.filter(i => i.status === '已完成');
+    }
+    
+    if (applicant) filtered = filtered.filter(i => i.applicant.includes(applicant));
+    if (purpose) filtered = filtered.filter(i => i.purpose.includes(purpose));
+    
+    filteredApproval = filtered;
+    const total = Math.ceil(filteredApproval.length / pageSize) || 1;
+    if (currentPage.approval > total) currentPage.approval = total;
+    const pageData = filteredApproval.slice((currentPage.approval-1)*pageSize, currentPage.approval*pageSize);
+    const tbody = document.getElementById('approvalTableBody');
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">暂无数据</div></div></div></div></td></tr>';
+    } else {
+        tbody.innerHTML = pageData.map(i => `<tr>
+            <td>${i.id}</td>
+            <td>${escapeHtml(i.applyNo)}</div></td>
+            <td>${escapeHtml(i.applicant)}</div></td>
+            <td>${escapeHtml(i.applicantTenant)}</div></td>
+            <td>${escapeHtml(i.applicantSystem)}</div></td>
+            <td>${escapeHtml(i.purpose)}</div></td>
+            <td>${escapeHtml(i.applyTime)}</div></td>
+            <td><span class="status-badge ${i.status==='待审批'?'status-pending':'status-approved'}">${i.status}</span></td>
+            <td><a class="action-link" onclick="handleApproval(${i.id})">${i.status==='待审批'?'去审批':'查看详情'}</a></td>
+        </tr>`).join('');
+    }
+    updatePagination('approval', total, filteredApproval.length);
+}
+
+// 渲染我的收藏
+function renderFavoritesTable() {
+    const name = document.getElementById('favFilterName')?.value.trim() || '';
+    const publisher = document.getElementById('favFilterPublisher')?.value.trim() || '';
+    const domain = document.getElementById('favFilterDomain')?.value || '全部';
+    const authStatus = document.getElementById('favFilterAuthStatus')?.value || '全部';
+    const serviceStatus = document.getElementById('favFilterServiceStatus')?.value || '全部';
+    filteredFavorites = favoritesList.filter(i => {
+        if (name && !i.name.includes(name)) return false;
+        if (publisher && !i.publisher.includes(publisher)) return false;
+        if (domain !== '全部' && i.domain !== domain) return false;
+        if (authStatus !== '全部' && i.authStatus !== authStatus) return false;
+        if (serviceStatus !== '全部' && i.serviceStatus !== serviceStatus) return false;
+        return true;
+    });
+    const total = Math.ceil(filteredFavorites.length / pageSize) || 1;
+    if (currentPage.favorites > total) currentPage.favorites = total;
+    const pageData = filteredFavorites.slice((currentPage.favorites-1)*pageSize, currentPage.favorites*pageSize);
+    const tbody = document.getElementById('favoritesTableBody');
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</div></div></div></div></td></tr>';
+    } else {
+        tbody.innerHTML = pageData.map(i => `<tr>
+            <td>${i.id}</td>
+            <td><span class="service-link" onclick="alert('跳转服务详情：${escapeHtml(i.name)}')">${escapeHtml(i.name)}</span></td>
+            <td>${escapeHtml(i.version)}</div></td>
+            <td>${escapeHtml(i.publisher)}</div></td>
+            <td>${escapeHtml(i.domain)}</div></td>
+            <td><span class="status-badge ${i.authStatus==='审批中'?'status-pending':(i.authStatus==='已授权'?'status-approved':'status-disabled')}">${i.authStatus}</span></td>
+            <td><span class="status-badge ${i.serviceStatus==='已发布'?'status-approved':'status-disabled'}">${i.serviceStatus}</span></td>
+            <td><a class="action-link danger" onclick="cancelFavorite(${i.id})">取消收藏</a></td>
+        </tr>`).join('');
+    }
+    updatePagination('favorites', total, filteredFavorites.length);
+}
+
+function cancelFavorite(id) { if(confirm('确定取消收藏该服务吗？')){ favoritesList = favoritesList.filter(i => i.id !== id); renderFavoritesTable(); alert('已取消收藏'); } }
+function handleApproval(id) { const item = approvalList.find(i => i.id === id); if(item.status === '待审批') alert(`去审批：申请单号 ${item.applyNo}\n申请人：${item.applicant}\n申请用途：${item.purpose}`); else alert(`查看详情：申请单号 ${item.applyNo}\n申请人：${item.applicant}\n申请人租户：${item.applicantTenant}\n申请人系统：${item.applicantSystem}\n申请用途：${item.purpose}\n申请时间：${item.applyTime}\n审批状态：${item.status}`); }
+
+function updatePagination(module, total, totalCount) {
+    const cp = currentPage[module];
+    const container = document.getElementById(module + 'Pagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span>`;
+    html += `<button ${cp===1?'disabled':''} onclick="changePage('${module}',1)">首页</button>`;
+    html += `<button ${cp===1?'disabled':''} onclick="changePage('${module}',${cp-1})">上一页</button>`;
+    const startPage = Math.max(1, cp - 2);
+    const endPage = Math.min(total, cp + 2);
+    for (let i = startPage; i <= endPage; i++) html += `<span class="page-number ${i===cp?'active':''}" onclick="changePage('${module}',${i})">${i}</span>`;
+    html += `<button ${cp===total?'disabled':''} onclick="changePage('${module}',${cp+1})">下一页</button>`;
+    html += `<button ${cp===total?'disabled':''} onclick="changePage('${module}',${total})">尾页</button>`;
+    html += `<select class="page-size-select" onchange="changePageSize('${module}',this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="${module}JumpPage" min="1" max="${total}" value="${cp}"><button onclick="jumpPage('${module}')">GO</button></div>`;
+    container.innerHTML = html;
+}
+function changePage(module, page) { currentPage[module] = page; if(module==='message') renderMessageTable(); else if(module==='approval') renderApprovalTable(); else renderFavoritesTable(); }
+function changePageSize(module, size) { pageSize = parseInt(size); currentPage[module] = 1; if(module==='message') renderMessageTable(); else if(module==='approval') renderApprovalTable(); else renderFavoritesTable(); }
+function jumpPage(module) { let p = parseInt(document.getElementById(module+'JumpPage')?.value); if(p>=1 && p<=Math.ceil((module==='message'?filteredMessage:module==='approval'?filteredApproval:filteredFavorites).length/pageSize)) changePage(module, p); }
+
+function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+function switchModule(module) {
+    document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+    document.getElementById(module + 'Module').classList.add('active');
+    const names = { message: '我的消息', approval: '我的审批', favorites: '我的收藏' };
+    document.getElementById('currentModuleName').innerText = names[module];
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    document.querySelector(`.menu-item[data-module="${module}"]`).classList.add('active');
+    if (module === 'message') renderMessageTable();
+    else if (module === 'approval') renderApprovalTable();
+    else renderFavoritesTable();
+}
+
+// 点击消息图标跳转到我的消息模块
+function goToMessageModule() {
+    switchModule('message');
+}
+// 点击租户也跳转到我的消息模块
+function goToMessageFromTenant() {
+    switchModule('message');
+}
+
+// Tab切换
+document.getElementById('approvalTabBar')?.addEventListener('click', (e) => {
+    const tabItem = e.target.closest('.tab-item');
+    if (tabItem) {
+        document.querySelectorAll('#approvalTabBar .tab-item').forEach(t => t.classList.remove('active'));
+        tabItem.classList.add('active');
+        currentApprovalTab = tabItem.dataset.tab;
+        currentPage.approval = 1;
+        renderApprovalTable();
+    }
+});
+document.querySelectorAll('.menu-item').forEach(item => item.addEventListener('click', () => switchModule(item.dataset.module)));
+document.getElementById('messageIconWrapper')?.addEventListener('click', goToMessageModule);
+document.getElementById('tenantInfo')?.addEventListener('click', goToMessageFromTenant);
+document.getElementById('msgSearchBtn')?.addEventListener('click', () => { currentPage.message=1; renderMessageTable(); });
+document.getElementById('msgResetBtn')?.addEventListener('click', () => { document.getElementById('msgFilterTenant').value=''; document.getElementById('msgFilterType').value='全部'; document.getElementById('msgFilterReadStatus').value='全部'; currentPage.message=1; renderMessageTable(); });
+document.getElementById('approvalSearchBtn')?.addEventListener('click', () => { currentPage.approval=1; renderApprovalTable(); });
+document.getElementById('approvalResetBtn')?.addEventListener('click', () => { document.getElementById('approvalFilterApplicant').value=''; document.getElementById('approvalFilterPurpose').value=''; currentPage.approval=1; renderApprovalTable(); });
+document.getElementById('favSearchBtn')?.addEventListener('click', () => { currentPage.favorites=1; renderFavoritesTable(); });
+document.getElementById('favResetBtn')?.addEventListener('click', () => { document.getElementById('favFilterName').value=''; document.getElementById('favFilterPublisher').value=''; document.getElementById('favFilterDomain').value='全部'; document.getElementById('favFilterAuthStatus').value='全部'; document.getElementById('favFilterServiceStatus').value='全部'; currentPage.favorites=1; renderFavoritesTable(); });
+document.getElementById('closeModal')?.addEventListener('click', closeModal);
+document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]); }
+function navigateTo(url) { window.location.href = url; }
+
+const navMenus = {
+    portal: [
+        { name: '数据门户', url: 'index.html' }
+    ],
+    external: [
+        { name: '供应商管理', url: 'index.html' },
+        { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+        { name: 'API服务配置', url: 'index.html' },
+        { name: '数据库服务配置', url: 'index.html' },
+        { name: '数据库配置', url: 'index.html' }
+    ],
+    service: [
+        { name: '服务管理', url: 'index.html' },
+        { name: '调用方管理', url: 'index.html' },
+        { name: '目录管理', url: 'index.html' },
+        { name: '状态码映射', url: 'index.html' }
+    ],
+    monitor: [
+        { name: '用数大屏', url: '用数大屏.html' },
+        { name: '用量统计', url: '告警管理V1.2.html' },
+        { name: '数据源调用统计', url: 'index.html' },
+        { name: '服务调用统计', url: 'index.html' },
+        { name: '业务单元调用统计', url: 'index.html' },
+        { name: '链路实时监控', url: '链路实时监控.html' },
+        { name: '数据质量监控', url: '数据质量监控.html' },
+        { name: '系统性能监控', url: '系统性能监控.html' },
+        { name: '服务性能监控', url: '服务性能监控.html' },
+        { name: '流量分析', url: 'index.html' }
+    ],
+    operation: [
+        { name: '告警管理', url: '告警管理V1.2.html#rule' },
+        { name: '用量预测', url: '告警管理V1.2.html#forecast' },
+        { name: '告警渠道', url: '告警管理V1.2.html#channel' },
+        { name: '配额管理', url: '配额管理V1.1.html' },
+        { name: '计费管理', url: '计费管理.html' },
+        { name: '账单管理', url: '账单管理.html' },
+        { name: '对账管理', url: '对账管理.html' },
+        { name: '任务管理', url: '任务管理&合同管理V1.3.html' }
+    ],
+    personal: [
+        { name: '我的审批', url: '个人中心V1.3.html#approval' },
+        { name: '我的收藏', url: '个人中心V1.3.html#favorites' },
+        { name: '消息通知', url: '个人中心V1.3.html#message' }
+    ],
+    system: [
+        { name: '调用日志', url: '调用日志.html' },
+        { name: '操作日志', url: 'index.html' },
+        { name: '用户管理', url: '用户管理.html' },
+        { name: '权限管理', url: '权限管理.html' },
+        { name: '数据字典', url: 'index.html' }
+    ]
+};
+
+function showNavMenu(menuKey) {
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const menu = navMenus[menuKey] || [];
+    const sideMenu = document.getElementById('sideMenu');
+    
+    if (menu.length === 0) {
+        sideMenu.innerHTML = '<div class="menu-item active"><div class="menu-left"><i class="el-icon-home"></i>首页</div></div>';
+        return;
+    }
+    
+    let html = '';
+    menu.forEach((item, index) => {
+        html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><div class="menu-left"><i class="el-icon-document"></i>${item.name}</div></div>`;
+    });
+    sideMenu.innerHTML = html;
+}
+
+renderMessageTable();
+updateMessageIconBadge();
+
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash.slice(1);
+    if (hash === 'approval' || hash === 'favorites' || hash === 'message') {
+        switchModule(hash);
+    }
+});
+</script>
+</body>
+</html>

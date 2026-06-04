@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 计费管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- 引入 flatpickr 时间控件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100;
+            height: 80px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* 左侧菜单 */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容区域 - flex布局 */
+        .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+        .forecast-layout { flex: 1; display: flex; flex-direction: column; }
+        .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        .flex-table-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* 筛选栏 */
+        .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
+        .filter-item input, .filter-item select { width: 222px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: 1px solid #f89d34; padding: 8px 20px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-primary:hover { background: #e88a2e; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 14px; cursor: pointer; color: #666666; }
+        .btn-default:hover { border-color: #f89d34; color: #f89d34; }
+        .btn-add { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 0; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; width: 64px; height: 32px; line-height: 32px; }
+        .btn-add:hover { background: #fef5ec; }
+
+        /* 内容区域 */
+        .action-bar { padding: 0 0 10px 0; display: flex; justify-content: flex-start; }
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; padding: 0; max-height: 460px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-enabled { background: #e6f7e6; color: #52c41a; }
+        .status-disabled { background: #ffe7e7; color: #f5222d; }
+
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 14px; margin: 0 6px; display: inline-block; }
+        .action-link:hover { text-decoration: underline; }
+        .action-link.danger { color: #f5222d; }
+
+        /* 分页 */
+        .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .col-period { white-space: nowrap; font-size: 12px; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+
+        /* 弹窗 */
+        .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .edit-modal { background: #fff; width: 720px; max-width: 90%; border-radius: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; max-height: 85vh; display: flex; flex-direction: column; }
+        .edit-modal .modal-header { padding: 16px 20px; border-bottom: 0; display: flex; align-items: center; justify-content: space-between; }
+        .edit-modal .modal-title { font-size: 18px; font-weight: 600; color: #333; }
+        .edit-modal .modal-close { font-size: 20px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
+        .edit-modal .modal-close:hover { color: #f5222d; }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .edit-modal .modal-footer { padding: 12px 20px; border-top: 0; display: flex; justify-content: center; gap: 12px; }
+        .btn-save { background: #f89d34; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-save:hover { background: #e68f2a; }
+        .btn-cancel { background: #fff; color: #666; border: 1px solid #dcdfe6; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-cancel:hover { background: #f5f7fa; }
+
+        /* 表单 */
+        .form-row-horizontal { display: flex; align-items: flex-start; margin-bottom: 20px; }
+        .form-row-horizontal label { width: 100px; text-align: right; padding-right: 12px; line-height: 36px; font-size: 14px; font-weight: 500; color: #666; flex-shrink: 0; margin-right: 12px; }
+        .edit-modal label .required { color: #f5222d; margin-left: 2px; }
+        .form-row-horizontal .form-control { flex: 1; }
+        .form-row-horizontal .form-control input,
+        .form-row-horizontal .form-control select,
+        .form-row-horizontal .form-control textarea {
+            width: 100%; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333;
+        }
+        .form-row-horizontal .form-control textarea { height: 80px; padding: 8px 12px; resize: vertical; }
+        .form-row-horizontal .form-control input:focus,
+        .form-row-horizontal .form-control select:focus,
+        .form-row-horizontal .form-control textarea:focus { border-color: #f89d34; }
+
+        .strategy-fields { background: #fafbfc; border: 1px solid #ebeef5; border-radius: 4px; padding: 16px; margin-top: 8px; }
+        .strategy-fields .field-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .strategy-fields .field-row:last-child { margin-bottom: 0; }
+        .strategy-fields .field-row label { width: 80px; text-align: right; font-size: 13px; color: #666; flex-shrink: 0; }
+        .strategy-fields .field-row input,
+        .strategy-fields .field-row select { width: 200px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333; outline: none; }
+        .strategy-fields .field-row input:focus,
+        .strategy-fields .field-row select:focus { border-color: #f89d34; }
+
+        /* 阶梯表格 */
+        .tier-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+        .tier-table th { background: #F5F7FA; padding: 8px 12px; border: 1px solid #ebeef5; font-weight: 600; color: #777; text-align: center; }
+        .tier-table td { padding: 8px 12px; border: 1px solid #ebeef5; text-align: center; }
+        .tier-table input { width: 120px; height: 28px; padding: 0 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; text-align: center; color: #333; outline: none; }
+        .tier-table input:focus { border-color: #f89d34; }
+        .btn-add-tier { background: #fff; color: #f89d34; border: 1px dashed #f89d34; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 8px; }
+        .btn-add-tier:hover { background: #fef5ec; }
+
+        /* 价格单元格 */
+        .price-cell { font-size: 12px; line-height: 1.6; color: #333; text-align: center; }
+
+        /* 确认弹窗 */
+        .confirm-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; }
+        .confirm-mask.show { display: flex; }
+        .confirm-box { background: #fff; border-radius: 8px; width: 400px; padding: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+        .confirm-box .confirm-icon { font-size: 22px; color: #fa8c16; margin-right: 12px; }
+        .confirm-box .confirm-title { font-size: 16px; font-weight: 600; color: #1f2f3d; margin-bottom: 12px; display: flex; align-items: center; }
+        .confirm-box .confirm-msg { font-size: 14px; color: #666; margin-bottom: 24px; padding-left: 34px; }
+        .confirm-box .confirm-actions { display: flex; justify-content: flex-end; gap: 12px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
+            <a class="nav-tab active" href="告警管理V1.2.html#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html#approval" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab" href="用户管理.html" style="text-decoration:none;">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">3</span>
+            </div>
+            <div class="tenant-info">
+                <span class="tenant-name">某某金控</span>
+            </div>
+            <div class="avatar">席</div>
+        </div>
+    </nav>
+
+    <!-- 左侧菜单 -->
+    <aside class="side-menu">
+        <a class="menu-item" href="告警管理V1.2.html#rule"><i class="el-icon-bell"></i>告警管理</a>
+        <a class="menu-item" href="告警管理V1.2.html#forecast"><i class="el-icon-data-analysis"></i>用量预测</a>
+        <a class="menu-item" href="告警管理V1.2.html#channel"><i class="el-icon-message"></i>告警渠道</a>
+        <a class="menu-item" href="配额管理V1.1.html"><i class="el-icon-s-grid"></i>配额管理</a>
+        <a class="menu-item active" href="计费管理.html"><i class="el-icon-s-finance"></i>计费管理</a>
+        <a class="menu-item" href="账单管理.html"><i class="el-icon-document"></i>账单管理</a>
+        <a class="menu-item" href="对账管理.html"><i class="el-icon-s-check"></i>对账管理</a>
+        <a class="menu-item" href="任务管理&合同管理V1.3.html#task"><i class="el-icon-s-order"></i>任务管理</a>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="breadcrumb">
+            <span>运营管理</span>
+            <span class="separator">/</span>
+            <span class="current">计费管理</span>
+        </div>
+        <div class="content-card">
+        <div class="forecast-layout">
+
+            <!-- 筛选栏 -->
+            <div class="filter-section">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item">
+                            <label>供应商</label>
+                            <select id="filterSupplier">
+                                <option value="">全部</option>
+                                <option>天眼查</option>
+                                <option>企查查</option>
+                                <option>中诚信</option>
+                                <option>百行征信</option>
+                                <option>前海征信</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>API</label>
+                            <select id="filterApi">
+                                <option value="">全部</option>
+                                <option>企业基本信息</option>
+                                <option>司法风险</option>
+                                <option>企业图谱</option>
+                                <option>信用评分</option>
+                                <option>个人信用报告</option>
+                                <option>反欺诈评分</option>
+                                <option>经营状况</option>
+                                <option>融资历史</option>
+                                <option>知识产权</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>状态</label>
+                            <select id="filterStatus">
+                                <option value="">全部</option>
+                                <option>启用</option>
+                                <option>停用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <button class="btn-primary" onclick="doQuery()">查询</button>
+                        <button class="btn-default" onclick="doReset()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="forecast-white-card">
+                <div class="action-bar">
+                    <button class="btn-add" onclick="openAddModal()">新增</button>
+                </div>
+                <div class="flex-table-container">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>供应商</th>
+                                <th>API</th>
+                                <th>计费模式</th>
+                                <th>单价</th>
+                                <th>周期范围</th>
+                                <th>状态</th>
+                                <th>创建人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billingTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="paginationWrap"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+</div>
+
+<!-- 新增/编辑弹窗 -->
+<div class="modal-mask" id="editModal">
+    <div class="edit-modal">
+        <div class="modal-header">
+            <span class="modal-title" id="editModalTitle">新增计费规则</span>
+            <i class="el-icon-close modal-close" onclick="closeEditModal()"></i>
+        </div>
+        <div class="modal-body">
+            <div class="form-row-horizontal">
+                <label><span class="required">*</span>供应商</label>
+                <div class="form-control">
+                    <select id="editSupplier">
+                        <option value="">请选择供应商</option>
+                        <option>天眼查</option>
+                        <option>企查查</option>
+                        <option>中诚信</option>
+                        <option>百行征信</option>
+                        <option>前海征信</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-horizontal">
+                <label><span class="required">*</span>API</label>
+                <div class="form-control">
+                    <select id="editApi">
+                        <option value="">请选择API</option>
+                        <option>企业基本信息</option>
+                        <option>司法风险</option>
+                        <option>企业图谱</option>
+                        <option>信用评分</option>
+                        <option>个人信用报告</option>
+                        <option>反欺诈评分</option>
+                        <option>经营状况</option>
+                        <option>融资历史</option>
+                        <option>知识产权</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-horizontal">
+                <label><span class="required">*</span>计费模式</label>
+                <div class="form-control">
+                    <select id="strategySelect" onchange="onStrategyChange()">
+                        <option value="">请选择计费模式</option>
+                        <option value="perCall">按次计费</option>
+                        <option value="volume">包量计费</option>
+                        <option value="tiered">阶梯计费</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 按次计费 -->
+            <div class="form-row-horizontal" id="fields-perCall" style="display:none;">
+                <label>计费明细</label>
+                <div class="form-control">
+                    <div class="strategy-fields">
+                        <div class="field-row">
+                            <label>单价</label>
+                            <input type="text" id="edit_perCall_price" placeholder="如: 1.0"> <span style="color:#999;font-size:13px;">元/次</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 按户计费（已删除） -->
+
+            <!-- 包年计费（已删除） -->
+
+            <!-- 包量计费 -->
+            <div class="form-row-horizontal" id="fields-volume" style="display:none;">
+                <label>计费明细</label>
+                <div class="form-control">
+                    <div class="strategy-fields">
+                        <div class="field-row">
+                            <label>包含次数</label>
+                            <input type="text" id="edit_volume_count" placeholder="如: 100000"> <span style="color:#999;font-size:13px;">次</span>
+                        </div>
+                        <div class="field-row">
+                            <label>包量费用</label>
+                            <input type="text" id="edit_volume_fee" placeholder="如: 80000"> <span style="color:#999;font-size:13px;">元</span>
+                        </div>
+                        <div class="field-row">
+                            <label>超额单价</label>
+                            <input type="text" id="edit_volume_overprice" placeholder="如: 1.0"> <span style="color:#999;font-size:13px;">元/次</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 阶梯计费 -->
+            <div class="form-row-horizontal" id="fields-tiered" style="display:none;">
+                <label>计费明细</label>
+                <div class="form-control">
+                    <div class="strategy-fields">
+                        <table class="tier-table" id="tierTable">
+                            <thead>
+                                <tr>
+                                    <th>档位</th>
+                                    <th>起始(次)</th>
+                                    <th>截止(次)</th>
+                                    <th>单价(元/次)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>第1档</td>
+                                    <td><input type="text" value="0"></td>
+                                    <td><input type="text" value="50000"></td>
+                                    <td><input type="text" value="2.0"></td>
+                                </tr>
+                                <tr>
+                                    <td>第2档</td>
+                                    <td><input type="text" value="50001"></td>
+                                    <td><input type="text" value="100000"></td>
+                                    <td><input type="text" value="1.5"></td>
+                                </tr>
+                                <tr>
+                                    <td>第3档</td>
+                                    <td><input type="text" value="100001"></td>
+                                    <td><input type="text" placeholder="不限"></td>
+                                    <td><input type="text" value="1.0"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn-add-tier" onclick="addTier()">+ 添加档位</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 混合计费（已删除） -->
+
+            <div class="form-row-horizontal">
+                <label>周期范围</label>
+                <div class="form-control" style="display:flex;align-items:center;gap:8px;">
+                    <input type="text" class="datepicker-input" id="editDateStart" placeholder="开始时间" style="flex:1;height:36px;">
+                    <span style="color:#999;">~</span>
+                    <input type="text" class="datepicker-input" id="editDateEnd" placeholder="结束时间" style="flex:1;height:36px;">
+                </div>
+            </div>
+            <div class="form-row-horizontal">
+                <label>状态</label>
+                <div class="form-control">
+                    <select id="editStatus">
+                        <option>启用</option>
+                        <option>停用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-horizontal">
+                <label>备注</label>
+                <div class="form-control">
+                    <textarea id="editRemark" placeholder="请输入备注信息"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" id="editModalFooter">
+            <button class="btn-default" onclick="closeEditModal()">取消</button>
+            <button class="btn-primary" onclick="saveRecord()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="confirm-mask" id="confirmDialog">
+    <div class="confirm-box">
+        <div class="confirm-title"><i class="el-icon-warning confirm-icon"></i><span id="confirmTitle">确认删除</span></div>
+        <div class="confirm-msg" id="confirmMsg">确定要删除该计费规则吗？删除后不可恢复。</div>
+        <div class="confirm-actions">
+            <button class="btn-cancel" onclick="closeConfirm()">取消</button>
+            <button class="btn-save" id="confirmOkBtn" onclick="confirmOk()">确定</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 模式名映射 ==========
+    var modeNames = { perCall:'按次计费', volume:'包量计费', tiered:'阶梯计费' };
+
+    // ========== 数据 ==========
+    var allData = [
+        { id:1, supplier:'天眼查', api:'企业基本信息', mode:'perCall', priceText:'¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+          detail:{ price:'1.0' } },
+        { id:2, supplier:'天眼查', api:'司法风险', mode:'volume', priceText:'¥60,000/8万次<br>超额¥0.8/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+          detail:{ count:'80000', fee:'60000', overprice:'0.8' } },
+        { id:3, supplier:'企查查', api:'企业基本信息', mode:'tiered', priceText:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', period:'2024-03-01 ~ 2025-02-28', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算',
+          detail:{ tiers:[{from:'0',to:'30000',price:'1.8'},{from:'30001',to:'80000',price:'1.2'},{from:'80001',to:'',price:'0.8'}] } },
+        { id:4, supplier:'企查查', api:'企业图谱', mode:'volume', priceText:'¥80,000/10万次<br>超额¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+          detail:{ count:'100000', fee:'80000', overprice:'1.0' } },
+        { id:5, supplier:'中诚信', api:'信用评分', mode:'tiered', priceText:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', period:'2024-04-01 ~ 2025-03-31', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算，次月重置档位计数。',
+          detail:{ tiers:[{from:'0',to:'50000',price:'2.0'},{from:'50001',to:'100000',price:'1.5'},{from:'100001',to:'',price:'1.0'}] } },
+        { id:6, supplier:'百行征信', api:'个人信用报告', mode:'perCall', priceText:'¥2.5/次', period:'2024-06-01 ~ 2025-05-31', status:'启用', creator:'金控-管理员', remark:'',
+          detail:{ price:'2.5' } },
+        { id:7, supplier:'前海征信', api:'反欺诈评分', mode:'perCall', priceText:'¥0.8/次', period:'2023-07-01 ~ 2024-06-30', status:'停用', creator:'金控-管理员', remark:'',
+          detail:{ price:'0.8' } },
+        { id:8, supplier:'天眼查', api:'经营状况', mode:'volume', priceText:'¥50,000/5万次<br>超额¥1.2/次', period:'2024-01-01 ~ 2024-12-31', status:'停用', creator:'金控-管理员', remark:'',
+          detail:{ count:'50000', fee:'50000', overprice:'1.2' } }
+    ];
+
+    var nextId = 9;
+    var editingId = null;
+    var confirmCallback = null;
+    var isViewMode = false;
+
+    // ========== 分页状态 ==========
+    var currentPage = 1;
+    var pageSize = 10;
+    var filteredData = [];
+
+    // ========== 初始化 ==========
+    flatpickr("#editDateStart", { dateFormat:"Y-m-d", locale:"zh", allowInput:true });
+    flatpickr("#editDateEnd", { dateFormat:"Y-m-d", locale:"zh", allowInput:true });
+
+    doQuery();
+
+    // ========== 渲染表格（分页 + 序号） ==========
+    function renderTable(data) {
+        filteredData = data;
+        var total = data.length;
+        var totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        var start = (currentPage - 1) * pageSize;
+        var end = Math.min(start + pageSize, total);
+        var pageData = data.slice(start, end);
+
+        var tbody = document.getElementById('billingTableBody');
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < pageData.length; i++) {
+                var r = pageData[i];
+                var seq = start + i + 1; // 编号 = 全局序号
+                var statusClass = r.status === '启用' ? 'status-enabled' : 'status-disabled';
+                var toggleText = r.status === '启用' ? '停用' : '启用';
+                var toggleClass = r.status === '启用' ? '' : ' danger';
+                html += '<tr>'
+                    + '<td>' + seq + '</td>'
+                    + '<td>' + r.supplier + '</td>'
+                    + '<td>' + r.api + '</td>'
+                    + '<td>' + modeNames[r.mode] + '</td>'
+                    + '<td class="price-cell">' + r.priceText + '</td>'
+                    + '<td class="col-period">' + r.period + '</td>'
+                    + '<td><span class="status-badge ' + statusClass + '">' + r.status + '</span></td>'
+                    + '<td>' + r.creator + '</td>'
+                    + '<td>'
+                    + '<a class="action-link" onclick="openEditModal(' + r.id + ')">编辑</a>'
+                    + '<a class="action-link" onclick="openViewModal(' + r.id + ')">查看</a>'
+                    + '<a class="action-link' + toggleClass + '" onclick="toggleStatus(' + r.id + ')">' + toggleText + '</a>'
+                    + '<a class="action-link danger" onclick="deleteRecord(' + r.id + ')">删除</a>'
+                    + '</td></tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        renderPagination(total, totalPages);
+    }
+
+    // ========== 渲染分页栏 ==========
+    function renderPagination(total, totalPages) {
+        var html = '<span class="total-text">共 ' + total + ' 条</span>';
+        html += '<button class="page-btn" ' + (currentPage === 1 ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage - 1) + ')">&lt;</button>';
+
+        // 计算页码范围（最多显示5个）
+        var startP = Math.max(1, currentPage - 2);
+        var endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) startP = Math.max(1, endP - 4);
+        for (var p = startP; p <= endP; p++) {
+            html += '<span class="page-number' + (p === currentPage ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</span>';
+        }
+
+        html += '<button class="page-btn" ' + (currentPage === totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage + 1) + ')">&gt;</button>';
+
+        html += '<select class="page-size-select" onchange="changePageSize(this.value)">';
+        var sizes = [10, 20, 50];
+        for (var i = 0; i < sizes.length; i++) {
+            html += '<option' + (sizes[i] === pageSize ? ' selected' : '') + '>' + sizes[i] + '条/页</option>';
+        }
+        html += '</select>';
+
+        html += '<div class="jump-section"><span>前往</span>'
+            + '<input type="text" id="jumpPageInput" value="' + currentPage + '" onkeydown="if(event.key===\'Enter\') jumpToPage()">'
+            + '<span>页</span></div>';
+
+        document.getElementById('paginationWrap').innerHTML = html;
+    }
+
+    function goToPage(p) {
+        currentPage = p;
+        renderTable(filteredData);
+    }
+
+    function changePageSize(size) {
+        pageSize = parseInt(size) || 10;
+        currentPage = 1;
+        renderTable(filteredData);
+    }
+
+    function jumpToPage() {
+        var val = parseInt(document.getElementById('jumpPageInput').value);
+        if (!isNaN(val) && val >= 1) {
+            currentPage = val;
+            renderTable(filteredData);
+        }
+    }
+
+    // ========== 查询 & 重置 ==========
+    function doQuery() {
+        var supplier = document.getElementById('filterSupplier').value;
+        var api = document.getElementById('filterApi').value;
+        var status = document.getElementById('filterStatus').value;
+        var filtered = allData.filter(function(r) {
+            if (supplier && r.supplier !== supplier) return false;
+            if (api && r.api !== api) return false;
+            if (status && r.status !== status) return false;
+            return true;
+        });
+        renderTable(filtered);
+    }
+
+    function doReset() {
+        document.getElementById('filterSupplier').value = '';
+        document.getElementById('filterApi').value = '';
+        document.getElementById('filterStatus').value = '';
+        currentPage = 1;
+        renderTable(allData);
+    }
+
+    // ========== 切换状态 ==========
+    function toggleStatus(id) {
+        var r = findRecord(id);
+        if (!r) return;
+        r.status = r.status === '启用' ? '停用' : '启用';
+        renderTable(filteredData);
+    }
+
+    // ========== 删除 ==========
+    function deleteRecord(id) {
+        var r = findRecord(id);
+        if (!r) return;
+        showConfirm('确认删除', '确定要删除编号 ' + r.id + ' 的计费规则吗？删除后不可恢复。', function() {
+            for (var i = 0; i < allData.length; i++) {
+                if (allData[i].id === id) { allData.splice(i, 1); break; }
+            }
+            doQuery();
+        });
+    }
+
+    // ========== 新增 ==========
+    function openAddModal() {
+        editingId = null;
+        isViewMode = false;
+        document.getElementById('editModalTitle').textContent = '新增计费规则';
+        restoreEditFooter();
+        resetEditForm();
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    // ========== 编辑 ==========
+    function openEditModal(id) {
+        var r = findRecord(id);
+        if (!r) return;
+        editingId = id;
+        isViewMode = false;
+        document.getElementById('editModalTitle').textContent = '编辑计费规则';
+        restoreEditFooter();
+        resetEditForm();
+
+        document.getElementById('editSupplier').value = r.supplier;
+        document.getElementById('editApi').value = r.api;
+        document.getElementById('strategySelect').value = r.mode;
+        document.getElementById('editStatus').value = r.status;
+        document.getElementById('editRemark').value = r.remark || '';
+
+        var parts = r.period.split(' ~ ');
+        document.getElementById('editDateStart')._flatpickr.setDate(parts[0] || '');
+        document.getElementById('editDateEnd')._flatpickr.setDate(parts[1] || '');
+
+        // 回填各模式字段
+        if (r.mode === 'perCall' && r.detail) {
+            document.getElementById('edit_perCall_price').value = r.detail.price || '';
+        } else if (r.mode === 'volume' && r.detail) {
+            document.getElementById('edit_volume_count').value = r.detail.count || '';
+            document.getElementById('edit_volume_fee').value = r.detail.fee || '';
+            document.getElementById('edit_volume_overprice').value = r.detail.overprice || '';
+        } else if (r.mode === 'tiered' && r.detail && r.detail.tiers) {
+            var ttb = document.querySelector('#tierTable tbody');
+            ttb.innerHTML = '';
+            tierCount = 0;
+            for (var i = 0; i < r.detail.tiers.length; i++) {
+                tierCount++;
+                var t = r.detail.tiers[i];
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>第' + tierCount + '档</td>'
+                    + '<td><input type="text" value="' + (t.from||'') + '"></td>'
+                    + '<td><input type="text" value="' + (t.to||'') + '"></td>'
+                    + '<td><input type="text" value="' + (t.price||'') + '"></td>';
+                ttb.appendChild(tr);
+            }
+        }
+
+        onStrategyChange();
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    // ========== 保存 ==========
+    function saveRecord() {
+        var supplier = document.getElementById('editSupplier').value;
+        var api = document.getElementById('editApi').value;
+        var mode = document.getElementById('strategySelect').value;
+        var status = document.getElementById('editStatus').value;
+        var remark = document.getElementById('editRemark').value;
+        var dateStart = document.getElementById('editDateStart').value;
+        var dateEnd = document.getElementById('editDateEnd').value;
+
+        if (!supplier || !api || !mode) {
+            alert('请填写必填项：供应商、API、计费模式');
+            return;
+        }
+
+        var period = (dateStart || '') + ' ~ ' + (dateEnd || '');
+        var priceText = '';
+        var detail = {};
+
+        // 收集各模式数据
+        if (mode === 'perCall') {
+            var p = document.getElementById('edit_perCall_price').value || '0';
+            priceText = '¥' + p + '/次';
+            detail = { price: p };
+        } else if (mode === 'volume') {
+            var cnt = document.getElementById('edit_volume_count').value || '0';
+            var fee = document.getElementById('edit_volume_fee').value || '0';
+            var op = document.getElementById('edit_volume_overprice').value || '0';
+            priceText = '¥' + Number(fee).toLocaleString() + '/' + Number(cnt).toLocaleString() + '次<br>超额¥' + op + '/次';
+            detail = { count: cnt, fee: fee, overprice: op };
+        } else if (mode === 'tiered') {
+            var tiers = [];
+            var trows = document.querySelector('#tierTable tbody').querySelectorAll('tr');
+            var tierTexts = [];
+            for (var i = 0; i < trows.length; i++) {
+                var ti = trows[i].querySelectorAll('input');
+                var from = ti[0].value, to = ti[1].value, tp = ti[2].value;
+                tiers.push({ from: from, to: to, price: tp });
+                var label = to ? (Number(from).toLocaleString() + '-' + Number(to).toLocaleString() + '万') : ('>' + Number(from).toLocaleString());
+                tierTexts.push(label + '¥' + tp);
+            }
+            priceText = tierTexts.join('<br>');
+            detail = { tiers: tiers };
+        }
+
+        if (editingId) {
+            // 编辑
+            var r = findRecord(editingId);
+            if (r) {
+                r.supplier = supplier; r.api = api; r.mode = mode;
+                r.priceText = priceText; r.period = period; r.status = status;
+                r.remark = remark; r.detail = detail;
+            }
+        } else {
+            // 新增 - 插入到第一个
+            allData.unshift({ id: nextId++, supplier: supplier, api: api, mode: mode, priceText: priceText, period: period, status: status, creator: '金控-管理员', remark: remark, detail: detail });
+        }
+
+        closeEditModal();
+        if (editingId === null) {
+            // 新增：跳转到第1页，确保看到编号=1的新记录
+            currentPage = 1;
+        }
+        doQuery();
+    }
+
+    // ========== 查看（复用编辑弹窗，只读模式） ==========
+    function restoreEditFooter() {
+        document.getElementById('editModalFooter').innerHTML =
+            '<button class="btn-default" onclick="closeEditModal()">取消</button>' +
+            '<button class="btn-primary" onclick="saveRecord()">保存</button>';
+    }
+
+    function setFormReadOnly(readonly) {
+        var ids = ['editSupplier','editApi','strategySelect','editStatus','editRemark',
+            'edit_perCall_price',
+            'edit_volume_count','edit_volume_fee','edit_volume_overprice'];
+        for (var i = 0; i < ids.length; i++) {
+            var el = document.getElementById(ids[i]);
+            if (el) el.disabled = readonly;
+        }
+        // 禁用日期
+        if (document.getElementById('editDateStart')._flatpickr)
+            document.getElementById('editDateStart')._flatpickr._input.disabled = readonly;
+        if (document.getElementById('editDateEnd')._flatpickr)
+            document.getElementById('editDateEnd')._flatpickr._input.disabled = readonly;
+        // 禁用阶梯表格和账户表格中的所有 input 和 button
+        var tierInputs = document.querySelectorAll('#tierTable input');
+        for (var i = 0; i < tierInputs.length; i++) tierInputs[i].disabled = readonly;
+        var tierBtns = document.querySelectorAll('#fields-tiered .btn-add-tier');
+        for (var i = 0; i < tierBtns.length; i++) tierBtns[i].style.display = readonly ? 'none' : '';
+        // 禁用下拉
+        var selects = document.querySelectorAll('#editModal select');
+        for (var i = 0; i < selects.length; i++) selects[i].disabled = readonly;
+        // 禁用 textarea
+        var ta = document.getElementById('editRemark');
+        if (ta) ta.disabled = readonly;
+        // 只读时加视觉样式
+        var allInputs = document.querySelectorAll('#editModal input, #editModal select, #editModal textarea');
+        for (var i = 0; i < allInputs.length; i++) {
+            allInputs[i].style.background = readonly ? '#f5f7fa' : '';
+            allInputs[i].style.color = readonly ? '#8c8f99' : '';
+        }
+    }
+
+    function openViewModal(id) {
+        var r = findRecord(id);
+        if (!r) return;
+        isViewMode = true;
+        editingId = id;
+        document.getElementById('editModalTitle').textContent = '查看计费规则';
+        resetEditForm();
+
+        document.getElementById('editSupplier').value = r.supplier;
+        document.getElementById('editApi').value = r.api;
+        document.getElementById('strategySelect').value = r.mode;
+        document.getElementById('editStatus').value = r.status;
+        document.getElementById('editRemark').value = r.remark || '';
+
+        var parts = r.period.split(' ~ ');
+        document.getElementById('editDateStart')._flatpickr.setDate(parts[0] || '');
+        document.getElementById('editDateEnd')._flatpickr.setDate(parts[1] || '');
+
+        if (r.mode === 'perCall' && r.detail) {
+            document.getElementById('edit_perCall_price').value = r.detail.price || '';
+        } else if (r.mode === 'volume' && r.detail) {
+            document.getElementById('edit_volume_count').value = r.detail.count || '';
+            document.getElementById('edit_volume_fee').value = r.detail.fee || '';
+            document.getElementById('edit_volume_overprice').value = r.detail.overprice || '';
+        } else if (r.mode === 'tiered' && r.detail && r.detail.tiers) {
+            var ttb = document.querySelector('#tierTable tbody');
+            ttb.innerHTML = '';
+            tierCount = 0;
+            for (var i = 0; i < r.detail.tiers.length; i++) {
+                tierCount++;
+                var t = r.detail.tiers[i];
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>第' + tierCount + '档</td>'
+                    + '<td><input type="text" value="' + (t.from||'') + '"></td>'
+                    + '<td><input type="text" value="' + (t.to||'') + '"></td>'
+                    + '<td><input type="text" value="' + (t.price||'') + '"></td>';
+                ttb.appendChild(tr);
+            }
+        }
+
+        onStrategyChange();
+        setFormReadOnly(true);
+        // 切换 footer：只读模式只显示关闭按钮（居中）
+        document.getElementById('editModalFooter').innerHTML =
+            '<button class="btn-default" onclick="closeEditModal()">关闭</button>';
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    // ========== 弹窗控制 ==========
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+        if (isViewMode) {
+            isViewMode = false;
+            setFormReadOnly(false);
+            restoreEditFooter();
+        }
+    }
+
+    document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+    function findRecord(id) {
+        for (var i = 0; i < allData.length; i++) {
+            if (allData[i].id === id) return allData[i];
+        }
+        return null;
+    }
+
+    function resetEditForm() {
+        document.getElementById('editSupplier').value = '';
+        document.getElementById('editApi').value = '';
+        document.getElementById('strategySelect').value = '';
+        document.getElementById('editStatus').value = '启用';
+        document.getElementById('editRemark').value = '';
+        document.getElementById('editDateStart').value = '';
+        document.getElementById('editDateEnd').value = '';
+        document.getElementById('edit_perCall_price').value = '';
+        document.getElementById('edit_volume_count').value = '';
+        document.getElementById('edit_volume_fee').value = '';
+        document.getElementById('edit_volume_overprice').value = '';
+        // 重置阶梯
+        var ttb = document.querySelector('#tierTable tbody');
+        ttb.innerHTML = '<tr><td>第1档</td><td><input type="text" value="0"></td><td><input type="text" value="50000"></td><td><input type="text" value="2.0"></td></tr>'
+            + '<tr><td>第2档</td><td><input type="text" value="50001"></td><td><input type="text" value="100000"></td><td><input type="text" value="1.5"></td></tr>'
+            + '<tr><td>第3档</td><td><input type="text" value="100001"></td><td><input type="text" placeholder="不限"></td><td><input type="text" value="1.0"></td></tr>';
+        tierCount = 3;
+        hideAllStrategyFields();
+    }
+
+    // ========== 模式切换 ==========
+    function hideAllStrategyFields() {
+        var fields = ['perCall', 'volume', 'tiered'];
+        for (var i = 0; i < fields.length; i++) {
+            document.getElementById('fields-' + fields[i]).style.display = 'none';
+        }
+    }
+    function onStrategyChange() {
+        hideAllStrategyFields();
+        var val = document.getElementById('strategySelect').value;
+        if (val) {
+            document.getElementById('fields-' + val).style.display = 'flex';
+        }
+    }
+
+    // ========== 阶梯操作 ==========
+    var tierCount = 3;
+    function addTier() {
+        tierCount++;
+        var tbody = document.querySelector('#tierTable tbody');
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>第' + tierCount + '档</td>'
+            + '<td><input type="text" placeholder="起始"></td>'
+            + '<td><input type="text" placeholder="截止"></td>'
+            + '<td><input type="text" placeholder="单价"></td>';
+        tbody.appendChild(tr);
+    }
+
+    // ========== 确认弹窗 ==========
+    function showConfirm(title, msg, callback) {
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMsg').textContent = msg;
+        confirmCallback = callback;
+        document.getElementById('confirmDialog').classList.add('show');
+    }
+    function closeConfirm() {
+        document.getElementById('confirmDialog').classList.remove('show');
+        confirmCallback = null;
+    }
+    function confirmOk() {
+        if (confirmCallback) confirmCallback();
+        closeConfirm();
+    }
+    document.getElementById('confirmDialog').addEventListener('click', function(e) { if (e.target === this) closeConfirm(); });
+</script>
+</body>
+</html>

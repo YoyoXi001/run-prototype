@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 告警管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans SC', 'Inter', sans-serif; background: #f0f2f6; color: #666; font-size: 14px; }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100; height: 80px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-img { height: 40px; width: auto; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', sans-serif; letter-spacing: 1px; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', sans-serif; color: #333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 40px; height: 40px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 18px; cursor: pointer; }
+
+        /* 左侧菜单 */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-group { margin-bottom: 8px; }
+        .menu-group-title { padding: 12px 20px; font-weight: 600; color: #333; font-size: 14px; background: #fafcff; border-bottom: 0px solid #ebeef5; margin-bottom: 8px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; color: #f89d34; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
+        .menu-item.has-submenu { padding-right: 20px; }
+        .menu-item.has-submenu .submenu-arrow { font-size: 12px; transition: transform 0.3s; margin-left: auto; width: auto; }
+        .menu-item.has-submenu.active .submenu-arrow { transform: rotate(180deg); }
+        .submenu { display: none; padding-left: 64px; }
+        .submenu.active { display: block; }
+        .submenu-item { 
+            display: flex; align-items: center; 
+            width: 176px; height: 44px; padding: 0 0 0 20px; 
+            cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; 
+            color: #333333; transition: 0.3s; background: transparent; 
+        }
+        .submenu-item:hover { background: #fef5ec; color: #f89d34; }
+        .submenu-item.active { background: #fef5ec; color: #f89d34; }
+
+        /* 右侧内容区域 - 背景色 #F5F7FA，并让内容区域充满灵活高度 */
+        .main-content { 
+            margin-left: 240px; 
+            padding: 8px 16px 16px 16px; 
+            min-height: calc(100vh - 80px); 
+            background: #F5F7FA;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-card { 
+            background: transparent; 
+            border-radius: 0; 
+            padding: 0; 
+            box-shadow: none;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        /* 用量预测模块特有：让 white-card 占据剩余高度并让内部布局自适应底部延伸 */
+        .forecast-layout {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .white-card {
+            background: #fff;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        /* 让表格容器和分页自然撑开，但底部延伸通过flex自动实现 */
+        .flex-table-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 0;
+        }
+        .table-container { 
+            overflow-x: auto; 
+            border: 1px solid #ebeef5; 
+            border-radius: 0; 
+        }
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px; 
+            border: none;
+        }
+        .data-table th, .data-table td { 
+            padding: 12px 12px; 
+            border-bottom: 1px solid #ebeef5; 
+            border-right: 1px solid #ebeef5; 
+            text-align: center; 
+            vertical-align: middle; 
+        }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table th { background: #fafcff; font-weight: 600; color: #555; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .detail-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px; 
+            border: 1px solid #ebeef5;
+        }
+        .detail-table th, .detail-table td { 
+            padding: 12px 12px; 
+            border-bottom: 1px solid #ebeef5; 
+            border-right: 1px solid #ebeef5; 
+            text-align: center; 
+            vertical-align: middle; 
+        }
+        .detail-table th:last-child, .detail-table td:last-child { border-right: none; }
+        .detail-table th { background: #fafcff; font-weight: 600; color: #555; }
+        .detail-table tr:hover td { background: #f8fafc; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-warning { background: #fff7e6; color: #fa8c16; }
+        .status-normal { background: #e6f7e6; color: #52c41a; }
+        .status-active { background: #e6f7e6; color: #52c41a; }
+        .status-inactive { background: #f5f5f5; color: #ccc; }
+        .action-link { color: #0d6cff; cursor: pointer; margin: 0 4px; }
+        
+        /* 帮助图标样式 */
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: #e4e7ed;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            margin-left: 6px;
+            cursor: default;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .help-icon:hover {
+            background: #f89d34;
+            color: #fff;
+        }
+        /* 简单tooltip实现 */
+        .help-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .help-tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 9999;
+            top: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: normal;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .help-tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #333 transparent;
+        }
+        .help-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* 分页栏 */
+        .pagination { padding: 16px 16px 16px 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333; border-top: 0; margin-top: 20px; margin-bottom: 0; }
+        .pagination .total-text { margin-right: 8px; color: #666; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #f89d34; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+
+        .module-view { display: none; }
+        .module-view.active { display: block; }
+        /* 用量预测模块特殊处理，让white-card和外层撑满高度 */
+        #forecastModule.active, #ruleModule.active, #channelModule.active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .forecast-white-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 6px;
+            padding: 16px;
+            padding-bottom: 24px;
+            margin-bottom: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            min-height: 0;
+        }
+        /* 弹窗通用样式 */
+        .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .modal-container { background: #fff; width: 560px; max-width: 95%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #ebeef5; }
+        .modal-header { padding: 16px 20px; display: flex; justify-content: space-between; font-weight: 600; font-size: 16px; background: #fafcff; border-bottom: 1px solid #ebeef5; }
+        .modal-header .title-with-help { display: flex; align-items: center; gap: 6px; }
+        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+        .modal-footer { padding: 12px 20px; display: flex; justify-content: center; gap: 12px; background: #fafcff; border-top: 1px solid #ebeef5; }
+        /* 趋势图弹窗特殊样式 */
+        .trend-modal .modal-container { width: 920px; max-height: 700px; background: #fff; border: 1px solid #ebeef5; }
+        .trend-modal .modal-header { background: #fff; border-bottom: 1px solid #ebeef5; padding: 12px 20px; }
+        .trend-modal .modal-footer { background: #fff; border-top: none; }
+        .trend-modal .modal-body { padding: 12px 20px; max-height: none; overflow: visible; }
+        .title-container { display: flex; align-items: center; gap: 8px; }
+        .main-title { font-size: 16px; font-weight: 600; color: #303133; }
+        .sub-title { font-size: 13px; color: #909399; }
+        .chart-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+        .trend-info-footer { display: flex; justify-content: space-between; padding: 12px 0; margin-top: 12px; border-top: 1px dashed #e4e7ed; }
+        .trend-info-footer .info-item { display: flex; flex-direction: column; gap: 4px; align-items: center; flex: 1; }
+        .trend-info-footer .info-label { font-size: 12px; color: #909399; }
+        .trend-info-footer .info-value { font-size: 13px; color: #303133; font-weight: 600; }
+        .chart-container { height: 320px; }
+        /* 表单弹窗样式 */
+        .form-modal .modal-container { background: #fff; border: 1px solid #ebeef5; }
+        .form-modal .modal-header { background: #fff; border-bottom: 1px solid #ebeef5; }
+        .form-modal .modal-footer { background: #fff; border-top: 1px solid #ebeef5; }
+        .form-row { margin-bottom: 16px; display: flex; align-items: center; justify-content: flex-start; }
+        .form-row label { display: inline-block; width: 90px; font-size: 13px; font-weight: 500; color: #666; flex-shrink: 0; text-align: right; padding-right: 12px; }
+        .form-row input, .form-row select { flex: 1; max-width: 320px; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; }
+        .condition-group { background: #fff; border: 1px solid #e8eaed; border-radius: 12px; padding: 16px; margin-bottom: 16px; margin-left: 0px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.04); width: 560px; }
+        .condition-header { font-weight: 600; margin-bottom: 14px; color: #f89d34; font-size: 14px; padding-bottom: 10px; border-bottom: 1px dashed #f0f0f0; display: flex; align-items: center; gap: 6px; }
+        .condition-header::before { content: ''; width: 4px; height: 14px; background: linear-gradient(180deg, #f89d34 0%, #f5a623 100%); border-radius: 2px; }
+        .condition-item { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; padding: 10px 12px; background: #fafafa; border-radius: 6px; }
+        /* 多选下拉框样式 */
+        .multi-select-container { position: relative; width: 320px; }
+        .multi-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #fff;
+            font-size: 13px;
+            min-height: 36px;
+        }
+        .multi-select-trigger:hover { border-color: #c0c4cc; }
+        .multi-select-trigger.active { border-color: #f89d34; }
+        .multi-select-placeholder { color: #999; }
+        .multi-select-values { color: #666; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .multi-select-trigger i { color: #999; transition: transform 0.2s; }
+        .multi-select-trigger.active i { transform: rotate(180deg); }
+        
+        .multi-select-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .multi-select-search { padding: 8px; border-bottom: 1px solid #ebeef5; }
+        .multi-select-search input {
+            width: 100%;
+            padding: 6px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+        .multi-select-list { max-height: 200px; overflow-y: auto; padding: 4px 0; }
+        .multi-select-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+        }
+        .multi-select-option:hover { background: #f5f7fa; }
+        .multi-select-option input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: #f89d34;
+        }
+        .multi-select-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 8px;
+            border-top: 1px solid #ebeef5;
+        }
+        .condition-item select, .condition-item input { width: 85px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; outline: none; transition: all 0.2s; }
+        .condition-item select:focus, .condition-item input:focus { border-color: #f89d34; box-shadow: 0 0 0 2px rgba(248,157,52,0.1); }
+        .condition-item span { font-size: 13px; color: #666; }
+        .condition-item .action-link { font-size: 12px; color: #f5222d; margin-left: auto; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
+        .condition-item .action-link:hover { background: rgba(245,34,45,0.1); }
+        .select2-container { width: 100% !important; }
+        .select2-container--default .select2-selection--multiple { border: 1px solid #dcdfe6; border-radius: 4px; min-height: 36px; }
+
+        /* 渠道配置弹窗 */
+        .channel-config { display: flex; flex-direction: column; gap: 20px; }
+        .channel-item { border: 1px solid #ebeef5; border-radius: 8px; padding: 16px; }
+        .channel-title { font-weight: 600; margin-bottom: 12px; color: #333; }
+        .channel-field { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; justify-content: flex-start; }
+        .channel-field label { width: 100px; text-align: right; padding-right: 12px; flex-shrink: 0; font-size: 13px; color: #666; }
+        .channel-field input, .channel-field select { flex: 1; max-width: 300px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; }
+        .enable-switch { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        
+        /* 内容区域 */
+        .content-section { background: #fff; border: 1px solid #e9ecef; overflow: hidden; margin-bottom: 16px; }
+        .condition-badge { display: inline-block; background: #f5f7fa; padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 12px; }
+        .level-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+        .level-p0 { background: #f5222d; color: #fff; }
+        .level-p1 { background: #fa8c16; color: #fff; }
+        .level-p2 { background: #fadb14; color: #333; }
+        .level-p3 { background: #52c41a; color: #fff; }
+        .chart-container { width: 100%; height: 450px; margin-top: 10px; }
+        .chart-toolbar { display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 16px; }
+        .action-bar { padding: 0 0 16px 0; }
+        /* 高亮的X轴文字样式（在echarts中通过series的label或itemStyle实现，但渲染时用JS处理）*/
+        .xaxis-highlight {
+            font-weight: bold;
+            fill: #f5222d;
+        }
+        /* 面包屑 */
+        .breadcrumb { 
+            padding: 0; 
+            margin: 0 0 8px 0; 
+            background: transparent; 
+            font-size: 14px; 
+            color: #666; 
+            border: none; 
+        }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+        .filter-section { 
+            background: #fff; 
+            border: 1px solid #e4e7ed; 
+            border-radius: 6px; 
+            margin-bottom: 16px; 
+        }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666; white-space: nowrap; }
+        .filter-item input, .filter-item select {
+            width: 222px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6;
+            border-radius: 4px; font-size: 14px; outline: none; color: #333;
+            transition: border-color 0.2s;
+        }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: none; padding: 6px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 6px 20px; border-radius: 4px; cursor: pointer; color: #666; }
+        .btn-default.active { background: #f89d34; color: #fff; border-color: #f89d34; }
+    
+    /* 告警规则配置新增按钮样式 */
+    .btn-add-rule {
+        background: #fff;
+        color: #f89d34;
+        border: 1px solid #f89d34;
+        padding: 6px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .btn-add-rule:hover {
+        background: #fff8f0;
+    }
+    
+    /* 删除链接样式 */
+    .action-link.danger {
+        color: #f56c6c;
+    }
+    
+    /* 规则弹窗样式 */
+    .form-modal .modal-container {
+        width: 700px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    .form-modal .modal-header {
+        border-bottom: none;
+    }
+    .form-modal .modal-body {
+        padding: 20px;
+    }
+    .form-modal .form-row {
+        display: flex;
+        margin-bottom: 16px;
+    }
+    .form-modal .form-row label {
+        width: 100px;
+        text-align: right;
+        padding-right: 12px;
+        line-height: 32px;
+        font-weight: 500;
+        color: #666;
+    }
+    .form-modal .form-row select,
+    .form-modal .form-row input {
+        flex: 1;
+        max-width: none;
+        width: auto;
+        height: 32px;
+        padding: 0 12px;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        font-size: 14px;
+        outline: none;
+    }
+    .form-modal .form-row select:focus,
+    .form-modal .form-row input:focus {
+        border-color: #f89d34;
+    }
+    .form-modal .modal-footer {
+        border-top: none;
+        padding: 16px 20px;
+    }
+    .form-modal .btn-default:hover {
+        border-color: #f89d34;
+    }
+    .form-modal .btn-primary {
+        background: #fff;
+        color: #f89d34;
+        border: 1px solid #f89d34;
+    }
+    .form-modal .btn-primary:hover {
+        background: #fff8f0;
+    }
+    
+    /* 分页框hover样式 */
+    .pagination button:hover:not(:disabled),
+    .pagination .page-number:hover,
+    .pagination input:hover {
+        border-color: #f89d34;
+    }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <div class="top-nav">
+        <div class="logo-area"><div class="logo-text"><div class="logo-title">外数平台</div><div class="logo-sub">EXTERNAL DATA PLATFORM</div></div></div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="showNavMenu('portal')">数据门户</div>
+            <div class="nav-tab" onclick="showNavMenu('external')">外源管理</div>
+            <div class="nav-tab" onclick="showNavMenu('service')">服务管理</div>
+            <div class="nav-tab" onclick="showNavMenu('monitor')">监控统计</div>
+            <div class="nav-tab active" onclick="showNavMenu('operation')">运营管理</div>
+            <div class="nav-tab" onclick="showNavMenu('personal')">个人中心</div>
+            <div class="nav-tab" onclick="showNavMenu('system')">系统管理</div>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper"><i class="el-icon-bell message-icon"></i><span class="unread-badge-icon">3</span></div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar" style="width:33px;height:33px;font-size:16px;">席</div>
+        </div>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-item active" data-module="rule"><i class="el-icon-bell"></i>告警管理</div>
+        <div class="menu-item" data-module="forecast"><i class="el-icon-trending-up"></i>用量预测</div>
+        <div class="menu-item" data-module="channel"><i class="el-icon-message"></i>告警渠道</div>
+        <div class="menu-item" onclick="navigateTo('配额管理V1.1.html')"><i class="el-icon-tickets"></i>配额管理</div>
+        <div class="menu-item" onclick="navigateTo('计费管理.html')"><i class="el-icon-wallet"></i>计费管理</div>
+        <div class="menu-item" onclick="navigateTo('账单管理.html')"><i class="el-icon-file-text"></i>账单管理</div>
+        <div class="menu-item" onclick="navigateTo('对账管理.html')"><i class="el-icon-settlement"></i>对账管理</div>
+        <div class="menu-item" onclick="navigateTo('任务管理&合同管理V1.3.html#task')"><i class="el-icon-setting"></i>任务管理</div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-card">
+            <div class="breadcrumb"><span>运营管理</span><span class="separator">/</span><span class="current" id="currentModuleName">告警管理</span></div>
+
+            <!-- 用量预测模块 (优化实现底部延伸 + ？提示) -->
+            <div id="forecastModule" class="module-view forecast-layout">
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="filter-left">
+                            <div class="filter-item"><label>租户</label><input type="text" id="forecastTenant" placeholder="请输入租户名称"></div>
+                            <div class="filter-item"><label>供应商</label><select id="forecastSupplier"><option value="">全部</option><option value="企查查">企查查</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div>
+                            <div class="filter-item"><label>API</label><select id="forecastApi"><option value="">全部</option><option value="融资历史">融资历史</option><option value="严重违法记录">严重违法记录</option><option value="企业基本信息">企业基本信息</option><option value="企业规模">企业规模</option><option value="舆情">舆情</option></select></div>
+                            <div class="filter-item"><label>状态</label><select id="forecastStatus"><option value="全部">全部</option><option value="预警">预警</option><option value="正常">正常</option></select></div>
+                        </div>
+                        <div class="filter-right"><button class="btn-primary" id="forecastSearchBtn">查询</button><button class="btn-default" id="forecastResetBtn">重置</button></div>
+                    </div>
+                </div>
+                <!-- 白底卡片区域，将表格和分页包裹，实现flex撑到底部 -->
+                <div class="forecast-white-card">
+                    <div class="flex-table-container">
+                        <div class="table-container">
+                            <table class="data-table"><thead><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>配额总量</th><th>已用配额</th><th>服务到期日 <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">为配额管理中设置的周期范围的截止日期</span></span></th><th>预测耗尽日期</th><th>预测缺口天数</th><th>预测缺口数量</th><th>状态</th><th>操作</th></thead><tbody id="forecastTableBody"></tbody></table>
+                        </div>
+                        <div id="forecastPagination" class="pagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 告警规则配置模块 -->
+            <div id="ruleModule" class="module-view active forecast-layout">
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="filter-left">
+                            <div class="filter-item"><label>规则类型</label><select id="ruleTypeFilter"><option value="">全部</option><option value="合同账单提醒">合同账单提醒</option><option value="服务用量预警">服务用量预警</option><option value="服务异常告警">服务异常告警</option></select></div>
+                            <div class="filter-item"><label>规则名称</label><input type="text" id="ruleNameFilter" placeholder="请输入规则名称"></div>
+                        </div>
+                        <div class="filter-right"><button class="btn-primary" id="ruleSearchBtn">查询</button><button class="btn-default" id="ruleResetBtn">重置</button></div>
+                    </div>
+                </div>
+                <div class="forecast-white-card">
+                    <div class="action-bar"><button class="btn-add-rule" id="addRuleBtn">新增</button></div>
+                    <div class="flex-table-container">
+                        <div class="table-container"><table class="data-table"><thead><th>编号</th><th>租户</th><th>规则类型</th><th>规则名称</th><th>触发条件</th><th>适用范围</th><th>告警级别</th><th>发送对象</th><th>触发频率</th><th>状态</th><th>操作</th></thead><tbody id="ruleTableBody"></tbody></table></div>
+                        <div id="rulePagination" class="pagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 告警渠道管理模块 -->
+            <div id="channelModule" class="module-view forecast-layout">
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="filter-left"><div class="filter-item"><label>租户</label><select id="channelTenantFilter" style="width:150px;"><option value="">全部</option><option value="某某金控">某某金控</option><option value="华润金控">华润金控</option><option value="招商金控">招商金控</option></select></div></div>
+                        <div class="filter-right"><button class="btn-primary" id="channelSearchBtn">查询</button><button class="btn-default" id="channelResetBtn">重置</button></div>
+                    </div>
+                </div>
+                <div class="forecast-white-card">
+                    <div class="flex-table-container">
+                        <div class="table-container"><table class="data-table"><thead><th>租户</th><th>严重程度</th><th>描述</th><th>推送方式</th><th>发送历史</th></thead><tbody id="channelTableBody"></tbody></table></div>
+                        <div id="channelPagination" class="pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 趋势图弹窗 (标题旁增加？提示) -->
+    <div id="trendModal" class="modal-mask trend-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="title-container">
+                    <span class="main-title">用量趋势图</span>
+                    <span class="sub-title" id="trendSubTitle"></span>
+                    <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">为当前服务周期范围内的用量和预测趋势</span></span>
+                </div>
+                <i class="el-icon-close" id="closeTrendModal" style="cursor:pointer;"></i>
+            </div>
+            <div class="modal-body">
+                <div class="chart-toolbar">
+                    <button class="btn-default" id="trendDayBtn">按日</button>
+                    <button class="btn-default" id="trendWeekBtn">按周</button>
+                    <button class="btn-default" id="trendMonthBtn">按月</button>
+                </div>
+                <div id="trendChart" class="chart-container"></div>
+                <div class="trend-info-footer">
+                    <div class="info-item"><span class="info-label">配额总量</span><span class="info-value" id="trendQuotaTotal"></span></div>
+                    <div class="info-item"><span class="info-label">已用配额</span><span class="info-value" id="trendUsed"></span></div>
+                    <div class="info-item"><span class="info-label">服务到期日</span><span class="info-value" id="trendExpireDate"></span></div>
+                    <div class="info-item"><span class="info-label">预测耗尽日期</span><span class="info-value" id="trendPredictDate"></span></div>
+                    <div class="info-item"><span class="info-label">预测缺口天数</span><span class="info-value" id="trendGapDays"></span></div>
+                    <div class="info-item"><span class="info-label">预测缺口数量</span><span class="info-value" id="trendGapAmount"></span></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="closeTrendModalBtn">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 规则弹窗 -->
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="服务用量预警">服务用量预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+                        <div class="multi-select-container">
+                            <div class="multi-select-trigger" onclick="toggleMultiSelect()">
+                                <span class="multi-select-placeholder">请选择时间点</span>
+                                <span class="multi-select-values"></span>
+                                <i class="el-icon-arrow-down"></i>
+                            </div>
+                            <div class="multi-select-dropdown" id="timePointsDropdown" style="display: none;">
+                                <div class="multi-select-search">
+                                    <input type="text" id="timeSearch" placeholder="搜索时间点..." oninput="filterTimePoints()">
+                                </div>
+                                <div class="multi-select-list">
+                                    <label class="multi-select-option"><input type="checkbox" data-value="08:00"><span>08:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="09:00"><span>09:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="10:00"><span>10:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="11:00"><span>11:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="12:00"><span>12:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="13:00"><span>13:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="14:00"><span>14:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="15:00"><span>15:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="16:00"><span>16:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="17:00"><span>17:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="18:00"><span>18:00</span></label>
+                                    <label class="multi-select-option"><input type="checkbox" data-value="19:00"><span>19:00</span></label>
+                                </div>
+                                <div class="multi-select-footer">
+                                    <button class="btn-default" onclick="clearAllTimePoints()">清空</button>
+                                    <button class="btn-primary" onclick="confirmTimePoints()">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div></div></div><div class="modal-footer"><button class="btn-default" id="cancelRuleModal">取消</button><button class="btn-primary" id="saveRuleBtn">保存</button></div></div></div>
+
+    <!-- 发送历史弹窗 -->
+    <div id="sendHistoryModal" class="modal-mask">
+        <div class="modal-container" style="width: 900px;">
+            <div class="modal-header"><span>发送历史</span><i class="el-icon-close" id="closeSendHistoryModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body" style="max-height: 480px; overflow-y: auto;">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>消息内容</th>
+                            <th>推送渠道</th>
+                            <th>状态</th>
+                            <th>接收人</th>
+                            <th>告警级别</th>
+                            <th>发送时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sendHistoryTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="closeSendHistoryModalBtn">关闭</button></div>
+        </div>
+    </div>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+// ======================== 数据定义 ========================
+let forecastList = [
+    { id: 1, tenant: "金控", supplier: "企查查", api: "企业规模", quota: 1000000, used: 800000, expireDate: "2026-12-31", predictEndDate: "2026-11-30", gapDays: 30, gapQuota: 100000, status: "预警" },
+    { id: 2, tenant: "金控", supplier: "企查查", api: "企业基本信息", quota: 2000000, used: 800000, expireDate: "2026-12-31", predictEndDate: "2027-01-31", gapDays: 0, gapQuota: 0, status: "正常" },
+    { id: 3, tenant: "华润金控", supplier: "天眼查", api: "融资历史", quota: 1500000, used: 1200000, expireDate: "2026-10-31", predictEndDate: "2026-09-15", gapDays: 46, gapQuota: 200000, status: "预警" }
+];
+
+// ======================== 公共变量 ========================
+const receivers = ["运维组", "开发组", "审批组", "法务组", "管理员", "服务应用人员", "服务运营人员", "服务管理人员", "服务开发人员", "财务人员"];
+const servicesList = ["融资历史查询", "严重违法查询", "企业基本信息查询", "企业规模查询"];
+const allServices = ["全局", "企查查", ...servicesList];
+
+// ======================== 规则数据 ========================
+let ruleList = [
+    { id: 1, tenant: "某某金控", type: "合同账单提醒", name: "合同到期提醒", conditions: ["距离合同到期日 <= 30 天"], service: "全局", level: "P3提醒", receiver: ["服务管理人员"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" },
+    { id: 2, tenant: "某某金控", type: "服务用量预警", name: "配额用量预警", conditions: ["已用量 >= 80%", "已用量 >= 90%", "已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 3, tenant: "某某金控", type: "服务用量预警", name: "配额用量预测", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
+    { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务异常", conditions: ["服务异常"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" }
+];
+
+// ======================== 渠道数据 ========================
+let channelList = [
+    { id: 1, tenant: "某某金控", level: "P0", desc: "紧急", platform: true, runwork: true, email: true, emailConfig: { host: "smtp.example.com", port: "465", sender: "alert@example.com" }, runworkConfig: { roles: "运维组", names: "张三", email: "zhangsan@example.com", ldap: "zhangsan01" }, platformConfig: { roles: "管理员组", names: "李四", email: "lisi@example.com", ldap: "lisi01" } },
+    { id: 2, tenant: "某某金控", level: "P1", desc: "严重", platform: true, runwork: true, email: true, emailConfig: {}, runworkConfig: {}, platformConfig: {} },
+    { id: 3, tenant: "某某金控", level: "P2", desc: "警告", platform: true, runwork: true, email: false },
+    { id: 4, tenant: "某某金控", level: "P3", desc: "提醒", platform: true, runwork: false, email: false }
+];
+
+// ======================== 发送历史数据 ========================
+let sendHistoryList = [
+    { id: 1, tenant: "某某金控", level: "P0", message: "系统紧急告警：服务异常，请立即处理", channel: "站内消息", status: "成功", sendTime: "2024-01-15 10:30:00", receiver: "李四" },
+    { id: 2, tenant: "某某金控", level: "P0", message: "系统紧急告警：服务异常，请立即处理", channel: "润工作", status: "成功", sendTime: "2024-01-15 10:30:01", receiver: "张三" },
+    { id: 3, tenant: "某某金控", level: "P0", message: "系统紧急告警：服务异常，请立即处理", channel: "邮箱", status: "成功", sendTime: "2024-01-15 10:30:02", receiver: "zhangsan@example.com" },
+    { id: 4, tenant: "某某金控", level: "P1", message: "服务严重告警：API调用超时率超过阈值", channel: "站内消息", status: "成功", sendTime: "2024-01-15 09:15:00", receiver: "李四" },
+    { id: 5, tenant: "某某金控", level: "P1", message: "服务严重告警：API调用超时率超过阈值", channel: "润工作", status: "失败", sendTime: "2024-01-15 09:15:01", receiver: "张三" },
+    { id: 6, tenant: "某某金控", level: "P2", message: "服务警告：配额使用超过80%", channel: "站内消息", status: "成功", sendTime: "2024-01-14 16:45:00", receiver: "李四" },
+    { id: 7, tenant: "某某金控", level: "P2", message: "服务警告：配额使用超过80%", channel: "润工作", status: "成功", sendTime: "2024-01-14 16:45:01", receiver: "张三" },
+    { id: 8, tenant: "某某金控", level: "P3", message: "服务提醒：配额使用超过50%", channel: "站内消息", status: "成功", sendTime: "2024-01-14 14:00:00", receiver: "李四" }
+];
+
+let forecastPage = 1, rulePage = 1, channelPage = 1, pageSize = 10;
+let trendChart = null;
+let currentTrendItem = null;
+let currentTrendPeriod = 'day';
+
+// ======================== 趋势图数据生成 + X轴当前日/周/月高亮 ========================
+function generateTrendData(service, currentUsage, period) {
+    const today = new Date();
+    let xAxis = [], historyData = [], predictData = [], quotaData = [];
+    const quotaTotal = currentTrendItem ? currentTrendItem.quota : 1000000;
+    const baseUsage = currentUsage;
+    let currentIndex = -1;
+    
+    const growthRates = [0.02, 0.05, 0.03, 0.08, 0.04, 0.06, 0.03];
+    
+    if (period === 'day') {
+        const alpha = 0.3;
+        const beta = 0.2;
+        
+        const dailyGrowthRates = [0.05, 0.15, 0.08, 0.20, 0.12, 0.18, 0.07];
+        const avgDailyUsage = Math.floor(baseUsage / 7);
+        
+        for (let i = -7; i <= 7; i++) {
+            let d = new Date(today);
+            d.setDate(today.getDate() + i);
+            let dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+            xAxis.push(dateStr);
+            if (i === 0) currentIndex = xAxis.length - 1;
+            
+            quotaData.push(quotaTotal);
+        }
+        
+        let historyValues = [];
+        let cumulative = 0;
+        
+        for (let i = 0; i <= 7; i++) {
+            if (i === 0) {
+                cumulative = baseUsage - avgDailyUsage * 7;
+            } else {
+                cumulative += Math.floor(avgDailyUsage * (1 + dailyGrowthRates[(i - 1) % dailyGrowthRates.length]));
+            }
+            historyValues.push(Math.max(0, cumulative));
+        }
+        
+        for (let i = 0; i < 15; i++) {
+            if (i <= 7) {
+                historyData.push(historyValues[i]);
+                predictData.push(null);
+            } else {
+                historyData.push(null);
+                predictData.push(null);
+            }
+        }
+        
+        let smoothValues = [];
+        let trendValues = [];
+        smoothValues[0] = historyValues[0];
+        trendValues[0] = historyValues.length > 1 ? historyValues[1] - historyValues[0] : 0;
+        
+        for (let i = 1; i < historyValues.length; i++) {
+            smoothValues[i] = alpha * historyValues[i] + (1 - alpha) * (smoothValues[i-1] + trendValues[i-1]);
+            trendValues[i] = beta * (smoothValues[i] - smoothValues[i-1]) + (1 - beta) * trendValues[i-1];
+        }
+        
+        const lastSmooth = smoothValues[smoothValues.length - 1];
+        const lastTrend = trendValues[trendValues.length - 1];
+        
+        predictData[7] = historyData[7];
+        
+        for (let i = 0; i < 7; i++) {
+            const forecast = lastSmooth + (i + 1) * lastTrend;
+            predictData[8 + i] = Math.max(0, Math.floor(forecast));
+        }
+    } else if (period === 'week') {
+        const weeklyGrowthRates = [0.05, 0.12, 0.08, 0.18, 0.10];
+        const avgWeeklyUsage = Math.floor(baseUsage * 7 / 4);
+        
+        for (let i = -4; i <= 4; i++) {
+            let d = new Date(today);
+            d.setDate(today.getDate() + i * 7);
+            let mon = new Date(d);
+            mon.setDate(d.getDate() - d.getDay() + 1);
+            let sun = new Date(mon);
+            sun.setDate(mon.getDate() + 6);
+            let weekRange = `${mon.getMonth()+1}/${mon.getDate()}~${sun.getMonth()+1}/${sun.getDate()}`;
+            xAxis.push(weekRange);
+            if (i === 0) currentIndex = xAxis.length - 1;
+            quotaData.push(quotaTotal);
+        }
+        
+        let historyValues = [];
+        let cumulative = 0;
+        
+        for (let i = 0; i <= 4; i++) {
+            if (i === 0) {
+                cumulative = baseUsage * 7 - avgWeeklyUsage * 4;
+            } else {
+                cumulative += Math.floor(avgWeeklyUsage * (1 + weeklyGrowthRates[(i - 1) % weeklyGrowthRates.length]));
+            }
+            historyValues.push(Math.max(0, cumulative));
+        }
+        
+        for (let i = 0; i < 9; i++) {
+            if (i <= 4) {
+                historyData.push(historyValues[i]);
+                predictData.push(null);
+            } else {
+                historyData.push(null);
+                predictData.push(null);
+            }
+        }
+        
+        const alpha = 0.3;
+        const beta = 0.2;
+        let smoothValues = [];
+        let trendValues = [];
+        smoothValues[0] = historyValues[0];
+        trendValues[0] = historyValues.length > 1 ? historyValues[1] - historyValues[0] : 0;
+        
+        for (let i = 1; i < historyValues.length; i++) {
+            smoothValues[i] = alpha * historyValues[i] + (1 - alpha) * (smoothValues[i-1] + trendValues[i-1]);
+            trendValues[i] = beta * (smoothValues[i] - smoothValues[i-1]) + (1 - beta) * trendValues[i-1];
+        }
+        
+        const lastSmooth = smoothValues[smoothValues.length - 1];
+        const lastTrend = trendValues[trendValues.length - 1];
+        
+        predictData[4] = historyData[4];
+        
+        for (let i = 0; i < 4; i++) {
+            const forecast = lastSmooth + (i + 1) * lastTrend;
+            predictData[5 + i] = Math.max(0, Math.floor(forecast));
+        }
+    } else {
+        const monthlyGrowthRates = [0.05, 0.12, 0.08, 0.18, 0.10, 0.15];
+        const avgMonthlyUsage = Math.floor(baseUsage * 30 / 6);
+        
+        for (let i = -6; i <= 6; i++) {
+            let d = new Date(today);
+            d.setMonth(today.getMonth() + i);
+            let monthStr = `${d.getFullYear()}-${d.getMonth()+1}`;
+            xAxis.push(monthStr);
+            if (i === 0) currentIndex = xAxis.length - 1;
+            quotaData.push(quotaTotal);
+        }
+        
+        let historyValues = [];
+        let cumulative = 0;
+        
+        for (let i = 0; i <= 6; i++) {
+            if (i === 0) {
+                cumulative = baseUsage * 30 - avgMonthlyUsage * 6;
+            } else {
+                cumulative += Math.floor(avgMonthlyUsage * (1 + monthlyGrowthRates[(i - 1) % monthlyGrowthRates.length]));
+            }
+            historyValues.push(Math.max(0, cumulative));
+        }
+        
+        for (let i = 0; i < 13; i++) {
+            if (i <= 6) {
+                historyData.push(historyValues[i]);
+                predictData.push(null);
+            } else {
+                historyData.push(null);
+                predictData.push(null);
+            }
+        }
+        
+        const alpha = 0.3;
+        const beta = 0.2;
+        let smoothValues = [];
+        let trendValues = [];
+        smoothValues[0] = historyValues[0];
+        trendValues[0] = historyValues.length > 1 ? historyValues[1] - historyValues[0] : 0;
+        
+        for (let i = 1; i < historyValues.length; i++) {
+            smoothValues[i] = alpha * historyValues[i] + (1 - alpha) * (smoothValues[i-1] + trendValues[i-1]);
+            trendValues[i] = beta * (smoothValues[i] - smoothValues[i-1]) + (1 - beta) * trendValues[i-1];
+        }
+        
+        const lastSmooth = smoothValues[smoothValues.length - 1];
+        const lastTrend = trendValues[trendValues.length - 1];
+        
+        predictData[6] = historyData[6];
+        
+        for (let i = 0; i < 6; i++) {
+            const forecast = lastSmooth + (i + 1) * lastTrend;
+            predictData[7 + i] = Math.max(0, Math.floor(forecast));
+        }
+    }
+    return { xAxis, historyData, predictData, quotaData, currentIndex };
+}
+
+function renderTrendChart() {
+    if (!currentTrendItem) return;
+    const { xAxis, historyData, predictData, quotaData, currentIndex } = generateTrendData(currentTrendItem.service, currentTrendItem.used, currentTrendPeriod);
+    const dom = document.getElementById('trendChart');
+    if (!dom) return;
+    if (trendChart) trendChart.dispose();
+    trendChart = echarts.init(dom);
+    // 设置xAxis label样式，将当前索引的标签标红加粗
+    let axisLabelFormatter = function(value, index) {
+        if (index === currentIndex) {
+            return '{red|' + value + '}';
+        }
+        return value;
+    };
+    trendChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['历史用量', '预测用量', '配额总量'], left: 'left' },
+        grid: { containLabel: true, left: 60, right: 30 },
+        xAxis: { 
+            type: 'category', 
+            data: xAxis, 
+            axisLabel: { 
+                rotate: 30, 
+                interval: 0,
+                formatter: axisLabelFormatter,
+                rich: {
+                    red: { color: '#f5222d', fontWeight: 'bold', fontSize: 12 }
+                }
+            } 
+        },
+        yAxis: { type: 'value', name: '已用配额(次)' },
+        series: [
+            { name: '历史用量', type: 'line', smooth: true, data: historyData, lineStyle: { color: '#5470c6' }, areaStyle: { opacity: 0.1 } },
+            { name: '预测用量', type: 'line', smooth: true, data: predictData, lineStyle: { color: '#f89d34', type: 'dashed' } },
+            { name: '配额总量', type: 'line', data: quotaData, lineStyle: { color: '#f5222d', type: 'dotted' } }
+        ]
+    });
+}
+
+// ======================== 用量预测表格 ========================
+function renderForecastTable() {
+    let tenant = document.getElementById('forecastTenant')?.value.trim() || '';
+    let supplier = document.getElementById('forecastSupplier')?.value || '';
+    let api = document.getElementById('forecastApi')?.value || '';
+    let status = document.getElementById('forecastStatus')?.value || '全部';
+    let filtered = forecastList.filter(i => (!tenant || i.tenant.includes(tenant)) && (!supplier || i.supplier===supplier) && (!api || i.api===api) && (status==='全部' || i.status===status));
+    let totalPages = Math.ceil(filtered.length/pageSize)||1;
+    if(forecastPage>totalPages) forecastPage=totalPages;
+    let pageData = filtered.slice((forecastPage-1)*pageSize, forecastPage*pageSize);
+    let tbody = document.getElementById('forecastTableBody');
+    if(!pageData.length){ tbody.innerHTML='<tr><td colspan="12" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateForecastPagination(totalPages,filtered.length); return; }
+    tbody.innerHTML = pageData.map(i=>`<tr>
+        <td>${i.id}</td><td>${escapeHtml(i.tenant)}</td><td>${escapeHtml(i.supplier)}</td><td>${escapeHtml(i.api)}</td>
+        <td>${(i.quota/10000).toFixed(0)}万</td><td>${(i.used/10000).toFixed(0)}万</td>
+        <td>${escapeHtml(i.expireDate)}</td>
+        <td>${escapeHtml(i.predictEndDate)}</td>
+        <td>${i.gapDays>0?i.gapDays+'天':'0天'}</td><td>${(i.gapQuota/10000).toFixed(0)}万</td>
+        <td><span class="status-badge ${i.status==='预警'?'status-warning':'status-normal'}">${i.status}</span></td>
+        <td><a class="action-link" onclick="showTrend(${i.id})">查看趋势</a></td>
+    </tr>`).join('');
+    updateForecastPagination(totalPages,filtered.length);
+}
+function updateForecastPagination(total,totalCount){
+    let cp=forecastPage, container=document.getElementById('forecastPagination');
+    if(!container) return;
+    let html=`<span class="total-text">共 ${totalCount} 条</span><button class="page-btn" ${cp===1?'disabled':''} onclick="changeForecastPage(${cp-1})">‹</button>`;
+    for(let i=Math.max(1,cp-2); i<=Math.min(total,cp+2); i++) html+=`<span class="page-number ${i===cp?'active':''}" onclick="changeForecastPage(${i})">${i}</span>`;
+    html+=`<button class="page-btn" ${cp===total?'disabled':''} onclick="changeForecastPage(${cp+1})">›</button>`;
+    html+=`<select class="page-size-select" onchange="changeForecastPageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option></select>`;
+    html+=`<div class="jump-section"><span>前往</span><input type="number" id="forecastJumpPage" min="1" max="${total}" value="${cp}"><span>页</span></div>`;
+    container.innerHTML=html;
+    document.getElementById('forecastJumpPage')?.addEventListener('change',function(){ let p=parseInt(this.value); if(p>=1&&p<=total) changeForecastPage(p); });
+}
+function changeForecastPage(p){ forecastPage=p; renderForecastTable(); }
+function changeForecastPageSize(s){ pageSize=parseInt(s); forecastPage=1; renderForecastTable(); }
+function showTrend(id){ 
+    currentTrendItem=forecastList.find(i=>i.id===id); 
+    if(!currentTrendItem) return; 
+    currentTrendPeriod='day'; 
+    document.getElementById('trendDayBtn').classList.add('active'); 
+    document.getElementById('trendWeekBtn').classList.remove('active'); 
+    document.getElementById('trendMonthBtn').classList.remove('active'); 
+    
+    document.getElementById('trendSubTitle').textContent = `${currentTrendItem.tenant || ''} - ${currentTrendItem.supplier || ''} - ${currentTrendItem.api || ''}`;
+    document.getElementById('trendQuotaTotal').textContent = formatNumber(currentTrendItem.quota);
+    document.getElementById('trendUsed').textContent = formatNumber(currentTrendItem.used);
+    document.getElementById('trendExpireDate').textContent = currentTrendItem.expireDate || '';
+    document.getElementById('trendPredictDate').textContent = currentTrendItem.predictEndDate || '';
+    document.getElementById('trendGapDays').textContent = (currentTrendItem.gapDays || 0) + '天';
+    document.getElementById('trendGapAmount').textContent = formatNumber(currentTrendItem.gapQuota);
+    
+    renderTrendChart(); 
+    document.getElementById('trendModal').classList.add('active'); 
+}
+function closeTrendModal(){ document.getElementById('trendModal').classList.remove('active'); }
+function setTrendPeriod(period){ 
+    currentTrendPeriod=period; 
+    document.getElementById('trendDayBtn').classList.toggle('active',period==='day'); 
+    document.getElementById('trendWeekBtn').classList.toggle('active',period==='week'); 
+    document.getElementById('trendMonthBtn').classList.toggle('active',period==='month'); 
+    renderTrendChart(); 
+}
+
+// ======================== 规则表格及相关操作 ========================
+let currentRuleId = null;
+let quotaConditions = [{ operator: ">=", value: 80 }];
+let predictConditions = [{ operator: "<=", days: 3 }];
+
+function renderRuleTable() {
+    const type = document.getElementById('ruleTypeFilter')?.value || '';
+    const name = document.getElementById('ruleNameFilter')?.value.trim() || '';
+    let filtered = ruleList.filter(i => (!type || i.type === type) && (!name || i.name.includes(name)));
+    const total = Math.ceil(filtered.length / pageSize) || 1;
+    if (rulePage > total) rulePage = total;
+    const pageData = filtered.slice((rulePage-1)*pageSize, rulePage*pageSize);
+    const tbody = document.getElementById('ruleTableBody');
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateRulePagination(total, filtered.length); return; }
+    tbody.innerHTML = pageData.map(i => {
+        let serviceDisplay = escapeHtml(i.service);
+        if (i.service !== '全局' && i.api) {
+            const apiDisplay = i.api === 'all' ? '不限' : escapeHtml(i.api);
+            serviceDisplay = `${escapeHtml(i.service)}-${apiDisplay}`;
+        }
+        return `<tr>
+        <td>${i.id}</td>
+        <td>${escapeHtml(i.tenant)}</td>
+        <td>${escapeHtml(i.type)}</td>
+        <td>${escapeHtml(i.name)}</td>
+        <td>${i.conditions.map(c => `<span class="condition-badge">${escapeHtml(c)}</span>`).join('')}</td>
+        <td>${serviceDisplay}</td>
+        <td>${escapeHtml(i.level)}</td>
+        <td>${i.receiver.join(',')}</td>
+        <td>${escapeHtml(i.freq)}</td>
+        <td><span class="status-badge ${i.status === '启用' ? 'status-active' : 'status-inactive'}">${i.status}</span></td>
+        <td><a class="action-link" onclick="viewRule(${i.id})">查看</a><a class="action-link" onclick="editRule(${i.id})">编辑</a><a class="action-link" onclick="toggleRuleStatus(${i.id})">${i.status === '启用' ? '停用' : '启用'}</a><a class="action-link danger" onclick="deleteRule(${i.id})">删除</a></td>
+    </tr>`;
+    }).join('');
+    updateRulePagination(total, filtered.length);
+}
+
+function updateRulePagination(total, totalCount) {
+    const cp = rulePage;
+    const container = document.getElementById('rulePagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span><button class="page-btn" ${cp===1?'disabled':''} onclick="changeRulePage(${cp-1})">‹</button>`;
+    const start = Math.max(1, cp-2), end = Math.min(total, cp+2);
+    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===cp?'active':''}" onclick="changeRulePage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${cp===total?'disabled':''} onclick="changeRulePage(${cp+1})">›</button>`;
+    html += `<select class="page-size-select" onchange="changeRulePageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option><option value="100" ${pageSize===100?'selected':''}>100条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="ruleJumpPage" min="1" max="${total}" value="${cp}"><span>页</span></div>`;
+    container.innerHTML = html;
+    document.getElementById('ruleJumpPage')?.addEventListener('change',function(){ let p=parseInt(this.value); if(p>=1&&p<=total) changeRulePage(p); });
+}
+
+function changeRulePage(page) { rulePage = page; renderRuleTable(); }
+function changeRulePageSize(size) { pageSize = parseInt(size); rulePage = 1; renderRuleTable(); }
+
+function updateRuleFormByType() {
+    const type = document.getElementById('ruleType').value;
+    let ruleNames = [];
+    if (type === '合同账单提醒') ruleNames = ["合同到期提醒"];
+    else if (type === '服务用量预警') ruleNames = ["配额用量预警", "配额用量预测"];
+    else ruleNames = ["服务异常"];
+    const nameSelect = document.getElementById('ruleNameSelect');
+    nameSelect.innerHTML = '<option value="">请选择规则名称</option>' + ruleNames.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+
+function renderConditions(ruleName) {
+    const container = document.getElementById('dynamicConditions');
+    if (!ruleName || ruleName === '') {
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">触发条件</div><div style="color:#999;">请先选择规则名称</div></div>`;
+    } else if (ruleName === '配额用量预警') {
+        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        renderQuotaConditions();
+    } else if (ruleName === '配额用量预测') {
+        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">预测用完日</div><div id="predictConditionList"></div><button type="button" class="btn-default" onclick="addPredictCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        renderPredictConditions();
+    } else if (ruleName === '合同到期提醒') {
+        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">距离合同到期日</div><div id="contractDueConditionList"></div><button type="button" class="btn-default" onclick="addContractDueCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        renderContractDueConditions();
+    } else {
+        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">触发条件</div><div>固定条件</div></div>`;
+    }
+}
+
+function renderQuotaConditions() { const c = document.getElementById('quotaConditionList'); if(!c) return; c.innerHTML = quotaConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateQuotaOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateQuotaVal(${idx}, this.value)" style="width:80px;"> %<span class="action-link danger" onclick="removeQuotaCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
+function renderPredictConditions() { const c = document.getElementById('predictConditionList'); if(!c) return; c.innerHTML = predictConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updatePredictOp(${idx}, this.value)"><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option></select><input type="number" value="${cond.days}" onchange="updatePredictDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removePredictCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
+let contractDueConditions = [{ operator: "<=", days: 30 }];
+function renderContractDueConditions() { 
+    const c = document.getElementById('contractDueConditionList'); 
+    if(!c) return; 
+    c.innerHTML = contractDueConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateContractDueOp(${idx}, this.value)"><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator==="<="?"selected":""}><=</option></select><input type="number" value="${cond.days}" onchange="updateContractDueDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removeContractDueCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); 
+}
+function addContractDueCondition() { contractDueConditions.push({ operator: "<=", days: 30 }); renderContractDueConditions(); }
+function removeContractDueCondition(idx) { contractDueConditions.splice(idx,1); renderContractDueConditions(); }
+function updateContractDueOp(idx, val) { contractDueConditions[idx].operator = val; }
+function updateContractDueDays(idx, val) { contractDueConditions[idx].days = parseInt(val); }
+function addQuotaCondition() { quotaConditions.push({ operator: ">=", value: 80 }); renderQuotaConditions(); }
+function addPredictCondition() { predictConditions.push({ operator: "<=", days: 7 }); renderPredictConditions(); }
+function removeQuotaCondition(idx) { quotaConditions.splice(idx,1); renderQuotaConditions(); }
+function removePredictCondition(idx) { predictConditions.splice(idx,1); renderPredictConditions(); }
+function updateQuotaOp(idx, val) { quotaConditions[idx].operator = val; }
+function updateQuotaVal(idx, val) { quotaConditions[idx].value = parseInt(val); }
+function updatePredictOp(idx, val) { predictConditions[idx].operator = val; }
+function updatePredictDays(idx, val) { predictConditions[idx].days = parseInt(val); }
+
+function getConditionsText(ruleName) {
+    if (ruleName === '配额用量预警') return quotaConditions.map(c => `已用量 ${c.operator} ${c.value}%`);
+    if (ruleName === '配额用量预测') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
+    if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
+    return ["服务异常"];
+}
+
+function getSelectValue(id) {
+    const select = document.getElementById(id);
+    if (!select) return '';
+    return select.value;
+}
+
+function toggleTimePoints() {
+    const freq = document.getElementById('ruleFreq').value;
+    const container = document.getElementById('timePointsContainer');
+    const dropdown = document.getElementById('timePointsDropdown');
+    if (freq === '每日检查') {
+        container.style.display = 'flex';
+        dropdown.style.display = 'none';
+        document.querySelector('.multi-select-trigger').classList.remove('active');
+        document.getElementById('timeSearch').value = '';
+        filterTimePoints();
+    } else {
+        container.style.display = 'none';
+        dropdown.style.display = 'none';
+        document.querySelector('.multi-select-trigger').classList.remove('active');
+        clearAllTimePoints();
+    }
+}
+
+function toggleMultiSelect() {
+    const dropdown = document.getElementById('timePointsDropdown');
+    const trigger = document.querySelector('.multi-select-trigger');
+    if (dropdown.style.display === 'none') {
+        dropdown.style.display = 'block';
+        trigger.classList.add('active');
+    } else {
+        dropdown.style.display = 'none';
+        trigger.classList.remove('active');
+    }
+}
+
+function filterTimePoints() {
+    const searchText = document.getElementById('timeSearch').value.toLowerCase();
+    document.querySelectorAll('.multi-select-option').forEach(option => {
+        const text = option.querySelector('span').textContent.toLowerCase();
+        option.style.display = searchText ? (text.includes(searchText) ? 'flex' : 'none') : 'flex';
+    });
+}
+
+function clearAllTimePoints() {
+    document.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateMultiSelectDisplay();
+}
+
+function confirmTimePoints() {
+    updateMultiSelectDisplay();
+    document.getElementById('timePointsDropdown').style.display = 'none';
+    document.querySelector('.multi-select-trigger').classList.remove('active');
+}
+
+function updateMultiSelectDisplay() {
+    const checked = document.querySelectorAll('.multi-select-option input[type="checkbox"]:checked');
+    const values = Array.from(checked).map(c => c.dataset.value);
+    const placeholder = document.querySelector('.multi-select-placeholder');
+    const valuesSpan = document.querySelector('.multi-select-values');
+    
+    if (values.length > 0) {
+        placeholder.style.display = 'none';
+        valuesSpan.style.display = 'block';
+        valuesSpan.textContent = values.join(', ');
+    } else {
+        placeholder.style.display = 'block';
+        valuesSpan.style.display = 'none';
+        valuesSpan.textContent = '';
+    }
+}
+
+function getTimePoints() {
+    const checked = document.querySelectorAll('.multi-select-option input[type="checkbox"]:checked');
+    return Array.from(checked).map(c => c.dataset.value);
+}
+
+function setTimePoints(timePoints) {
+    document.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = timePoints.includes(checkbox.dataset.value);
+    });
+    updateMultiSelectDisplay();
+}
+
+function setSelectValue(id, value) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.value = value;
+}
+
+function editRule(id) { 
+    const item = ruleList.find(i=>i.id===id); 
+    if(item){ 
+        currentRuleId=id; 
+        document.getElementById('ruleModalTitle').innerText='编辑规则'; 
+        document.getElementById('ruleType').value=item.type; 
+        document.getElementById('ruleType').disabled = false;
+        updateRuleFormByType(); 
+        setTimeout(() => { 
+            document.getElementById('ruleNameSelect').value=item.name; 
+            document.getElementById('ruleNameSelect').disabled = false;
+            if(item.name==='配额用量预警'){ 
+                quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; }); 
+                renderQuotaConditions(); 
+            } else if(item.name==='配额用量预测'){ 
+                predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; }); 
+                renderPredictConditions(); 
+            } 
+        }, 50); 
+        document.getElementById('ruleLevel').value = item.level; 
+        document.getElementById('ruleLevel').disabled = false;
+        setSelectValue('ruleService', item.service); 
+        document.getElementById('ruleService').disabled = false;
+        setTimeout(() => {
+            updateRuleApiOptions(item.service);
+            if (item.api) {
+                setRuleApiValue(item.api);
+            }
+        }, 0);
+        document.getElementById('ruleApi').disabled = false;
+        setSelectValue('ruleReceiver', item.receiver[0] || ''); 
+        document.getElementById('ruleReceiver').disabled = false;
+        document.getElementById('ruleStatus').value = item.status || '启用'; 
+        document.getElementById('ruleStatus').disabled = false;
+        document.getElementById('ruleFreq').value = item.freq; 
+        document.getElementById('ruleFreq').disabled = false;
+        setTimeout(() => {
+            toggleTimePoints();
+            setTimePoints(item.timePoints || []);
+        }, 0);
+        document.getElementById('saveRuleBtn').style.display = 'inline-block';
+        document.getElementById('ruleModal').classList.add('active'); 
+    } 
+}
+
+function viewRule(id) { 
+    const item = ruleList.find(i=>i.id===id); 
+    if(item){ 
+        currentRuleId=id; 
+        document.getElementById('ruleModalTitle').innerText='查看规则'; 
+        document.getElementById('ruleType').value=item.type; 
+        document.getElementById('ruleType').disabled = true;
+        updateRuleFormByType(); 
+        setTimeout(() => { 
+            document.getElementById('ruleNameSelect').value=item.name; 
+            document.getElementById('ruleNameSelect').disabled = true;
+            if(item.name==='配额用量预警'){ 
+                quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; }); 
+                renderQuotaConditions(); 
+            } else if(item.name==='配额用量预测'){ 
+                predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; }); 
+                renderPredictConditions(); 
+            } 
+        }, 50); 
+        document.getElementById('ruleLevel').value = item.level; 
+        document.getElementById('ruleLevel').disabled = true;
+        setSelectValue('ruleService', item.service); 
+        document.getElementById('ruleService').disabled = true;
+        setTimeout(() => {
+            updateRuleApiOptions(item.service);
+            if (item.api) {
+                setRuleApiValue(item.api);
+            }
+        }, 0);
+        document.getElementById('ruleApi').disabled = true;
+        setSelectValue('ruleReceiver', item.receiver[0] || ''); 
+        document.getElementById('ruleReceiver').disabled = true;
+        document.getElementById('ruleStatus').value = item.status || '启用'; 
+        document.getElementById('ruleStatus').disabled = true;
+        document.getElementById('ruleFreq').value = item.freq; 
+        document.getElementById('ruleFreq').disabled = true;
+        document.getElementById('saveRuleBtn').style.display = 'none';
+        document.getElementById('ruleModal').classList.add('active'); 
+    } 
+}
+
+function toggleRuleStatus(id) {
+    const item = ruleList.find(i => i.id === id);
+    if (item) {
+        item.status = item.status === '启用' ? '停用' : '启用';
+        renderRuleTable();
+        alert(`状态已更新为「${item.status}」`);
+    }
+}
+
+function deleteRule(id) { if(confirm('确定删除该规则吗？')){ ruleList = ruleList.filter(i=>i.id!==id); renderRuleTable(); alert('删除成功'); } }
+
+function addRule() { 
+    currentRuleId=null; 
+    document.getElementById('ruleModalTitle').innerText='新增规则'; 
+    document.getElementById('ruleType').value='服务用量预警'; 
+    document.getElementById('ruleType').disabled = false;
+    updateRuleFormByType(); 
+    quotaConditions = [{ operator: ">=", value: 80 }]; 
+    predictConditions = [{ operator: "<=", days: 3 }]; 
+    renderConditions(''); 
+    document.getElementById('ruleLevel').value = 'P2警告'; 
+    document.getElementById('ruleLevel').disabled = false;
+    setSelectValue('ruleService', '全局'); 
+    document.getElementById('ruleService').disabled = false;
+    setRuleApiValue(''); 
+    document.getElementById('ruleApi').disabled = false;
+    document.getElementById('ruleApiRow').style.display = 'none';
+    setSelectValue('ruleReceiver', ''); 
+    document.getElementById('ruleReceiver').disabled = false;
+    document.getElementById('ruleFreq').value = '触发时发送一次'; 
+    document.getElementById('ruleFreq').disabled = false;
+    document.getElementById('saveRuleBtn').style.display = 'inline-block';
+    document.getElementById('ruleModal').classList.add('active'); 
+}
+
+function saveRule() { 
+    const type = document.getElementById('ruleType').value; 
+    const name = document.getElementById('ruleNameSelect').value; 
+    if(!name){ alert('请选择规则名称'); return; } 
+    const conditions = getConditionsText(name); 
+    const level = document.getElementById('ruleLevel').value; 
+    const service = getSelectValue('ruleService') || '全局'; 
+    const api = getRuleApiValue(); 
+    const receiver = getSelectValue('ruleReceiver'); 
+    const status = document.getElementById('ruleStatus').value; 
+    const freq = document.getElementById('ruleFreq').value; 
+    const timePoints = getTimePoints(); 
+    if(!receiver){ alert('请选择发送对象'); return; } 
+    const data = { tenant: '某某金控', type, name, conditions, service, api, level, receiver: [receiver], status, freq, timePoints }; 
+    if(currentRuleId){ 
+        const idx=ruleList.findIndex(i=>i.id===currentRuleId); 
+        if(idx!==-1) ruleList[idx]={...ruleList[idx], ...data, id:currentRuleId}; 
+        alert('修改成功'); 
+    } else{ 
+        const newId=Date.now(); 
+        ruleList.push({id:newId, ...data}); 
+        alert('新增成功'); 
+    } 
+    closeRuleModal(); 
+    renderRuleTable(); 
+}
+
+function closeRuleModal() { document.getElementById('ruleModal').classList.remove('active'); }
+
+function updateRuleApiOptions(supplier) {
+    const apiSelect = document.getElementById('ruleApi');
+    const apiRow = document.getElementById('ruleApiRow');
+    
+    apiSelect.innerHTML = '<option value="">请选择API</option>';
+    
+    if (supplier && supplier !== '全局') {
+        const allOption = document.createElement('option');
+        allOption.value = 'all';
+        allOption.textContent = '不限';
+        apiSelect.appendChild(allOption);
+        
+        const apis = [...new Set(forecastList.filter(i => i.supplier === supplier).map(i => i.api))];
+        apis.forEach(api => {
+            const option = document.createElement('option');
+            option.value = api;
+            option.textContent = api;
+            apiSelect.appendChild(option);
+        });
+        apiRow.style.display = 'flex';
+    } else {
+        apiRow.style.display = 'none';
+    }
+}
+
+function getRuleApiValue() {
+    return document.getElementById('ruleApi').value || '';
+}
+
+function setRuleApiValue(api) {
+    document.getElementById('ruleApi').value = api;
+}
+
+// ======================== 渠道表格及配置 ========================
+function renderChannelTable() {
+    const tenantFilter = document.getElementById('channelTenantFilter')?.value || '';
+    let filtered = channelList.filter(i => !tenantFilter || i.tenant === tenantFilter);
+    const total = Math.ceil(filtered.length / pageSize) || 1;
+    if (channelPage > total) channelPage = total;
+    const pageData = filtered.slice((channelPage-1)*pageSize, channelPage*pageSize);
+    const tbody = document.getElementById('channelTableBody');
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateChannelPagination(total, filtered.length); return; }
+    tbody.innerHTML = pageData.map(i => `<tr>
+        <td>${escapeHtml(i.tenant)}</td>
+        <td><span class="level-tag ${i.level==='P0'?'level-p0':(i.level==='P1'?'level-p1':(i.level==='P2'?'level-p2':'level-p3'))}">${i.level}</span></td>
+        <td>${i.desc}</td>
+        <td>
+            <span style="display: inline-block; margin-right: 12px;">
+                <input type="checkbox" class="channel-checkbox" data-tenant="${i.tenant}" data-level="${i.level}" data-channel="platform" ${i.platform ? 'checked' : ''}>
+                <span style="margin-left: 4px; color: #666;">站内消息</span>
+            </span>
+            <span style="display: inline-block; margin-right: 12px;">
+                <input type="checkbox" class="channel-checkbox" data-tenant="${i.tenant}" data-level="${i.level}" data-channel="runwork" ${i.runwork ? 'checked' : ''}>
+                <span style="margin-left: 4px; color: #666;">润工作</span>
+            </span>
+            <span style="display: inline-block;">
+                <input type="checkbox" class="channel-checkbox" data-tenant="${i.tenant}" data-level="${i.level}" data-channel="email" ${i.email ? 'checked' : ''}>
+                <span style="margin-left: 4px; color: #666;">邮箱</span>
+            </span>
+        </td>
+        <td><a class="action-link send-history-link" href="javascript:void(0)" data-tenant="${i.tenant}" data-level="${i.level}">查看记录</a></td>
+    </tr>`).join('');
+    updateChannelPagination(total, filtered.length);
+}
+
+function updateChannelPagination(total, totalCount) {
+    const cp = channelPage;
+    const container = document.getElementById('channelPagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span><button class="page-btn" ${cp===1?'disabled':''} onclick="changeChannelPage(${cp-1})">‹</button>`;
+    const start = Math.max(1, cp-2), end = Math.min(total, cp+2);
+    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===cp?'active':''}" onclick="changeChannelPage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${cp===total?'disabled':''} onclick="changeChannelPage(${cp+1})">›</button>`;
+    html += `<select class="page-size-select" onchange="changeChannelPageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option><option value="100" ${pageSize===100?'selected':''}>100条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="channelJumpPage" min="1" max="${total}" value="${cp}"><span>页</span></div>`;
+    container.innerHTML = html;
+    document.getElementById('channelJumpPage')?.addEventListener('change',function(){ let p=parseInt(this.value); if(p>=1&&p<=total) changeChannelPage(p); });
+}
+
+function changeChannelPage(page) { channelPage = page; renderChannelTable(); }
+function changeChannelPageSize(size) { pageSize = parseInt(size); channelPage = 1; renderChannelTable(); }
+
+function openSendHistory(tenant, level) {
+    const filteredHistory = sendHistoryList.filter(h => h.tenant === tenant && h.level === level);
+    
+    if (filteredHistory.length === 0) {
+        alert(`租户: ${tenant}\n级别: ${level}\n\n暂无发送历史`);
+        return;
+    }
+    
+    let historyText = `租户: ${tenant}\n级别: ${level}\n\n发送历史记录:\n\n`;
+    filteredHistory.forEach((h, index) => {
+        historyText += `${index + 1}. 消息: ${h.message}\n   渠道: ${h.channel}\n   状态: ${h.status}\n   接收人: ${h.receiver}\n   时间: ${h.sendTime}\n\n`;
+    });
+    
+    alert(historyText);
+}
+
+function closeSendHistoryModal() { document.getElementById('sendHistoryModal').classList.remove('active'); }
+
+function switchModule(module){
+    document.querySelectorAll('.module-view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(module+'Module').classList.add('active');
+    let names={forecast:'用量预测', rule:'告警管理', channel:'告警渠道'};
+    document.getElementById('currentModuleName').innerText=names[module];
+    document.querySelectorAll('.menu-item').forEach(item=>item.classList.remove('active'));
+    document.querySelector(`.menu-item[data-module="${module}"]`)?.classList.add('active');
+    if(module==='forecast') renderForecastTable();
+    else if(module==='rule') renderRuleTable();
+    else if(module==='channel') renderChannelTable();
+}
+
+document.getElementById('sideMenu').addEventListener('click', function(e) {
+    const menuItem = e.target.closest('.menu-item');
+    if (menuItem && menuItem.dataset.module) {
+        switchModule(menuItem.dataset.module);
+    }
+});
+document.getElementById('forecastSearchBtn')?.addEventListener('click',()=>{ forecastPage=1; renderForecastTable(); });
+document.getElementById('forecastResetBtn')?.addEventListener('click',()=>{ document.getElementById('forecastTenant').value=''; document.getElementById('forecastSupplier').value=''; document.getElementById('forecastApi').value=''; document.getElementById('forecastStatus').value='全部'; forecastPage=1; renderForecastTable(); });
+document.getElementById('ruleSearchBtn')?.addEventListener('click',()=>{ rulePage=1; renderRuleTable(); });
+document.getElementById('ruleResetBtn')?.addEventListener('click',()=>{ document.getElementById('ruleTypeFilter').value=''; document.getElementById('ruleNameFilter').value=''; rulePage=1; renderRuleTable(); });
+document.getElementById('addRuleBtn')?.addEventListener('click',addRule);
+document.getElementById('channelSearchBtn')?.addEventListener('click',()=>{ channelPage=1; renderChannelTable(); });
+document.getElementById('channelResetBtn')?.addEventListener('click',()=>{ document.getElementById('channelTenantFilter').value=''; channelPage=1; renderChannelTable(); });
+document.getElementById('trendDayBtn')?.addEventListener('click',()=>setTrendPeriod('day'));
+document.getElementById('trendWeekBtn')?.addEventListener('click',()=>setTrendPeriod('week'));
+document.getElementById('trendMonthBtn')?.addEventListener('click',()=>setTrendPeriod('month'));
+document.getElementById('closeTrendModal')?.addEventListener('click',closeTrendModal);
+document.getElementById('closeTrendModalBtn')?.addEventListener('click',closeTrendModal);
+
+// 规则弹窗事件
+document.getElementById('ruleType')?.addEventListener('change', updateRuleFormByType);
+document.getElementById('ruleNameSelect')?.addEventListener('change', function() { if(this.value) renderConditions(this.value); });
+document.getElementById('ruleFreq')?.addEventListener('change', toggleTimePoints);
+
+// 点击其他地方关闭下拉框
+document.addEventListener('click', function(e) {
+    const container = document.querySelector('.multi-select-container');
+    const dropdown = document.getElementById('timePointsDropdown');
+    if (dropdown && dropdown.style.display === 'block' && !container?.contains(e.target)) {
+        dropdown.style.display = 'none';
+        document.querySelector('.multi-select-trigger')?.classList.remove('active');
+    }
+});
+document.getElementById('closeRuleModal')?.addEventListener('click', closeRuleModal);
+document.getElementById('cancelRuleModal')?.addEventListener('click', closeRuleModal);
+document.getElementById('saveRuleBtn')?.addEventListener('click', saveRule);
+
+// 发送历史弹窗事件
+document.getElementById('closeSendHistoryModal')?.addEventListener('click', closeSendHistoryModal);
+document.getElementById('closeSendHistoryModalBtn')?.addEventListener('click', closeSendHistoryModal);
+
+function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+function formatNumber(num) {
+    if (!num && num !== 0) return '-';
+    if (num >= 10000) {
+        return (num / 10000).toFixed(0) + '万';
+    }
+    return num.toLocaleString();
+}
+function navigateTo(url) { window.location.href = url; }
+
+const navMenus = {
+    portal: [
+        { name: '数据门户', url: 'index.html' }
+    ],
+    external: [
+        { name: '供应商管理', url: 'index.html' },
+        { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+        { name: 'API服务配置', url: 'index.html' },
+        { name: '数据库服务配置', url: 'index.html' },
+        { name: '数据库配置', url: 'index.html' }
+    ],
+    service: [
+        { name: '服务管理', url: 'index.html' },
+        { name: '调用方管理', url: 'index.html' },
+        { name: '目录管理', url: 'index.html' },
+        { name: '状态码映射', url: 'index.html' }
+    ],
+    monitor: [
+        { name: '用数大屏', url: '用数大屏.html' },
+        { name: '用量统计', url: '告警管理V1.2.html' },
+        { name: '数据源调用统计', url: 'index.html' },
+        { name: '服务调用统计', url: 'index.html' },
+        { name: '业务单元调用统计', url: 'index.html' },
+        { name: '链路实时监控', url: '链路实时监控.html' },
+        { name: '数据质量监控', url: '数据质量监控.html' },
+        { name: '系统性能监控', url: '系统性能监控.html' },
+        { name: '服务性能监控', url: '服务性能监控.html' },
+        { name: '流量分析', url: 'index.html' }
+    ],
+    operation: [
+        { name: '告警管理', url: '告警管理V1.2.html#rule' },
+        { name: '用量预测', url: '告警管理V1.2.html#forecast' },
+        { name: '告警渠道', url: '告警管理V1.2.html#channel' },
+        { name: '配额管理', url: '配额管理V1.1.html' },
+        { name: '计费管理', url: '计费管理.html' },
+        { name: '账单管理', url: '账单管理.html' },
+        { name: '对账管理', url: '对账管理.html' },
+        { name: '任务管理', url: '任务管理&合同管理V1.3.html#task' }
+    ],
+    personal: [
+        { name: '我的审批', url: '个人中心V1.3.html#approval' },
+        { name: '我的收藏', url: '个人中心V1.3.html#favorites' },
+        { name: '消息通知', url: '个人中心V1.3.html#message' }
+    ],
+    system: [
+        { name: '调用日志', url: '调用日志.html' },
+        { name: '操作日志', url: 'index.html' },
+        { name: '用户管理', url: '用户管理.html' },
+        { name: '权限管理', url: '权限管理.html' },
+        { name: '数据字典', url: 'index.html' }
+    ]
+};
+
+function showNavMenu(menuKey) {
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const menu = navMenus[menuKey] || [];
+    const sideMenu = document.getElementById('sideMenu');
+    
+    if (menu.length === 0) {
+        sideMenu.innerHTML = '<div class="menu-item active" onclick="navigateTo(\'index.html\')"><i class="el-icon-home"></i>首页</div>';
+        return;
+    }
+    
+    let html = '';
+    menu.forEach((item, index) => {
+        html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><i class="el-icon-document"></i>${item.name}</div>`;
+    });
+    sideMenu.innerHTML = html;
+}
+
+renderForecastTable();
+renderRuleTable();
+renderChannelTable();
+
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash.slice(1);
+    if (hash === 'rule' || hash === 'forecast' || hash === 'channel') {
+        switchModule(hash);
+    }
+    
+    document.addEventListener('change', function(e) {
+        const target = e.target;
+        if (target.classList.contains('channel-checkbox')) {
+            const item = channelList.find(i => i.tenant === target.dataset.tenant && i.level === target.dataset.level);
+            if (item) {
+                if (target.dataset.channel === 'platform') item.platform = target.checked;
+                else if (target.dataset.channel === 'runwork') item.runwork = target.checked;
+                else if (target.dataset.channel === 'email') item.email = target.checked;
+            }
+        }
+        
+        if (target.id === 'ruleService') {
+            updateRuleApiOptions(target.value);
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        const target = e.target;
+        const modalMask = target.closest('.modal-mask');
+        if (modalMask) {
+            if (target === modalMask) {
+                modalMask.classList.remove('active');
+                if (modalMask.id === 'sendHistoryModal') {
+                    closeSendHistoryModal();
+                }
+            }
+            return;
+        }
+        
+        const historyLink = target.closest('.send-history-link');
+        if (historyLink) {
+            const tenant = historyLink.dataset.tenant;
+            const level = historyLink.dataset.level;
+            openSendHistory(tenant, level);
+            return;
+        }
+    });
+});
+</script>
+</body>
+</html>

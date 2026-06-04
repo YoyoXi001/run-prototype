@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 链路实时监控</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* === Top Nav === */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100;
+            height: 80px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* === Sidebar === */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* === Main Content === */
+        .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+        .forecast-layout { flex: 1; display: flex; flex-direction: column; }
+        .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        .flex-table-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* === Filter Bar === */
+        .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
+        .filter-item input, .filter-item select { width: 222px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: 1px solid #f89d34; padding: 8px 20px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-primary:hover { background: #e88a2e; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 14px; cursor: pointer; color: #666666; }
+        .btn-default:hover { border-color: #f89d34; color: #f89d34; }
+
+        /* === Table === */
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; padding: 0; max-height: 460px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        /* === Status Badges === */
+        .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; }
+        .status-badge.normal { background: #e6f7e6; color: #52c41a; }
+        .status-badge.error { background: #ffe7e7; color: #f5222d; }
+        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #f5222d; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
+
+        /* 异常数值标红 */
+        .val-error { color: #f5222d; font-weight: 600; }
+
+        /* === Action Links === */
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 14px; margin: 0 6px; display: inline-block; background: none; border: none; font-family: inherit; }
+        .action-link:hover { text-decoration: underline; }
+        .ops-cell { display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+
+        /* === Pagination === */
+        .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html">数据门户</a>
+            <a class="nav-tab" href="index.html">外源管理</a>
+            <a class="nav-tab" href="index.html">服务管理</a>
+            <a class="nav-tab active" href="用数大屏.html">监控统计</a>
+            <a class="nav-tab" href="告警管理V1.2.html#rule">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
+            <a class="nav-tab" href="用户管理.html">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">5</span>
+            </div>
+            <div class="tenant-info">
+                <span class="tenant-name">某某金控</span>
+            </div>
+            <div class="avatar">席</div>
+        </div>
+    </nav>
+
+    <!-- 左侧菜单 -->
+    <aside class="side-menu">
+        <a class="menu-item" href="用数大屏.html"><i class="el-icon-monitor"></i>用数大屏</a>
+        <a class="menu-item" href="告警管理V1.2.html"><i class="el-icon-document"></i>用量统计</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-s-data"></i>数据源调用统计</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-s-order"></i>服务调用统计</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-office-building"></i>业务单元调用统计</a>
+        <a class="menu-item active" href="链路实时监控.html"><i class="el-icon-connection"></i>链路实时监控</a>
+        <a class="menu-item" href="数据质量监控.html"><i class="el-icon-circle-check"></i>数据质量监控</a>
+        <a class="menu-item" href="系统性能监控.html"><i class="el-icon-cpu"></i>系统性能监控</a>
+        <a class="menu-item" href="服务性能监控.html"><i class="el-icon-s-operation"></i>服务性能监控</a>
+        <a class="menu-item" href="index.html"><i class="el-icon-pie-chart"></i>流量分析</a>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="breadcrumb">
+            <span>监控统计</span>
+            <span class="separator">/</span>
+            <span class="current">链路实时监控</span>
+        </div>
+        <div class="content-card">
+        <div class="forecast-layout">
+
+            <!-- 筛选栏 -->
+            <div class="filter-section">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item">
+                            <label>供应商</label>
+                            <select id="filterSupplier">
+                                <option value="">全部</option>
+                                <option>天眼查</option>
+                                <option>企查查</option>
+                                <option>中诚信</option>
+                                <option>百行征信</option>
+                                <option>前海征信</option>
+                                <option>内部</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>API</label>
+                            <select id="filterApi">
+                                <option value="">全部</option>
+                                <option>企业基本信息</option>
+                                <option>司法风险</option>
+                                <option>企业图谱</option>
+                                <option>信用评分</option>
+                                <option>个人信用报告</option>
+                                <option>反欺诈评分</option>
+                                <option>经营状况</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>状态</label>
+                            <select id="filterStatus">
+                                <option value="">全部</option>
+                                <option>正常</option>
+                                <option>异常</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <button class="btn-primary" onclick="doQuery()">查询</button>
+                        <button class="btn-default" onclick="doReset()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="forecast-white-card">
+                <div class="flex-table-container">
+                <div class="table-container" id="tableContainer">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>数据源类型</th>
+                                <th>供应商</th>
+                                <th>API</th>
+                                <th>平均响应时间(ms)</th>
+                                <th>调用次数</th>
+                                <th>成功率</th>
+                                <th>状态</th>
+                                <th>检测时间</th>
+                                <th style="width:150px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monitorTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="paginationWrap"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // ========== 数据 ==========
+    var allData = [
+        { id: 1,  dsType: 'API',   supplier: '天眼查',   api: '企业基本信息', url: '/api/tianyacha/enterprise/info',       avgResp: 125,   calls: 85432,  successRate: 99.8, status: '正常',   checkTime: '2024-06-01 10:30:15' },
+        { id: 2,  dsType: 'API',   supplier: '天眼查',   api: '司法风险',     url: '/api/tianyacha/judicial/risk',         avgResp: 156,   calls: 56789,  successRate: 99.5, status: '正常',   checkTime: '2024-06-01 10:30:15' },
+        { id: 3,  dsType: 'API',   supplier: '企查查',   api: '企业基本信息', url: '/api/qichacha/enterprise/info',        avgResp: 132,   calls: 78234,  successRate: 99.9, status: '正常',   checkTime: '2024-06-01 10:30:12' },
+        { id: 4,  dsType: 'API',   supplier: '企查查',   api: '企业图谱',     url: '/api/qichacha/enterprise/graph',       avgResp: 1250,  calls: 12456,  successRate: 85.3, status: '异常',   checkTime: '2024-06-01 10:30:12' },
+        { id: 5,  dsType: 'API',   supplier: '中诚信',   api: '信用评分',     url: '/api/zhongchengxin/credit/score',      avgResp: 98,    calls: 45678,  successRate: 99.7, status: '正常',   checkTime: '2024-06-01 10:30:10' },
+        { id: 6,  dsType: 'API',   supplier: '百行征信', api: '个人信用报告', url: '/api/baihang/personal/credit/report',  avgResp: null,  calls: 0,      successRate: null, status: '异常', checkTime: '2024-06-01 10:30:08' },
+        { id: 7,  dsType: 'API',   supplier: '前海征信', api: '反欺诈评分',   url: '/api/qianhai/anti-fraud/score',        avgResp: null,  calls: 0,      successRate: null, status: '异常', checkTime: '2024-06-01 10:30:05' },
+        { id: 8,  dsType: 'API',   supplier: '天眼查',   api: '经营状况',     url: '/api/tianyacha/business/status',       avgResp: 145,   calls: 34567,  successRate: 99.6, status: '正常',   checkTime: '2024-06-01 10:30:15' },
+        { id: 9,  dsType: '数据库', supplier: '内部',     api: '客户主数据',   url: '/internal/master-data/customer',       avgResp: 15,    calls: 320150, successRate: 99.99,status: '正常',   checkTime: '2024-06-01 10:30:14' },
+        { id: 10, dsType: '数据库', supplier: '内部',     api: '信贷业务库',   url: '/internal/credit-business',            avgResp: 28,    calls: 186420, successRate: 99.95,status: '正常',   checkTime: '2024-06-01 10:30:13' },
+        { id: 11, dsType: '数据库', supplier: '内部',     api: '风控决策库',   url: '/internal/risk-decision',              avgResp: 1050,  calls: 52300,  successRate: 93.2, status: '异常',   checkTime: '2024-06-01 10:30:11' },
+        { id: 12, dsType: '数据库', supplier: '内部',     api: '历史归档库',   url: '/internal/history-archive',            avgResp: null,  calls: 0,      successRate: null, status: '异常', checkTime: '2024-06-01 10:30:06' }
+    ];
+
+    // ========== 告警阈值 ==========
+    var RESP_TIMEOUT = 1000;      // 响应超时阈值 ms
+    var SUCCESS_RATE_WARN = 95;   // 成功率预警阈值 %
+
+    // ========== 分页状态 ==========
+    var currentPage = 1;
+    var pageSize = 10;
+    var filteredData = [];
+
+    // ========== 初始化 ==========
+    doQuery();
+
+    // ========== 状态徽章 ==========
+    function getStatusBadge(status) {
+        var cls = status === '异常' ? 'error' : 'normal';
+        var dot = status === '异常' ? '<span class="pulse-dot"></span> ' : '';
+        return '<span class="status-badge ' + cls + '">' + dot + status + '</span>';
+    }
+
+    // ========== 渲染表格 ==========
+    function renderTable(data) {
+        filteredData = data;
+        var total = data.length;
+        var totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        var start = (currentPage - 1) * pageSize;
+        var end = Math.min(start + pageSize, total);
+        var pageData = data.slice(start, end);
+
+        var tbody = document.getElementById('monitorTableBody');
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < pageData.length; i++) {
+                var r = pageData[i];
+                var seq = start + i + 1;
+
+                // 响应时间：超时标红
+                var respText = r.avgResp !== null ? r.avgResp.toLocaleString() : '-';
+                var respClass = (r.avgResp !== null && r.avgResp > RESP_TIMEOUT) ? ' class="val-error"' : '';
+
+                // 成功率：低于阈值标红
+                var rateText = r.successRate !== null ? r.successRate + '%' : '-';
+                var rateClass = (r.successRate !== null && r.successRate < SUCCESS_RATE_WARN) ? ' class="val-error"' : '';
+
+                html += '<tr>'
+                    + '<td>' + seq + '</td>'
+                    + '<td>' + r.dsType + '</td>'
+                    + '<td>' + r.supplier + '</td>'
+                    + '<td>' + r.api + '</td>'
+                    + '<td' + respClass + '>' + respText + '</td>'
+                    + '<td>' + r.calls.toLocaleString() + '</td>'
+                    + '<td' + rateClass + '>' + rateText + '</td>'
+                    + '<td>' + getStatusBadge(r.status) + '</td>'
+                    + '<td style="font-size:13px;">' + r.checkTime + '</td>'
+                    + '<td><div class="ops-cell">'
+                    + '<button class="action-link" onclick="viewDetail(\'' + r.api.replace(/'/g, "\\'") + '\', \'' + r.url.replace(/'/g, "\\'") + '\')">查看详情</button>'
+                    + '<button class="action-link" onclick="manualCheck(' + r.id + ')">手动检测</button>'
+                    + '</div></td>'
+                    + '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        renderPagination(total, totalPages);
+    }
+
+    // ========== 渲染分页栏 ==========
+    function renderPagination(total, totalPages) {
+        var html = '<span class="total-text">共 ' + total + ' 条</span>';
+        html += '<button class="page-btn" ' + (currentPage === 1 ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage - 1) + ')">&lt;</button>';
+
+        var startP = Math.max(1, currentPage - 2);
+        var endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) startP = Math.max(1, endP - 4);
+        for (var p = startP; p <= endP; p++) {
+            html += '<span class="page-number' + (p === currentPage ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</span>';
+        }
+
+        html += '<button class="page-btn" ' + (currentPage === totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage + 1) + ')">&gt;</button>';
+
+        html += '<select class="page-size-select" onchange="changePageSize(this.value)">';
+        var sizes = [10, 20, 50];
+        for (var i = 0; i < sizes.length; i++) {
+            html += '<option' + (sizes[i] === pageSize ? ' selected' : '') + '>' + sizes[i] + '条/页</option>';
+        }
+        html += '</select>';
+
+        html += '<div class="jump-section"><span>前往</span>'
+            + '<input type="text" id="jumpPageInput" value="' + currentPage + '" onkeydown="if(event.key===\'Enter\') jumpToPage()">'
+            + '<span>页</span></div>';
+
+        document.getElementById('paginationWrap').innerHTML = html;
+    }
+
+    function goToPage(p) {
+        currentPage = p;
+        renderTable(filteredData);
+    }
+
+    function changePageSize(size) {
+        pageSize = parseInt(size) || 10;
+        currentPage = 1;
+        renderTable(filteredData);
+    }
+
+    function jumpToPage() {
+        var val = parseInt(document.getElementById('jumpPageInput').value);
+        if (!isNaN(val) && val >= 1) {
+            currentPage = val;
+            renderTable(filteredData);
+        }
+    }
+
+    // ========== 查询 & 重置 ==========
+    function doQuery() {
+        var supplierFilter = document.getElementById('filterSupplier').value;
+        var apiFilter = document.getElementById('filterApi').value;
+        var statusFilter = document.getElementById('filterStatus').value;
+        var filtered = allData.filter(function(r) {
+            if (supplierFilter && r.supplier !== supplierFilter) return false;
+            if (apiFilter && r.api !== apiFilter) return false;
+            if (statusFilter && r.status !== statusFilter) return false;
+            return true;
+        });
+        renderTable(filtered);
+    }
+
+    function doReset() {
+        document.getElementById('filterSupplier').value = '';
+        document.getElementById('filterApi').value = '';
+        document.getElementById('filterStatus').value = '';
+        currentPage = 1;
+        renderTable(allData);
+    }
+
+    // ========== 查看详情：携带API的URL跳转至调用日志的供应商Tab ==========
+    function viewDetail(apiName, apiUrl) {
+        window.location.href = '调用日志.html?tab=supplier&url=' + encodeURIComponent(apiUrl);
+    }
+
+    // ========== 手动检测 ==========
+    function manualCheck(id) {
+        var r = null;
+        for (var i = 0; i < allData.length; i++) {
+            if (allData[i].id === id) { r = allData[i]; break; }
+        }
+        if (!r) return;
+        alert('已发起手动检测：' + r.supplier + ' - ' + r.api + '\n请稍后刷新页面查看最新状态。');
+    }
+</script>
+</body>
+</html>

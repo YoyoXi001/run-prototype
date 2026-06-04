@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 对账管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f6; color: #666666; font-size: 14px; }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100; height: 80px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 16px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* 左侧菜单 */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; color: #f89d34; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
+
+        /* 右侧内容区域 */
+        .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+        .forecast-layout { flex: 1; display: flex; flex-direction: column; }
+        .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 16px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        .flex-table-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* 筛选栏 */
+        .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
+        .filter-item input, .filter-item select { width: 180px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
+        .filter-item input.datepicker-input { width: 132px; }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+        .btn-primary:hover { background: #e68f28; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; color: #666666; }
+        .btn-default:hover { background: #f5f7fa; }
+        .btn-export { background: #fff; color: #0d6cff; border: 1px solid #0d6cff; padding: 0; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; width: 64px; height: 32px; line-height: 32px; }
+        .btn-export:hover { background: #e6f0ff; }
+
+        /* 操作栏 */
+        .action-bar { padding: 0 0 10px 0; display: flex; justify-content: flex-start; }
+
+        /* 表格 */
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; padding: 0; max-height: 460px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-pending-confirm { background: #fff7e6; color: #fa8c16; }
+        .status-confirmed { background: #e6f7e6; color: #52c41a; }
+        .status-pending { background: #e6f7ff; color: #1890ff; }
+        .status-allocated { background: #f0e6ff; color: #722ed1; }
+
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 13px; margin: 0 3px; display: inline-block; }
+        .action-link:hover { text-decoration: underline; }
+        .action-link.status-link { color: #f89d34; font-weight: 500; }
+        .action-link.status-link:hover { color: #e68f28; }
+
+        .amount { font-weight: 600; color: #333; }
+        .col-period { white-space: nowrap; font-size: 12px; }
+
+        /* 分页栏 */
+        .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+
+        /* 弹窗 */
+        .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.2s; }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .detail-modal { background: #fff; width: 960px; max-width: 92%; border-radius: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; max-height: 85vh; display: flex; flex-direction: column; }
+        .detail-modal .modal-header { padding: 16px 20px; border-bottom: 0; display: flex; align-items: center; justify-content: space-between; }
+        .detail-modal .modal-title { font-size: 18px; font-weight: 600; color: #333; }
+        .detail-modal .modal-close { font-size: 20px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
+        .detail-modal .modal-close:hover { color: #333; }
+        .detail-modal .modal-body { padding: 0 20px 16px; overflow-y: auto; flex: 1; min-height: 0; }
+        .detail-modal .modal-footer { padding: 12px 20px; border-top: 0; display: flex; justify-content: center; gap: 12px; }
+
+        /* 弹窗内概要信息 */
+        .task-summary { background: #fafcff; border: 1px solid #ebeef5; border-radius: 6px; padding: 16px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .task-summary-item { display: flex; flex-direction: column; gap: 4px; }
+        .task-summary-item .label { font-size: 12px; color: #999; }
+        .task-summary-item .value { font-size: 14px; color: #333; font-weight: 500; }
+
+        /* 弹窗内明细表格 */
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .detail-table th { padding: 0 10px; height: 40px; background: #F5F7FA; font-weight: 600; color: #777; font-size: 13px; border: 1px solid #ebeef5; text-align: center; }
+        .detail-table td { padding: 0 10px; height: 36px; border: 1px solid #ebeef5; color: #666; text-align: center; vertical-align: middle; }
+        .detail-table tr:hover td { background: #f8fafc; }
+        .detail-table tfoot td { background: #fafcff; font-weight: 600; color: #333; height: 40px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <div class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html">数据门户</a>
+            <a class="nav-tab" href="index.html">外源管理</a>
+            <a class="nav-tab" href="index.html">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html">监控统计</a>
+            <a class="nav-tab active" href="告警管理V1.2.html#rule">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
+            <a class="nav-tab" href="用户管理.html">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">3</span>
+            </div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar">席</div>
+        </div>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="side-menu" id="sideMenu">
+        <a class="menu-item" href="告警管理V1.2.html#rule"><i class="el-icon-bell"></i>告警管理</a>
+        <a class="menu-item" href="告警管理V1.2.html#forecast"><i class="el-icon-trending-up"></i>用量预测</a>
+        <a class="menu-item" href="告警管理V1.2.html#channel"><i class="el-icon-message"></i>告警渠道</a>
+        <a class="menu-item" href="配额管理V1.1.html"><i class="el-icon-tickets"></i>配额管理</a>
+        <a class="menu-item" href="计费管理.html"><i class="el-icon-wallet"></i>计费管理</a>
+        <a class="menu-item" href="账单管理.html"><i class="el-icon-document"></i>账单管理</a>
+        <a class="menu-item active" href="对账管理.html"><i class="el-icon-s-check"></i>对账管理</a>
+        <a class="menu-item" href="任务管理&合同管理V1.3.html#task"><i class="el-icon-s-order"></i>任务管理</a>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <div class="content-card">
+            <div class="breadcrumb"><span>运营管理</span><span class="separator">/</span><span class="current">对账管理</span></div>
+        <div class="forecast-layout">
+
+            <!-- 筛选栏 -->
+            <div class="filter-section">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item">
+                            <label>对账周期</label>
+                            <input type="text" class="datepicker-input" id="filterDateStart" placeholder="开始日期">
+                            <span style="color:#999;">~</span>
+                            <input type="text" class="datepicker-input" id="filterDateEnd" placeholder="结束日期">
+                        </div>
+                        <div class="filter-item">
+                            <label>供应商</label>
+                            <select id="filterSupplier">
+                                <option value="">全部</option>
+                                <option value="天眼查">天眼查</option>
+                                <option value="中诚信">中诚信</option>
+                                <option value="百行征信">百行征信</option>
+                                <option value="企查查">企查查</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>API</label>
+                            <select id="filterApi">
+                                <option value="">全部</option>
+                                <option value="企业基本信息">企业基本信息</option>
+                                <option value="信用评分">信用评分</option>
+                                <option value="司法涉诉">司法涉诉</option>
+                                <option value="经营风险">经营风险</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>状态</label>
+                            <select id="filterStatus">
+                                <option value="">全部</option>
+                                <option value="待确认">待确认</option>
+                                <option value="已确认">已确认</option>
+                                <option value="待分摊">待分摊</option>
+                                <option value="已分摊">已分摊</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <button class="btn-primary" onclick="doQuery()">查询</button>
+                        <button class="btn-default" onclick="doReset()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="forecast-white-card">
+                <div class="action-bar">
+                    <button class="btn-export" onclick="alert('导出')">导出</button>
+                </div>
+                <div class="flex-table-container">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>对账周期</th>
+                                <th>供应商</th>
+                                <th>API</th>
+                                <th>总金额</th>
+                                <th>参与租户数量</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reconTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="paginationWrap"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- 查看分摊明细弹窗 -->
+<div class="modal-mask" id="detailModal">
+    <div class="detail-modal">
+        <div class="modal-header">
+            <span class="modal-title" id="detailModalTitle">分摊明细</span>
+            <button class="modal-close" onclick="closeDetailModal()"><i class="el-icon-close"></i></button>
+        </div>
+        <div class="modal-body">
+            <!-- 任务概要 -->
+            <div class="task-summary" id="detailSummary"></div>
+
+            <!-- 明细表格 -->
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>对账周期</th>
+                        <th>租户</th>
+                        <th>供应商</th>
+                        <th>API</th>
+                        <th>调用次数</th>
+                        <th>调用占比</th>
+                        <th>分摊金额</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTableBody"></tbody>
+                <tfoot id="detailTableFoot"></tfoot>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-default" onclick="closeDetailModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 状态流转定义 ==========
+    // 待确认 → 已确认 → 待分摊 → 已分摊
+    var STATUS_FLOW = ['待确认', '已确认', '待分摊', '已分摊'];
+
+    function getNextStatus(current) {
+        var idx = STATUS_FLOW.indexOf(current);
+        if (idx >= 0 && idx < STATUS_FLOW.length - 1) return STATUS_FLOW[idx + 1];
+        return null;
+    }
+
+    // ========== 模拟数据 ==========
+    var allData = [
+        { id: 1, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '天眼查', api: '企业基本信息', totalAmount: 142716, tenantCount: 5, status: '待确认' },
+        { id: 2, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '天眼查', api: '信用评分', totalAmount: 156912, tenantCount: 4, status: '已确认' },
+        { id: 3, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '中诚信', api: '信用评分', totalAmount: 131481, tenantCount: 3, status: '待分摊' },
+        { id: 4, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '百行征信', api: '经营风险', totalAmount: 183296, tenantCount: 4, status: '已分摊' },
+        { id: 5, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '企查查', api: '司法涉诉', totalAmount: 95000, tenantCount: 3, status: '待确认' },
+        { id: 6, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '天眼查', api: '司法风险', totalAmount: 67850, tenantCount: 3, status: '已确认' },
+        { id: 7, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '中诚信', api: '企业基本信息', totalAmount: 88420, tenantCount: 4, status: '待分摊' },
+        { id: 8, period: '2024-05-01 ~ 2024-05-31', periodStart: '2024-05-01', periodEnd: '2024-05-31', supplier: '百行征信', api: '信用评分', totalAmount: 210500, tenantCount: 5, status: '已分摊' },
+        { id: 9, period: '2024-04-01 ~ 2024-04-30', periodStart: '2024-04-01', periodEnd: '2024-04-30', supplier: '天眼查', api: '企业基本信息', totalAmount: 132817, tenantCount: 5, status: '已分摊' },
+        { id: 10, period: '2024-04-01 ~ 2024-04-30', periodStart: '2024-04-01', periodEnd: '2024-04-30', supplier: '企查查', api: '企业基本信息', totalAmount: 98500, tenantCount: 3, status: '已分摊' },
+        { id: 11, period: '2024-04-01 ~ 2024-04-30', periodStart: '2024-04-01', periodEnd: '2024-04-30', supplier: '天眼查', api: '信用评分', totalAmount: 145200, tenantCount: 4, status: '已确认' },
+        { id: 12, period: '2024-04-01 ~ 2024-04-30', periodStart: '2024-04-01', periodEnd: '2024-04-30', supplier: '中诚信', api: '司法涉诉', totalAmount: 76300, tenantCount: 2, status: '待确认' },
+        { id: 13, period: '2024-04-01 ~ 2024-04-30', periodStart: '2024-04-01', periodEnd: '2024-04-30', supplier: '百行征信', api: '经营风险', totalAmount: 165800, tenantCount: 4, status: '已分摊' },
+        { id: 14, period: '2024-03-01 ~ 2024-03-31', periodStart: '2024-03-01', periodEnd: '2024-03-31', supplier: '天眼查', api: '企业基本信息', totalAmount: 128600, tenantCount: 5, status: '已分摊' },
+        { id: 15, period: '2024-03-01 ~ 2024-03-31', periodStart: '2024-03-01', periodEnd: '2024-03-31', supplier: '中诚信', api: '信用评分', totalAmount: 112400, tenantCount: 3, status: '已分摊' },
+    ];
+
+    // 各记录的租户分摊明细
+    var detailsMap = {
+        1: [
+            { tenant: '某某金控', supplier: '天眼查', api: '企业基本信息', calls: 85432, ratio: 29.9, amount: 42716 },
+            { tenant: '某某信托', supplier: '天眼查', api: '企业基本信息', calls: 56789, ratio: 19.9, amount: 28400 },
+            { tenant: '某某租赁', supplier: '天眼查', api: '企业基本信息', calls: 45678, ratio: 16.0, amount: 22836 },
+            { tenant: '某某保险', supplier: '天眼查', api: '企业基本信息', calls: 52345, ratio: 18.3, amount: 26156 },
+            { tenant: '某某银行', supplier: '天眼查', api: '企业基本信息', calls: 45188, ratio: 15.8, amount: 22608 },
+        ],
+        2: [
+            { tenant: '某某金控', supplier: '天眼查', api: '信用评分', calls: 62100, ratio: 32.5, amount: 50996 },
+            { tenant: '某某信托', supplier: '天眼查', api: '信用评分', calls: 48200, ratio: 25.2, amount: 39542 },
+            { tenant: '某某租赁', supplier: '天眼查', api: '信用评分', calls: 45600, ratio: 23.9, amount: 37498 },
+            { tenant: '某某保险', supplier: '天眼查', api: '信用评分', calls: 35200, ratio: 18.4, amount: 28876 },
+        ],
+        3: [
+            { tenant: '某某金控', supplier: '中诚信', api: '信用评分', calls: 32456, ratio: 37.0, amount: 48648 },
+            { tenant: '某某信托', supplier: '中诚信', api: '信用评分', calls: 28198, ratio: 32.2, amount: 42346 },
+            { tenant: '某某租赁', supplier: '中诚信', api: '信用评分', calls: 27000, ratio: 30.8, amount: 40487 },
+        ],
+        4: [
+            { tenant: '某某金控', supplier: '百行征信', api: '经营风险', calls: 41200, ratio: 28.5, amount: 52239 },
+            { tenant: '某某信托', supplier: '百行征信', api: '经营风险', calls: 38500, ratio: 26.6, amount: 48757 },
+            { tenant: '某某保险', supplier: '百行征信', api: '经营风险', calls: 35800, ratio: 24.8, amount: 45458 },
+            { tenant: '某某银行', supplier: '百行征信', api: '经营风险', calls: 29200, ratio: 20.1, amount: 36842 },
+        ],
+        5: [
+            { tenant: '某某金控', supplier: '企查查', api: '司法涉诉', calls: 28900, ratio: 38.2, amount: 36290 },
+            { tenant: '某某信托', supplier: '企查查', api: '司法涉诉', calls: 25600, ratio: 33.8, amount: 32110 },
+            { tenant: '某某租赁', supplier: '企查查', api: '司法涉诉', calls: 21100, ratio: 28.0, amount: 26600 },
+        ],
+        6: [
+            { tenant: '某某金控', supplier: '天眼查', api: '司法风险', calls: 18200, ratio: 35.6, amount: 24155 },
+            { tenant: '某某信托', supplier: '天眼查', api: '司法风险', calls: 16800, ratio: 32.9, amount: 22323 },
+            { tenant: '某某保险', supplier: '天眼查', api: '司法风险', calls: 16100, ratio: 31.5, amount: 21372 },
+        ],
+        7: [
+            { tenant: '某某金控', supplier: '中诚信', api: '企业基本信息', calls: 22100, ratio: 28.3, amount: 25023 },
+            { tenant: '某某信托', supplier: '中诚信', api: '企业基本信息', calls: 19800, ratio: 25.4, amount: 22459 },
+            { tenant: '某某租赁', supplier: '中诚信', api: '企业基本信息', calls: 18500, ratio: 23.7, amount: 20956 },
+            { tenant: '某某银行', supplier: '中诚信', api: '企业基本信息', calls: 17600, ratio: 22.6, amount: 19982 },
+        ],
+        8: [
+            { tenant: '某某金控', supplier: '百行征信', api: '信用评分', calls: 55200, ratio: 27.1, amount: 57056 },
+            { tenant: '某某信托', supplier: '百行征信', api: '信用评分', calls: 48600, ratio: 23.9, amount: 50310 },
+            { tenant: '某某租赁', supplier: '百行征信', api: '信用评分', calls: 42100, ratio: 20.7, amount: 43574 },
+            { tenant: '某某保险', supplier: '百行征信', api: '信用评分', calls: 33800, ratio: 16.6, amount: 34943 },
+            { tenant: '某某银行', supplier: '百行征信', api: '信用评分', calls: 23800, ratio: 11.7, amount: 24617 },
+        ],
+    };
+    // 其余记录自动生成默认明细
+    (function() {
+        var tenants = ['某某金控', '某某信托', '某某租赁', '某某保险', '某某银行'];
+        for (var i = 0; i < allData.length; i++) {
+            var r = allData[i];
+            if (!detailsMap[r.id]) {
+                var count = r.tenantCount;
+                var arr = [];
+                var remainingCalls = Math.round(r.totalAmount / 1.5);
+                var remainingAmount = r.totalAmount;
+                for (var j = 0; j < count; j++) {
+                    var isLast = j === count - 1;
+                    var ratio = isLast ? (100 - arr.reduce(function(s, d) { return s + d.ratio; }, 0)) : Math.round((100 / count + (Math.random() * 10 - 5)) * 10) / 10;
+                    var calls = isLast ? remainingCalls : Math.round(remainingCalls * ratio / 100);
+                    var amount = isLast ? remainingAmount : Math.round(r.totalAmount * ratio / 100 * 100) / 100;
+                    remainingCalls -= calls;
+                    remainingAmount -= amount;
+                    arr.push({
+                        tenant: tenants[j], supplier: r.supplier, api: r.api,
+                        calls: calls, ratio: Math.round(ratio * 10) / 10, amount: amount
+                    });
+                }
+                detailsMap[r.id] = arr;
+            }
+        }
+    })();
+
+    // ========== 分页状态 ==========
+    var currentPage = 1;
+    var pageSize = 10;
+    var filteredData = [];
+
+    // ========== 初始化 ==========
+    var defaultRange = { start: '2024-05-01', end: '2024-05-31' };
+    flatpickr('#filterDateStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: defaultRange.start });
+    flatpickr('#filterDateEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: defaultRange.end });
+
+    doQuery();
+
+    // ========== 渲染表格 ==========
+    function renderTable(data) {
+        filteredData = data;
+        var total = data.length;
+        var totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        var start = (currentPage - 1) * pageSize;
+        var end = Math.min(start + pageSize, total);
+        var pageData = data.slice(start, end);
+
+        var tbody = document.getElementById('reconTableBody');
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < pageData.length; i++) {
+                var r = pageData[i];
+                var seq = start + i + 1;
+                var statusClass = '';
+                if (r.status === '待确认') statusClass = 'status-pending-confirm';
+                else if (r.status === '已确认') statusClass = 'status-confirmed';
+                else if (r.status === '待分摊') statusClass = 'status-pending';
+                else if (r.status === '已分摊') statusClass = 'status-allocated';
+
+                // 操作栏：查看详情 + 状态流转按钮
+                var actions = '<a class="action-link" onclick="openDetailModal(' + r.id + ')">查看分摊明细</a>';
+                var nextStatus = getNextStatus(r.status);
+                if (nextStatus) {
+                    actions += '<a class="action-link status-link" onclick="advanceStatus(' + r.id + ')">' + nextStatus + '</a>';
+                }
+
+                html += '<tr>'
+                    + '<td>' + seq + '</td>'
+                    + '<td class="col-period">' + r.period + '</td>'
+                    + '<td>' + r.supplier + '</td>'
+                    + '<td>' + r.api + '</td>'
+                    + '<td class="amount">&yen;' + r.totalAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>'
+                    + '<td>' + r.tenantCount + '</td>'
+                    + '<td><span class="status-badge ' + statusClass + '">' + r.status + '</span></td>'
+                    + '<td>' + actions + '</td>'
+                    + '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        renderPagination(total, totalPages);
+    }
+
+    // ========== 状态流转 ==========
+    function advanceStatus(id) {
+        for (var i = 0; i < allData.length; i++) {
+            if (allData[i].id === id) {
+                var next = getNextStatus(allData[i].status);
+                if (next) {
+                    allData[i].status = next;
+                    renderTable(filteredData);
+                }
+                break;
+            }
+        }
+    }
+
+    // ========== 渲染分页栏 ==========
+    function renderPagination(total, totalPages) {
+        var html = '<span class="total-text">共 ' + total + ' 条</span>';
+        html += '<button class="page-btn" ' + (currentPage === 1 ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage - 1) + ')">&lt;</button>';
+
+        var startP = Math.max(1, currentPage - 2);
+        var endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) startP = Math.max(1, endP - 4);
+        for (var p = startP; p <= endP; p++) {
+            html += '<span class="page-number' + (p === currentPage ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</span>';
+        }
+
+        html += '<button class="page-btn" ' + (currentPage === totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage + 1) + ')">&gt;</button>';
+
+        html += '<select class="page-size-select" onchange="changePageSize(this.value)">';
+        var sizes = [10, 20, 50];
+        for (var i = 0; i < sizes.length; i++) {
+            html += '<option' + (sizes[i] === pageSize ? ' selected' : '') + '>' + sizes[i] + '条/页</option>';
+        }
+        html += '</select>';
+
+        html += '<div class="jump-section"><span>前往</span>'
+            + '<input type="text" id="jumpPageInput" value="' + currentPage + '" onkeydown="if(event.key===\'Enter\') jumpToPage()">'
+            + '<span>页</span></div>';
+
+        document.getElementById('paginationWrap').innerHTML = html;
+    }
+
+    function goToPage(p) {
+        currentPage = p;
+        renderTable(filteredData);
+    }
+    function changePageSize(size) {
+        pageSize = parseInt(size) || 10;
+        currentPage = 1;
+        renderTable(filteredData);
+    }
+    function jumpToPage() {
+        var val = parseInt(document.getElementById('jumpPageInput').value);
+        if (!isNaN(val) && val >= 1) {
+            currentPage = val;
+            renderTable(filteredData);
+        }
+    }
+
+    // ========== 查询 & 重置 ==========
+    function doQuery() {
+        var dateStart = document.getElementById('filterDateStart').value;
+        var dateEnd = document.getElementById('filterDateEnd').value;
+        var supplier = document.getElementById('filterSupplier').value;
+        var api = document.getElementById('filterApi').value;
+        var status = document.getElementById('filterStatus').value;
+
+        var filtered = allData.filter(function(r) {
+            if (dateStart && r.periodEnd < dateStart) return false;
+            if (dateEnd && r.periodStart > dateEnd) return false;
+            if (supplier && r.supplier !== supplier) return false;
+            if (api && r.api !== api) return false;
+            if (status && r.status !== status) return false;
+            return true;
+        });
+        renderTable(filtered);
+    }
+
+    function doReset() {
+        document.getElementById('filterDateStart')._flatpickr.setDate(defaultRange.start);
+        document.getElementById('filterDateEnd')._flatpickr.setDate(defaultRange.end);
+        document.getElementById('filterSupplier').value = '';
+        document.getElementById('filterApi').value = '';
+        document.getElementById('filterStatus').value = '';
+        currentPage = 1;
+        renderTable(allData);
+    }
+
+    // ========== 分摊明细弹窗 ==========
+    function openDetailModal(id) {
+        var r = null;
+        for (var i = 0; i < allData.length; i++) {
+            if (allData[i].id === id) { r = allData[i]; break; }
+        }
+        if (!r) return;
+
+        document.getElementById('detailModalTitle').textContent = '分摊明细 - ' + r.supplier + ' ' + r.api;
+
+        // 概要
+        var summaryHtml = '<div class="task-summary-item"><span class="label">对账周期</span><span class="value">' + r.period + '</span></div>'
+            + '<div class="task-summary-item"><span class="label">供应商</span><span class="value">' + r.supplier + '</span></div>'
+            + '<div class="task-summary-item"><span class="label">API</span><span class="value">' + r.api + '</span></div>'
+            + '<div class="task-summary-item"><span class="label">总金额</span><span class="value" style="color:#f89d34;">&yen;' + r.totalAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2}) + '</span></div>'
+            + '<div class="task-summary-item"><span class="label">参与租户数量</span><span class="value">' + r.tenantCount + '</span></div>'
+            + '<div class="task-summary-item"><span class="label">状态</span><span class="value">' + r.status + '</span></div>';
+        document.getElementById('detailSummary').innerHTML = summaryHtml;
+
+        // 明细表格
+        var details = detailsMap[id] || [];
+        var html = '';
+        var totalCalls = 0;
+        var totalRatio = 0;
+        var totalAmount = 0;
+        for (var i = 0; i < details.length; i++) {
+            var d = details[i];
+            totalCalls += d.calls;
+            totalRatio += d.ratio;
+            totalAmount += d.amount;
+            html += '<tr>'
+                + '<td>' + (i + 1) + '</td>'
+                + '<td class="col-period">' + r.period + '</td>'
+                + '<td>' + d.tenant + '</td>'
+                + '<td>' + d.supplier + '</td>'
+                + '<td>' + d.api + '</td>'
+                + '<td>' + d.calls.toLocaleString() + '</td>'
+                + '<td>' + d.ratio + '%</td>'
+                + '<td class="amount">&yen;' + d.amount.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>'
+                + '</tr>';
+        }
+        document.getElementById('detailTableBody').innerHTML = html;
+
+        // 合计行
+        var footHtml = '<tr>'
+            + '<td colspan="5" style="text-align:center; font-weight:600;">合计</td>'
+            + '<td>' + totalCalls.toLocaleString() + '</td>'
+            + '<td>' + (Math.round(totalRatio * 10) / 10) + '%</td>'
+            + '<td class="amount">&yen;' + totalAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>'
+            + '</tr>';
+        document.getElementById('detailTableFoot').innerHTML = footHtml;
+
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // 点击遮罩关闭
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDetailModal();
+    });
+</script>
+</body>
+</html>
