@@ -505,13 +505,13 @@
 
     <div class="side-menu" id="sideMenu">
         <div class="menu-item active" data-module="rule"><i class="el-icon-bell"></i>告警管理</div>
-        <div class="menu-item" data-module="forecast"><i class="el-icon-trending-up"></i>用量预测</div>
+        <div class="menu-item" data-module="forecast"><i class="el-icon-data-line"></i>用量预测</div>
         <div class="menu-item" data-module="channel"><i class="el-icon-message"></i>告警渠道</div>
-        <div class="menu-item" onclick="navigateTo('配额管理V1.1.html')"><i class="el-icon-tickets"></i>配额管理</div>
-        <div class="menu-item" onclick="navigateTo('计费管理.html')"><i class="el-icon-wallet"></i>计费管理</div>
-        <div class="menu-item" onclick="navigateTo('账单管理.html')"><i class="el-icon-file-text"></i>账单管理</div>
-        <div class="menu-item" onclick="navigateTo('对账管理.html')"><i class="el-icon-settlement"></i>对账管理</div>
-        <div class="menu-item" onclick="navigateTo('任务管理&合同管理V1.3.html#task')"><i class="el-icon-setting"></i>任务管理</div>
+        <div class="menu-item" onclick="navigateTo('配额管理V1.1.html?nav=operation')"><i class="el-icon-s-grid"></i>配额管理</div>
+        <div class="menu-item" onclick="navigateTo('计费管理.html?nav=operation')"><i class="el-icon-s-finance"></i>计费管理</div>
+        <div class="menu-item" onclick="navigateTo('账单管理.html?nav=operation')"><i class="el-icon-document"></i>账单管理</div>
+        <div class="menu-item" onclick="navigateTo('对账管理.html?nav=operation')"><i class="el-icon-s-check"></i>对账管理</div>
+        <div class="menu-item" onclick="navigateTo('任务管理.html?nav=operation')"><i class="el-icon-s-order"></i>任务管理</div>
     </div>
 
     <div class="main-content">
@@ -1519,7 +1519,34 @@ function formatNumber(num) {
     }
     return num.toLocaleString();
 }
-function navigateTo(url) { window.location.href = url; }
+function navigateTo(url) {
+    var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+    try {
+        var navTab = event && event.target ? event.target.closest('.nav-tab') : null;
+        if (navTab) {
+            var text = navTab.textContent.trim();
+            if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+        }
+    } catch(e) {}
+    var targetPage = url.split('?')[0].split('#')[0];
+    var currentPage = decodeURIComponent(window.location.pathname.split('/').pop());
+    if (targetPage === currentPage) {
+        document.querySelectorAll('.menu-item').forEach(function(m) { m.classList.remove('active'); });
+        document.querySelectorAll('.menu-item').forEach(function(m) {
+            var onclick = m.getAttribute('onclick') || '';
+            var match = onclick.match(/navigateTo\('([^']+)'\)/);
+            if (match) {
+                var itemPage = match[1].split('?')[0].split('#')[0];
+                if (itemPage === currentPage) m.classList.add('active');
+            }
+        });
+        if (url.includes('#')) {
+            window.location.hash = url.split('#')[1];
+        }
+        return;
+    }
+    window.location.href = url;
+}
 
 const navMenus = {
     portal: [
@@ -1527,7 +1554,7 @@ const navMenus = {
     ],
     external: [
         { name: '供应商管理', url: 'index.html' },
-        { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+        { name: '合同管理', url: '合同管理.html' },
         { name: 'API服务配置', url: 'index.html' },
         { name: '数据库服务配置', url: 'index.html' },
         { name: '数据库配置', url: 'index.html' }
@@ -1551,14 +1578,14 @@ const navMenus = {
         { name: '流量分析', url: 'index.html' }
     ],
     operation: [
-        { name: '告警管理', url: '告警管理V1.2.html#rule' },
-        { name: '用量预测', url: '告警管理V1.2.html#forecast' },
-        { name: '告警渠道', url: '告警管理V1.2.html#channel' },
-        { name: '配额管理', url: '配额管理V1.1.html' },
-        { name: '计费管理', url: '计费管理.html' },
-        { name: '账单管理', url: '账单管理.html' },
-        { name: '对账管理', url: '对账管理.html' },
-        { name: '任务管理', url: '任务管理&合同管理V1.3.html#task' }
+        { name: '告警管理', url: '告警管理V1.2.html?nav=operation#rule', icon: 'el-icon-bell' },
+        { name: '用量预测', url: '告警管理V1.2.html?nav=operation#forecast', icon: 'el-icon-data-line' },
+        { name: '告警渠道', url: '告警管理V1.2.html?nav=operation#channel', icon: 'el-icon-message' },
+        { name: '配额管理', url: '配额管理V1.1.html', icon: 'el-icon-s-grid' },
+        { name: '计费管理', url: '计费管理.html', icon: 'el-icon-s-finance' },
+        { name: '账单管理', url: '账单管理.html', icon: 'el-icon-document' },
+        { name: '对账管理', url: '对账管理.html', icon: 'el-icon-s-check' },
+        { name: '任务管理', url: '任务管理.html', icon: 'el-icon-s-order' }
     ],
     personal: [
         { name: '我的审批', url: '个人中心V1.3.html#approval' },
@@ -1576,8 +1603,19 @@ const navMenus = {
 
 function showNavMenu(menuKey) {
     document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-    event.target.classList.add('active');
-    
+    try {
+        if (typeof event !== 'undefined' && event && event.target) {
+            event.target.classList.add('active');
+        } else {
+            var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+            if (tab) tab.classList.add('active');
+        }
+    } catch(e) {
+        var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+        if (tab) tab.classList.add('active');
+    }
+    localStorage.setItem('_navMenu', menuKey);
+
     const menu = navMenus[menuKey] || [];
     const sideMenu = document.getElementById('sideMenu');
     
@@ -1588,9 +1626,24 @@ function showNavMenu(menuKey) {
     
     let html = '';
     menu.forEach((item, index) => {
-        html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><i class="el-icon-document"></i>${item.name}</div>`;
+        var hashPart = item.url.includes('#') ? item.url.split('#')[1] : '';
+        var dataAttr = hashPart ? ' data-module="' + hashPart + '"' : '';
+        var icon = item.icon || 'el-icon-document';
+        html += `<div class="menu-item ${index === 0 ? 'active' : ''}"${dataAttr} onclick="navigateTo('${item.url}')"><i class="${icon}"></i>${item.name}</div>`;
     });
     sideMenu.innerHTML = html;
+
+    var currentPath = decodeURIComponent(window.location.pathname.split('/').pop());
+    var currentHash = window.location.hash;
+    sideMenu.querySelectorAll('.menu-item').forEach(function(m, i) {
+        var itemUrl = menu[i].url.split('?')[0].split('#')[0];
+        var itemHash = menu[i].url.includes('#') ? '#' + menu[i].url.split('#')[1] : '';
+        if (itemUrl === currentPath && (itemHash === currentHash || itemHash === '')) {
+            m.classList.add('active');
+        } else {
+            m.classList.remove('active');
+        }
+    });
 }
 
 renderForecastTable();
@@ -1598,6 +1651,15 @@ renderRuleTable();
 renderChannelTable();
 
 document.addEventListener('DOMContentLoaded', function() {
+    var params = new URLSearchParams(window.location.search);
+    var navParam = params.get('nav');
+    var savedNav = localStorage.getItem('_navMenu');
+    var activeNav = navParam || savedNav || 'operation';
+    if (navMenus[activeNav]) {
+        showNavMenu(activeNav);
+    } else {
+        showNavMenu('operation');
+    }
     var hash = window.location.hash.slice(1);
     if (hash === 'rule' || hash === 'forecast' || hash === 'channel') {
         switchModule(hash);

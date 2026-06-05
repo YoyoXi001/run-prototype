@@ -160,13 +160,13 @@
             </div>
         </div>
         <div class="nav-tabs">
-            <a class="nav-tab" href="index.html" style="text-decoration:none;">数据门户</a>
-            <a class="nav-tab" href="index.html" style="text-decoration:none;">外源管理</a>
-            <a class="nav-tab" href="index.html" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="index.html?nav=portal" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html?nav=external" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html?nav=service" style="text-decoration:none;">服务管理</a>
             <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
-            <a class="nav-tab active" href="告警管理V1.2.html#rule" style="text-decoration:none;">运营管理</a>
-            <a class="nav-tab" href="个人中心V1.3.html#approval" style="text-decoration:none;">个人中心</a>
-            <a class="nav-tab" href="用户管理.html" style="text-decoration:none;">系统管理</a>
+            <a class="nav-tab active" href="告警管理V1.2.html?nav=operation#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html?nav=personal#approval" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab" href="用户管理.html?nav=system" style="text-decoration:none;">系统管理</a>
         </div>
         <div class="user-area">
             <div class="message-icon-wrapper">
@@ -182,14 +182,14 @@
 
     <!-- 左侧菜单 -->
     <aside class="side-menu">
-        <a class="menu-item" href="告警管理V1.2.html#rule"><i class="el-icon-bell"></i>告警管理</a>
-        <a class="menu-item" href="告警管理V1.2.html#forecast"><i class="el-icon-data-analysis"></i>用量预测</a>
-        <a class="menu-item" href="告警管理V1.2.html#channel"><i class="el-icon-message"></i>告警渠道</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#rule"><i class="el-icon-bell"></i>告警管理</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#forecast"><i class="el-icon-data-line"></i>用量预测</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#channel"><i class="el-icon-message"></i>告警渠道</a>
         <a class="menu-item" href="配额管理V1.1.html"><i class="el-icon-s-grid"></i>配额管理</a>
         <a class="menu-item" href="计费管理.html"><i class="el-icon-s-finance"></i>计费管理</a>
         <a class="menu-item active" href="账单管理.html"><i class="el-icon-document"></i>账单管理</a>
         <a class="menu-item" href="对账管理.html"><i class="el-icon-s-check"></i>对账管理</a>
-        <a class="menu-item" href="任务管理&合同管理V1.3.html#task"><i class="el-icon-s-order"></i>任务管理</a>
+        <a class="menu-item" href="任务管理.html"><i class="el-icon-s-order"></i>任务管理</a>
     </aside>
 
     <!-- 主内容区 -->
@@ -512,6 +512,26 @@
     document.getElementById('detailModal').addEventListener('click', function(e) {
         if (e.target === this) closeDetailModal();
     });
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a.sidebar-item, a.menu-item');
+    if (link && link.getAttribute('href') === 'index.html') {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar-item, .menu-item').forEach(function(m) { m.classList.remove('active'); });
+        link.classList.add('active');
+    }
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var navTab = e.target.closest('a.nav-tab');
+    if (navTab) {
+        var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+        var text = navTab.textContent.trim();
+        if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+    }
+});
 </script>
 </body>
 </html>

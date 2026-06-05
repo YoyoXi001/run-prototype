@@ -29,10 +29,12 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .avatar-circle { width: 33px; height: 33px; border-radius: 50%; background: #fcb53e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
 
 /* === Sidebar === */
-.sidebar { position: fixed; left: 0; top: 80px; width: 240px; bottom: 0; background: #fff; overflow-y: auto; z-index: 100; border-right: 1px solid #ebeef5; }
-.sidebar-item { height: 48px; display: flex; align-items: center; padding: 0 20px; font-size: 16px; color: #5a6e8c; cursor: pointer; text-decoration: none; transition: all 0.2s; border-right: 2px solid transparent; }
-.sidebar-item:hover { background: #f5f7fa; color: #f89d34; }
-.sidebar-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; font-weight: 500; }
+.sidebar { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+.sidebar-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+.sidebar-item:last-child { margin-bottom: 0; }
+.sidebar-item:hover { background: #fef5ec; }
+.sidebar-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+.sidebar-item i { font-size: 18px; width: 22px; }
 
 /* === Main Content === */
 .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
@@ -87,13 +89,13 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     <div class="subtitle">EXTERNAL DATA PLATFORM</div>
   </div>
   <div class="nav-tabs">
-    <a class="nav-tab" href="index.html">数据门户</a>
-    <a class="nav-tab" href="index.html">外源管理</a>
-    <a class="nav-tab" href="index.html">服务管理</a>
+    <a class="nav-tab" href="index.html?nav=portal">数据门户</a>
+    <a class="nav-tab" href="index.html?nav=external">外源管理</a>
+    <a class="nav-tab" href="index.html?nav=service">服务管理</a>
     <a class="nav-tab active" href="用数大屏.html">监控统计</a>
-    <a class="nav-tab" href="告警管理V1.2.html#rule">运营管理</a>
-    <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
-    <a class="nav-tab" href="用户管理.html">系统管理</a>
+    <a class="nav-tab" href="告警管理V1.2.html?nav=operation#rule">运营管理</a>
+    <a class="nav-tab" href="个人中心V1.3.html?nav=personal#approval">个人中心</a>
+    <a class="nav-tab" href="用户管理.html?nav=system">系统管理</a>
   </div>
   <div class="nav-user">
     <div class="bell-wrap">
@@ -107,16 +109,16 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 
 <!-- Sidebar -->
 <aside class="sidebar">
-  <a class="sidebar-item active" href="用数大屏.html">用数大屏</a>
-  <a class="sidebar-item" href="告警管理V1.2.html">用量统计</a>
-  <a class="sidebar-item" href="index.html">数据源调用统计</a>
-  <a class="sidebar-item" href="index.html">服务调用统计</a>
-  <a class="sidebar-item" href="index.html">业务单元调用统计</a>
-  <a class="sidebar-item" href="链路实时监控.html">链路实时监控</a>
-  <a class="sidebar-item" href="数据质量监控.html">数据质量监控</a>
-  <a class="sidebar-item" href="系统性能监控.html">系统性能监控</a>
-  <a class="sidebar-item" href="服务性能监控.html">服务性能监控</a>
-  <a class="sidebar-item" href="index.html">流量分析</a>
+  <a class="sidebar-item active" href="用数大屏.html"><i class="el-icon-monitor"></i>用数大屏</a>
+  <a class="sidebar-item" href="告警管理V1.2.html"><i class="el-icon-document"></i>用量统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-s-data"></i>数据源调用统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-s-order"></i>服务调用统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-office-building"></i>业务单元调用统计</a>
+  <a class="sidebar-item" href="链路实时监控.html"><i class="el-icon-connection"></i>链路实时监控</a>
+  <a class="sidebar-item" href="数据质量监控.html"><i class="el-icon-circle-check"></i>数据质量监控</a>
+  <a class="sidebar-item" href="系统性能监控.html"><i class="el-icon-cpu"></i>系统性能监控</a>
+  <a class="sidebar-item" href="服务性能监控.html"><i class="el-icon-s-operation"></i>服务性能监控</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-pie-chart"></i>流量分析</a>
 </aside>
 
 <!-- Main Content -->
@@ -406,6 +408,26 @@ window.addEventListener('resize', function() {
   chartRealtime.resize();
   chartGauge.resize();
   chartResponse.resize();
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a.sidebar-item, a.menu-item');
+    if (link && link.getAttribute('href') === 'index.html') {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar-item, .menu-item').forEach(function(m) { m.classList.remove('active'); });
+        link.classList.add('active');
+    }
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var navTab = e.target.closest('a.nav-tab');
+    if (navTab) {
+        var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+        var text = navTab.textContent.trim();
+        if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+    }
 });
 </script>
 </body>

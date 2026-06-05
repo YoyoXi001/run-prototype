@@ -167,13 +167,13 @@
             </div>
         </div>
         <div class="nav-tabs">
-            <a class="nav-tab" href="index.html" style="text-decoration:none;">数据门户</a>
-            <a class="nav-tab" href="index.html" style="text-decoration:none;">外源管理</a>
-            <a class="nav-tab" href="index.html" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="index.html?nav=portal" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html?nav=external" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html?nav=service" style="text-decoration:none;">服务管理</a>
             <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
-            <a class="nav-tab" href="告警管理V1.2.html#rule" style="text-decoration:none;">运营管理</a>
-            <a class="nav-tab" href="个人中心V1.3.html#approval" style="text-decoration:none;">个人中心</a>
-            <a class="nav-tab active" href="用户管理.html" style="text-decoration:none;">系统管理</a>
+            <a class="nav-tab" href="告警管理V1.2.html?nav=operation#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html?nav=personal#approval" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab active" href="用户管理.html?nav=system" style="text-decoration:none;">系统管理</a>
         </div>
         <div class="user-area">
             <div class="message-icon-wrapper">
@@ -189,7 +189,7 @@
     <div class="side-menu" id="sideMenu">
         <a class="menu-item" href="调用日志.html"><i class="el-icon-document"></i>调用日志</a>
         <a class="menu-item" href="index.html"><i class="el-icon-notebook-2"></i>操作日志</a>
-        <a class="menu-item active" href="用户管理.html"><i class="el-icon-user"></i>用户管理</a>
+        <a class="menu-item active" href="用户管理.html?nav=system"><i class="el-icon-user"></i>用户管理</a>
         <a class="menu-item" href="权限管理.html"><i class="el-icon-lock"></i>权限管理</a>
         <a class="menu-item" href="index.html"><i class="el-icon-collection"></i>数据字典</a>
     </div>
@@ -600,6 +600,26 @@
     });
 
     // 导航由顶部Tab链接直接跳转
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a.sidebar-item, a.menu-item');
+    if (link && link.getAttribute('href') === 'index.html') {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar-item, .menu-item').forEach(function(m) { m.classList.remove('active'); });
+        link.classList.add('active');
+    }
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var navTab = e.target.closest('a.nav-tab');
+    if (navTab) {
+        var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+        var text = navTab.textContent.trim();
+        if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+    }
+});
 </script>
 </body>
 </html>

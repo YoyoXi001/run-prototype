@@ -158,6 +158,14 @@
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <script>
         function navigateTo(url) {
+            if (url === 'index.html') {
+                var menuItem = event && event.target ? event.target.closest('.menu-item') : null;
+                if (menuItem) {
+                    document.querySelectorAll('.menu-item').forEach(function(m) { m.classList.remove('active'); });
+                    menuItem.classList.add('active');
+                }
+                return;
+            }
             window.location.href = url;
         }
         
@@ -167,7 +175,7 @@
             ],
             external: [
                 { name: '供应商管理', url: 'index.html' },
-                { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+                { name: '合同管理', url: '合同管理.html' },
                 { name: 'API服务配置', url: 'index.html' },
                 { name: '数据库服务配置', url: 'index.html' },
                 { name: '数据库配置', url: 'index.html' }
@@ -191,14 +199,14 @@
                 { name: '流量分析', url: 'index.html' }
             ],
             operation: [
-                { name: '告警管理', url: '告警管理V1.2.html#rule' },
-                { name: '用量预测', url: '告警管理V1.2.html#forecast' },
-                { name: '告警渠道', url: '告警管理V1.2.html#channel' },
-                { name: '配额管理', url: '配额管理V1.1.html' },
-                { name: '计费管理', url: '计费管理.html' },
-                { name: '账单管理', url: '账单管理.html' },
-                { name: '对账管理', url: '对账管理.html' },
-                { name: '任务管理', url: '任务管理&合同管理V1.3.html#task' }
+                { name: '告警管理', url: '告警管理V1.2.html?nav=operation#rule', icon: 'el-icon-bell' },
+                { name: '用量预测', url: '告警管理V1.2.html?nav=operation#forecast', icon: 'el-icon-data-line' },
+                { name: '告警渠道', url: '告警管理V1.2.html?nav=operation#channel', icon: 'el-icon-message' },
+                { name: '配额管理', url: '配额管理V1.1.html', icon: 'el-icon-s-grid' },
+                { name: '计费管理', url: '计费管理.html', icon: 'el-icon-s-finance' },
+                { name: '账单管理', url: '账单管理.html', icon: 'el-icon-document' },
+                { name: '对账管理', url: '对账管理.html', icon: 'el-icon-s-check' },
+                { name: '任务管理', url: '任务管理.html', icon: 'el-icon-s-order' }
             ],
             personal: [
                 { name: '我的审批', url: '个人中心V1.3.html#approval' },
@@ -216,28 +224,50 @@
         
         function showNavMenu(menuKey) {
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
+            try {
+                if (typeof event !== 'undefined' && event && event.target) {
+                    event.target.classList.add('active');
+                } else {
+                    var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+                    if (tab) tab.classList.add('active');
+                }
+            } catch(e) {
+                var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+                if (tab) tab.classList.add('active');
+            }
+            localStorage.setItem('_navMenu', menuKey);
+
             const menu = navMenus[menuKey] || [];
             const sideMenu = document.getElementById('sideMenu');
-            
+
             if (menu.length === 0) {
                 sideMenu.innerHTML = '<div class="menu-item active" onclick="navigateTo(\'index.html\')"><div class="menu-left"><i class="el-icon-home"></i><span>数据门户</span></div></div>';
                 return;
             }
-            
+
             let html = '';
             menu.forEach((item, index) => {
-                html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><div class="menu-left"><i class="el-icon-document"></i><span>${item.name}</span></div></div>`;
+                var icon = item.icon || 'el-icon-document';
+                html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><div class="menu-left"><i class="${icon}"></i><span>${item.name}</span></div></div>`;
             });
             sideMenu.innerHTML = html;
         }
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             var hash = window.location.hash;
             if (hash === '#contract') {
-                document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
-                document.querySelector('.nav-tab:first-child').classList.remove('active');
+                localStorage.setItem('_navMenu', 'external');
+                showNavMenu('external');
+                return;
+            }
+            var params = new URLSearchParams(window.location.search);
+            var navParam = params.get('nav');
+            var savedNav = localStorage.getItem('_navMenu');
+            var activeNav = navParam || savedNav || 'portal';
+            if (navMenus[activeNav]) {
+                showNavMenu(activeNav);
+            } else {
+                showNavMenu('portal');
             }
         });
     </script>

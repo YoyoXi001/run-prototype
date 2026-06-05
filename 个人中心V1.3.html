@@ -988,14 +988,16 @@ function jumpPage(module) { let p = parseInt(document.getElementById(module+'Jum
 function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
 function switchModule(module) {
     document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
-    document.getElementById(module + 'Module').classList.add('active');
+    var el = document.getElementById(module + 'Module');
+    if (el) el.classList.add('active');
     const names = { message: '我的消息', approval: '我的审批', favorites: '我的收藏' };
-    document.getElementById('currentModuleName').innerText = names[module];
+    document.getElementById('currentModuleName').innerText = names[module] || '';
     document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-    document.querySelector(`.menu-item[data-module="${module}"]`).classList.add('active');
+    var menuEl = document.querySelector('.menu-item[data-module="' + module + '"]');
+    if (menuEl) menuEl.classList.add('active');
     if (module === 'message') renderMessageTable();
     else if (module === 'approval') renderApprovalTable();
-    else renderFavoritesTable();
+    else if (module === 'favorites') renderFavoritesTable();
 }
 
 // 点击消息图标跳转到我的消息模块
@@ -1030,7 +1032,26 @@ document.getElementById('favResetBtn')?.addEventListener('click', () => { docume
 document.getElementById('closeModal')?.addEventListener('click', closeModal);
 document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]); }
-function navigateTo(url) { window.location.href = url; }
+function navigateTo(url) {
+    var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+    try {
+        var navTab = event && event.target ? event.target.closest('.nav-tab') : null;
+        if (navTab) {
+            var text = navTab.textContent.trim();
+            if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+        }
+    } catch(e) {}
+    if (url.indexOf('index.html') === 0 && url.indexOf('?') === -1 && url.indexOf('#') === -1) {
+        var menuItem = null;
+        try { menuItem = (typeof event !== 'undefined' && event && event.target) ? event.target.closest('.menu-item') : null; } catch(e2) {}
+        if (menuItem) {
+            document.querySelectorAll('.menu-item').forEach(function(m) { m.classList.remove('active'); });
+            menuItem.classList.add('active');
+        }
+        return;
+    }
+    window.location.href = url;
+}
 
 const navMenus = {
     portal: [
@@ -1038,7 +1059,7 @@ const navMenus = {
     ],
     external: [
         { name: '供应商管理', url: 'index.html' },
-        { name: '合同管理', url: '任务管理&合同管理V1.3.html#contract' },
+        { name: '合同管理', url: '合同管理.html' },
         { name: 'API服务配置', url: 'index.html' },
         { name: '数据库服务配置', url: 'index.html' },
         { name: '数据库配置', url: 'index.html' }
@@ -1062,14 +1083,14 @@ const navMenus = {
         { name: '流量分析', url: 'index.html' }
     ],
     operation: [
-        { name: '告警管理', url: '告警管理V1.2.html#rule' },
-        { name: '用量预测', url: '告警管理V1.2.html#forecast' },
-        { name: '告警渠道', url: '告警管理V1.2.html#channel' },
-        { name: '配额管理', url: '配额管理V1.1.html' },
-        { name: '计费管理', url: '计费管理.html' },
-        { name: '账单管理', url: '账单管理.html' },
-        { name: '对账管理', url: '对账管理.html' },
-        { name: '任务管理', url: '任务管理&合同管理V1.3.html' }
+        { name: '告警管理', url: '告警管理V1.2.html?nav=operation#rule', icon: 'el-icon-bell' },
+        { name: '用量预测', url: '告警管理V1.2.html?nav=operation#forecast', icon: 'el-icon-data-line' },
+        { name: '告警渠道', url: '告警管理V1.2.html?nav=operation#channel', icon: 'el-icon-message' },
+        { name: '配额管理', url: '配额管理V1.1.html', icon: 'el-icon-s-grid' },
+        { name: '计费管理', url: '计费管理.html', icon: 'el-icon-s-finance' },
+        { name: '账单管理', url: '账单管理.html', icon: 'el-icon-document' },
+        { name: '对账管理', url: '对账管理.html', icon: 'el-icon-s-check' },
+        { name: '任务管理', url: '任务管理.html', icon: 'el-icon-s-order' }
     ],
     personal: [
         { name: '我的审批', url: '个人中心V1.3.html#approval' },
@@ -1087,8 +1108,19 @@ const navMenus = {
 
 function showNavMenu(menuKey) {
     document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-    event.target.classList.add('active');
-    
+    try {
+        if (typeof event !== 'undefined' && event && event.target) {
+            event.target.classList.add('active');
+        } else {
+            var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+            if (tab) tab.classList.add('active');
+        }
+    } catch(e) {
+        var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+        if (tab) tab.classList.add('active');
+    }
+    localStorage.setItem('_navMenu', menuKey);
+
     const menu = navMenus[menuKey] || [];
     const sideMenu = document.getElementById('sideMenu');
     
@@ -1099,15 +1131,46 @@ function showNavMenu(menuKey) {
     
     let html = '';
     menu.forEach((item, index) => {
-        html += `<div class="menu-item ${index === 0 ? 'active' : ''}" onclick="navigateTo('${item.url}')"><div class="menu-left"><i class="el-icon-document"></i>${item.name}</div></div>`;
+        var moduleKey = item.url.includes('#') ? item.url.split('#')[1] : '';
+        var dataAttr = moduleKey ? ' data-module="' + moduleKey + '"' : '';
+        var icon = item.icon || 'el-icon-document';
+        html += `<div class="menu-item ${index === 0 ? 'active' : ''}"${dataAttr} onclick="navigateTo('${item.url}')"><div class="menu-left"><i class="${icon}"></i>${item.name}</div></div>`;
     });
     sideMenu.innerHTML = html;
+
+    var currentPath = decodeURIComponent(window.location.pathname.split('/').pop());
+    var currentHash = window.location.hash;
+    sideMenu.querySelectorAll('.menu-item').forEach(function(m, i) {
+        var itemUrl = menu[i].url.split('?')[0].split('#')[0];
+        var itemHash = menu[i].url.includes('#') ? '#' + menu[i].url.split('#')[1] : '';
+        if (itemUrl === currentPath && (itemHash === currentHash || itemHash === '')) {
+            m.classList.add('active');
+        } else {
+            m.classList.remove('active');
+        }
+    });
 }
 
 renderMessageTable();
 updateMessageIconBadge();
 
 document.addEventListener('DOMContentLoaded', function() {
+    var params = new URLSearchParams(window.location.search);
+    var navParam = params.get('nav');
+    var savedNav = localStorage.getItem('_navMenu');
+    var activeNav = navParam || savedNav || 'personal';
+    if (navMenus[activeNav]) {
+        showNavMenu(activeNav);
+    } else {
+        showNavMenu('personal');
+    }
+    var hash = window.location.hash.slice(1);
+    if (hash === 'approval' || hash === 'favorites' || hash === 'message') {
+        switchModule(hash);
+    }
+});
+
+window.addEventListener('hashchange', function() {
     var hash = window.location.hash.slice(1);
     if (hash === 'approval' || hash === 'favorites' || hash === 'message') {
         switchModule(hash);
