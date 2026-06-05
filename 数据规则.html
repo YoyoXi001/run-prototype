@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外数 | 数据规则</title>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #F5F7FA; color: #333; }
+
+/* ===== Top Nav ===== */
+.top-nav { position: sticky; top: 0; z-index: 1000; height: 80px; background: linear-gradient(135deg, #84B9FD, #E1EDFB); box-shadow: 0 1px 4px rgba(0,21,41,0.08); display: flex; align-items: center; padding: 0 24px; }
+.nav-logo { display: flex; flex-direction: column; margin-right: 40px; cursor: pointer; }
+.nav-logo .title { font-size: 18px; font-weight: 700; color: #1f2f3d; }
+.nav-logo .subtitle { font-size: 10px; color: #5a6e8c; letter-spacing: 0.5px; }
+.nav-tabs { display: flex; gap: 0; flex: 1; height: 100%; align-items: center; }
+.nav-tab { position: relative; font-size: 18px; color: #1f2f3d; text-decoration: none; padding: 0 20px; height: 80px; display: flex; align-items: center; cursor: pointer; transition: color 0.2s; white-space: nowrap; }
+.nav-tab:hover { color: #1152c5; }
+.nav-tab.active { color: #1152c5; font-weight: 700; }
+.nav-tab.active::after { content: ''; position: absolute; bottom: 0; left: 20px; right: 20px; height: 2px; background: #1152c5; }
+.nav-user { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.nav-bell { position: relative; cursor: pointer; font-size: 20px; color: #1f2f3d; }
+.nav-bell .badge { position: absolute; top: -6px; right: -8px; background: #f5222d; color: #fff; font-size: 10px; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.nav-tenant { font-size: 14px; color: #1f2f3d; }
+.nav-avatar { width: 33px; height: 33px; border-radius: 50%; background: #fcb53e; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+/* ===== Sidebar ===== */
+.sidebar { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; z-index: 100; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+.sidebar-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; border-right: 2px solid transparent; }
+.sidebar-item:last-child { margin-bottom: 0; }
+.sidebar-item:hover { background: #fef5ec; color: #f89d34; }
+.sidebar-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+.sidebar-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
+
+/* ===== Main Content ===== */
+.main-content { margin-left: 240px; padding: 0; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; height: calc(100vh - 80px); overflow: hidden; }
+.content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+/* ===== Sticky Top Bar ===== */
+.sticky-top-bar {
+  background: #F5F7FA;
+  padding: 4px 16px 0 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+.sticky-top-bar .breadcrumb { margin-bottom: 8px; }
+.btn-back {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 32px; padding: 0 16px; border-radius: 4px;
+  font-size: 14px; font-family: inherit;
+  color: #f89d34; background: #fff; border: 1px solid #f89d34;
+  cursor: pointer; transition: 0.2s; margin-bottom: 8px;
+}
+.btn-back:hover { background: #fef5ec; }
+.btn-back i { font-size: 14px; }
+
+/* ===== Scrollable Body ===== */
+.scroll-body { flex: 1; overflow-y: auto; padding: 0 16px 16px 16px; min-height: 0; }
+
+/* ===== Sticky Bottom Bar ===== */
+.sticky-bottom-bar {
+  background: #fff;
+  border-top: 1px solid #ebeef5;
+  padding: 12px 16px;
+  display: flex; justify-content: center; gap: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
+}
+
+.breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+.breadcrumb span { color: #333; }
+.breadcrumb a { color: #666; text-decoration: none; }
+.breadcrumb a:hover { color: #f89d34; }
+.breadcrumb .separator { margin: 0 8px; color: #c0c4cc; }
+.breadcrumb .current { color: #333; font-weight: 500; }
+.forecast-white-card { flex: 0 1 auto; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 12px 16px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+
+/* ===== Form ===== */
+.form-row { display: flex; align-items: center; margin-bottom: 20px; }
+.form-row:last-child { margin-bottom: 0; }
+.form-label { width: 100px; font-size: 14px; color: #666; text-align: right; padding-right: 12px; flex-shrink: 0; }
+.form-label .required { color: #f5222d; }
+.form-control { flex: 1; }
+.form-control input, .form-control select, .form-control textarea {
+  width: 100%; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 14px; outline: none; font-family: inherit;
+}
+.form-control textarea { height: 80px; padding: 8px 10px; resize: vertical; }
+.form-control input:focus, .form-control select:focus, .form-control textarea:focus { border-color: #f89d34; }
+
+/* Conditional rows */
+.ds-conditional { display: none; }
+.ds-conditional.show { display: flex; }
+
+/* Sub-select pair */
+.sub-select-pair { display: flex; gap: 12px; flex: 1; }
+.sub-select-pair .sub-item { flex: 1; display: flex; align-items: center; gap: 8px; }
+.sub-select-pair .sub-label { font-size: 13px; color: #888; white-space: nowrap; min-width: 50px; }
+.sub-select-pair select { flex: 1; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #333; background: #fff; outline: none; font-family: inherit; }
+.sub-select-pair select:focus { border-color: #f89d34; }
+
+/* ===== Template Config ===== */
+.config-section { border: 1px solid #e8e8e8; border-radius: 6px; padding: 16px; margin-top: 4px; background: #fafbfc; }
+.config-section-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ebeef5; display: flex; align-items: center; justify-content: space-between; }
+.config-section-title .title-actions { display: flex; gap: 8px; }
+.config-hint { font-size: 12px; color: #999; margin-top: 6px; }
+.config-textarea { width: 100%; height: 120px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 8px 10px; font-size: 13px; outline: none; font-family: 'Consolas', 'Monaco', monospace; resize: vertical; color: #333; line-height: 1.6; }
+.config-textarea:focus { border-color: #f89d34; }
+
+/* Field constraint matrix table */
+.field-matrix-wrap { overflow-x: auto; border: 1px solid #e8e8e8; border-radius: 4px; }
+.field-matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.field-matrix th { padding: 0 8px; height: 40px; background: #f0f2f5; font-weight: 600; color: #555; font-size: 12px; border-bottom: 1px solid #e8e8e8; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+.field-matrix td { padding: 4px 8px; height: 42px; border-bottom: 1px solid #f0f0f0; text-align: center; vertical-align: middle; }
+.field-matrix tr:last-child td { border-bottom: none; }
+.field-matrix tr:hover td { background: #fafbfc; }
+.field-matrix .col-field { text-align: left; min-width: 160px; }
+.field-matrix .field-name { font-weight: 500; color: #333; font-size: 13px; font-family: 'Consolas', 'Monaco', monospace; }
+.field-matrix .field-comment { font-size: 11px; color: #999; margin-top: 2px; }
+.field-matrix .field-pk { display: inline-block; background: #fff7e6; color: #fa8c16; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; font-weight: 600; }
+.field-matrix .field-nn { display: inline-block; background: #f6ffed; color: #52c41a; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 2px; font-weight: 500; }
+.field-matrix .field-sql { display: inline-block; background: #e6f7ff; color: #1890ff; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; font-weight: 600; }
+.field-matrix tr.sql-row td { background: #f0f9ff; }
+.field-matrix tr.sql-row:hover td { background: #e6f3ff; }
+.field-matrix .cbx-cell { width: 60px; }
+.field-matrix input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #f89d34; }
+.field-matrix select { width: 100%; height: 28px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 6px; font-size: 12px; color: #333; background: #fff; outline: none; font-family: inherit; min-width: 80px; }
+.field-matrix select:focus { border-color: #f89d34; }
+.field-matrix select.disabled-select { background: #f5f5f5; color: #bbb; pointer-events: none; }
+.field-matrix input[type="text"].formula-input { width: 100%; height: 28px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 6px; font-size: 12px; color: #333; outline: none; font-family: 'Consolas', 'Monaco', monospace; min-width: 120px; }
+.field-matrix input[type="text"].formula-input:focus { border-color: #f89d34; }
+.field-matrix input[type="text"].formula-input::placeholder { color: #ccc; }
+.matrix-scroll { max-height: 340px; overflow-y: auto; }
+
+/* Batch action bar */
+.batch-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.batch-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #666; cursor: pointer; background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 4px 10px; transition: 0.2s; font-family: inherit; }
+.batch-btn:hover { border-color: #f89d34; color: #f89d34; }
+.batch-btn i { font-size: 13px; }
+
+/* Accuracy sub-inputs */
+.field-matrix input[type="text"].acc-col-input { width: 100%; height: 28px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 6px; font-size: 12px; color: #333; outline: none; font-family: inherit; min-width: 100px; }
+.field-matrix input[type="text"].acc-col-input:focus { border-color: #f89d34; }
+.field-matrix input[type="text"].acc-col-input::placeholder { color: #ccc; }
+
+/* ===== Buttons ===== */
+.btn { height: 32px; padding: 0 20px; border-radius: 4px; font-size: 14px; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: #f89d34; color: #fff; }
+.btn-default { background: #fff; color: #666; border: 1px solid #dcdfe6; }
+
+/* ===== Status Badges ===== */
+.badge-status { display: inline-block; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 500; }
+.badge-success { background: #e6f7e6; color: #52c41a; }
+.badge-danger { background: #ffe7e7; color: #f5222d; }
+
+/* ===== View Mode ===== */
+.view-value { font-size: 14px; color: #333; line-height: 32px; }
+.view-text { font-size: 14px; color: #333; line-height: 1.6; white-space: pre-wrap; }
+.form-control.disabled input,
+.form-control.disabled select,
+.form-control.disabled textarea {
+  background: #f5f5f5; color: #999; pointer-events: none; cursor: not-allowed;
+}
+.field-matrix .view-cell { font-size: 12px; color: #333; }
+.field-matrix .view-cell .check-mark { color: #f89d34; font-weight: 600; }
+.field-matrix .view-cell .uncheck-mark { color: #ccc; }
+</style>
+</head>
+<body>
+
+<!-- ===== Top Navigation ===== -->
+<div class="top-nav">
+  <div class="nav-logo">
+    <span class="title">外数平台</span>
+    <span class="subtitle">EXTERNAL DATA PLATFORM</span>
+  </div>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html">数据门户</a>
+    <a class="nav-tab" href="index.html">外源管理</a>
+    <a class="nav-tab" href="index.html">服务管理</a>
+    <a class="nav-tab active" href="用数大屏.html">监控统计</a>
+    <a class="nav-tab" href="告警管理V1.2.html#rule">运营管理</a>
+    <a class="nav-tab" href="个人中心V1.3.html#approval">个人中心</a>
+    <a class="nav-tab" href="用户管理.html">系统管理</a>
+  </div>
+  <div class="nav-user">
+    <div class="nav-bell">
+      <i class="el-icon-bell"></i>
+      <span class="badge">3</span>
+    </div>
+    <span class="nav-tenant">某某金控</span>
+    <div class="nav-avatar">席</div>
+  </div>
+</div>
+
+<!-- ===== Sidebar ===== -->
+<div class="sidebar">
+  <a class="sidebar-item" href="用数大屏.html"><i class="el-icon-monitor"></i>用数大屏</a>
+  <a class="sidebar-item" href="告警管理V1.2.html"><i class="el-icon-document"></i>用量统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-s-data"></i>数据源调用统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-s-order"></i>服务调用统计</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-office-building"></i>业务单元调用统计</a>
+  <a class="sidebar-item" href="链路实时监控.html"><i class="el-icon-connection"></i>链路实时监控</a>
+  <a class="sidebar-item active" href="数据质量监控.html"><i class="el-icon-circle-check"></i>数据质量监控</a>
+  <a class="sidebar-item" href="系统性能监控.html"><i class="el-icon-cpu"></i>系统性能监控</a>
+  <a class="sidebar-item" href="服务性能监控.html"><i class="el-icon-s-operation"></i>服务性能监控</a>
+  <a class="sidebar-item" href="index.html"><i class="el-icon-pie-chart"></i>流量分析</a>
+</div>
+
+<!-- ===== Main Content ===== -->
+<main class="main-content">
+  <div class="content-card">
+
+    <!-- Sticky Top Bar: 返回按钮 + 面包屑 -->
+    <div class="sticky-top-bar">
+      <button class="btn-back" onclick="goBack()">
+        <i class="el-icon-back"></i> 返回
+      </button>
+      <div class="breadcrumb">
+        <a href="用数大屏.html">监控统计</a>
+        <span class="separator">/</span>
+        <a href="数据质量监控.html">数据质量监控</a>
+        <span class="separator">/</span>
+        <a href="javascript:void(0)" onclick="goBack()">规则设置</a>
+        <span class="separator">/</span>
+        <span class="current" id="breadcrumbCurrent">新增规则</span>
+      </div>
+    </div>
+
+    <!-- Scrollable Form Body -->
+    <div class="scroll-body">
+      <div class="forecast-white-card">
+        <!-- 数据源类型 -->
+        <div class="form-row">
+          <label class="form-label"><span class="required">*</span> 数据源类型</label>
+          <div class="form-control" id="fcDatasourceType">
+            <select id="tplDatasourceType" onchange="onDatasourceTypeChange()">
+              <option value="">请选择数据源类型</option>
+              <option value="database">数据库</option>
+              <option value="api">API</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 数据库：选择库 + 选择表 -->
+        <div class="form-row ds-conditional" id="rowDatabase">
+          <label class="form-label"><span class="required">*</span> 数据库</label>
+          <div class="form-control" id="fcDatabase">
+            <div class="sub-select-pair">
+              <div class="sub-item">
+                <span class="sub-label">选择库</span>
+                <select id="selDatabase" onchange="onDatabaseTableChange()">
+                  <option value="">请选择数据库</option>
+                  <option value="ext_data">ext_data（外数落地库）</option>
+                  <option value="risk_db">risk_db（风险数据库）</option>
+                  <option value="credit_db">credit_db（征信数据库）</option>
+                  <option value="biz_dw">biz_dw（业务数仓）</option>
+                </select>
+              </div>
+              <div class="sub-item">
+                <span class="sub-label">选择表</span>
+                <select id="selTable" onchange="onDatabaseTableChange()">
+                  <option value="">请先选择数据库</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API：选择供应商 + 选择API -->
+        <div class="form-row ds-conditional" id="rowApi">
+          <label class="form-label"><span class="required">*</span> API</label>
+          <div class="form-control" id="fcApi">
+            <div class="sub-select-pair">
+              <div class="sub-item">
+                <span class="sub-label">供应商</span>
+                <select id="selVendor" onchange="onVendorApiChange()">
+                  <option value="">请选择供应商</option>
+                  <option value="tianyancha">天眼查</option>
+                  <option value="qichacha">企查查</option>
+                  <option value="anshuo">安硕</option>
+                  <option value="zhongchengxin">中诚信</option>
+                  <option value="baixingzhengxing">百行征信</option>
+                </select>
+              </div>
+              <div class="sub-item">
+                <span class="sub-label">API</span>
+                <select id="selApi" onchange="onVendorApiChange()">
+                  <option value="">请先选择供应商</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 规则配置：字段约束矩阵 -->
+        <div class="form-row ds-conditional" id="rowConfig" style="align-items: flex-start;">
+          <label class="form-label"><span class="required">*</span> 规则配置</label>
+          <div class="form-control">
+            <div class="config-section">
+              <div class="config-section-title">
+                <span id="configTitleText">字段约束配置</span>
+                <div class="title-actions" id="configTitleActions">
+                  <button class="batch-btn" onclick="batchCheck('required')" title="批量勾选必填"><i class="el-icon-check"></i>全选必填</button>
+                  <button class="batch-btn" onclick="batchReset()" title="重置所有配置"><i class="el-icon-refresh"></i>重置</button>
+                </div>
+              </div>
+              <div class="config-hint" id="configHint">请先完成上方的数据源选择</div>
+              <div class="field-matrix-wrap" id="fieldMatrixWrap" style="display:none; margin-top: 8px;">
+                <div class="matrix-scroll" id="matrixScroll">
+                  <table class="field-matrix" id="fieldMatrix">
+                    <thead>
+                      <tr>
+                        <th class="col-field" style="text-align:left;">表字段</th>
+                        <th class="cbx-cell">必填</th>
+                        <th class="cbx-cell">唯一</th>
+                        <th style="min-width:110px;">类型</th>
+                        <th style="min-width:150px;">格式</th>
+                        <th style="min-width:130px;">范围</th>
+                        <th style="min-width:150px;">枚举</th>
+                        <th style="min-width:160px;">一致性</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fieldMatrixBody">
+                      <!-- JS generated -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- 自定义SQL -->
+              <div id="customSqlArea" style="display:none; margin-top: 12px;">
+                <div class="config-section-title" style="margin-bottom:8px;">
+                  <span>自定义SQL</span>
+                  <button class="batch-btn" id="btnParseSql" onclick="parseSqlFields()" title="解析SQL并提取字段到上方矩阵"><i class="el-icon-search"></i>提取字段</button>
+                </div>
+                <textarea class="config-textarea" id="tplCustomSql" placeholder="请输入补充校验SQL语句，支持使用以下变量：&#10;  ${table_name}  — 数据落地表名&#10;  ${check_time}  — 检测时间&#10;&#10;示例：&#10;SELECT company_name, credit_code, COUNT(*) as cnt&#10;FROM ${table_name}&#10;WHERE create_time >= ${check_time}&#10;GROUP BY company_name, credit_code&#10;HAVING cnt > 1"></textarea>
+                <div class="config-hint">说明：输入SQL后点击「提取字段」，系统将自动解析SQL中涉及的字段，追加到上方字段约束矩阵最后一行，可对其进行规则校验配置。留空则仅执行字段约束校验。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 状态 -->
+        <div class="form-row">
+          <label class="form-label">状态</label>
+          <div class="form-control" id="fcStatus">
+            <select id="tplStatus">
+              <option value="enabled" selected>启用</option>
+              <option value="disabled">停用</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 操作按钮已移至底部固定栏 -->
+      </div><!-- /.forecast-white-card -->
+    </div><!-- /.scroll-body -->
+
+    <!-- Sticky Bottom Bar: 操作按钮 -->
+    <div class="sticky-bottom-bar" id="actionButtons">
+      <button class="btn btn-default" onclick="goBack()">取消</button>
+      <button class="btn btn-primary" onclick="handleSave()">保存</button>
+    </div>
+
+  </div><!-- /.content-card -->
+</main>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+// ===================== Mode Detection =====================
+var pageMode = 'add'; // add | edit | view
+var params = new URLSearchParams(window.location.search);
+if (params.get('mode')) {
+  pageMode = params.get('mode');
+}
+
+var MODE_LABELS = { add: '新增规则', edit: '编辑规则', view: '查看规则' };
+
+function initPageMode() {
+  var label = MODE_LABELS[pageMode] || MODE_LABELS.add;
+  document.getElementById('breadcrumbCurrent').textContent = label;
+  document.title = '外数 | ' + label;
+
+  if (pageMode === 'view') {
+    enterViewMode();
+  } else if (pageMode === 'edit') {
+    loadEditData();
+  }
+}
+
+function enterViewMode() {
+  // Hide batch action buttons
+  document.getElementById('configTitleActions').style.display = 'none';
+  document.getElementById('btnParseSql').style.display = 'none';
+
+  // Disable all form controls
+  var selects = document.querySelectorAll('select');
+  selects.forEach(function(sel) {
+    sel.disabled = true;
+    sel.style.background = '#f5f5f5';
+    sel.style.color = '#999';
+  });
+  var inputs = document.querySelectorAll('input');
+  inputs.forEach(function(inp) {
+    inp.disabled = true;
+    if (inp.type !== 'checkbox') {
+      inp.style.background = '#f5f5f5';
+      inp.style.color = '#999';
+    }
+  });
+  var textareas = document.querySelectorAll('textarea');
+  textareas.forEach(function(ta) {
+    ta.disabled = true;
+    ta.style.background = '#f5f5f5';
+    ta.style.color = '#999';
+  });
+
+  // Change buttons to only "返回"
+  document.getElementById('actionButtons').innerHTML =
+    '<button class="btn btn-default" onclick="goBack()">返回</button>';
+
+  // Load mock data for view
+  loadEditData();
+}
+
+function loadEditData() {
+  var rowIndex = parseInt(params.get('row'), 10);
+  if (isNaN(rowIndex) || !TPL_ROWS[rowIndex]) return;
+
+  var rowData = TPL_ROWS[rowIndex];
+
+  // Set datasource type
+  document.getElementById('tplDatasourceType').value = rowData.dsType;
+  onDatasourceTypeChange();
+
+  if (rowData.dsType === 'api') {
+    setTimeout(function() {
+      document.getElementById('selVendor').value = rowData.vendor;
+      onVendorApiChange();
+
+      setTimeout(function() {
+        document.getElementById('selApi').value = rowData.api;
+        onVendorApiChange();
+
+        setTimeout(function() {
+          prefillMockRules();
+          if (rowData.customSql) {
+            document.getElementById('tplCustomSql').value = rowData.customSql;
+          }
+        }, 50);
+      }, 50);
+    }, 50);
+  } else if (rowData.dsType === 'database') {
+    setTimeout(function() {
+      document.getElementById('selDatabase').value = rowData.database || '';
+      onDatabaseTableChange();
+      setTimeout(function() {
+        document.getElementById('selTable').value = rowData.table || '';
+        onDatabaseTableChange();
+        setTimeout(function() { prefillMockRules(); }, 50);
+      }, 50);
+    }, 50);
+  }
+
+  document.getElementById('tplStatus').value = rowData.status;
+}
+
+function prefillMockRules() {
+  var tbody = document.getElementById('fieldMatrixBody');
+  var rows = tbody.querySelectorAll('tr[data-field]');
+  rows.forEach(function(row) {
+    var field = row.getAttribute('data-field');
+    var cbxRequired = row.querySelector('.cbx-required');
+    var cbxUnique = row.querySelector('.cbx-unique');
+    if (cbxRequired) cbxRequired.checked = true;
+    if (cbxUnique) cbxUnique.checked = false;
+  });
+}
+
+// ===================== Data Source Type Change =====================
+function onDatasourceTypeChange() {
+  var dsType = document.getElementById('tplDatasourceType').value;
+  var rowDb = document.getElementById('rowDatabase');
+  var rowApi = document.getElementById('rowApi');
+  var rowConfig = document.getElementById('rowConfig');
+
+  // Reset sub-selects
+  document.getElementById('selDatabase').value = '';
+  document.getElementById('selTable').innerHTML = '<option value="">请先选择数据库</option>';
+  document.getElementById('selVendor').value = '';
+  document.getElementById('selApi').innerHTML = '<option value="">请先选择供应商</option>';
+
+  // Hide all conditional rows
+  rowDb.classList.remove('show');
+  rowApi.classList.remove('show');
+  rowConfig.classList.remove('show');
+  document.getElementById('fieldMatrixWrap').style.display = 'none';
+  document.getElementById('customSqlArea').style.display = 'none';
+  document.getElementById('configHint').style.display = 'block';
+
+  if (dsType === 'database') {
+    rowDb.classList.add('show');
+  } else if (dsType === 'api') {
+    rowApi.classList.add('show');
+  }
+}
+
+// ===================== Database + Table Change =====================
+function onDatabaseTableChange() {
+  var db = document.getElementById('selDatabase').value;
+  var tableSelect = document.getElementById('selTable');
+  var tableVal = tableSelect.value;
+
+  if (db && DB_TABLES[db]) {
+    var opts = '<option value="">请选择表</option>';
+    DB_TABLES[db].forEach(function(t) {
+      opts += '<option value="' + t.value + '"' + (t.value === tableVal ? ' selected' : '') + '>' + t.label + '</option>';
+    });
+    tableSelect.innerHTML = opts;
+  } else {
+    tableSelect.innerHTML = '<option value="">请先选择数据库</option>';
+  }
+
+  var selectedTable = tableSelect.value;
+  var key = db + '.' + selectedTable;
+
+  if (db && selectedTable && DB_FIELDS[key]) {
+    renderFieldMatrix(DB_FIELDS[key], 'table');
+  } else {
+    hideMatrix();
+  }
+}
+
+// ===================== Vendor + API Change =====================
+function onVendorApiChange() {
+  var vendor = document.getElementById('selVendor').value;
+  var apiSelect = document.getElementById('selApi');
+  var apiVal = apiSelect.value;
+
+  if (vendor && VENDOR_APIS[vendor]) {
+    var opts = '<option value="">请选择API</option>';
+    VENDOR_APIS[vendor].forEach(function(a) {
+      opts += '<option value="' + a.value + '"' + (a.value === apiVal ? ' selected' : '') + '>' + a.label + '</option>';
+    });
+    apiSelect.innerHTML = opts;
+  } else {
+    apiSelect.innerHTML = '<option value="">请先选择供应商</option>';
+  }
+
+  var selectedApi = apiSelect.value;
+  var key = vendor + '.' + selectedApi;
+
+  if (vendor && selectedApi && API_FIELDS[key]) {
+    renderFieldMatrix(API_FIELDS[key], 'api');
+  } else {
+    hideMatrix();
+  }
+}
+
+// ===================== Render Field Matrix =====================
+function renderFieldMatrix(fields, sourceType) {
+  var tbody = document.getElementById('fieldMatrixBody');
+  var titleEl = document.getElementById('configTitleText');
+  titleEl.textContent = sourceType === 'table' ? '数据库数据校验' : 'API响应结果校验';
+
+  var isView = pageMode === 'view';
+  var html = '';
+  fields.forEach(function(f, idx) {
+    var typeVal = mapSchemaType(f.type);
+
+    if (isView) {
+      html += '<tr data-field="' + f.name + '">' +
+        '<td class="col-field" style="text-align:left;">' +
+          '<div class="field-name">' + f.name +
+            (f.isPk ? '<span class="field-pk">PK</span>' : '') +
+            (f.notNull ? '<span class="field-nn">NN</span>' : '') +
+          '</div>' +
+          '<div class="field-comment">' + f.comment + ' (' + f.type + ')</div>' +
+        '</td>' +
+        '<td class="cbx-cell"><span class="view-cell ' + (f.notNull ? 'check-mark' : 'uncheck-mark') + '">' + (f.notNull ? '✓' : '—') + '</span></td>' +
+        '<td class="cbx-cell"><span class="view-cell ' + (f.isPk ? 'check-mark' : 'uncheck-mark') + '">' + (f.isPk ? '✓' : '—') + '</span></td>' +
+        '<td><span class="view-cell">' + getTypeLabel(typeVal) + '</span></td>' +
+        '<td><span class="view-cell">—</span></td>' +
+        '<td><span class="view-cell">—</span></td>' +
+        '<td><span class="view-cell">—</span></td>' +
+        '<td><span class="view-cell">—</span></td>' +
+      '</tr>';
+    } else {
+      html += '<tr data-field="' + f.name + '">' +
+        '<td class="col-field" style="text-align:left;">' +
+          '<div class="field-name">' + f.name +
+            (f.isPk ? '<span class="field-pk">PK</span>' : '') +
+            (f.notNull ? '<span class="field-nn">NN</span>' : '') +
+          '</div>' +
+          '<div class="field-comment">' + f.comment + ' (' + f.type + ')</div>' +
+        '</td>' +
+        '<td class="cbx-cell">' +
+          '<input type="checkbox" class="cbx-required" data-field="' + f.name + '"' + (f.notNull ? ' checked' : '') + '>' +
+        '</td>' +
+        '<td class="cbx-cell">' +
+          '<input type="checkbox" class="cbx-unique" data-field="' + f.name + '"' + (f.isPk ? ' checked' : '') + '>' +
+        '</td>' +
+        '<td>' +
+          '<select class="sel-datatype" data-field="' + f.name + '">' +
+            '<option value="string"' + (typeVal === 'string' ? ' selected' : '') + '>字符串(String)</option>' +
+            '<option value="integer"' + (typeVal === 'integer' ? ' selected' : '') + '>整数(Integer)</option>' +
+            '<option value="decimal"' + (typeVal === 'decimal' ? ' selected' : '') + '>小数(Decimal)</option>' +
+            '<option value="date"' + (typeVal === 'date' ? ' selected' : '') + '>日期(Date)</option>' +
+            '<option value="datetime"' + (typeVal === 'datetime' ? ' selected' : '') + '>日期时间(DateTime)</option>' +
+            '<option value="boolean"' + (typeVal === 'boolean' ? ' selected' : '') + '>布尔(Boolean)</option>' +
+            '<option value="json"' + (typeVal === 'json' ? ' selected' : '') + '>JSON</option>' +
+            '<option value="array"' + (typeVal === 'array' ? ' selected' : '') + '>数组(Array)</option>' +
+            '<option value="text"' + (typeVal === 'text' ? ' selected' : '') + '>长文本(Text)</option>' +
+            '<option value="enum"' + (typeVal === 'enum' ? ' selected' : '') + '>枚举(Enum)</option>' +
+          '</select>' +
+        '</td>' +
+        '<td>' +
+          '<input type="text" class="acc-col-input" data-field="' + f.name + '" data-type="format" placeholder="如: ^[A-Z0-9]+$">' +
+        '</td>' +
+        '<td>' +
+          '<input type="text" class="acc-col-input" data-field="' + f.name + '" data-type="range" placeholder="如: 0~100">' +
+        '</td>' +
+        '<td>' +
+          '<input type="text" class="acc-col-input" data-field="' + f.name + '" data-type="enum" placeholder="如: 存续,注销">' +
+        '</td>' +
+        '<td>' +
+          '<input type="text" class="formula-input" data-field="' + f.name + '" placeholder="如: =A表.字段">' +
+        '</td>' +
+      '</tr>';
+    }
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('fieldMatrixWrap').style.display = 'block';
+  document.getElementById('customSqlArea').style.display = 'block';
+  document.getElementById('configHint').style.display = 'none';
+  document.getElementById('rowConfig').classList.add('show');
+}
+
+function hideMatrix() {
+  document.getElementById('fieldMatrixWrap').style.display = 'none';
+  document.getElementById('customSqlArea').style.display = 'none';
+  document.getElementById('configHint').style.display = 'block';
+  document.getElementById('rowConfig').classList.remove('show');
+}
+
+function mapSchemaType(schemaType) {
+  var t = schemaType.toUpperCase();
+  if (t.indexOf('INT') >= 0) return 'integer';
+  if (t.indexOf('DECIMAL') >= 0 || t.indexOf('FLOAT') >= 0 || t.indexOf('DOUBLE') >= 0 || t === 'NUMBER') return 'decimal';
+  if (t === 'DATE') return 'date';
+  if (t.indexOf('DATETIME') >= 0 || t === 'DATETIME') return 'datetime';
+  if (t === 'BOOLEAN' || t === 'BOOL') return 'boolean';
+  if (t.indexOf('LONGTEXT') >= 0 || t === 'TEXT' || t.indexOf('TEXT') >= 0) return 'text';
+  if (t === 'ARRAY') return 'array';
+  if (t === 'JSON') return 'json';
+  return 'string';
+}
+
+function getTypeLabel(typeVal) {
+  var labels = {
+    string: '字符串(String)', integer: '整数(Integer)', decimal: '小数(Decimal)',
+    date: '日期(Date)', datetime: '日期时间(DateTime)', boolean: '布尔(Boolean)',
+    json: 'JSON', array: '数组(Array)', text: '长文本(Text)', enum: '枚举(Enum)'
+  };
+  return labels[typeVal] || typeVal;
+}
+
+// ===================== Batch Operations =====================
+function batchCheck(type) {
+  document.querySelectorAll('#fieldMatrixBody .cbx-required').forEach(function(cbx) { cbx.checked = true; });
+}
+
+function batchReset() {
+  document.querySelectorAll('#fieldMatrixBody .cbx-required, #fieldMatrixBody .cbx-unique').forEach(function(cbx) { cbx.checked = false; });
+  document.querySelectorAll('#fieldMatrixBody .sel-datatype').forEach(function(sel) { sel.selectedIndex = 0; });
+  document.querySelectorAll('#fieldMatrixBody .acc-col-input').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('#fieldMatrixBody .formula-input').forEach(function(inp) { inp.value = ''; });
+}
+
+// ===================== Parse SQL Fields =====================
+function parseSqlFields() {
+  var sql = document.getElementById('tplCustomSql').value.trim();
+  if (!sql) { return; }
+
+  var fields = [];
+  var normalized = sql.replace(/\s+/g, ' ').replace(/\n/g, ' ');
+
+  var selectMatch = normalized.match(/SELECT\s+(.+?)\s+FROM/i);
+  if (selectMatch) {
+    var selectPart = selectMatch[1];
+    selectPart.split(',').forEach(function(part) {
+      part = part.trim();
+      if (/^\s*(COUNT|SUM|AVG|MAX|MIN)\s*\(/i.test(part)) {
+        var aliasMatch = part.match(/\bas\s+(\w+)/i);
+        if (aliasMatch) fields.push(aliasMatch[1]);
+        return;
+      }
+      var fieldName = part.replace(/^\w+\./, '').split(/\s+/)[0];
+      if (fieldName && fieldName !== '*') fields.push(fieldName);
+    });
+  }
+
+  var whereMatch = normalized.match(/WHERE\s+(.+?)(?:GROUP|ORDER|LIMIT|HAVING|$)/i);
+  if (whereMatch) {
+    var wherePart = whereMatch[1];
+    var whereFields = wherePart.match(/(?:^|AND|OR)\s+(\w+(?:\.\w+)?)/gi) || [];
+    whereFields.forEach(function(f) {
+      var name = f.replace(/^(?:AND|OR)\s+/i, '').replace(/^\w+\./, '');
+      if (name && !/^(SELECT|FROM|WHERE|AND|OR|NOT|IN|LIKE|BETWEEN|IS|NULL)$/i.test(name)) {
+        fields.push(name);
+      }
+    });
+  }
+
+  var groupMatch = normalized.match(/GROUP\s+BY\s+(.+?)(?:HAVING|ORDER|LIMIT|$)/i);
+  if (groupMatch) {
+    groupMatch[1].split(',').forEach(function(f) {
+      var name = f.trim().replace(/^\w+\./, '').split(/\s+/)[0];
+      if (name) fields.push(name);
+    });
+  }
+
+  var orderMatch = normalized.match(/ORDER\s+BY\s+(.+?)(?:LIMIT|$)/i);
+  if (orderMatch) {
+    orderMatch[1].split(',').forEach(function(f) {
+      var name = f.trim().replace(/^\w+\./, '').split(/\s+/)[0];
+      if (name && !/^(ASC|DESC)$/i.test(name)) fields.push(name);
+    });
+  }
+
+  var existingFields = [];
+  document.querySelectorAll('#fieldMatrixBody tr[data-field]').forEach(function(tr) {
+    existingFields.push(tr.getAttribute('data-field'));
+  });
+
+  var unique = [];
+  fields.forEach(function(f) {
+    f = f.replace(/[^a-zA-Z0-9_]/g, '');
+    if (f && unique.indexOf(f) < 0 && existingFields.indexOf(f) < 0) {
+      unique.push(f);
+    }
+  });
+
+  if (unique.length === 0) { return; }
+
+  var tbody = document.getElementById('fieldMatrixBody');
+  var currentRowCount = document.querySelectorAll('#fieldMatrixBody tr').length;
+
+  unique.forEach(function(fieldName, i) {
+    var idx = currentRowCount + i;
+    var row = document.createElement('tr');
+    row.className = 'sql-row';
+    row.setAttribute('data-field', fieldName);
+    row.innerHTML =
+      '<td class="col-field" style="text-align:left;">' +
+        '<div class="field-name">' + fieldName + '<span class="field-sql">SQL</span></div>' +
+        '<div class="field-comment">自定义SQL提取字段</div>' +
+      '</td>' +
+      '<td class="cbx-cell">' +
+        '<input type="checkbox" class="cbx-required" data-field="' + fieldName + '">' +
+      '</td>' +
+      '<td class="cbx-cell">' +
+        '<input type="checkbox" class="cbx-unique" data-field="' + fieldName + '">' +
+      '</td>' +
+      '<td>' +
+        '<select class="sel-datatype" data-field="' + fieldName + '">' +
+          '<option value="string" selected>字符串(String)</option>' +
+          '<option value="integer">整数(Integer)</option>' +
+          '<option value="decimal">小数(Decimal)</option>' +
+          '<option value="date">日期(Date)</option>' +
+          '<option value="datetime">日期时间(DateTime)</option>' +
+          '<option value="boolean">布尔(Boolean)</option>' +
+          '<option value="json">JSON</option>' +
+          '<option value="array">数组(Array)</option>' +
+          '<option value="text">长文本(Text)</option>' +
+          '<option value="enum">枚举(Enum)</option>' +
+        '</select>' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + fieldName + '" data-type="format" placeholder="如: ^[A-Z0-9]+$">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + fieldName + '" data-type="range" placeholder="如: 0~100">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + fieldName + '" data-type="enum" placeholder="如: 存续,注销">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="formula-input" data-field="' + fieldName + '" placeholder="如: =A表.字段">' +
+      '</td>';
+    tbody.appendChild(row);
+  });
+
+  setTimeout(function() {
+    var matrixWrap = document.getElementById('matrixScroll');
+    if (matrixWrap) {
+      matrixWrap.scrollTop = matrixWrap.scrollHeight;
+    }
+  }, 50);
+}
+
+// ===================== Navigation =====================
+function goBack() {
+  // 通知数据质量监控页面激活规则设置Tab
+  localStorage.setItem('dqm_active_tab', '2');
+  window.location.href = '数据质量监控.html';
+}
+
+function handleSave() {
+  if (pageMode === 'add') {
+    var dsType = document.getElementById('tplDatasourceType').value;
+    var vendorName = '', apiName = '', vendor = '', api = '';
+    if (dsType === 'api') {
+      var vendorSel = document.getElementById('selVendor');
+      var apiSel = document.getElementById('selApi');
+      vendor = vendorSel.value;
+      vendorName = vendorSel.options[vendorSel.selectedIndex] ? vendorSel.options[vendorSel.selectedIndex].text : '';
+      api = apiSel.value;
+      apiName = apiSel.options[apiSel.selectedIndex] ? apiSel.options[apiSel.selectedIndex].text : '';
+    }
+    var statusVal = document.getElementById('tplStatus').value;
+    var now = new Date();
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    var timeStr = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+
+    var newRowData = {
+      id: 'TPL-NEW',
+      dsType: dsType,
+      vendor: vendor,
+      vendorName: vendorName,
+      api: api,
+      apiName: apiName,
+      createTime: timeStr,
+      updateTime: timeStr,
+      status: statusVal
+    };
+    localStorage.setItem('dqm_new_tpl_row', JSON.stringify(newRowData));
+  }
+  goBack();
+}
+
+// ===================== Mock Data: Databases → Tables → Fields =====================
+var DB_TABLES = {
+  ext_data: [
+    { value: 't_company_base', label: 't_company_base（企业基本信息表）' },
+    { value: 't_company_shareholder', label: 't_company_shareholder（股东信息表）' },
+    { value: 't_company_risk', label: 't_company_risk（风险信息表）' },
+    { value: 't_company_finance', label: 't_company_finance（融资历史表）' }
+  ],
+  risk_db: [
+    { value: 't_risk_judicial', label: 't_risk_judicial（司法风险表）' },
+    { value: 't_risk_penalty', label: 't_risk_penalty（行政处罚表）' },
+    { value: 't_risk_blacklist', label: 't_risk_blacklist（黑名单表）' }
+  ],
+  credit_db: [
+    { value: 't_credit_score', label: 't_credit_score（信用评分表）' },
+    { value: 't_credit_report', label: 't_credit_report（信用报告表）' }
+  ],
+  biz_dw: [
+    { value: 'dw_company_profile', label: 'dw_company_profile（企业画像宽表）' },
+    { value: 'dw_quality_log', label: 'dw_quality_log（质量检测日志表）' }
+  ]
+};
+
+var DB_FIELDS = {
+  'ext_data.t_company_base': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'credit_code', type: 'VARCHAR(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'legal_person', type: 'VARCHAR(50)', comment: '法定代表人', isPk: false, notNull: true },
+    { name: 'registered_capital', type: 'DECIMAL(18,2)', comment: '注册资本(万元)', isPk: false, notNull: false },
+    { name: 'establish_date', type: 'DATE', comment: '成立日期', isPk: false, notNull: false },
+    { name: 'business_status', type: 'VARCHAR(20)', comment: '经营状态', isPk: false, notNull: false },
+    { name: 'reg_authority', type: 'VARCHAR(200)', comment: '登记机关', isPk: false, notNull: false },
+    { name: 'industry', type: 'VARCHAR(100)', comment: '所属行业', isPk: false, notNull: false },
+    { name: 'reg_address', type: 'VARCHAR(500)', comment: '注册地址', isPk: false, notNull: false },
+    { name: 'business_scope', type: 'TEXT', comment: '经营范围', isPk: false, notNull: false },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true },
+    { name: 'update_time', type: 'DATETIME', comment: '更新时间', isPk: false, notNull: false }
+  ],
+  'ext_data.t_company_shareholder': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_id', type: 'BIGINT', comment: '关联企业ID', isPk: false, notNull: true },
+    { name: 'shareholder_name', type: 'VARCHAR(100)', comment: '股东名称', isPk: false, notNull: true },
+    { name: 'capital_amount', type: 'DECIMAL(18,2)', comment: '出资额(万元)', isPk: false, notNull: false },
+    { name: 'capital_ratio', type: 'DECIMAL(5,2)', comment: '出资比例(%)', isPk: false, notNull: false },
+    { name: 'shareholder_type', type: 'VARCHAR(20)', comment: '股东类型', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'ext_data.t_company_risk': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_id', type: 'BIGINT', comment: '关联企业ID', isPk: false, notNull: true },
+    { name: 'risk_type', type: 'VARCHAR(30)', comment: '风险类型', isPk: false, notNull: true },
+    { name: 'risk_level', type: 'VARCHAR(10)', comment: '风险等级', isPk: false, notNull: false },
+    { name: 'risk_desc', type: 'TEXT', comment: '风险描述', isPk: false, notNull: false },
+    { name: 'occur_date', type: 'DATE', comment: '发生日期', isPk: false, notNull: false },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'ext_data.t_company_finance': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_id', type: 'BIGINT', comment: '关联企业ID', isPk: false, notNull: true },
+    { name: 'finance_round', type: 'VARCHAR(20)', comment: '融资轮次', isPk: false, notNull: false },
+    { name: 'finance_amount', type: 'DECIMAL(18,2)', comment: '融资金额(万元)', isPk: false, notNull: false },
+    { name: 'investor', type: 'VARCHAR(200)', comment: '投资方', isPk: false, notNull: false },
+    { name: 'finance_date', type: 'DATE', comment: '融资日期', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'risk_db.t_risk_judicial': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'case_no', type: 'VARCHAR(50)', comment: '案号', isPk: false, notNull: true },
+    { name: 'case_type', type: 'VARCHAR(30)', comment: '案件类型', isPk: false, notNull: true },
+    { name: 'court', type: 'VARCHAR(200)', comment: '审理法院', isPk: false, notNull: false },
+    { name: 'filing_date', type: 'DATE', comment: '立案日期', isPk: false, notNull: true },
+    { name: 'amount_involved', type: 'DECIMAL(18,2)', comment: '涉案金额', isPk: false, notNull: false },
+    { name: 'plaintiff', type: 'VARCHAR(200)', comment: '原告', isPk: false, notNull: false },
+    { name: 'defendant', type: 'VARCHAR(200)', comment: '被告', isPk: false, notNull: false },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'risk_db.t_risk_penalty': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'penalty_no', type: 'VARCHAR(50)', comment: '处罚决定书编号', isPk: false, notNull: true },
+    { name: 'penalty_reason', type: 'TEXT', comment: '处罚事由', isPk: false, notNull: false },
+    { name: 'penalty_result', type: 'TEXT', comment: '处罚结果', isPk: false, notNull: false },
+    { name: 'penalty_date', type: 'DATE', comment: '处罚日期', isPk: false, notNull: true },
+    { name: 'authority', type: 'VARCHAR(200)', comment: '处罚机关', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'risk_db.t_risk_blacklist': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'blacklist_type', type: 'VARCHAR(30)', comment: '黑名单类型', isPk: false, notNull: true },
+    { name: 'reason', type: 'TEXT', comment: '列入原因', isPk: false, notNull: false },
+    { name: 'listing_date', type: 'DATE', comment: '列入日期', isPk: false, notNull: true },
+    { name: 'authority', type: 'VARCHAR(200)', comment: '列入机关', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'credit_db.t_credit_score': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'credit_code', type: 'VARCHAR(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'score', type: 'DECIMAL(5,2)', comment: '信用评分', isPk: false, notNull: true },
+    { name: 'score_level', type: 'VARCHAR(10)', comment: '评分等级', isPk: false, notNull: false },
+    { name: 'eval_date', type: 'DATE', comment: '评估日期', isPk: false, notNull: true },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'credit_db.t_credit_report': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'report_no', type: 'VARCHAR(50)', comment: '报告编号', isPk: false, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'report_content', type: 'LONGTEXT', comment: '报告内容', isPk: false, notNull: false },
+    { name: 'report_date', type: 'DATE', comment: '报告日期', isPk: false, notNull: true },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'biz_dw.dw_company_profile': [
+    { name: 'company_id', type: 'BIGINT', comment: '企业ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'credit_code', type: 'VARCHAR(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'risk_score', type: 'DECIMAL(5,2)', comment: '风险评分', isPk: false, notNull: false },
+    { name: 'credit_score', type: 'DECIMAL(5,2)', comment: '信用评分', isPk: false, notNull: false },
+    { name: 'industry_code', type: 'VARCHAR(10)', comment: '行业代码', isPk: false, notNull: false },
+    { name: 'region_code', type: 'VARCHAR(10)', comment: '地区代码', isPk: false, notNull: false },
+    { name: 'data_quality_score', type: 'DECIMAL(5,2)', comment: '数据质量评分', isPk: false, notNull: false },
+    { name: 'etl_date', type: 'DATE', comment: 'ETL日期', isPk: false, notNull: true }
+  ],
+  'biz_dw.dw_quality_log': [
+    { name: 'log_id', type: 'BIGINT', comment: '日志ID', isPk: true, notNull: true },
+    { name: 'template_id', type: 'VARCHAR(20)', comment: '模板编号', isPk: false, notNull: true },
+    { name: 'check_type', type: 'VARCHAR(20)', comment: '检测类型', isPk: false, notNull: true },
+    { name: 'target_table', type: 'VARCHAR(100)', comment: '目标表名', isPk: false, notNull: true },
+    { name: 'sample_count', type: 'INT', comment: '样本数', isPk: false, notNull: false },
+    { name: 'pass_count', type: 'INT', comment: '通过数', isPk: false, notNull: false },
+    { name: 'pass_rate', type: 'DECIMAL(5,2)', comment: '通过率', isPk: false, notNull: false },
+    { name: 'result', type: 'VARCHAR(10)', comment: '检测结果', isPk: false, notNull: true },
+    { name: 'check_time', type: 'DATETIME', comment: '检测时间', isPk: false, notNull: true }
+  ]
+};
+
+// ===================== Mock Data: Vendors → APIs → Fields =====================
+var VENDOR_APIS = {
+  tianyancha: [
+    { value: 'company_base', label: '企业基本信息' },
+    { value: 'company_risk', label: '司法风险' },
+    { value: 'company_shareholder', label: '股东信息' },
+    { value: 'company_change', label: '变更记录' }
+  ],
+  qichacha: [
+    { value: 'company_base', label: '企业工商基本信息' },
+    { value: 'company_finance', label: '融资信息' },
+    { value: 'company_ip', label: '知识产权' }
+  ],
+  anshuo: [
+    { value: 'credit_report', label: '企业信用报告' },
+    { value: 'risk_assessment', label: '风险评估' }
+  ],
+  zhongchengxin: [
+    { value: 'credit_score', label: '信用评分' },
+    { value: 'credit_report', label: '征信报告' }
+  ],
+  baixingzhengxing: [
+    { value: 'personal_credit', label: '个人信用报告' },
+    { value: 'anti_fraud', label: '反欺诈评分' }
+  ]
+};
+
+var API_FIELDS = {
+  'tianyancha.company_base': [
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'creditCode', type: 'String(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'regNumber', type: 'String(20)', comment: '工商注册号', isPk: false, notNull: false },
+    { name: 'legalPersonName', type: 'String', comment: '法定代表人', isPk: false, notNull: true },
+    { name: 'regCapital', type: 'String', comment: '注册资本', isPk: false, notNull: false },
+    { name: 'estTime', type: 'Date', comment: '成立日期', isPk: false, notNull: false },
+    { name: 'companyStatus', type: 'String', comment: '经营状态为（存续/注销/吊销）', isPk: false, notNull: true },
+    { name: 'industry', type: 'String', comment: '所属行业', isPk: false, notNull: false },
+    { name: 'regLocation', type: 'String', comment: '注册地址', isPk: false, notNull: false },
+    { name: 'businessScope', type: 'String', comment: '经营范围', isPk: false, notNull: false },
+    { name: 'companyType', type: 'String', comment: '企业类型', isPk: false, notNull: false },
+    { name: 'actualCapital', type: 'String', comment: '实缴资本', isPk: false, notNull: false }
+  ],
+  'tianyancha.company_risk': [
+    { name: 'caseCode', type: 'String', comment: '案号', isPk: false, notNull: true },
+    { name: 'caseReason', type: 'String', comment: '案由', isPk: false, notNull: true },
+    { name: 'courtName', type: 'String', comment: '法院名称', isPk: false, notNull: false },
+    { name: 'filingDate', type: 'Date', comment: '立案日期', isPk: false, notNull: true },
+    { name: 'amount', type: 'Number', comment: '涉案金额', isPk: false, notNull: false },
+    { name: 'role', type: 'String', comment: '当事人角色', isPk: false, notNull: false }
+  ],
+  'tianyancha.company_shareholder': [
+    { name: 'name', type: 'String', comment: '股东名称', isPk: false, notNull: true },
+    { name: 'capitalActl', type: 'String', comment: '实缴出资额', isPk: false, notNull: false },
+    { name: 'capital', type: 'String', comment: '认缴出资额', isPk: false, notNull: true },
+    { name: 'percent', type: 'String', comment: '持股比例', isPk: false, notNull: true },
+    { name: 'type', type: 'Number', comment: '股东类型(1=人 2=公司)', isPk: false, notNull: false }
+  ],
+  'tianyancha.company_change': [
+    { name: 'changeItem', type: 'String', comment: '变更项目', isPk: false, notNull: true },
+    { name: 'beforeContent', type: 'String', comment: '变更前内容', isPk: false, notNull: false },
+    { name: 'afterContent', type: 'String', comment: '变更后内容', isPk: false, notNull: false },
+    { name: 'changeDate', type: 'Date', comment: '变更日期', isPk: false, notNull: true }
+  ],
+  'qichacha.company_base': [
+    { name: 'Name', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'CreditCode', type: 'String(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'No', type: 'String(20)', comment: '工商注册号', isPk: false, notNull: false },
+    { name: 'OperName', type: 'String', comment: '法定代表人', isPk: false, notNull: true },
+    { name: 'RegistrantCapital', type: 'String', comment: '注册资本(万元)', isPk: false, notNull: false },
+    { name: 'StartDate', type: 'Date', comment: '成立日期', isPk: false, notNull: false },
+    { name: 'Status', type: 'String', comment: '经营状态为（在业/注销/吊销）', isPk: false, notNull: true },
+    { name: 'BelongIndustry', type: 'String', comment: '所属行业', isPk: false, notNull: false },
+    { name: 'Address', type: 'String', comment: '注册地址', isPk: false, notNull: false },
+    { name: 'Scope', type: 'String', comment: '经营范围', isPk: false, notNull: false }
+  ],
+  'qichacha.company_finance': [
+    { name: 'ProjectName', type: 'String', comment: '项目名称', isPk: false, notNull: false },
+    { name: 'Round', type: 'String', comment: '融资轮次', isPk: false, notNull: true },
+    { name: 'Amount', type: 'String', comment: '融资金额', isPk: false, notNull: false },
+    { name: 'Date', type: 'Date', comment: '融资日期', isPk: false, notNull: false },
+    { name: 'Investors', type: 'Array', comment: '投资方列表', isPk: false, notNull: false }
+  ],
+  'qichacha.company_ip': [
+    { name: 'Name', type: 'String', comment: '知识产权名称', isPk: false, notNull: true },
+    { name: 'Type', type: 'String', comment: '类型(商标/专利/著作权)', isPk: false, notNull: true },
+    { name: 'RegNo', type: 'String', comment: '注册号', isPk: false, notNull: false },
+    { name: 'ApplyDate', type: 'Date', comment: '申请日期', isPk: false, notNull: false },
+    { name: 'Status', type: 'String', comment: '状态', isPk: false, notNull: false }
+  ],
+  'anshuo.credit_report': [
+    { name: 'reportId', type: 'String', comment: '报告ID', isPk: false, notNull: true },
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'creditLevel', type: 'String', comment: '信用等级(AAA/AA/A/BBB...)', isPk: false, notNull: true },
+    { name: 'creditScore', type: 'Number', comment: '信用评分(0-100)', isPk: false, notNull: true },
+    { name: 'riskLevel', type: 'String', comment: '风险等级', isPk: false, notNull: false },
+    { name: 'reportDate', type: 'Date', comment: '报告日期', isPk: false, notNull: true },
+    { name: 'validUntil', type: 'Date', comment: '有效期至', isPk: false, notNull: false }
+  ],
+  'anshuo.risk_assessment': [
+    { name: 'assessmentId', type: 'String', comment: '评估ID', isPk: false, notNull: true },
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'overallRisk', type: 'String', comment: '综合风险等级', isPk: false, notNull: true },
+    { name: 'legalRisk', type: 'String', comment: '法律风险', isPk: false, notNull: false },
+    { name: 'financialRisk', type: 'String', comment: '财务风险', isPk: false, notNull: false },
+    { name: 'operationalRisk', type: 'String', comment: '经营风险', isPk: false, notNull: false },
+    { name: 'assessmentDate', type: 'Date', comment: '评估日期', isPk: false, notNull: true }
+  ],
+  'zhongchengxin.credit_score': [
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'creditCode', type: 'String(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'ratingSymbol', type: 'String', comment: '评级符号(AAA/AA+/AA...)', isPk: false, notNull: true },
+    { name: 'ratingScore', type: 'Number', comment: '评分(0-1000)', isPk: false, notNull: true },
+    { name: 'outlook', type: 'String', comment: '评级展望(正面/稳定/负面)', isPk: false, notNull: false },
+    { name: 'ratingDate', type: 'Date', comment: '评级日期', isPk: false, notNull: true },
+    { name: 'validPeriod', type: 'String', comment: '有效期', isPk: false, notNull: false }
+  ],
+  'zhongchengxin.credit_report': [
+    { name: 'reportNo', type: 'String', comment: '报告编号', isPk: false, notNull: true },
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'summary', type: 'String', comment: '摘要', isPk: false, notNull: false },
+    { name: 'conclusion', type: 'String', comment: '结论', isPk: false, notNull: false },
+    { name: 'issueDate', type: 'Date', comment: '出具日期', isPk: false, notNull: true }
+  ],
+  'baixingzhengxing.personal_credit': [
+    { name: 'name', type: 'String', comment: '姓名', isPk: false, notNull: true },
+    { name: 'idNumber', type: 'String(18)', comment: '身份证号', isPk: false, notNull: true },
+    { name: 'creditScore', type: 'Number', comment: '信用评分', isPk: false, notNull: true },
+    { name: 'riskTag', type: 'String', comment: '风险标签', isPk: false, notNull: false },
+    { name: 'queryTime', type: 'DateTime', comment: '查询时间', isPk: false, notNull: true },
+    { name: 'overdueCount', type: 'Number', comment: '逾期次数', isPk: false, notNull: false },
+    { name: 'loanCount', type: 'Number', comment: '贷款笔数', isPk: false, notNull: false }
+  ],
+  'baixingzhengxing.anti_fraud': [
+    { name: 'name', type: 'String', comment: '姓名', isPk: false, notNull: true },
+    { name: 'idNumber', type: 'String(18)', comment: '身份证号', isPk: false, notNull: true },
+    { name: 'mobile', type: 'String(11)', comment: '手机号', isPk: false, notNull: false },
+    { name: 'fraudScore', type: 'Number', comment: '欺诈评分(0-100)', isPk: false, notNull: true },
+    { name: 'fraudLevel', type: 'String', comment: '欺诈等级(高/中/低)', isPk: false, notNull: true },
+    { name: 'hitRules', type: 'Array', comment: '命中规则列表', isPk: false, notNull: false },
+    { name: 'queryTime', type: 'DateTime', comment: '查询时间', isPk: false, notNull: true }
+  ]
+};
+
+// ===================== Mock Data: Rule Settings Rows =====================
+var TPL_ROWS = [
+  { id:'TPL-001', dsType:'api', vendor:'tianyancha',      vendorName:'天眼查',   api:'company_base',    apiName:'企业基本信息',     status:'enabled',  createTime:'2024-05-10 14:30', updateTime:'2024-05-28 09:15',
+    customSql:'SELECT companyName, creditCode, COUNT(*) as cnt\nFROM ${table_name}\nWHERE companyStatus = \'存续\'\nGROUP BY companyName, creditCode\nHAVING cnt > 1' },
+  { id:'TPL-002', dsType:'api', vendor:'qichacha',         vendorName:'企查查',   api:'company_base',    apiName:'企业工商基本信息', status:'enabled',  createTime:'2024-05-12 10:00', updateTime:'2024-05-25 16:40',
+    customSql:'SELECT Name, CreditCode, COUNT(*) as cnt\nFROM ${table_name}\nWHERE Status = \'在业\'\nGROUP BY Name, CreditCode\nHAVING cnt > 1' },
+  { id:'TPL-003', dsType:'api', vendor:'tianyancha',      vendorName:'天眼查',   api:'company_risk',    apiName:'司法风险',         status:'enabled',  createTime:'2024-05-15 09:20', updateTime:'2024-05-20 11:30',
+    customSql:'SELECT caseCode, courtName, COUNT(*) as cnt\nFROM ${table_name}\nGROUP BY caseCode, courtName\nHAVING cnt > 1' },
+  { id:'TPL-004', dsType:'api', vendor:'anshuo',           vendorName:'安硕',     api:'credit_report',   apiName:'企业信用报告',     status:'enabled',  createTime:'2024-05-18 15:45', updateTime:'2024-05-30 10:00',
+    customSql:'' },
+  { id:'TPL-005', dsType:'api', vendor:'zhongchengxin',    vendorName:'中诚信',   api:'credit_score',    apiName:'信用评分',         status:'enabled',  createTime:'2024-05-20 08:30', updateTime:'2024-05-29 14:20',
+    customSql:'SELECT companyName, creditCode, ratingScore\nFROM ${table_name}\nWHERE ratingScore < 0 OR ratingScore > 1000' },
+  { id:'TPL-006', dsType:'api', vendor:'baixingzhengxing', vendorName:'百行征信', api:'personal_credit', apiName:'个人信用报告',     status:'disabled', createTime:'2024-05-22 11:00', updateTime:'2024-05-31 09:45',
+    customSql:'' },
+  { id:'TPL-007', dsType:'api', vendor:'baixingzhengxing', vendorName:'百行征信', api:'anti_fraud',      apiName:'反欺诈评分',       status:'disabled', createTime:'2024-05-25 16:00', updateTime:'2024-05-31 17:30',
+    customSql:'' }
+];
+
+// ===================== Initialize =====================
+initPageMode();
+</script>
+</body>
+</html>

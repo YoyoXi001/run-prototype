@@ -35,23 +35,29 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .sidebar-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
 
 /* ===== Main Content ===== */
-.main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+.main-content { margin-left: 240px; padding: 4px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
 .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
 .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
 .breadcrumb span { color: #333; }
-.forecast-layout { flex: 1; display: flex; flex-direction: column; }
-.forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+.forecast-layout { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.forecast-white-card { flex: 0 1 auto; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 12px 16px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
 .flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
 
 /* ===== Tabs ===== */
-.page-tabs { display: flex; gap: 0; border-bottom: 1px solid #e8e8e8; margin-bottom: 20px; }
+.page-tabs { display: flex; gap: 0; border-bottom: 1px solid #e8e8e8; margin-bottom: 12px; }
 .page-tab { font-size: 16px; color: #666; padding: 12px 24px; cursor: pointer; position: relative; transition: color 0.2s; }
 .page-tab:hover { color: #f89d34; }
 .page-tab.active { color: #f89d34; font-weight: 600; }
 .page-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 24px; right: 24px; height: 2px; background: #f89d34; }
 
 /* ===== Filter Bar ===== */
-.filter-section { background: #fff; border: 1px solid #d8d8d8; border-radius: 6px; padding: 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.filter-section { background: #fff; border: 1px solid #d8d8d8; border-radius: 6px; margin-bottom: 16px; }
+.filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+.filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.filter-right { display: flex; gap: 12px; }
+.action-bar { padding: 0 0 10px 0; display: flex; justify-content: flex-start; }
+.btn-add { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 0; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; width: 64px; height: 32px; line-height: 32px; font-family: inherit; }
+.btn-add:hover { background: #fef5ec; }
 .filter-group { display: flex; align-items: center; gap: 8px; }
 .filter-label { font-size: 14px; color: #666; white-space: nowrap; }
 .filter-select, .filter-input { width: 180px; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 14px; color: #333; background: #fff; outline: none; font-family: inherit; }
@@ -125,6 +131,88 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
+/* ===== Fail row (red highlight for failed rules) ===== */
+.fail-row td { background: #fff1f0 !important; }
+.fail-row:hover td { background: #ffccc7 !important; }
+.fail-row .view-cell { color: #f5222d; }
+.fail-row .view-cell.uncheck-mark { color: #f5222d; font-weight: 600; }
+.fail-row .field-name { color: #f5222d; }
+
+/* Disabled form state (view mode) */
+.form-control.disabled input,
+.form-control.disabled select,
+.form-control.disabled textarea {
+  background: #f5f5f5 !important; color: #999 !important; pointer-events: none; cursor: not-allowed;
+}
+
+/* ===== Template Config ===== */
+.template-modal { width: 920px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+.template-modal .modal-header { flex-shrink: 0; }
+.template-modal .modal-body { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; }
+.template-modal .modal-footer { flex-shrink: 0; justify-content: center; }
+.config-section { border: 1px solid #e8e8e8; border-radius: 6px; padding: 16px; margin-top: 4px; background: #fafbfc; }
+.config-section-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ebeef5; display: flex; align-items: center; justify-content: space-between; }
+.config-section-title .title-actions { display: flex; gap: 8px; }
+.config-hint { font-size: 12px; color: #999; margin-top: 6px; }
+.form-desc-text { width: 100%; height: 60px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 8px 10px; font-size: 14px; outline: none; font-family: inherit; resize: vertical; }
+.form-desc-text:focus { border-color: #f89d34; }
+
+/* Conditional rows */
+.ds-conditional { display: none; }
+.ds-conditional.show { display: flex; }
+
+/* Sub-select pair */
+.sub-select-pair { display: flex; gap: 12px; flex: 1; }
+.sub-select-pair .sub-item { flex: 1; display: flex; align-items: center; gap: 8px; }
+.sub-select-pair .sub-label { font-size: 13px; color: #888; white-space: nowrap; min-width: 50px; }
+.sub-select-pair select { flex: 1; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #333; background: #fff; outline: none; font-family: inherit; }
+.sub-select-pair select:focus { border-color: #f89d34; }
+
+/* Field constraint matrix table */
+.field-matrix-wrap { overflow-x: auto; border: 1px solid #e8e8e8; border-radius: 4px; }
+.field-matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+.field-matrix th { padding: 0 8px; height: 40px; background: #f0f2f5; font-weight: 600; color: #555; font-size: 12px; border-bottom: 1px solid #e8e8e8; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+.field-matrix td { padding: 4px 8px; height: 42px; border-bottom: 1px solid #f0f0f0; text-align: center; vertical-align: middle; }
+.field-matrix tr:last-child td { border-bottom: none; }
+.field-matrix tr:hover td { background: #fafbfc; }
+.field-matrix .col-field { text-align: left; min-width: 160px; }
+.field-matrix .field-name { font-weight: 500; color: #333; font-size: 13px; font-family: 'Consolas', 'Monaco', monospace; }
+.field-matrix .field-comment { font-size: 11px; color: #999; margin-top: 2px; }
+.field-matrix .field-pk { display: inline-block; background: #fff7e6; color: #fa8c16; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; font-weight: 600; }
+.field-matrix .field-nn { display: inline-block; background: #f6ffed; color: #52c41a; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 2px; font-weight: 500; }
+.field-matrix .field-sql { display: inline-block; background: #e6f7ff; color: #1890ff; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; font-weight: 600; }
+.field-matrix tr.sql-row td { background: #f0f9ff; }
+.field-matrix tr.sql-row:hover td { background: #e6f3ff; }
+.field-matrix .cbx-cell { width: 60px; }
+.field-matrix input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #f89d34; }
+.field-matrix select { width: 100%; height: 28px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 6px; font-size: 12px; color: #333; background: #fff; outline: none; font-family: inherit; min-width: 80px; }
+.field-matrix select:focus { border-color: #f89d34; }
+.field-matrix select.disabled-select { background: #f5f5f5; color: #bbb; pointer-events: none; }
+.field-matrix input[type="text"].formula-input { width: 100%; height: 28px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 6px; font-size: 12px; color: #333; outline: none; font-family: 'Consolas', 'Monaco', monospace; min-width: 120px; }
+.field-matrix input[type="text"].formula-input:focus { border-color: #f89d34; }
+.field-matrix input[type="text"].formula-input::placeholder { color: #ccc; }
+.matrix-scroll { max-height: 340px; overflow-y: auto; }
+
+/* Batch action bar */
+.batch-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.batch-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #666; cursor: pointer; background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 4px 10px; transition: 0.2s; font-family: inherit; }
+.batch-btn:hover { border-color: #f89d34; color: #f89d34; }
+.batch-btn i { font-size: 13px; }
+
+/* Accuracy sub-inputs (now inline columns) */
+.field-matrix input[type="text"].acc-col-input { width: 100%; height: 28px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 6px; font-size: 12px; color: #333; outline: none; font-family: inherit; min-width: 100px; }
+.field-matrix input[type="text"].acc-col-input:focus { border-color: #f89d34; }
+.field-matrix input[type="text"].acc-col-input::placeholder { color: #ccc; }
+
+/* Tag for template type */
+.tag-type { display: inline-block; border-radius: 4px; padding: 2px 10px; font-size: 12px; font-weight: 500; }
+.tag-completeness { background: #fff7e6; color: #fa8c16; }
+.tag-accuracy { background: #f6ffed; color: #52c41a; }
+.tag-uniqueness { background: #e6f7ff; color: #1890ff; }
+.tag-timeliness { background: #f9f0ff; color: #722ed1; }
+.tag-consistency { background: #e6fffb; color: #13c2c2; }
+.tag-custom { background: #f5f5f5; color: #595959; }
+
 /* ===== Toggle Switch ===== */
 .toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -181,68 +269,76 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     <div class="breadcrumb">监控统计 / <span>数据质量监控</span></div>
     <div class="forecast-layout">
       <!-- Page Tabs -->
-      <div class="page-tabs">
+      <div class="page-tabs" id="pageTabs">
     <div class="page-tab active" onclick="switchTab(0)">质量检测记录</div>
-    <div class="page-tab" onclick="switchTab(1)">质量评分</div>
-    <div class="page-tab" onclick="switchTab(2)">规则管理</div>
+    <div class="page-tab" onclick="switchTab(1)">规则管理</div>
+    <div class="page-tab" onclick="switchTab(2)">规则设置</div>
   </div>
+
+  <!-- Tab Panels Container -->
+  <div id="tabPanelsContainer">
 
   <!-- ===== Tab 1: 质量检测记录 ===== -->
   <div class="tab-panel active" id="tab-0">
     <div class="forecast-white-card">
       <div class="filter-section">
-      <div class="filter-group">
-        <span class="filter-label">服务名称</span>
-        <select class="filter-select">
-          <option>全部</option>
-          <option>企业基本信息</option>
-          <option>信用评分</option>
-          <option>司法风险</option>
-          <option>融资历史</option>
-          <option>经营状况</option>
-        </select>
+        <div class="filter-bar">
+          <div class="filter-left">
+            <div class="filter-group">
+              <span class="filter-label">供应商</span>
+              <select class="filter-select">
+                <option>全部</option>
+                <option>天眼查</option>
+                <option>企查查</option>
+                <option>安硕</option>
+                <option>中诚信</option>
+                <option>百行征信</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">API</span>
+              <select class="filter-select">
+                <option>全部</option>
+                <option>企业基本信息</option>
+                <option>企业工商基本信息</option>
+                <option>司法风险</option>
+                <option>股东信息</option>
+                <option>企业信用报告</option>
+                <option>信用评分</option>
+                <option>个人信用报告</option>
+                <option>反欺诈评分</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">检测结果</span>
+              <select class="filter-select">
+                <option>全部</option>
+                <option>通过</option>
+                <option>不通过</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">检测时间</span>
+              <input type="date" class="filter-input" style="width:150px" value="2024-05-31">
+              <span style="color:#999">~</span>
+              <input type="date" class="filter-input" style="width:150px" value="2024-06-01">
+            </div>
+          </div>
+          <div class="filter-right">
+            <button class="btn btn-primary">查询</button>
+            <button class="btn btn-default">重置</button>
+          </div>
+        </div>
       </div>
-      <div class="filter-group">
-        <span class="filter-label">供应商</span>
-        <select class="filter-select">
-          <option>全部</option>
-          <option>天眼查</option>
-          <option>企查查</option>
-          <option>中诚信</option>
-          <option>百行征信</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-label">检测结果</span>
-        <select class="filter-select">
-          <option>全部</option>
-          <option>通过</option>
-          <option>不通过</option>
-          <option>部分通过</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-label">检测时间</span>
-        <input type="date" class="filter-input" style="width:150px" value="2024-05-31">
-        <span style="color:#999">~</span>
-        <input type="date" class="filter-input" style="width:150px" value="2024-06-01">
-      </div>
-      <button class="btn btn-primary">查询</button>
-      <button class="btn btn-default">重置</button>
-    </div>
 
     <div class="flex-table-container">
     <div class="table-container">
     <table class="data-table">
       <thead>
         <tr>
-          <th>检测ID</th>
-          <th>服务名称</th>
+          <th>编号</th>
           <th>供应商</th>
-          <th>检测规则</th>
-          <th>检测样本数</th>
-          <th>通过数</th>
-          <th>通过率</th>
+          <th>API</th>
           <th>检测结果</th>
           <th>检测时间</th>
           <th>操作</th>
@@ -251,99 +347,67 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
       <tbody>
         <tr>
           <td>QC-001</td>
-          <td>企业基本信息</td>
           <td>天眼查</td>
-          <td>字段完整性检测</td>
-          <td>1000</td>
-          <td>992</td>
-          <td>99.2%</td>
+          <td>企业基本信息</td>
           <td><span class="badge-status badge-success">通过</span></td>
           <td>2024-06-01 10:00</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-001','天眼查','企业基本信息','通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-002</td>
-          <td>企业基本信息</td>
-          <td>天眼查</td>
-          <td>数据一致性检测</td>
-          <td>500</td>
-          <td>488</td>
-          <td>97.6%</td>
+          <td>企查查</td>
+          <td>企业工商基本信息</td>
           <td><span class="badge-status badge-success">通过</span></td>
           <td>2024-06-01 10:05</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-002','企查查','企业工商基本信息','通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-003</td>
-          <td>信用评分</td>
           <td>中诚信</td>
-          <td>返回值有效性检测</td>
-          <td>800</td>
-          <td>756</td>
-          <td>94.5%</td>
-          <td><span class="badge-status badge-warning">部分通过</span></td>
+          <td>信用评分</td>
+          <td><span class="badge-status badge-danger">不通过</span></td>
           <td>2024-06-01 09:30</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-003','中诚信','信用评分','不通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-004</td>
-          <td>司法风险</td>
           <td>天眼查</td>
-          <td>字段完整性检测</td>
-          <td>600</td>
-          <td>598</td>
-          <td>99.7%</td>
+          <td>司法风险</td>
           <td><span class="badge-status badge-success">通过</span></td>
           <td>2024-06-01 09:00</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-004','天眼查','司法风险','通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-005</td>
-          <td>融资历史</td>
           <td>企查查</td>
-          <td>数据时效性检测</td>
-          <td>400</td>
-          <td>356</td>
-          <td>89.0%</td>
+          <td>融资信息</td>
           <td><span class="badge-status badge-danger">不通过</span></td>
           <td>2024-06-01 08:30</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-005','企查查','融资信息','不通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-006</td>
-          <td>经营状况</td>
           <td>天眼查</td>
-          <td>数据一致性检测</td>
-          <td>300</td>
-          <td>295</td>
-          <td>98.3%</td>
+          <td>股东信息</td>
           <td><span class="badge-status badge-success">通过</span></td>
           <td>2024-05-31 18:00</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-006','天眼查','股东信息','通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-007</td>
-          <td>企业基本信息</td>
-          <td>企查查</td>
-          <td>字段完整性检测</td>
-          <td>1000</td>
-          <td>985</td>
-          <td>98.5%</td>
+          <td>安硕</td>
+          <td>企业信用报告</td>
           <td><span class="badge-status badge-success">通过</span></td>
           <td>2024-05-31 17:00</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-007','安硕','企业信用报告','通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
         <tr>
           <td>QC-008</td>
-          <td>信用评分</td>
-          <td>中诚信</td>
-          <td>数据时效性检测</td>
-          <td>500</td>
-          <td>425</td>
-          <td>85.0%</td>
+          <td>百行征信</td>
+          <td>个人信用报告</td>
           <td><span class="badge-status badge-danger">不通过</span></td>
           <td>2024-05-31 16:00</td>
-          <td><a class="action-link" href="javascript:void(0)">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
+          <td><a class="action-link" href="javascript:void(0)" onclick="showQualityDetail('QC-008','百行征信','个人信用报告','不通过')">查看详情</a><a class="action-link" href="javascript:void(0)">重新检测</a></td>
         </tr>
       </tbody>
     </table>
@@ -367,145 +431,11 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     </div>
   </div>
 
-  <!-- ===== Tab 2: 质量评分 ===== -->
+  <!-- ===== Tab 2: 规则管理 ===== -->
   <div class="tab-panel" id="tab-1">
     <div class="forecast-white-card">
-      <div class="filter-section">
-      <div class="filter-group">
-        <span class="filter-label">供应商</span>
-        <select class="filter-select">
-          <option>全部</option>
-          <option>天眼查</option>
-          <option>企查查</option>
-          <option>中诚信</option>
-          <option>百行征信</option>
-          <option>前海征信</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-label">评分周期</span>
-        <select class="filter-select">
-          <option>2024年5月</option>
-          <option>2024年4月</option>
-          <option>2024年3月</option>
-          <option>2024年2月</option>
-          <option>2024年1月</option>
-        </select>
-      </div>
-      <button class="btn btn-primary">查询</button>
-      <button class="btn btn-default">重置</button>
-    </div>
-
-    <div class="flex-table-container">
-    <div class="table-container">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>供应商</th>
-          <th>服务名称</th>
-          <th>完整性评分</th>
-          <th>一致性评分</th>
-          <th>时效性评分</th>
-          <th>有效性评分</th>
-          <th>综合评分</th>
-          <th>评分等级</th>
-          <th>评分周期</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>天眼查</td>
-          <td>企业基本信息</td>
-          <td>98.5</td>
-          <td>97.2</td>
-          <td>95.8</td>
-          <td>99.1</td>
-          <td><strong>97.7</strong></td>
-          <td><span class="badge-status badge-success">优秀</span></td>
-          <td>2024年5月</td>
-        </tr>
-        <tr>
-          <td>天眼查</td>
-          <td>司法风险</td>
-          <td>99.0</td>
-          <td>96.5</td>
-          <td>94.2</td>
-          <td>98.3</td>
-          <td><strong>97.0</strong></td>
-          <td><span class="badge-status badge-success">优秀</span></td>
-          <td>2024年5月</td>
-        </tr>
-        <tr>
-          <td>企查查</td>
-          <td>企业基本信息</td>
-          <td>97.8</td>
-          <td>95.6</td>
-          <td>93.5</td>
-          <td>97.2</td>
-          <td><strong>96.0</strong></td>
-          <td><span class="badge-status badge-success">优秀</span></td>
-          <td>2024年5月</td>
-        </tr>
-        <tr>
-          <td>中诚信</td>
-          <td>信用评分</td>
-          <td>94.5</td>
-          <td>91.2</td>
-          <td>85.3</td>
-          <td>92.8</td>
-          <td><strong>91.0</strong></td>
-          <td><span class="badge-status badge-info">良好</span></td>
-          <td>2024年5月</td>
-        </tr>
-        <tr>
-          <td>百行征信</td>
-          <td>个人信用报告</td>
-          <td>92.3</td>
-          <td>88.7</td>
-          <td>82.1</td>
-          <td>90.5</td>
-          <td><strong>88.4</strong></td>
-          <td><span class="badge-status badge-info">良好</span></td>
-          <td>2024年5月</td>
-        </tr>
-        <tr>
-          <td>前海征信</td>
-          <td>反欺诈评分</td>
-          <td>85.6</td>
-          <td>82.3</td>
-          <td>78.9</td>
-          <td>84.2</td>
-          <td><strong>82.8</strong></td>
-          <td><span class="badge-status badge-info">良好</span></td>
-          <td>2024年5月</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-    <div class="pagination">
-      <span class="total">共 6 条</span>
-      <button class="page-btn disabled">&lt;</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn disabled">&gt;</button>
-      <select class="page-size-select">
-        <option>10条/页</option>
-        <option>20条/页</option>
-        <option>50条/页</option>
-      </select>
-      <div class="page-jump">
-        前往 <input type="text" value="1"> 页
-      </div>
-    </div>
-    </div>
-    </div>
-  </div>
-
-  <!-- ===== Tab 3: 规则管理 ===== -->
-  <div class="tab-panel" id="tab-2">
-    <div class="forecast-white-card">
       <div class="action-bar" style="margin-bottom: 16px;">
-        <button class="btn btn-primary" onclick="openRuleModal()">+ 新增规则</button>
+        <button class="btn-add" onclick="openRuleModal('add')">+ 新增</button>
       </div>
       <div class="flex-table-container">
 
@@ -513,12 +443,10 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     <table class="data-table">
       <thead>
         <tr>
-          <th>规则编号</th>
-          <th>规则名称</th>
+          <th>编号</th>
           <th>规则类型</th>
-          <th>检测维度</th>
-          <th>阈值</th>
-          <th>适用服务</th>
+          <th>目标通过率</th>
+          <th>适用范围</th>
           <th>状态</th>
           <th>操作</th>
         </tr>
@@ -526,85 +454,73 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
       <tbody>
         <tr>
           <td>R-001</td>
-          <td>字段完整性检测</td>
-          <td>完整性</td>
-          <td>字段非空率</td>
-          <td>&ge;95%</td>
-          <td>全部服务</td>
+          <td>非空</td>
+          <td>95%</td>
+          <td>全局</td>
           <td><span class="badge-status badge-success">启用</span></td>
           <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
-            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('edit',0)">编辑</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('view',0)">查看</a>
             <a class="action-link danger" href="javascript:void(0)">删除</a>
           </td>
         </tr>
         <tr>
           <td>R-002</td>
-          <td>数据一致性检测</td>
-          <td>一致性</td>
-          <td>多源比对一致率</td>
-          <td>&ge;90%</td>
-          <td>全部服务</td>
+          <td>唯一</td>
+          <td>99%</td>
+          <td>全局</td>
           <td><span class="badge-status badge-success">启用</span></td>
           <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
-            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('edit',1)">编辑</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('view',1)">查看</a>
             <a class="action-link danger" href="javascript:void(0)">删除</a>
           </td>
         </tr>
         <tr>
           <td>R-003</td>
-          <td>数据时效性检测</td>
-          <td>时效性</td>
-          <td>数据更新延迟</td>
-          <td>&le;24小时</td>
-          <td>全部服务</td>
+          <td>格式</td>
+          <td>99%</td>
+          <td>天眼查-企业基本信息</td>
           <td><span class="badge-status badge-success">启用</span></td>
           <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
-            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('edit',2)">编辑</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('view',2)">查看</a>
             <a class="action-link danger" href="javascript:void(0)">删除</a>
           </td>
         </tr>
         <tr>
           <td>R-004</td>
-          <td>返回值有效性检测</td>
-          <td>有效性</td>
-          <td>返回码正常率</td>
-          <td>&ge;98%</td>
-          <td>全部服务</td>
+          <td>范围</td>
+          <td>98%</td>
+          <td>中诚信-信用评分</td>
           <td><span class="badge-status badge-success">启用</span></td>
           <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
-            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('edit',3)">编辑</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('view',3)">查看</a>
             <a class="action-link danger" href="javascript:void(0)">删除</a>
           </td>
         </tr>
         <tr>
           <td>R-005</td>
-          <td>格式规范检测</td>
-          <td>规范性</td>
-          <td>格式合规率</td>
-          <td>&ge;99%</td>
-          <td>企业基本信息</td>
+          <td>枚举</td>
+          <td>95%</td>
+          <td>天眼查</td>
           <td><span class="badge-status badge-success">启用</span></td>
           <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
-            <a class="action-link" href="javascript:void(0)">停用</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('edit',4)">编辑</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('view',4)">查看</a>
             <a class="action-link danger" href="javascript:void(0)">删除</a>
           </td>
         </tr>
         <tr>
           <td>R-006</td>
-          <td>重复数据检测</td>
-          <td>唯一性</td>
-          <td>重复率</td>
-          <td>&le;1%</td>
-          <td>企业基本信息</td>
+          <td>一致性</td>
+          <td>90%</td>
+          <td>全局</td>
           <td><span class="badge-status badge-danger">停用</span></td>
           <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal()">编辑</a>
-            <a class="action-link" href="javascript:void(0)">启用</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('edit',5)">编辑</a>
+            <a class="action-link" href="javascript:void(0)" onclick="openRuleModal('view',5)">查看</a>
             <a class="action-link danger" href="javascript:void(0)">删除</a>
           </td>
         </tr>
@@ -628,6 +544,321 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     </div>
     </div>
     </div>
+    </div>
+  </div>
+
+  <!-- ===== Tab 3: 规则设置 ===== -->
+  <div class="tab-panel" id="tab-2">
+    <!-- List View -->
+    <div id="ruleSettingsList">
+      <div class="forecast-white-card">
+        <div class="filter-section">
+          <div class="filter-bar">
+            <div class="filter-left">
+              <div class="filter-group">
+                <span class="filter-label">供应商</span>
+                <select class="filter-select">
+                  <option>全部</option>
+                  <option>天眼查</option>
+                  <option>企查查</option>
+                  <option>安硕</option>
+                  <option>中诚信</option>
+                  <option>百行征信</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label">API</span>
+                <select class="filter-select">
+                  <option>全部</option>
+                  <option>企业基本信息</option>
+                  <option>司法风险</option>
+                  <option>股东信息</option>
+                  <option>企业信用报告</option>
+                  <option>信用评分</option>
+                  <option>个人信用报告</option>
+                  <option>反欺诈评分</option>
+                </select>
+              </div>
+            </div>
+            <div class="filter-right">
+              <button class="btn btn-primary">查询</button>
+              <button class="btn btn-default">重置</button>
+            </div>
+          </div>
+        </div>
+        <div class="action-bar">
+          <button class="btn-add" onclick="window.location.href='数据规则.html?mode=add'">+ 新增</button>
+        </div>
+        <div class="flex-table-container">
+          <div class="table-container">
+            <table class="data-table" id="ruleSettingsTable">
+              <thead>
+                <tr>
+                  <th>编号</th>
+                  <th>数据源类型</th>
+                  <th>供应商</th>
+                  <th>API</th>
+                  <th>创建时间</th>
+                  <th>更新时间</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="ruleSettingsTableBody">
+                <tr>
+                  <td>TPL-001</td>
+                  <td>API</td>
+                  <td>天眼查</td>
+                  <td>企业基本信息</td>
+                  <td>2024-05-10 14:30</td>
+                  <td>2024-05-28 09:15</td>
+                  <td><span class="badge-status badge-success">启用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=0">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=0">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TPL-002</td>
+                  <td>API</td>
+                  <td>企查查</td>
+                  <td>企业工商基本信息</td>
+                  <td>2024-05-12 10:00</td>
+                  <td>2024-05-25 16:40</td>
+                  <td><span class="badge-status badge-success">启用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=1">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=1">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TPL-003</td>
+                  <td>API</td>
+                  <td>天眼查</td>
+                  <td>司法风险</td>
+                  <td>2024-05-15 09:20</td>
+                  <td>2024-05-20 11:30</td>
+                  <td><span class="badge-status badge-success">启用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=2">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=2">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TPL-004</td>
+                  <td>API</td>
+                  <td>安硕</td>
+                  <td>企业信用报告</td>
+                  <td>2024-05-18 15:45</td>
+                  <td>2024-05-30 10:00</td>
+                  <td><span class="badge-status badge-success">启用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=3">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=3">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TPL-005</td>
+                  <td>API</td>
+                  <td>中诚信</td>
+                  <td>信用评分</td>
+                  <td>2024-05-20 08:30</td>
+                  <td>2024-05-29 14:20</td>
+                  <td><span class="badge-status badge-success">启用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=4">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=4">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TPL-006</td>
+                  <td>API</td>
+                  <td>百行征信</td>
+                  <td>个人信用报告</td>
+                  <td>2024-05-22 11:00</td>
+                  <td>2024-05-31 09:45</td>
+                  <td><span class="badge-status badge-danger">停用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=5">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=5">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TPL-007</td>
+                  <td>API</td>
+                  <td>百行征信</td>
+                  <td>反欺诈评分</td>
+                  <td>2024-05-25 16:00</td>
+                  <td>2024-05-31 17:30</td>
+                  <td><span class="badge-status badge-danger">停用</span></td>
+                  <td>
+                    <a class="action-link" href="数据规则.html?mode=edit&row=6">编辑</a>
+                    <a class="action-link" href="数据规则.html?mode=view&row=6">查看</a>
+                    <a class="action-link danger" href="javascript:void(0)">删除</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <span class="total">共 7 条</span>
+            <button class="page-btn disabled">&lt;</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn disabled">&gt;</button>
+            <select class="page-size-select">
+              <option>10条/页</option>
+              <option>20条/页</option>
+              <option>50条/页</option>
+            </select>
+            <div class="page-jump">
+              前往 <input type="text" value="1"> 页
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div> <!-- Close tabPanelsContainer -->
+
+  <!-- ===== 新增规则设置页面 ===== -->
+  <div id="newRuleSettingsPage" style="display:none;">
+    <div class="breadcrumb" style="margin-bottom: 12px;">
+      <a href="javascript:void(0)" onclick="closeNewRuleSettingsPage()" style="color:#666;">数据质量监控</a> /
+      <a href="javascript:void(0)" onclick="closeNewRuleSettingsPage()" style="color:#666;">规则设置</a> /
+      <span>新增规则</span>
+    </div>
+    <div class="forecast-white-card">
+      <!-- 数据源类型 -->
+      <div class="form-row">
+        <label class="form-label"><span class="required">*</span> 数据源类型</label>
+        <div class="form-control">
+          <select id="newTplDatasourceType" onchange="onNewDatasourceTypeChange()">
+            <option value="">请选择数据源类型</option>
+            <option value="database">数据库</option>
+            <option value="api">API</option>
+          </select>
+        </div>
+      </div>
+      <!-- 数据库：选择库 + 选择表 -->
+      <div class="form-row ds-conditional" id="newRowDatabase">
+        <label class="form-label"><span class="required">*</span> 数据库</label>
+        <div class="form-control">
+          <div class="sub-select-pair">
+            <div class="sub-item">
+              <span class="sub-label">选择库</span>
+              <select id="newSelDatabase" onchange="onNewDatabaseTableChange()">
+                <option value="">请选择数据库</option>
+                <option value="ext_data">ext_data（外数落地库）</option>
+                <option value="risk_db">risk_db（风险数据库）</option>
+                <option value="credit_db">credit_db（征信数据库）</option>
+                <option value="biz_dw">biz_dw（业务数仓）</option>
+              </select>
+            </div>
+            <div class="sub-item">
+              <span class="sub-label">选择表</span>
+              <select id="newSelTable" onchange="onNewDatabaseTableChange()">
+                <option value="">请先选择数据库</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- API：选择供应商 + 选择API -->
+      <div class="form-row ds-conditional" id="newRowApi">
+        <label class="form-label"><span class="required">*</span> API</label>
+        <div class="form-control">
+          <div class="sub-select-pair">
+            <div class="sub-item">
+              <span class="sub-label">供应商</span>
+              <select id="newSelVendor" onchange="onNewVendorApiChange()">
+                <option value="">请选择供应商</option>
+                <option value="tianyancha">天眼查</option>
+                <option value="qichacha">企查查</option>
+                <option value="anshuo">安硕</option>
+                <option value="zhongchengxin">中诚信</option>
+                <option value="baixingzhengxing">百行征信</option>
+              </select>
+            </div>
+            <div class="sub-item">
+              <span class="sub-label">API</span>
+              <select id="newSelApi" onchange="onNewVendorApiChange()">
+                <option value="">请先选择供应商</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 规则配置：字段约束矩阵 -->
+      <div class="form-row ds-conditional" id="newRowConfig" style="align-items: flex-start;">
+        <label class="form-label"><span class="required">*</span> 规则配置</label>
+        <div class="form-control">
+          <div class="config-section">
+            <div class="config-section-title">
+              <span id="newConfigTitleText">字段约束配置</span>
+              <div class="title-actions">
+                <button class="batch-btn" onclick="newBatchCheck('required')" title="批量勾选必填"><i class="el-icon-check"></i>全选必填</button>
+                <button class="batch-btn" onclick="newBatchReset()" title="重置所有配置"><i class="el-icon-refresh"></i>重置</button>
+              </div>
+            </div>
+            <div class="config-hint" id="newConfigHint">请先完成上方的数据源选择</div>
+            <div class="field-matrix-wrap" id="newFieldMatrixWrap" style="display:none; margin-top: 8px;">
+              <div class="matrix-scroll" id="newMatrixScroll">
+                <table class="field-matrix" id="newFieldMatrix">
+                  <thead>
+                    <tr>
+                      <th class="col-field" style="text-align:left;">表字段</th>
+                      <th class="cbx-cell">必填</th>
+                      <th class="cbx-cell">唯一</th>
+                      <th style="min-width:110px;">类型</th>
+                      <th style="min-width:150px;">格式</th>
+                      <th style="min-width:130px;">范围</th>
+                      <th style="min-width:150px;">枚举</th>
+                      <th style="min-width:160px;">一致性</th>
+                    </tr>
+                  </thead>
+                  <tbody id="newFieldMatrixBody">
+                    <!-- JS generated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!-- 自定义SQL -->
+            <div id="newCustomSqlArea" style="display:none; margin-top: 12px;">
+              <div class="config-section-title" style="margin-bottom:8px;">
+                <span>自定义SQL</span>
+                <button class="batch-btn" onclick="newParseSqlFields()" title="解析SQL并提取字段到上方矩阵"><i class="el-icon-search"></i>提取字段</button>
+              </div>
+              <textarea class="config-textarea" id="newTplCustomSql" placeholder="请输入补充校验SQL语句，支持使用以下变量：&#10;  ${table_name}  — 数据落地表名&#10;  ${check_time}  — 检测时间&#10;&#10;示例：&#10;SELECT company_name, credit_code, COUNT(*) as cnt&#10;FROM ${table_name}&#10;WHERE create_time >= ${check_time}&#10;GROUP BY company_name, credit_code&#10;HAVING cnt > 1"></textarea>
+              <div class="config-hint">说明：输入SQL后点击「提取字段」，系统将自动解析SQL中涉及的字段，追加到上方字段约束矩阵最后一行，可对其进行规则校验配置。留空则仅执行字段约束校验。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 状态 -->
+      <div class="form-row">
+        <label class="form-label">状态</label>
+        <div class="form-control">
+          <select id="newTplStatus">
+            <option value="enabled" selected>启用</option>
+            <option value="disabled">停用</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="form-row" style="justify-content: center; margin-top: 16px;">
+        <button class="btn btn-default" onclick="closeNewRuleSettingsPage()">取消</button>
+        <button class="btn btn-primary" onclick="closeNewRuleSettingsPage()" style="margin-left: 12px;">保存</button>
+      </div>
     </div>
   </div>
 </div>
@@ -637,74 +868,147 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 <div class="modal-mask" id="ruleModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>编辑规则</h3>
+      <h3 id="ruleModalTitle">新增规则</h3>
       <button class="modal-close" onclick="closeRuleModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <label class="form-label"><span class="required">*</span> 规则名称</label>
-        <div class="form-control">
-          <input type="text" placeholder="请输入规则名称" value="字段完整性检测">
-        </div>
-      </div>
-      <div class="form-row">
         <label class="form-label"><span class="required">*</span> 规则类型</label>
-        <div class="form-control">
-          <select>
-            <option>完整性</option>
-            <option>一致性</option>
-            <option>时效性</option>
-            <option>有效性</option>
-            <option>规范性</option>
-            <option>唯一性</option>
+        <div class="form-control" id="fcRuleType">
+          <select id="ruleType">
+            <option value="非空">非空</option>
+            <option value="唯一">唯一</option>
+            <option value="格式">格式</option>
+            <option value="范围">范围</option>
+            <option value="枚举">枚举</option>
+            <option value="一致性">一致性</option>
           </select>
         </div>
       </div>
       <div class="form-row">
-        <label class="form-label"><span class="required">*</span> 检测维度</label>
-        <div class="form-control">
-          <input type="text" placeholder="请输入检测维度" value="字段非空率">
+        <label class="form-label"><span class="required">*</span> 目标通过率</label>
+        <div class="form-control" id="fcRulePassRate">
+          <input type="text" id="rulePassRate" placeholder="请输入百分比，如 95">
         </div>
       </div>
       <div class="form-row">
-        <label class="form-label"><span class="required">*</span> 阈值</label>
-        <div class="form-control">
-          <input type="text" placeholder="请输入阈值" value="≥95%">
+        <label class="form-label"><span class="required">*</span> 适用范围</label>
+        <div class="form-control" id="fcRuleScopeType">
+          <select id="ruleScopeType" onchange="onRuleScopeChange()">
+            <option value="global">全局</option>
+            <option value="vendor">供应商</option>
+          </select>
         </div>
       </div>
-      <div class="form-row">
-        <label class="form-label"><span class="required">*</span> 适用服务</label>
-        <div class="form-control">
-          <select multiple style="height:100px">
-            <option selected>全部服务</option>
-            <option>企业基本信息</option>
-            <option>信用评分</option>
-            <option>司法风险</option>
-            <option>融资历史</option>
-            <option>经营状况</option>
+      <div class="form-row" id="ruleScopeVendorRow" style="display:none;">
+        <label class="form-label"><span class="required">*</span> 供应商</label>
+        <div class="form-control" id="fcRuleScopeVendor">
+          <select id="ruleScopeVendor" onchange="onRuleVendorChange()">
+            <option value="">请选择供应商</option>
+            <option value="tianyancha">天眼查</option>
+            <option value="qichacha">企查查</option>
+            <option value="anshuo">安硕</option>
+            <option value="zhongchengxin">中诚信</option>
+            <option value="baixingzhengxing">百行征信</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" id="ruleScopeApiRow" style="display:none;">
+        <label class="form-label"><span class="required">*</span> API</label>
+        <div class="form-control" id="fcRuleScopeApi">
+          <select id="ruleScopeApi">
+            <option value="all">不限</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <label class="form-label">状态</label>
-        <div class="form-control">
-          <select>
-            <option>启用</option>
-            <option>停用</option>
+        <div class="form-control" id="fcRuleStatus">
+          <select id="ruleStatus">
+            <option value="启用">启用</option>
+            <option value="停用">停用</option>
           </select>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" id="ruleModalFooter">
       <button class="btn btn-default" onclick="closeRuleModal()">取消</button>
       <button class="btn btn-primary" onclick="closeRuleModal()">保存</button>
     </div>
   </div>
 </div>
 
+<!-- ===== Quality Detail Modal ===== -->
+<div class="modal-mask" id="qualityDetailModal">
+  <div class="modal" style="width: 900px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;">
+    <div class="modal-header" style="flex-shrink: 0;">
+      <h3>质量检测详情 - <span id="detailQcId">QC-001</span>
+        <span id="detailVendorTag" style="font-size:13px; color:#666; font-weight:400; margin-left:8px;"></span>
+      </h3>
+      <button class="modal-close" onclick="closeQualityDetail()">&times;</button>
+    </div>
+    <div class="modal-body" style="flex: 1; overflow-y: auto; min-height: 0;">
+      <!-- 上方：规则汇总表 -->
+      <div class="config-section">
+        <div class="config-section-title">
+          <span>检测规则汇总</span>
+        </div>
+        <div class="table-container" style="margin-top: 12px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>规则类型</th>
+                <th>目标通过率</th>
+                <th>实际通过率</th>
+                <th>检测结果</th>
+              </tr>
+            </thead>
+            <tbody id="qualityRuleSummary">
+              <!-- JS generated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 下方：字段配置通过/不通过详情 -->
+      <div class="config-section" style="margin-top: 16px;">
+        <div class="config-section-title">
+          <span>规则详情</span>
+        </div>
+        <div class="field-matrix-wrap" style="margin-top: 12px;">
+          <div class="matrix-scroll">
+            <table class="field-matrix" id="qualityFieldDetail">
+              <thead>
+                <tr>
+                  <th class="col-field" style="text-align:left;">字段</th>
+                  <th class="cbx-cell">必填</th>
+                  <th class="cbx-cell">唯一</th>
+                  <th>类型</th>
+                  <th>格式</th>
+                  <th>范围</th>
+                  <th>枚举</th>
+                  <th>一致性</th>
+                  <th>检测结果</th>
+                </tr>
+              </thead>
+              <tbody id="qualityFieldDetailBody">
+                <!-- JS generated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="flex-shrink: 0;">
+      <button class="btn btn-default" onclick="closeQualityDetail()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script>
-// Tab switching
+// ===================== Tab Switching =====================
 function switchTab(index) {
   document.querySelectorAll('.page-tab').forEach(function(tab, i) {
     tab.classList.toggle('active', i === index);
@@ -714,13 +1018,915 @@ function switchTab(index) {
   });
 }
 
-// Modal
-function openRuleModal() {
+// ===================== Rule Modal =====================
+// Mock data for rule management rows
+var RULE_ROWS = [
+  { id:'R-001', type:'非空',   rate:'95', scope:'全局',              scopeType:'global', vendor:'',            api:'',   status:'启用' },
+  { id:'R-002', type:'唯一',   rate:'99', scope:'全局',              scopeType:'global', vendor:'',            api:'',   status:'启用' },
+  { id:'R-003', type:'格式',   rate:'99', scope:'天眼查-企业基本信息', scopeType:'vendor', vendor:'tianyancha', api:'company_base', status:'启用' },
+  { id:'R-004', type:'范围',   rate:'98', scope:'中诚信-信用评分',    scopeType:'vendor', vendor:'zhongchengxin', api:'credit_score', status:'启用' },
+  { id:'R-005', type:'枚举',   rate:'95', scope:'天眼查',            scopeType:'vendor', vendor:'tianyancha', api:'all', status:'启用' },
+  { id:'R-006', type:'一致性', rate:'90', scope:'全局',              scopeType:'global', vendor:'',            api:'',   status:'停用' }
+];
+
+var ruleModalMode = 'add'; // add | edit | view
+
+function openRuleModal(mode, rowIndex) {
+  ruleModalMode = mode || 'add';
+  var titles = { add: '新增规则', edit: '编辑规则', view: '查看规则' };
+  document.getElementById('ruleModalTitle').textContent = titles[ruleModalMode] || titles.add;
+
+  // Reset form
+  resetRuleForm();
+
+  // Fill data for edit/view
+  if ((mode === 'edit' || mode === 'view') && rowIndex !== undefined && RULE_ROWS[rowIndex]) {
+    var row = RULE_ROWS[rowIndex];
+    document.getElementById('ruleType').value = row.type;
+    document.getElementById('rulePassRate').value = row.rate;
+    document.getElementById('ruleScopeType').value = row.scopeType;
+    document.getElementById('ruleStatus').value = row.status;
+
+    // Trigger scope change to show vendor/api rows
+    onRuleScopeChange();
+
+    if (row.scopeType === 'vendor' && row.vendor) {
+      document.getElementById('ruleScopeVendor').value = row.vendor;
+      onRuleVendorChange();
+      setTimeout(function() {
+        document.getElementById('ruleScopeApi').value = row.api || 'all';
+      }, 10);
+    }
+  }
+
+  // View mode: disable all inputs, hide save button
+  var fcIds = ['fcRuleType','fcRulePassRate','fcRuleScopeType','fcRuleScopeVendor','fcRuleScopeApi','fcRuleStatus'];
+  fcIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      if (mode === 'view') {
+        el.classList.add('disabled');
+      } else {
+        el.classList.remove('disabled');
+      }
+    }
+  });
+
+  // Footer buttons
+  var footer = document.getElementById('ruleModalFooter');
+  if (mode === 'view') {
+    footer.innerHTML = '<button class="btn btn-default" onclick="closeRuleModal()">关闭</button>';
+  } else {
+    footer.innerHTML =
+      '<button class="btn btn-default" onclick="closeRuleModal()">取消</button>' +
+      '<button class="btn btn-primary" onclick="closeRuleModal()">保存</button>';
+  }
+
   document.getElementById('ruleModal').classList.add('show');
 }
+
+function resetRuleForm() {
+  document.getElementById('ruleType').value = '非空';
+  document.getElementById('rulePassRate').value = '';
+  document.getElementById('ruleScopeType').value = 'global';
+  document.getElementById('ruleScopeVendor').value = '';
+  document.getElementById('ruleScopeApi').innerHTML = '<option value="all">不限</option>';
+  document.getElementById('ruleStatus').value = '启用';
+  document.getElementById('ruleScopeVendorRow').style.display = 'none';
+  document.getElementById('ruleScopeApiRow').style.display = 'none';
+}
+
 function closeRuleModal() {
   document.getElementById('ruleModal').classList.remove('show');
 }
+
+// ===================== Rule Modal Scope Logic =====================
+function onRuleScopeChange() {
+  var scopeType = document.getElementById('ruleScopeType').value;
+  var vendorRow = document.getElementById('ruleScopeVendorRow');
+  var apiRow = document.getElementById('ruleScopeApiRow');
+  var vendorSel = document.getElementById('ruleScopeVendor');
+  var apiSel = document.getElementById('ruleScopeApi');
+
+  if (scopeType === 'global') {
+    vendorRow.style.display = 'none';
+    apiRow.style.display = 'none';
+    vendorSel.value = '';
+    apiSel.innerHTML = '<option value="all">不限</option>';
+  } else {
+    vendorRow.style.display = 'flex';
+    apiRow.style.display = 'none';
+    vendorSel.value = '';
+    apiSel.innerHTML = '<option value="all">不限</option>';
+  }
+}
+
+function onRuleVendorChange() {
+  var vendor = document.getElementById('ruleScopeVendor').value;
+  var apiRow = document.getElementById('ruleScopeApiRow');
+  var apiSel = document.getElementById('ruleScopeApi');
+
+  if (vendor && VENDOR_APIS[vendor]) {
+    apiRow.style.display = 'flex';
+    var opts = '<option value="all">不限</option>';
+    VENDOR_APIS[vendor].forEach(function(a) {
+      opts += '<option value="' + a.value + '">' + a.label + '</option>';
+    });
+    apiSel.innerHTML = opts;
+  } else {
+    apiRow.style.display = 'none';
+    apiSel.innerHTML = '<option value="all">不限</option>';
+  }
+}
+
+// ===================== Quality Detail Modal =====================
+function showQualityDetail(qcId, vendor, api, result) {
+  document.getElementById('detailQcId').textContent = qcId;
+  document.getElementById('detailVendorTag').textContent = vendor + ' - ' + api;
+
+  // Mock rule summary data: numeric values for comparison
+  // passed = actual >= target
+  var rules = [
+    { id: 'R-001', type: '非空',   target: 95, actual: 98.2 },
+    { id: 'R-002', type: '唯一',   target: 99, actual: 100  },
+    { id: 'R-003', type: '格式',   target: 99, actual: result === '通过' ? 99.5 : 96.5 },
+    { id: 'R-004', type: '范围',   target: 98, actual: result === '通过' ? 98.5 : 94.0 },
+    { id: 'R-005', type: '枚举',   target: 95, actual: 97.8 },
+    { id: 'R-006', type: '一致性', target: 90, actual: result === '通过' ? 91.2 : 88.5 }
+  ];
+
+  // Render rule summary (实际 >= 目标 → 通过)
+  var summaryHtml = '';
+  rules.forEach(function(r) {
+    var passed = r.actual >= r.target;
+    var badge = passed
+      ? '<span class="badge-status badge-success">通过</span>'
+      : '<span class="badge-status badge-danger">不通过</span>';
+    var rowClass = passed ? '' : ' class="fail-row"';
+    summaryHtml += '<tr' + rowClass + '><td>' + r.id + '</td><td>' + r.type + '</td><td>' + r.target + '%</td><td>' + r.actual + '%</td><td>' + badge + '</td></tr>';
+  });
+  document.getElementById('qualityRuleSummary').innerHTML = summaryHtml;
+
+  // Mock field detail data
+  // Each field has per-rule pass/fail states
+  var isPass = result === '通过';
+  var fields = [
+    {
+      name: 'companyName', type: '字符串', format: '—', range: '—', enumVal: '—', consist: '—',
+      required: true, unique: false,
+      rules: { required: true, unique: true, type: true, format: true, range: true, enumVal: true, consist: true }
+    },
+    {
+      name: 'creditCode', type: '字符串', format: '^[A-Z0-9]{18}$', range: '—', enumVal: '—', consist: '—',
+      required: true, unique: true,
+      rules: { required: true, unique: true, type: true, format: true, range: true, enumVal: true, consist: true }
+    },
+    {
+      name: 'legalPerson', type: '字符串', format: '—', range: '—', enumVal: '—', consist: '—',
+      required: true, unique: false,
+      rules: { required: true, unique: true, type: true, format: true, range: true, enumVal: true, consist: true }
+    },
+    {
+      name: 'registeredCapital', type: '小数', format: '—', range: '0~100000', enumVal: '—', consist: '—',
+      required: false, unique: false,
+      rules: { required: true, unique: true, type: true, format: true, range: isPass, enumVal: true, consist: true }
+    },
+    {
+      name: 'establishDate', type: '日期', format: 'YYYY-MM-DD', range: '—', enumVal: '—', consist: '—',
+      required: false, unique: false,
+      rules: { required: true, unique: true, type: true, format: isPass, range: true, enumVal: true, consist: true }
+    },
+    {
+      name: 'businessStatus', type: '字符串', format: '—', range: '—', enumVal: '存续,注销,吊销', consist: '—',
+      required: false, unique: false,
+      rules: { required: true, unique: true, type: true, format: true, range: true, enumVal: true, consist: true }
+    },
+    {
+      name: 'industry', type: '字符串', format: '—', range: '—', enumVal: '—', consist: '—',
+      required: false, unique: false,
+      rules: { required: true, unique: true, type: true, format: true, range: true, enumVal: true, consist: true }
+    },
+    {
+      name: 'regAddress', type: '字符串', format: '—', range: '—', enumVal: '—', consist: '—',
+      required: false, unique: false,
+      rules: { required: true, unique: true, type: true, format: true, range: true, enumVal: true, consist: true }
+    }
+  ];
+
+  var detailHtml = '';
+  fields.forEach(function(f) {
+    var r = f.rules;
+    // A field fails if any of its active rule checks fail
+    var fieldPassed = r.required && r.unique && r.type && r.format && r.range && r.enumVal && r.consist;
+    var badge = fieldPassed
+      ? '<span class="badge-status badge-success">通过</span>'
+      : '<span class="badge-status badge-danger">不通过</span>';
+    var rowClass = fieldPassed ? '' : ' class="fail-row"';
+
+    function cellSpan(ok, val) {
+      if (val === '—') return '<span class="view-cell uncheck-mark">—</span>';
+      return ok
+        ? '<span class="view-cell" style="color:#52c41a;">' + val + '</span>'
+        : '<span class="view-cell" style="color:#f5222d;font-weight:600;">' + val + '</span>';
+    }
+    function checkMark(ok) {
+      return ok
+        ? '<span class="view-cell check-mark">✓</span>'
+        : '<span class="view-cell uncheck-mark" style="color:#f5222d;">✗</span>';
+    }
+
+    detailHtml += '<tr' + rowClass + '>' +
+      '<td class="col-field" style="text-align:left;"><div class="field-name">' + f.name + '</div></td>' +
+      '<td class="cbx-cell">' + checkMark(r.required) + '</td>' +
+      '<td class="cbx-cell">' + checkMark(r.unique) + '</td>' +
+      '<td>' + cellSpan(r.type, f.type) + '</td>' +
+      '<td>' + cellSpan(r.format, f.format) + '</td>' +
+      '<td>' + cellSpan(r.range, f.range) + '</td>' +
+      '<td>' + cellSpan(r.enumVal, f.enumVal) + '</td>' +
+      '<td>' + cellSpan(r.consist, f.consist) + '</td>' +
+      '<td>' + badge + '</td>' +
+    '</tr>';
+  });
+  document.getElementById('qualityFieldDetailBody').innerHTML = detailHtml;
+
+  document.getElementById('qualityDetailModal').classList.add('show');
+}
+
+function closeQualityDetail() {
+  document.getElementById('qualityDetailModal').classList.remove('show');
+}
+
+// ===================== New Rule Settings Page =====================
+function openNewRuleSettingsPage() {
+  document.getElementById('pageTabs').style.display = 'none';
+  document.getElementById('tabPanelsContainer').style.display = 'none';
+  document.getElementById('newRuleSettingsPage').style.display = 'block';
+}
+function closeNewRuleSettingsPage() {
+  document.getElementById('newRuleSettingsPage').style.display = 'none';
+  document.getElementById('tabPanelsContainer').style.display = 'block';
+  document.getElementById('pageTabs').style.display = 'flex';
+}
+
+// ===================== New Page Data Source Type Change =====================
+function onNewDatasourceTypeChange() {
+  var dsType = document.getElementById('newTplDatasourceType').value;
+  var rowDb = document.getElementById('newRowDatabase');
+  var rowApi = document.getElementById('newRowApi');
+  var rowConfig = document.getElementById('newRowConfig');
+
+  // Reset sub-selects
+  document.getElementById('newSelDatabase').value = '';
+  document.getElementById('newSelTable').innerHTML = '<option value="">请先选择数据库</option>';
+  document.getElementById('newSelVendor').value = '';
+  document.getElementById('newSelApi').innerHTML = '<option value="">请先选择供应商</option>';
+
+  // Hide all conditional rows
+  rowDb.classList.remove('show');
+  rowApi.classList.remove('show');
+  rowConfig.classList.remove('show');
+  document.getElementById('newFieldMatrixWrap').style.display = 'none';
+  document.getElementById('newCustomSqlArea').style.display = 'none';
+  document.getElementById('newConfigHint').style.display = 'block';
+
+  if (dsType === 'database') {
+    rowDb.classList.add('show');
+  } else if (dsType === 'api') {
+    rowApi.classList.add('show');
+  }
+}
+
+// ===================== New Page Database + Table Change =====================
+function onNewDatabaseTableChange() {
+  var db = document.getElementById('newSelDatabase').value;
+  var tableSelect = document.getElementById('newSelTable');
+  var tableVal = tableSelect.value;
+
+  if (db && DB_TABLES[db]) {
+    var opts = '<option value="">请选择表</option>';
+    DB_TABLES[db].forEach(function(t) {
+      opts += '<option value="' + t.value + '"' + (t.value === tableVal ? ' selected' : '') + '>' + t.label + '</option>';
+    });
+    tableSelect.innerHTML = opts;
+  } else {
+    tableSelect.innerHTML = '<option value="">请先选择数据库</option>';
+  }
+
+  var selectedTable = tableSelect.value;
+  var key = db + '.' + selectedTable;
+
+  if (db && selectedTable && DB_FIELDS[key]) {
+    newRenderFieldMatrix(DB_FIELDS[key], 'table');
+  } else {
+    newHideMatrix();
+  }
+}
+
+// ===================== New Page Vendor + API Change =====================
+function onNewVendorApiChange() {
+  var vendor = document.getElementById('newSelVendor').value;
+  var apiSelect = document.getElementById('newSelApi');
+  var apiVal = apiSelect.value;
+
+  if (vendor && VENDOR_APIS[vendor]) {
+    var opts = '<option value="">请选择API</option>';
+    VENDOR_APIS[vendor].forEach(function(a) {
+      opts += '<option value="' + a.value + '"' + (a.value === apiVal ? ' selected' : '') + '>' + a.label + '</option>';
+    });
+    apiSelect.innerHTML = opts;
+  } else {
+    apiSelect.innerHTML = '<option value="">请先选择供应商</option>';
+  }
+
+  var selectedApi = apiSelect.value;
+  var key = vendor + '.' + selectedApi;
+
+  if (vendor && selectedApi && API_FIELDS[key]) {
+    newRenderFieldMatrix(API_FIELDS[key], 'api');
+  } else {
+    newHideMatrix();
+  }
+}
+
+// ===================== New Page Render Field Matrix =====================
+function newRenderFieldMatrix(fields, sourceType) {
+  var tbody = document.getElementById('newFieldMatrixBody');
+  var titleEl = document.getElementById('newConfigTitleText');
+  titleEl.textContent = sourceType === 'table' ? '数据库数据校验' : 'API响应结果校验';
+
+  var html = '';
+  fields.forEach(function(f, idx) {
+    var typeVal = newMapSchemaType(f.type);
+
+    html += '<tr data-field="' + f.name + '">' +
+      '<td class="col-field" style="text-align:left;">' +
+        '<div class="field-name">' + f.name +
+          (f.isPk ? '<span class="field-pk">PK</span>' : '') +
+          (f.notNull ? '<span class="field-nn">NN</span>' : '') +
+        '</div>' +
+        '<div class="field-comment">' + f.comment + ' (' + f.type + ')</div>' +
+      '</td>' +
+      '<td class="cbx-cell">' +
+        '<input type="checkbox" class="cbx-required" data-field="' + f.name + '"' + (f.notNull ? ' checked' : '') + '>' +
+      '</td>' +
+      '<td class="cbx-cell">' +
+        '<input type="checkbox" class="cbx-unique" data-field="' + f.name + '"' + (f.isPk ? ' checked' : '') + '>' +
+      '</td>' +
+      '<td>' +
+        '<select class="sel-datatype" data-field="' + f.name + '">' +
+          '<option value="string"' + (typeVal === 'string' ? ' selected' : '') + '>字符串(String)</option>' +
+          '<option value="integer"' + (typeVal === 'integer' ? ' selected' : '') + '>整数(Integer)</option>' +
+          '<option value="decimal"' + (typeVal === 'decimal' ? ' selected' : '') + '>小数(Decimal)</option>' +
+          '<option value="date"' + (typeVal === 'date' ? ' selected' : '') + '>日期(Date)</option>' +
+          '<option value="datetime"' + (typeVal === 'datetime' ? ' selected' : '') + '>日期时间(DateTime)</option>' +
+          '<option value="boolean"' + (typeVal === 'boolean' ? ' selected' : '') + '>布尔(Boolean)</option>' +
+          '<option value="json"' + (typeVal === 'json' ? ' selected' : '') + '>JSON</option>' +
+          '<option value="array"' + (typeVal === 'array' ? ' selected' : '') + '>数组(Array)</option>' +
+          '<option value="text"' + (typeVal === 'text' ? ' selected' : '') + '>长文本(Text)</option>' +
+          '<option value="enum"' + (typeVal === 'enum' ? ' selected' : '') + '>枚举(Enum)</option>' +
+        '</select>' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + f.name + '" data-type="format" placeholder="如: ^[A-Z0-9]+$">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + f.name + '" data-type="range" placeholder="如: 0~100">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + f.name + '" data-type="enum" placeholder="如: 存续,注销">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="formula-input" data-field="' + f.name + '" placeholder="如: =A表.字段">' +
+      '</td>' +
+    '</tr>';
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('newFieldMatrixWrap').style.display = 'block';
+  document.getElementById('newCustomSqlArea').style.display = 'block';
+  document.getElementById('newConfigHint').style.display = 'none';
+  document.getElementById('newRowConfig').classList.add('show');
+}
+
+function newHideMatrix() {
+  document.getElementById('newFieldMatrixWrap').style.display = 'none';
+  document.getElementById('newCustomSqlArea').style.display = 'none';
+  document.getElementById('newConfigHint').style.display = 'block';
+  document.getElementById('newRowConfig').classList.remove('show');
+}
+
+function newMapSchemaType(schemaType) {
+  var t = schemaType.toUpperCase();
+  if (t.indexOf('INT') >= 0) return 'integer';
+  if (t.indexOf('DECIMAL') >= 0 || t.indexOf('FLOAT') >= 0 || t.indexOf('DOUBLE') >= 0 || t === 'NUMBER') return 'decimal';
+  if (t === 'DATE') return 'date';
+  if (t.indexOf('DATETIME') >= 0 || t === 'DATETIME') return 'datetime';
+  if (t === 'BOOLEAN' || t === 'BOOL') return 'boolean';
+  if (t.indexOf('LONGTEXT') >= 0 || t === 'TEXT' || t.indexOf('TEXT') >= 0) return 'text';
+  if (t === 'ARRAY') return 'array';
+  if (t === 'JSON') return 'json';
+  return 'string';
+}
+
+// ===================== New Page Batch Operations =====================
+function newBatchCheck(type) {
+  document.querySelectorAll('#newFieldMatrixBody .cbx-required').forEach(function(cbx) { cbx.checked = true; });
+}
+
+function newBatchReset() {
+  document.querySelectorAll('#newFieldMatrixBody .cbx-required, #newFieldMatrixBody .cbx-unique').forEach(function(cbx) { cbx.checked = false; });
+  document.querySelectorAll('#newFieldMatrixBody .sel-datatype').forEach(function(sel) { sel.selectedIndex = 0; });
+  document.querySelectorAll('#newFieldMatrixBody .acc-col-input').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('#newFieldMatrixBody .formula-input').forEach(function(inp) { inp.value = ''; });
+}
+
+// ===================== New Page Parse SQL Fields =====================
+function newParseSqlFields() {
+  var sql = document.getElementById('newTplCustomSql').value.trim();
+  if (!sql) { return; }
+
+  var fields = [];
+  var normalized = sql.replace(/\s+/g, ' ').replace(/\n/g, ' ');
+
+  var selectMatch = normalized.match(/SELECT\s+(.+?)\s+FROM/i);
+  if (selectMatch) {
+    var selectPart = selectMatch[1];
+    selectPart.split(',').forEach(function(part) {
+      part = part.trim();
+      if (/^\s*(COUNT|SUM|AVG|MAX|MIN)\s*\(/i.test(part)) {
+        var aliasMatch = part.match(/\bas\s+(\w+)/i);
+        if (aliasMatch) fields.push(aliasMatch[1]);
+        return;
+      }
+      var fieldName = part.replace(/^\w+\./, '').split(/\s+/)[0];
+      if (fieldName && fieldName !== '*') fields.push(fieldName);
+    });
+  }
+
+  var whereMatch = normalized.match(/WHERE\s+(.+?)(?:GROUP|ORDER|LIMIT|HAVING|$)/i);
+  if (whereMatch) {
+    var wherePart = whereMatch[1];
+    var whereFields = wherePart.match(/(?:^|AND|OR)\s+(\w+(?:\.\w+)?)/gi) || [];
+    whereFields.forEach(function(f) {
+      var name = f.replace(/^(?:AND|OR)\s+/i, '').replace(/^\w+\./, '');
+      if (name && !/^(SELECT|FROM|WHERE|AND|OR|NOT|IN|LIKE|BETWEEN|IS|NULL)$/i.test(name)) {
+        fields.push(name);
+      }
+    });
+  }
+
+  var groupMatch = normalized.match(/GROUP\s+BY\s+(.+?)(?:HAVING|ORDER|LIMIT|$)/i);
+  if (groupMatch) {
+    groupMatch[1].split(',').forEach(function(f) {
+      var name = f.trim().replace(/^\w+\./, '').split(/\s+/)[0];
+      if (name) fields.push(name);
+    });
+  }
+
+  var orderMatch = normalized.match(/ORDER\s+BY\s+(.+?)(?:LIMIT|$)/i);
+  if (orderMatch) {
+    orderMatch[1].split(',').forEach(function(f) {
+      var name = f.trim().replace(/^\w+\./, '').split(/\s+/)[0];
+      if (name && !/^(ASC|DESC)$/i.test(name)) fields.push(name);
+    });
+  }
+
+  var existingFields = [];
+  document.querySelectorAll('#newFieldMatrixBody tr[data-field]').forEach(function(tr) {
+    existingFields.push(tr.getAttribute('data-field'));
+  });
+
+  var unique = [];
+  fields.forEach(function(f) {
+    f = f.replace(/[^a-zA-Z0-9_]/g, '');
+    if (f && unique.indexOf(f) < 0 && existingFields.indexOf(f) < 0) {
+      unique.push(f);
+    }
+  });
+
+  if (unique.length === 0) { return; }
+
+  var tbody = document.getElementById('newFieldMatrixBody');
+  var currentRowCount = document.querySelectorAll('#newFieldMatrixBody tr').length;
+
+  unique.forEach(function(fieldName, i) {
+    var idx = currentRowCount + i;
+    var row = document.createElement('tr');
+    row.className = 'sql-row';
+    row.setAttribute('data-field', fieldName);
+    row.innerHTML =
+      '<td class="col-field" style="text-align:left;">' +
+        '<div class="field-name">' + fieldName + '<span class="field-sql">SQL</span></div>' +
+        '<div class="field-comment">自定义SQL提取字段</div>' +
+      '</td>' +
+      '<td class="cbx-cell">' +
+        '<input type="checkbox" class="cbx-required" data-field="' + fieldName + '">' +
+      '</td>' +
+      '<td class="cbx-cell">' +
+        '<input type="checkbox" class="cbx-unique" data-field="' + fieldName + '">' +
+      '</td>' +
+      '<td>' +
+        '<select class="sel-datatype" data-field="' + fieldName + '">' +
+          '<option value="string" selected>字符串(String)</option>' +
+          '<option value="integer">整数(Integer)</option>' +
+          '<option value="decimal">小数(Decimal)</option>' +
+          '<option value="date">日期(Date)</option>' +
+          '<option value="datetime">日期时间(DateTime)</option>' +
+          '<option value="boolean">布尔(Boolean)</option>' +
+          '<option value="json">JSON</option>' +
+          '<option value="array">数组(Array)</option>' +
+          '<option value="text">长文本(Text)</option>' +
+          '<option value="enum">枚举(Enum)</option>' +
+        '</select>' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + fieldName + '" data-type="format" placeholder="如: ^[A-Z0-9]+$">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + fieldName + '" data-type="range" placeholder="如: 0~100">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="acc-col-input" data-field="' + fieldName + '" data-type="enum" placeholder="如: 存续,注销">' +
+      '</td>' +
+      '<td>' +
+        '<input type="text" class="formula-input" data-field="' + fieldName + '" placeholder="如: =A表.字段">' +
+      '</td>';
+    tbody.appendChild(row);
+  });
+
+  setTimeout(function() {
+    var matrixWrap = document.getElementById('newMatrixScroll');
+    if (matrixWrap) {
+      matrixWrap.scrollTop = matrixWrap.scrollHeight;
+    }
+  }, 50);
+}
+
+// ===================== Mock Data: Databases → Tables → Fields =====================
+var DB_TABLES = {
+  ext_data: [
+    { value: 't_company_base', label: 't_company_base（企业基本信息表）' },
+    { value: 't_company_shareholder', label: 't_company_shareholder（股东信息表）' },
+    { value: 't_company_risk', label: 't_company_risk（风险信息表）' },
+    { value: 't_company_finance', label: 't_company_finance（融资历史表）' }
+  ],
+  risk_db: [
+    { value: 't_risk_judicial', label: 't_risk_judicial（司法风险表）' },
+    { value: 't_risk_penalty', label: 't_risk_penalty（行政处罚表）' },
+    { value: 't_risk_blacklist', label: 't_risk_blacklist（黑名单表）' }
+  ],
+  credit_db: [
+    { value: 't_credit_score', label: 't_credit_score（信用评分表）' },
+    { value: 't_credit_report', label: 't_credit_report（信用报告表）' }
+  ],
+  biz_dw: [
+    { value: 'dw_company_profile', label: 'dw_company_profile（企业画像宽表）' },
+    { value: 'dw_quality_log', label: 'dw_quality_log（质量检测日志表）' }
+  ]
+};
+
+var DB_FIELDS = {
+  // ext_data tables
+  'ext_data.t_company_base': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'credit_code', type: 'VARCHAR(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'legal_person', type: 'VARCHAR(50)', comment: '法定代表人', isPk: false, notNull: true },
+    { name: 'registered_capital', type: 'DECIMAL(18,2)', comment: '注册资本(万元)', isPk: false, notNull: false },
+    { name: 'establish_date', type: 'DATE', comment: '成立日期', isPk: false, notNull: false },
+    { name: 'business_status', type: 'VARCHAR(20)', comment: '经营状态', isPk: false, notNull: false },
+    { name: 'reg_authority', type: 'VARCHAR(200)', comment: '登记机关', isPk: false, notNull: false },
+    { name: 'industry', type: 'VARCHAR(100)', comment: '所属行业', isPk: false, notNull: false },
+    { name: 'reg_address', type: 'VARCHAR(500)', comment: '注册地址', isPk: false, notNull: false },
+    { name: 'business_scope', type: 'TEXT', comment: '经营范围', isPk: false, notNull: false },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true },
+    { name: 'update_time', type: 'DATETIME', comment: '更新时间', isPk: false, notNull: false }
+  ],
+  'ext_data.t_company_shareholder': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_id', type: 'BIGINT', comment: '关联企业ID', isPk: false, notNull: true },
+    { name: 'shareholder_name', type: 'VARCHAR(100)', comment: '股东名称', isPk: false, notNull: true },
+    { name: 'capital_amount', type: 'DECIMAL(18,2)', comment: '出资额(万元)', isPk: false, notNull: false },
+    { name: 'capital_ratio', type: 'DECIMAL(5,2)', comment: '出资比例(%)', isPk: false, notNull: false },
+    { name: 'shareholder_type', type: 'VARCHAR(20)', comment: '股东类型', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'ext_data.t_company_risk': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_id', type: 'BIGINT', comment: '关联企业ID', isPk: false, notNull: true },
+    { name: 'risk_type', type: 'VARCHAR(30)', comment: '风险类型', isPk: false, notNull: true },
+    { name: 'risk_level', type: 'VARCHAR(10)', comment: '风险等级', isPk: false, notNull: false },
+    { name: 'risk_desc', type: 'TEXT', comment: '风险描述', isPk: false, notNull: false },
+    { name: 'occur_date', type: 'DATE', comment: '发生日期', isPk: false, notNull: false },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'ext_data.t_company_finance': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_id', type: 'BIGINT', comment: '关联企业ID', isPk: false, notNull: true },
+    { name: 'finance_round', type: 'VARCHAR(20)', comment: '融资轮次', isPk: false, notNull: false },
+    { name: 'finance_amount', type: 'DECIMAL(18,2)', comment: '融资金额(万元)', isPk: false, notNull: false },
+    { name: 'investor', type: 'VARCHAR(200)', comment: '投资方', isPk: false, notNull: false },
+    { name: 'finance_date', type: 'DATE', comment: '融资日期', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  // risk_db tables
+  'risk_db.t_risk_judicial': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'case_no', type: 'VARCHAR(50)', comment: '案号', isPk: false, notNull: true },
+    { name: 'case_type', type: 'VARCHAR(30)', comment: '案件类型', isPk: false, notNull: true },
+    { name: 'court', type: 'VARCHAR(200)', comment: '审理法院', isPk: false, notNull: false },
+    { name: 'filing_date', type: 'DATE', comment: '立案日期', isPk: false, notNull: true },
+    { name: 'amount_involved', type: 'DECIMAL(18,2)', comment: '涉案金额', isPk: false, notNull: false },
+    { name: 'plaintiff', type: 'VARCHAR(200)', comment: '原告', isPk: false, notNull: false },
+    { name: 'defendant', type: 'VARCHAR(200)', comment: '被告', isPk: false, notNull: false },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'risk_db.t_risk_penalty': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'penalty_no', type: 'VARCHAR(50)', comment: '处罚决定书编号', isPk: false, notNull: true },
+    { name: 'penalty_reason', type: 'TEXT', comment: '处罚事由', isPk: false, notNull: false },
+    { name: 'penalty_result', type: 'TEXT', comment: '处罚结果', isPk: false, notNull: false },
+    { name: 'penalty_date', type: 'DATE', comment: '处罚日期', isPk: false, notNull: true },
+    { name: 'authority', type: 'VARCHAR(200)', comment: '处罚机关', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'risk_db.t_risk_blacklist': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'blacklist_type', type: 'VARCHAR(30)', comment: '黑名单类型', isPk: false, notNull: true },
+    { name: 'reason', type: 'TEXT', comment: '列入原因', isPk: false, notNull: false },
+    { name: 'listing_date', type: 'DATE', comment: '列入日期', isPk: false, notNull: true },
+    { name: 'authority', type: 'VARCHAR(200)', comment: '列入机关', isPk: false, notNull: false },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  // credit_db tables
+  'credit_db.t_credit_score': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'credit_code', type: 'VARCHAR(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'score', type: 'DECIMAL(5,2)', comment: '信用评分', isPk: false, notNull: true },
+    { name: 'score_level', type: 'VARCHAR(10)', comment: '评分等级', isPk: false, notNull: false },
+    { name: 'eval_date', type: 'DATE', comment: '评估日期', isPk: false, notNull: true },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  'credit_db.t_credit_report': [
+    { name: 'id', type: 'BIGINT', comment: '主键ID', isPk: true, notNull: true },
+    { name: 'report_no', type: 'VARCHAR(50)', comment: '报告编号', isPk: false, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'report_content', type: 'LONGTEXT', comment: '报告内容', isPk: false, notNull: false },
+    { name: 'report_date', type: 'DATE', comment: '报告日期', isPk: false, notNull: true },
+    { name: 'data_source', type: 'VARCHAR(50)', comment: '数据来源', isPk: false, notNull: true },
+    { name: 'create_time', type: 'DATETIME', comment: '创建时间', isPk: false, notNull: true }
+  ],
+  // biz_dw tables
+  'biz_dw.dw_company_profile': [
+    { name: 'company_id', type: 'BIGINT', comment: '企业ID', isPk: true, notNull: true },
+    { name: 'company_name', type: 'VARCHAR(200)', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'credit_code', type: 'VARCHAR(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'risk_score', type: 'DECIMAL(5,2)', comment: '风险评分', isPk: false, notNull: false },
+    { name: 'credit_score', type: 'DECIMAL(5,2)', comment: '信用评分', isPk: false, notNull: false },
+    { name: 'industry_code', type: 'VARCHAR(10)', comment: '行业代码', isPk: false, notNull: false },
+    { name: 'region_code', type: 'VARCHAR(10)', comment: '地区代码', isPk: false, notNull: false },
+    { name: 'data_quality_score', type: 'DECIMAL(5,2)', comment: '数据质量评分', isPk: false, notNull: false },
+    { name: 'etl_date', type: 'DATE', comment: 'ETL日期', isPk: false, notNull: true }
+  ],
+  'biz_dw.dw_quality_log': [
+    { name: 'log_id', type: 'BIGINT', comment: '日志ID', isPk: true, notNull: true },
+    { name: 'template_id', type: 'VARCHAR(20)', comment: '模板编号', isPk: false, notNull: true },
+    { name: 'check_type', type: 'VARCHAR(20)', comment: '检测类型', isPk: false, notNull: true },
+    { name: 'target_table', type: 'VARCHAR(100)', comment: '目标表名', isPk: false, notNull: true },
+    { name: 'sample_count', type: 'INT', comment: '样本数', isPk: false, notNull: false },
+    { name: 'pass_count', type: 'INT', comment: '通过数', isPk: false, notNull: false },
+    { name: 'pass_rate', type: 'DECIMAL(5,2)', comment: '通过率', isPk: false, notNull: false },
+    { name: 'result', type: 'VARCHAR(10)', comment: '检测结果', isPk: false, notNull: true },
+    { name: 'check_time', type: 'DATETIME', comment: '检测时间', isPk: false, notNull: true }
+  ]
+};
+
+// ===================== Mock Data: Vendors → APIs → Fields =====================
+var VENDOR_APIS = {
+  tianyancha: [
+    { value: 'company_base', label: '企业基本信息' },
+    { value: 'company_risk', label: '司法风险' },
+    { value: 'company_shareholder', label: '股东信息' },
+    { value: 'company_change', label: '变更记录' }
+  ],
+  qichacha: [
+    { value: 'company_base', label: '企业工商基本信息' },
+    { value: 'company_finance', label: '融资信息' },
+    { value: 'company_ip', label: '知识产权' }
+  ],
+  anshuo: [
+    { value: 'credit_report', label: '企业信用报告' },
+    { value: 'risk_assessment', label: '风险评估' }
+  ],
+  zhongchengxin: [
+    { value: 'credit_score', label: '信用评分' },
+    { value: 'credit_report', label: '征信报告' }
+  ],
+  baixingzhengxing: [
+    { value: 'personal_credit', label: '个人信用报告' },
+    { value: 'anti_fraud', label: '反欺诈评分' }
+  ]
+};
+
+var API_FIELDS = {
+  // 天眼查
+  'tianyancha.company_base': [
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'creditCode', type: 'String(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'regNumber', type: 'String(20)', comment: '工商注册号', isPk: false, notNull: false },
+    { name: 'legalPersonName', type: 'String', comment: '法定代表人', isPk: false, notNull: true },
+    { name: 'regCapital', type: 'String', comment: '注册资本', isPk: false, notNull: false },
+    { name: 'estTime', type: 'Date', comment: '成立日期', isPk: false, notNull: false },
+    { name: 'companyStatus', type: 'String', comment: '经营状态为（存续/注销/吊销）', isPk: false, notNull: true },
+    { name: 'industry', type: 'String', comment: '所属行业', isPk: false, notNull: false },
+    { name: 'regLocation', type: 'String', comment: '注册地址', isPk: false, notNull: false },
+    { name: 'businessScope', type: 'String', comment: '经营范围', isPk: false, notNull: false },
+    { name: 'companyType', type: 'String', comment: '企业类型', isPk: false, notNull: false },
+    { name: 'actualCapital', type: 'String', comment: '实缴资本', isPk: false, notNull: false }
+  ],
+  'tianyancha.company_risk': [
+    { name: 'caseCode', type: 'String', comment: '案号', isPk: false, notNull: true },
+    { name: 'caseReason', type: 'String', comment: '案由', isPk: false, notNull: true },
+    { name: 'courtName', type: 'String', comment: '法院名称', isPk: false, notNull: false },
+    { name: 'filingDate', type: 'Date', comment: '立案日期', isPk: false, notNull: true },
+    { name: 'amount', type: 'Number', comment: '涉案金额', isPk: false, notNull: false },
+    { name: 'role', type: 'String', comment: '当事人角色', isPk: false, notNull: false }
+  ],
+  'tianyancha.company_shareholder': [
+    { name: 'name', type: 'String', comment: '股东名称', isPk: false, notNull: true },
+    { name: 'capitalActl', type: 'String', comment: '实缴出资额', isPk: false, notNull: false },
+    { name: 'capital', type: 'String', comment: '认缴出资额', isPk: false, notNull: true },
+    { name: 'percent', type: 'String', comment: '持股比例', isPk: false, notNull: true },
+    { name: 'type', type: 'Number', comment: '股东类型(1=人 2=公司)', isPk: false, notNull: false }
+  ],
+  'tianyancha.company_change': [
+    { name: 'changeItem', type: 'String', comment: '变更项目', isPk: false, notNull: true },
+    { name: 'beforeContent', type: 'String', comment: '变更前内容', isPk: false, notNull: false },
+    { name: 'afterContent', type: 'String', comment: '变更后内容', isPk: false, notNull: false },
+    { name: 'changeDate', type: 'Date', comment: '变更日期', isPk: false, notNull: true }
+  ],
+  // 企查查
+  'qichacha.company_base': [
+    { name: 'Name', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'CreditCode', type: 'String(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'No', type: 'String(20)', comment: '工商注册号', isPk: false, notNull: false },
+    { name: 'OperName', type: 'String', comment: '法定代表人', isPk: false, notNull: true },
+    { name: 'RegistrantCapital', type: 'String', comment: '注册资本(万元)', isPk: false, notNull: false },
+    { name: 'StartDate', type: 'Date', comment: '成立日期', isPk: false, notNull: false },
+    { name: 'Status', type: 'String', comment: '经营状态为（在业/注销/吊销）', isPk: false, notNull: true },
+    { name: 'BelongIndustry', type: 'String', comment: '所属行业', isPk: false, notNull: false },
+    { name: 'Address', type: 'String', comment: '注册地址', isPk: false, notNull: false },
+    { name: 'Scope', type: 'String', comment: '经营范围', isPk: false, notNull: false }
+  ],
+  'qichacha.company_finance': [
+    { name: 'ProjectName', type: 'String', comment: '项目名称', isPk: false, notNull: false },
+    { name: 'Round', type: 'String', comment: '融资轮次', isPk: false, notNull: true },
+    { name: 'Amount', type: 'String', comment: '融资金额', isPk: false, notNull: false },
+    { name: 'Date', type: 'Date', comment: '融资日期', isPk: false, notNull: false },
+    { name: 'Investors', type: 'Array', comment: '投资方列表', isPk: false, notNull: false }
+  ],
+  'qichacha.company_ip': [
+    { name: 'Name', type: 'String', comment: '知识产权名称', isPk: false, notNull: true },
+    { name: 'Type', type: 'String', comment: '类型(商标/专利/著作权)', isPk: false, notNull: true },
+    { name: 'RegNo', type: 'String', comment: '注册号', isPk: false, notNull: false },
+    { name: 'ApplyDate', type: 'Date', comment: '申请日期', isPk: false, notNull: false },
+    { name: 'Status', type: 'String', comment: '状态', isPk: false, notNull: false }
+  ],
+  // 安硕
+  'anshuo.credit_report': [
+    { name: 'reportId', type: 'String', comment: '报告ID', isPk: false, notNull: true },
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'creditLevel', type: 'String', comment: '信用等级(AAA/AA/A/BBB...)', isPk: false, notNull: true },
+    { name: 'creditScore', type: 'Number', comment: '信用评分(0-100)', isPk: false, notNull: true },
+    { name: 'riskLevel', type: 'String', comment: '风险等级', isPk: false, notNull: false },
+    { name: 'reportDate', type: 'Date', comment: '报告日期', isPk: false, notNull: true },
+    { name: 'validUntil', type: 'Date', comment: '有效期至', isPk: false, notNull: false }
+  ],
+  'anshuo.risk_assessment': [
+    { name: 'assessmentId', type: 'String', comment: '评估ID', isPk: false, notNull: true },
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'overallRisk', type: 'String', comment: '综合风险等级', isPk: false, notNull: true },
+    { name: 'legalRisk', type: 'String', comment: '法律风险', isPk: false, notNull: false },
+    { name: 'financialRisk', type: 'String', comment: '财务风险', isPk: false, notNull: false },
+    { name: 'operationalRisk', type: 'String', comment: '经营风险', isPk: false, notNull: false },
+    { name: 'assessmentDate', type: 'Date', comment: '评估日期', isPk: false, notNull: true }
+  ],
+  // 中诚信
+  'zhongchengxin.credit_score': [
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'creditCode', type: 'String(18)', comment: '统一社会信用代码', isPk: false, notNull: true },
+    { name: 'ratingSymbol', type: 'String', comment: '评级符号(AAA/AA+/AA...)', isPk: false, notNull: true },
+    { name: 'ratingScore', type: 'Number', comment: '评分(0-1000)', isPk: false, notNull: true },
+    { name: 'outlook', type: 'String', comment: '评级展望(正面/稳定/负面)', isPk: false, notNull: false },
+    { name: 'ratingDate', type: 'Date', comment: '评级日期', isPk: false, notNull: true },
+    { name: 'validPeriod', type: 'String', comment: '有效期', isPk: false, notNull: false }
+  ],
+  'zhongchengxin.credit_report': [
+    { name: 'reportNo', type: 'String', comment: '报告编号', isPk: false, notNull: true },
+    { name: 'companyName', type: 'String', comment: '企业名称', isPk: false, notNull: true },
+    { name: 'summary', type: 'String', comment: '摘要', isPk: false, notNull: false },
+    { name: 'conclusion', type: 'String', comment: '结论', isPk: false, notNull: false },
+    { name: 'issueDate', type: 'Date', comment: '出具日期', isPk: false, notNull: true }
+  ],
+  // 百行征信
+  'baixingzhengxing.personal_credit': [
+    { name: 'name', type: 'String', comment: '姓名', isPk: false, notNull: true },
+    { name: 'idNumber', type: 'String(18)', comment: '身份证号', isPk: false, notNull: true },
+    { name: 'creditScore', type: 'Number', comment: '信用评分', isPk: false, notNull: true },
+    { name: 'riskTag', type: 'String', comment: '风险标签', isPk: false, notNull: false },
+    { name: 'queryTime', type: 'DateTime', comment: '查询时间', isPk: false, notNull: true },
+    { name: 'overdueCount', type: 'Number', comment: '逾期次数', isPk: false, notNull: false },
+    { name: 'loanCount', type: 'Number', comment: '贷款笔数', isPk: false, notNull: false }
+  ],
+  'baixingzhengxing.anti_fraud': [
+    { name: 'name', type: 'String', comment: '姓名', isPk: false, notNull: true },
+    { name: 'idNumber', type: 'String(18)', comment: '身份证号', isPk: false, notNull: true },
+    { name: 'mobile', type: 'String(11)', comment: '手机号', isPk: false, notNull: false },
+    { name: 'fraudScore', type: 'Number', comment: '欺诈评分(0-100)', isPk: false, notNull: true },
+    { name: 'fraudLevel', type: 'String', comment: '欺诈等级(高/中/低)', isPk: false, notNull: true },
+    { name: 'hitRules', type: 'Array', comment: '命中规则列表', isPk: false, notNull: false },
+    { name: 'queryTime', type: 'DateTime', comment: '查询时间', isPk: false, notNull: true }
+  ]
+};
+
+// ===================== Auto-switch Tab from external navigation =====================
+(function() {
+  var targetTab = localStorage.getItem('dqm_active_tab');
+  if (targetTab !== null) {
+    switchTab(parseInt(targetTab, 10));
+    localStorage.removeItem('dqm_active_tab');
+  }
+
+  // Check for new rule settings row added from 数据规则.html
+  var newTplRowStr = localStorage.getItem('dqm_new_tpl_row');
+  if (newTplRowStr) {
+    localStorage.removeItem('dqm_new_tpl_row');
+    try {
+      var newRowData = JSON.parse(newTplRowStr);
+      var tbody = document.getElementById('ruleSettingsTableBody');
+      if (tbody) {
+        // Build new row HTML
+        var dsTypeLabel = newRowData.dsType === 'api' ? 'API' : '数据库';
+        var statusBadge = newRowData.status === 'enabled'
+          ? '<span class="badge-status badge-success">启用</span>'
+          : '<span class="badge-status badge-danger">停用</span>';
+
+        var newTr = document.createElement('tr');
+        newTr.innerHTML =
+          '<td>' + newRowData.id + '</td>' +
+          '<td>' + dsTypeLabel + '</td>' +
+          '<td>' + newRowData.vendorName + '</td>' +
+          '<td>' + newRowData.apiName + '</td>' +
+          '<td>' + newRowData.createTime + '</td>' +
+          '<td>' + newRowData.updateTime + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+          '<td>' +
+            '<a class="action-link" href="数据规则.html?mode=edit&row=0">编辑</a>' +
+            '<a class="action-link" href="数据规则.html?mode=view&row=0">查看</a>' +
+            '<a class="action-link danger" href="javascript:void(0)">删除</a>' +
+          '</td>';
+
+        // Insert at top
+        tbody.insertBefore(newTr, tbody.firstChild);
+
+        // Update row indices for existing rows (shift down by 1)
+        var allRows = tbody.querySelectorAll('tr');
+        for (var i = 1; i < allRows.length; i++) {
+          var links = allRows[i].querySelectorAll('a.action-link[href*="数据规则.html"]');
+          links.forEach(function(link) {
+            var href = link.getAttribute('href');
+            var rowMatch = href.match(/row=(\d+)/);
+            if (rowMatch) {
+              var oldIdx = parseInt(rowMatch[1], 10);
+              link.setAttribute('href', href.replace('row=' + oldIdx, 'row=' + (oldIdx + 1)));
+            }
+          });
+        }
+
+        // Update pagination total
+        var totalEl = tbody.closest('.flex-table-container');
+        if (totalEl) {
+          var totalSpan = totalEl.querySelector('.pagination .total');
+          if (totalSpan) {
+            var count = allRows.length;
+            totalSpan.textContent = '共 ' + count + ' 条';
+          }
+        }
+
+        // Make sure we're on the rule settings tab
+        switchTab(2);
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+  }
+})();
 </script>
 </body>
 </html>

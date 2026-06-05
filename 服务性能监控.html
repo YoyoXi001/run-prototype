@@ -1,229 +1,261 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>外数 | 服务性能监控</title>
-  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #F5F7FA; color: #333; min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外数 | 服务性能监控</title>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC','Source Sans Pro',sans-serif;background:#F5F7FA;color:#333;min-height:100vh}
 
-    /* ===== Top Nav ===== */
-    .top-nav {
-      position: sticky; top: 0; z-index: 1000;
-      height: 80px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
-      background: linear-gradient(135deg, #84B9FD, #E1EDFB);
-      box-shadow: 0 1px 4px rgba(0,21,41,0.08);
-    }
-    .nav-logo { display: flex; flex-direction: column; min-width: 180px; }
-    .nav-logo .title { font-size: 18px; font-weight: 700; color: #1f2f3d; }
-    .nav-logo .subtitle { font-size: 10px; color: #5a6e8c; letter-spacing: 0.5px; margin-top: 2px; }
-    .nav-tabs { display: flex; gap: 0; height: 80px; align-items: center; }
-    .nav-tab {
-      font-size: 18px; color: #3a4a5c; text-decoration: none;
-      padding: 0 20px; height: 80px; display: flex; align-items: center;
-      position: relative; cursor: pointer; transition: color 0.2s;
-      white-space: nowrap;
-    }
-    .nav-tab:hover { color: #1152c5; }
-    .nav-tab.active { color: #1152c5; font-weight: 700; }
-    .nav-tab.active::after {
-      content: ''; position: absolute; bottom: 0; left: 20px; right: 20px;
-      height: 2px; background: #1152c5;
-    }
-    .nav-user { display: flex; align-items: center; gap: 16px; min-width: 200px; justify-content: flex-end; }
-    .nav-bell { position: relative; cursor: pointer; font-size: 20px; color: #3a4a5c; }
-    .nav-bell .badge {
-      position: absolute; top: -6px; right: -8px;
-      background: #f5222d; color: #fff; font-size: 10px;
-      min-width: 16px; height: 16px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; padding: 0 4px;
-    }
-    .nav-tenant { font-size: 14px; color: #3a4a5c; }
-    .nav-avatar {
-      width: 33px; height: 33px; border-radius: 50%;
-      background: #fcb53e; color: #fff; font-size: 14px; font-weight: 600;
-      display: flex; align-items: center; justify-content: center;
-    }
+.top-nav{position:sticky;top:0;z-index:1000;height:80px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:linear-gradient(135deg,#84B9FD,#E1EDFB);box-shadow:0 1px 4px rgba(0,21,41,0.08)}
+.nav-logo{display:flex;flex-direction:column;min-width:180px}
+.nav-logo .title{font-size:18px;font-weight:700;color:#1f2f3d}
+.nav-logo .subtitle{font-size:10px;color:#5a6e8c;letter-spacing:.5px;margin-top:2px}
+.nav-tabs{display:flex;gap:0;height:80px;align-items:center}
+.nav-tab{font-size:18px;color:#3a4a5c;text-decoration:none;padding:0 20px;height:80px;display:flex;align-items:center;position:relative;cursor:pointer;transition:color .2s;white-space:nowrap}
+.nav-tab:hover{color:#1152c5}
+.nav-tab.active{color:#1152c5;font-weight:700}
+.nav-tab.active::after{content:'';position:absolute;bottom:0;left:20px;right:20px;height:2px;background:#1152c5}
+.nav-user{display:flex;align-items:center;gap:16px;min-width:200px;justify-content:flex-end}
+.nav-bell{position:relative;cursor:pointer;font-size:20px;color:#3a4a5c}
+.nav-bell .badge{position:absolute;top:-6px;right:-8px;background:#f5222d;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.nav-tenant{font-size:14px;color:#3a4a5c}
+.nav-avatar{width:33px;height:33px;border-radius:50%;background:#fcb53e;color:#fff;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center}
 
-    /* ===== Sidebar ===== */
-    .sidebar { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; z-index: 100; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
-    .sidebar-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; border-right: 2px solid transparent; }
-    .sidebar-item:last-child { margin-bottom: 0; }
-    .sidebar-item:hover { background: #fef5ec; color: #f89d34; }
-    .sidebar-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
-    .sidebar-item i { font-size: 18px; width: 22px; flex-shrink: 0; }
+.sidebar{width:240px;background:#fff;position:fixed;left:0;top:80px;bottom:0;overflow-y:auto;z-index:100;padding:16px 0;box-shadow:1px 0 4px rgba(0,0,0,.02)}
+.sidebar-item{display:flex;align-items:center;gap:12px;width:240px;height:48px;padding:0 20px;margin-bottom:10px;cursor:pointer;font-size:16px;color:#333;transition:.3s;background:transparent;text-decoration:none;border-right:2px solid transparent}
+.sidebar-item:last-child{margin-bottom:0}
+.sidebar-item:hover{background:#fef5ec;color:#f89d34}
+.sidebar-item.active{background:linear-gradient(270deg,#fefdfb,#fef5ec);color:#f89d34;border-right:2px solid #f89d34}
+.sidebar-item i{font-size:18px;width:22px;flex-shrink:0}
 
-    /* ===== Main Content ===== */
-    .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
-    .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
-    .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
-    .breadcrumb span { color: #333; }
-    .forecast-layout { flex: 1; display: flex; flex-direction: column; }
-    .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
-    .flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
+.main-content{margin-left:240px;padding:8px 16px 16px;min-height:calc(100vh - 80px);background:#F5F7FA;display:flex;flex-direction:column}
+.content-card{flex:1;display:flex;flex-direction:column}
+.breadcrumb{margin:0 0 8px;font-size:14px;color:#666}
+.breadcrumb span{color:#333}
+.forecast-layout{flex:1;display:flex;flex-direction:column}
+.forecast-white-card{flex:1;display:flex;flex-direction:column;background:#fff;border-radius:6px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);min-height:0}
+.flex-table-container{flex:1;display:flex;flex-direction:column;min-height:0}
 
-    /* ===== Summary Cards ===== */
-    .summary-cards { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-    .summary-card {
-      flex: 1; min-width: 180px; background: #fff; border-radius: 8px;
-      padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: flex; align-items: center; gap: 14px;
-    }
-    .summary-card .card-icon {
-      width: 44px; height: 44px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-    }
-    .card-icon.blue { background: #e6f0ff; color: #1152c5; }
-    .card-icon.green { background: #e6f7e6; color: #52c41a; }
-    .card-icon.orange { background: #fff7e6; color: #fa8c16; }
-    .card-icon.red { background: #ffe7e7; color: #f5222d; }
-    .summary-card .card-info .card-label { font-size: 13px; color: #999; margin-bottom: 4px; }
-    .summary-card .card-info .card-value { font-size: 22px; font-weight: 700; color: #1f2f3d; }
+/* Today overview banner */
+.today-banner{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.today-banner .banner-left{display:flex;align-items:center;gap:10px}
+.today-banner .banner-title{font-size:16px;font-weight:700;color:#1f2f3d}
+.today-banner .banner-date{font-size:13px;color:#999;background:#f5f7fa;padding:4px 12px;border-radius:4px}
+.today-banner .banner-date i{margin-right:4px;color:#fa8c16}
+.today-banner .banner-refresh{display:flex;align-items:center;gap:4px;font-size:13px;color:#1152c5;cursor:pointer;background:none;border:none;padding:6px 14px;border-radius:4px;transition:.2s}
+.today-banner .banner-refresh:hover{background:#e6f0ff}
 
-    /* ===== Filter Bar ===== */
-    .filter-section {
-      background: #fff; border: 1px solid #d8d8d8; border-radius: 6px;
-      padding: 16px; margin-bottom: 20px;
-      display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-    }
-    .filter-group { display: flex; align-items: center; gap: 6px; }
-    .filter-group label { font-size: 14px; color: #666; white-space: nowrap; }
-    .filter-group select,
-    .filter-group input {
-      width: 180px; height: 32px; border: 1px solid #dcdfe6; border-radius: 4px;
-      padding: 0 10px; font-size: 14px; color: #333;
-      background: #fff; outline: none;
-    }
-    .filter-group select:focus,
-    .filter-group input:focus { border-color: #f89d34; }
-    .btn-query {
-      height: 32px; padding: 0 20px; background: #f89d34; color: #fff;
-      border: none; border-radius: 4px; font-size: 14px; cursor: pointer;
-    }
-    .btn-query:hover { background: #e68e20; }
-    .btn-reset {
-      height: 32px; padding: 0 20px; background: #fff; color: #666;
-      border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; cursor: pointer;
-    }
-    .btn-reset:hover { border-color: #f89d34; color: #f89d34; }
+/* Summary Cards */
+.summary-cards{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.summary-card{flex:1;min-width:150px;background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px}
+.summary-card .card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.card-icon.blue{background:#e6f0ff;color:#1152c5}
+.card-icon.green{background:#e6f7e6;color:#52c41a}
+.card-icon.orange{background:#fff7e6;color:#fa8c16}
+.card-icon.red{background:#ffe7e7;color:#f5222d}
+.card-icon.cyan{background:#e6fffb;color:#13c2c2}
+.card-info .card-label{font-size:13px;color:#999;margin-bottom:4px}
+.card-info .card-value{font-size:22px;font-weight:700;color:#1f2f3d}
+.card-info .card-trend{font-size:11px;margin-top:2px}
+.card-info .card-trend.up{color:#52c41a}
+.card-info .card-trend.down{color:#f5222d}
 
-    /* ===== Data Table ===== */
-    .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; padding: 0; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    thead th {
-      padding: 0 12px; background: #F5F7FA; height: 48px; text-align: center;
-      font-weight: 600; color: #777777; font-size: 14px;
-      border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; white-space: nowrap;
-    }
-    thead th:last-child { border-right: none; }
-    tbody td {
-      padding: 0 12px; height: 40px; text-align: center;
-      border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5;
-      font-size: 14px; color: #666666; vertical-align: middle;
-    }
-    tbody td:last-child { border-right: none; }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: #f8fafc; }
-    .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; margin: 0 4px; font-size: 13px; }
-    .action-link:hover { text-decoration: underline; }
+/* Filter */
+.filter-section{background:#fff;border:1px solid #d8d8d8;border-radius:6px;padding:16px;margin-bottom:20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.filter-group{display:flex;align-items:center;gap:6px}
+.filter-group label{font-size:14px;color:#666;white-space:nowrap}
+.filter-group select,.filter-group input{width:160px;height:32px;border:1px solid #dcdfe6;border-radius:4px;padding:0 10px;font-size:14px;color:#333;background:#fff;outline:none}
+.filter-group select:focus,.filter-group input:focus{border-color:#f89d34}
+.btn-query{height:32px;padding:0 20px;background:#f89d34;color:#fff;border:none;border-radius:4px;font-size:14px;cursor:pointer}
+.btn-query:hover{background:#e68e20}
+.btn-reset{height:32px;padding:0 20px;background:#fff;color:#666;border:1px solid #dcdfe6;border-radius:4px;font-size:14px;cursor:pointer}
+.btn-reset:hover{border-color:#f89d34;color:#f89d34}
 
-    /* ===== Status Badges ===== */
-    .badge-status {
-      display: inline-block; border-radius: 20px; padding: 4px 12px;
-      font-size: 12px; font-weight: 500; white-space: nowrap;
-    }
-    .badge-excellent { background: #e6f7e6; color: #52c41a; }
-    .badge-good { background: #e6f7ff; color: #1890ff; }
-    .badge-normal { background: #fff7e6; color: #fa8c16; }
-    .badge-poor { background: #ffe7e7; color: #f5222d; }
+/* Custom Date Range Picker */
+.date-range-picker{position:relative;display:inline-flex;align-items:center;height:32px;border:1px solid #dcdfe6;border-radius:4px;background:#fff;cursor:pointer;user-select:none;transition:.2s}
+.date-range-picker:hover,.date-range-picker.active{border-color:#f89d34}
+.date-range-picker .drp-icon{padding:0 8px;color:#c0c4cc;font-size:14px;flex-shrink:0}
+.date-range-picker .drp-display{font-size:13px;color:#333;white-space:nowrap;padding-right:8px}
+.date-range-picker .drp-sep{color:#c0c4cc;margin:0 6px;font-size:12px}
 
-    /* ===== Pagination ===== */
-    .pagination { padding: 16px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
-    .pagination .total-text, .pagination .page-info { margin-right: 16px; color: #666666; }
-    .pagination .page-btn, .pagination button { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
-    .pagination .page-btn:disabled, .pagination button:disabled { cursor: not-allowed; opacity: 0.5; }
-    .pagination .page-btn:hover:not(:disabled), .pagination button:hover:not(:disabled) { color: #f89d34; }
-    .pagination .page-number, .pagination button.active { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
-    .pagination .page-number.active, .pagination button.active { color: #f89d34; font-weight: 600; }
-    .pagination .page-number:hover:not(.active) { color: #f89d34; }
-    .pagination select, .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
-    .pagination .page-jump, .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
-    .pagination .page-jump input, .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+.drp-dropdown{display:none;position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid #dcdfe6;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:3000;width:auto}
+.drp-dropdown.show{display:block}
 
-    /* ===== Charts Section ===== */
-    .charts-section { display: flex; gap: 20px; margin-bottom: 20px; }
-    .chart-card {
-      flex: 1; background: #fff; border-radius: 8px; padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .chart-card h3 { font-size: 16px; font-weight: 600; color: #1f2f3d; margin-bottom: 16px; }
-    .chart-container { width: 100%; height: 300px; }
+.drp-shortcuts{display:flex;gap:0;border-bottom:1px solid #ebeef5;flex-wrap:wrap}
+.drp-shortcuts .shortcut{flex:1;min-width:33.33%;padding:8px 12px;font-size:12px;color:#1152c5;text-align:center;cursor:pointer;border:none;background:none;transition:.15s;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0}
+.drp-shortcuts .shortcut:hover{background:#e6f0ff;color:#0d3d8f}
+.drp-shortcuts .shortcut.active{background:#e6f0ff;font-weight:600}
 
-    /* ===== Modal ===== */
-    .modal-mask {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5); z-index: 2000;
-      justify-content: center; align-items: center;
-    }
-    .modal-mask.show { display: flex; }
-    .modal {
-      background: #fff; border-radius: 8px; width: 920px;
-      max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    }
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 24px; border-bottom: 1px solid #ebeef5;
-    }
-    .modal-header h3 { font-size: 18px; font-weight: 700; color: #1f2f3d; }
-    .modal-close { cursor: pointer; font-size: 20px; color: #999; background: none; border: none; }
-    .modal-close:hover { color: #333; }
-    .modal-body { padding: 24px; }
-    .modal-footer {
-      display: flex; justify-content: flex-end; gap: 12px;
-      padding: 16px 24px; border-top: 1px solid #ebeef5;
-    }
-    .btn-cancel {
-      height: 36px; padding: 0 24px; background: #fff; color: #666;
-      border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; cursor: pointer;
-    }
-    .btn-confirm {
-      height: 36px; padding: 0 24px; background: #f89d34; color: #fff;
-      border: none; border-radius: 4px; font-size: 14px; cursor: pointer;
-    }
-    .btn-confirm:hover { background: #e68e20; }
+.drp-calendars{display:flex;gap:0;padding:12px 16px 8px}
+.drp-cal{width:240px}
+.drp-cal+.drp-cal{border-left:1px solid #ebeef5;padding-left:16px;margin-left:16px}
+.drp-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.drp-cal-header .cal-title{font-size:14px;font-weight:600;color:#1f2f3d}
+.drp-cal-header button{background:none;border:1px solid #ebeef5;border-radius:4px;width:26px;height:26px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;font-size:12px;transition:.15s}
+.drp-cal-header button:hover{border-color:#f89d34;color:#f89d34}
 
-    /* Trend Modal specifics */
-    .trend-summary {
-      display: flex; gap: 24px; margin-bottom: 20px;
-      padding: 16px; background: #f9fafb; border-radius: 6px;
-    }
-    .trend-summary .ts-item { }
-    .trend-summary .ts-label { font-size: 13px; color: #999; }
-    .trend-summary .ts-value { font-size: 16px; font-weight: 600; color: #1f2f3d; margin-top: 2px; }
+.drp-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px}
+.drp-weekdays span{font-size:11px;color:#999;padding:4px 0;font-weight:600}
+.drp-days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.drp-days .day{font-size:12px;color:#333;padding:5px 0;cursor:pointer;border-radius:4px;transition:.12s;margin:1px 0}
+.drp-days .day:hover{background:#fff7e6;color:#f89d34}
+.drp-days .day.other-month{color:#c0c4cc}
+.drp-days .day.today{color:#f89d34;font-weight:700;position:relative}
+.drp-days .day.today::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#f89d34}
+.drp-days .day.in-range{background:#fff7e6;color:#fa8c16}
+.drp-days .day.range-start,.drp-days .day.range-end{background:#f89d34;color:#fff;font-weight:600}
+.drp-days .day.range-start:hover,.drp-days .day.range-end:hover{background:#e68e20;color:#fff}
 
-    .trend-chart { width: 100%; height: 280px; margin-bottom: 20px; }
+.drp-footer{display:flex;justify-content:flex-end;gap:8px;padding:8px 16px 12px;border-top:1px solid #ebeef5}
+.drp-footer button{height:28px;padding:0 14px;border-radius:4px;font-size:12px;cursor:pointer;transition:.15s}
+.drp-footer .drp-btn-cancel{background:#fff;color:#666;border:1px solid #dcdfe6}
+.drp-footer .drp-btn-cancel:hover{border-color:#f89d34;color:#f89d34}
+.drp-footer .drp-btn-ok{background:#f89d34;color:#fff;border:none}
+.drp-footer .drp-btn-ok:hover{background:#e68e20}
 
-    .trend-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    .trend-table th {
-      background: #F5F7FA; padding: 10px 12px; text-align: center;
-      font-weight: 600; color: #777; font-size: 13px; border-bottom: 1px solid #ebeef5;
-    }
-    .trend-table td {
-      padding: 8px 12px; text-align: center; border-bottom: 1px solid #ebeef5; font-size: 13px;
-    }
-  </style>
+/* Table */
+.table-container{border:1px solid #ebeef5;border-radius:2px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{padding:0 12px;background:#F5F7FA;height:48px;text-align:center;font-weight:600;color:#777;font-size:13px;border-bottom:1px solid #ebeef5;border-right:1px solid #ebeef5;white-space:nowrap}
+thead th:last-child{border-right:none}
+tbody td{padding:0 12px;height:40px;text-align:center;border-bottom:1px solid #ebeef5;border-right:1px solid #ebeef5;font-size:13px;color:#666;vertical-align:middle}
+tbody td:last-child{border-right:none}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f8fafc}
+.action-link{color:#0d6cff;cursor:pointer;text-decoration:none;margin:0 4px;font-size:13px}
+.action-link:hover{text-decoration:underline}
+
+/* Badges */
+.badge-status{display:inline-block;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge-excellent{background:#e6f7e6;color:#52c41a}
+.badge-good{background:#e6f7ff;color:#1890ff}
+.badge-normal{background:#fff7e6;color:#fa8c16}
+.badge-poor{background:#ffe7e7;color:#f5222d}
+
+/* Cache rate inline */
+.cache-rate{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.cache-rate .cache-icon{color:#13c2c2;font-size:13px}
+
+/* Orchestration type badges */
+.orch-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:500;white-space:nowrap}
+.orch-badge.cache{background:#e6f7e6;color:#52c41a;border:1px solid #b7eb8f}
+.orch-badge.direct{background:#e6f0ff;color:#1152c5;border:1px solid #91caff}
+.orch-badge.mixed{background:#fff7e6;color:#fa8c16;border:1px solid #ffd591}
+
+/* Pagination */
+.pagination{padding:16px 0 0;display:flex;justify-content:flex-end;align-items:center;gap:8px;font-size:13px;color:#333}
+.pagination .page-info{margin-right:16px;color:#666}
+.pagination button{min-width:32px;height:32px;background:transparent;border:none;cursor:pointer;font-size:14px;color:#666;display:inline-flex;align-items:center;justify-content:center}
+.pagination button:disabled{cursor:not-allowed;opacity:.5}
+.pagination button:hover:not(:disabled){color:#f89d34}
+.pagination button.active{color:#f89d34;font-weight:600}
+.pagination select{padding:5px 8px;border:1px solid #dcdfe6;border-radius:4px;font-size:13px;color:#333;background:#fff;cursor:pointer;margin-left:16px}
+.pagination .page-jump{margin-left:16px;display:inline-flex;align-items:center;gap:6px}
+.pagination .page-jump input{width:60px;height:32px;padding:0 8px;border:1px solid #dcdfe6;border-radius:4px;text-align:center;font-size:13px}
+
+/* Charts */
+.charts-section{display:flex;gap:20px;margin-top:20px}
+.chart-card{flex:1;background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.chart-card h3{font-size:16px;font-weight:600;color:#1f2f3d;margin-bottom:16px}
+.chart-container{width:100%;height:320px}
+
+/* ===== Detail Modal ===== */
+.modal-mask{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;justify-content:center;align-items:center}
+.modal-mask.show{display:flex}
+.detail-modal{background:#fff;border-radius:10px;width:1100px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 24px;border-bottom:1px solid #ebeef5;flex-shrink:0}
+.modal-header h3{font-size:18px;font-weight:700;color:#1f2f3d;margin-bottom:8px}
+.modal-close{cursor:pointer;font-size:22px;color:#999;background:none;border:none;line-height:1}
+.modal-close:hover{color:#333}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1;min-height:0}
+.modal-footer{display:flex;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid #ebeef5;flex-shrink:0}
+.btn-cancel{height:36px;padding:0 24px;background:#fff;color:#666;border:1px solid #dcdfe6;border-radius:4px;font-size:14px;cursor:pointer}
+.btn-confirm{height:36px;padding:0 24px;background:#f89d34;color:#fff;border:none;border-radius:4px;font-size:14px;cursor:pointer}
+.btn-confirm:hover{background:#e68e20}
+
+/* Detail internal */
+.detail-summary-tags{display:flex;gap:6px;flex-wrap:wrap}
+.section-title{font-size:15px;font-weight:600;color:#1f2f3d;margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid #ebeef5}
+.section-title:first-of-type{margin-top:0}
+
+/* Service-level metric cards */
+.svc-metrics{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.svc-metric{flex:1;min-width:120px;background:#f9fafb;border:1px solid #ebeef5;border-radius:8px;padding:12px 14px;text-align:center}
+.svc-metric .sm-label{font-size:12px;color:#999;margin-bottom:4px}
+.svc-metric .sm-value{font-size:22px;font-weight:700;color:#1f2f3d}
+.svc-metric .sm-unit{font-size:13px;font-weight:400;color:#999;margin-left:2px}
+
+/* Cache vs Direct comparison row */
+.compare-row{display:flex;gap:16px;margin-bottom:4px}
+.compare-box{flex:1;border-radius:8px;padding:14px 16px;position:relative;overflow:hidden}
+.compare-box.cache-box{background:linear-gradient(135deg,#f6ffed,#e6f7e6);border:1px solid #b7eb8f}
+.compare-box.direct-box{background:linear-gradient(135deg,#e6f0ff,#f0f5ff);border:1px solid #91caff}
+.compare-box .cb-title{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.compare-box.cache-box .cb-title{color:#52c41a}
+.compare-box.direct-box .cb-title{color:#1152c5}
+.compare-box .cb-stats{display:flex;gap:16px;flex-wrap:wrap}
+.compare-box .cb-stat{flex:1;min-width:80px}
+.compare-box .cb-stat .cbs-label{font-size:11px;color:#888;margin-bottom:2px}
+.compare-box .cb-stat .cbs-value{font-size:18px;font-weight:700}
+.compare-box.cache-box .cb-stat .cbs-value{color:#389e0d}
+.compare-box.direct-box .cb-stat .cbs-value{color:#1152c5}
+.compare-box .cb-watermark{position:absolute;right:-8px;bottom:-8px;font-size:72px;opacity:.06;font-weight:900;pointer-events:none}
+
+/* API detail table */
+.api-detail-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.api-detail-table th{background:#F5F7FA;padding:10px 10px;text-align:center;font-weight:600;color:#777;font-size:12px;border-bottom:1px solid #ebeef5;border-right:1px solid #ebeef5}
+.api-detail-table th:last-child{border-right:none}
+.api-detail-table td{padding:8px 10px;text-align:center;border-bottom:1px solid #f0f0f0;border-right:1px solid #f0f0f0;font-size:13px;color:#333}
+.api-detail-table td:last-child{border-right:none}
+.api-detail-table tr:last-child td{border-bottom:none}
+.api-detail-table tr.group-header td{background:#f9fafb;font-weight:600;border-bottom:1px solid #ebeef5}
+.api-detail-table tr.src-cache td{background:#fafff5}
+.api-detail-table tr.src-direct td{background:#f5f8ff}
+.api-detail-table .src-cell{display:inline-flex;align-items:center;gap:4px;font-weight:500}
+.api-detail-table .src-cell.cache{color:#52c41a}
+.api-detail-table .src-cell.direct{color:#1152c5}
+.api-detail-table .api-name-cell{text-align:left;padding-left:14px}
+
+/* Failure codes table */
+.fail-codes-section{margin-top:4px}
+.fail-codes-layout{display:flex;gap:20px;align-items:flex-start}
+.fail-codes-chart{width:280px;height:240px;flex-shrink:0}
+.fail-codes-table-wrap{flex:1;min-width:0}
+.fail-code-table{width:100%;border-collapse:collapse;font-size:13px}
+.fail-code-table th{background:#fff5f5;padding:9px 12px;text-align:center;font-weight:600;color:#c41d1d;font-size:12px;border-bottom:1px solid #ffd6d6}
+.fail-code-table td{padding:8px 12px;text-align:center;border-bottom:1px solid #f0f0f0;font-size:13px}
+.fail-code-table tr:last-child td{border-bottom:none}
+.fail-code-table tr:hover td{background:#fff9f9}
+.fail-code-table .code-cell{font-family:monospace;font-weight:700;color:#cf1322;font-size:13px}
+.fail-code-table .desc-cell{color:#555;text-align:left}
+.fail-code-table .pct-bar{display:inline-flex;align-items:center;gap:6px}
+.fail-code-table .pct-bar .bar-bg{width:80px;height:8px;background:#ffe7e7;border-radius:4px;overflow:hidden}
+.fail-code-table .pct-bar .bar-fill{height:100%;background:linear-gradient(90deg,#ff7875,#f5222d);border-radius:4px}
+.fail-code-table tfoot td{background:#fff5f5;font-weight:700;color:#333;border-top:1px solid #ffd6d6}
+
+/* Chart in modal */
+.modal-chart{width:100%;height:240px;margin-top:8px}
+
+/* Legend */
+.legend-row{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:12px;color:#666}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+
+/* Trend chart */
+.trend-chart-detail{width:100%;height:260px;margin-bottom:16px}
+.trend-table{width:100%;border-collapse:collapse;font-size:13px}
+.trend-table th{background:#F5F7FA;padding:8px 12px;text-align:center;font-weight:600;color:#777;font-size:12px;border-bottom:1px solid #ebeef5}
+.trend-table td{padding:8px 12px;text-align:center;border-bottom:1px solid #ebeef5;font-size:13px}
+</style>
 </head>
 <body>
 
-<!-- ===== Top Navigation ===== -->
 <nav class="top-nav">
   <div class="nav-logo">
     <span class="title">外数平台</span>
@@ -239,16 +271,12 @@
     <a class="nav-tab" href="用户管理.html">系统管理</a>
   </div>
   <div class="nav-user">
-    <div class="nav-bell">
-      <i class="el-icon-bell"></i>
-      <span class="badge">3</span>
-    </div>
+    <div class="nav-bell"><i class="el-icon-bell"></i><span class="badge">3</span></div>
     <span class="nav-tenant">某某金控</span>
     <div class="nav-avatar">席</div>
   </div>
 </nav>
 
-<!-- ===== Sidebar ===== -->
 <aside class="sidebar">
   <a class="sidebar-item" href="用数大屏.html"><i class="el-icon-monitor"></i>用数大屏</a>
   <a class="sidebar-item" href="告警管理V1.2.html"><i class="el-icon-document"></i>用量统计</a>
@@ -262,325 +290,269 @@
   <a class="sidebar-item" href="index.html"><i class="el-icon-pie-chart"></i>流量分析</a>
 </aside>
 
-<!-- ===== Main Content ===== -->
 <main class="main-content">
   <div class="content-card">
-    <!-- Breadcrumb -->
     <div class="breadcrumb">监控统计 / <span>服务性能监控</span></div>
     <div class="forecast-layout">
       <div class="forecast-white-card">
-        <!-- Summary Cards -->
-  <div class="summary-cards">
-    <div class="summary-card">
-      <div class="card-icon blue"><i class="el-icon-menu"></i></div>
-      <div class="card-info">
-        <div class="card-label">总服务数</div>
-        <div class="card-value">24<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">个</span></div>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="card-icon green"><i class="el-icon-time"></i></div>
-      <div class="card-info">
-        <div class="card-label">平均响应时间</div>
-        <div class="card-value">156<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">ms</span></div>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="card-icon orange"><i class="el-icon-timer"></i></div>
-      <div class="card-info">
-        <div class="card-label">P95响应时间</div>
-        <div class="card-value">485<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">ms</span></div>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="card-icon blue"><i class="el-icon-data-line"></i></div>
-      <div class="card-info">
-        <div class="card-label">今日总调用</div>
-        <div class="card-value">1,285,432<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">次</span></div>
-      </div>
-    </div>
-    <div class="summary-card">
-      <div class="card-icon red"><i class="el-icon-warning"></i></div>
-      <div class="card-info">
-        <div class="card-label">异常服务数</div>
-        <div class="card-value" style="color:#f5222d">2<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">个</span></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Filter Bar -->
-  <div class="filter-section">
-    <div class="filter-group">
-      <label>服务名称</label>
-      <select>
-        <option>全部</option>
-        <option>企业基本信息</option>
-        <option>信用评分</option>
-        <option>司法风险</option>
-        <option>融资历史</option>
-        <option>经营状况</option>
-        <option>知识产权</option>
-        <option>企业图谱</option>
-        <option>反欺诈评分</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>供应商</label>
-      <select>
-        <option>全部</option>
-        <option>天眼查</option>
-        <option>企查查</option>
-        <option>中诚信</option>
-        <option>百行征信</option>
-        <option>前海征信</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>统计周期</label>
-      <select>
-        <option>今日</option>
-        <option>近7天</option>
-        <option>近30天</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>排序方式</label>
-      <select>
-        <option>按平均响应时间</option>
-        <option>按P95响应时间</option>
-        <option>按调用次数</option>
-        <option>按错误率</option>
-      </select>
-    </div>
-    <button class="btn-query">查询</button>
-    <button class="btn-reset">重置</button>
-  </div>
+        <!-- Today overview banner -->
+        <div class="today-banner">
+          <div class="banner-left">
+            <span class="banner-title"><i class="el-icon-data-board" style="color:#fa8c16;margin-right:4px"></i>今日情况总览</span>
+            <span class="banner-date"><i class="el-icon-date"></i>2026-06-05（周五）</span>
+          </div>
+          <button class="banner-refresh" onclick="location.reload()"><i class="el-icon-refresh"></i>刷新数据</button>
+        </div>
 
-  <!-- Data Table -->
-  <div class="flex-table-container">
-    <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>服务名称</th>
-          <th>供应商</th>
-          <th>调用次数</th>
-          <th>成功次数</th>
-          <th>失败次数</th>
-          <th>成功率</th>
-          <th>平均响应(ms)</th>
-          <th>P95响应(ms)</th>
-          <th>最大响应(ms)</th>
-          <th>并发峰值</th>
-          <th>性能状态</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="font-weight:500">企业基本信息</td>
-          <td>天眼查</td>
-          <td>285,432</td>
-          <td>284,862</td>
-          <td>570</td>
-          <td style="color:#52c41a;font-weight:600">99.8%</td>
-          <td>125</td>
-          <td>285</td>
-          <td>2,340</td>
-          <td>156</td>
-          <td><span class="badge-status badge-excellent">优秀</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('企业基本信息')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">信用评分</td>
-          <td>中诚信</td>
-          <td>178,234</td>
-          <td>176,451</td>
-          <td>1,783</td>
-          <td style="color:#52c41a;font-weight:600">99.0%</td>
-          <td>198</td>
-          <td>456</td>
-          <td>3,560</td>
-          <td>89</td>
-          <td><span class="badge-status badge-good">良好</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('信用评分')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">司法风险</td>
-          <td>天眼查</td>
-          <td>156,789</td>
-          <td>156,005</td>
-          <td>784</td>
-          <td style="color:#52c41a;font-weight:600">99.5%</td>
-          <td>145</td>
-          <td>320</td>
-          <td>1,890</td>
-          <td>120</td>
-          <td><span class="badge-status badge-excellent">优秀</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('司法风险')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">融资历史</td>
-          <td>企查查</td>
-          <td>134,567</td>
-          <td>133,221</td>
-          <td>1,346</td>
-          <td style="color:#52c41a;font-weight:600">99.0%</td>
-          <td>235</td>
-          <td>520</td>
-          <td>4,120</td>
-          <td>78</td>
-          <td><span class="badge-status badge-good">良好</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('融资历史')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">经营状况</td>
-          <td>天眼查</td>
-          <td>98,765</td>
-          <td>98,272</td>
-          <td>493</td>
-          <td style="color:#52c41a;font-weight:600">99.5%</td>
-          <td>168</td>
-          <td>385</td>
-          <td>2,560</td>
-          <td>65</td>
-          <td><span class="badge-status badge-good">良好</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('经营状况')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">企业图谱</td>
-          <td>企查查</td>
-          <td>67,890</td>
-          <td>64,496</td>
-          <td>3,394</td>
-          <td style="color:#f5222d;font-weight:600">95.0%</td>
-          <td style="color:#f5222d;font-weight:600">1,250</td>
-          <td style="color:#f5222d;font-weight:600">3,200</td>
-          <td style="color:#f5222d;font-weight:600">8,500</td>
-          <td>45</td>
-          <td><span class="badge-status badge-poor">较差</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('企业图谱')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">反欺诈评分</td>
-          <td>前海征信</td>
-          <td>52,345</td>
-          <td>50,251</td>
-          <td>2,094</td>
-          <td style="color:#fa8c16;font-weight:600">96.0%</td>
-          <td>520</td>
-          <td>1,100</td>
-          <td>5,200</td>
-          <td>35</td>
-          <td><span class="badge-status badge-normal">一般</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('反欺诈评分')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="font-weight:500">知识产权</td>
-          <td>天眼查</td>
-          <td>45,678</td>
-          <td>45,587</td>
-          <td>91</td>
-          <td style="color:#52c41a;font-weight:600">99.8%</td>
-          <td>112</td>
-          <td>245</td>
-          <td>1,230</td>
-          <td>42</td>
-          <td><span class="badge-status badge-excellent">优秀</span></td>
-          <td>
-            <a class="action-link" href="javascript:void(0)" onclick="openTrendModal('知识产权')">趋势分析</a>
-            <a class="action-link" href="javascript:void(0)">详情</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="card-icon blue"><i class="el-icon-menu"></i></div>
+            <div class="card-info">
+              <div class="card-label">运行服务数</div>
+              <div class="card-value">10<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">个</span></div>
+              <div class="card-trend up"><i class="el-icon-top"></i>全部正常</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon green"><i class="el-icon-time"></i></div>
+            <div class="card-info">
+              <div class="card-label">今日平均响应</div>
+              <div class="card-value">312<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">ms</span></div>
+              <div class="card-trend down"><i class="el-icon-bottom"></i>较昨日 +8.7%</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon orange"><i class="el-icon-timer"></i></div>
+            <div class="card-info">
+              <div class="card-label">今日最大响应</div>
+              <div class="card-value">6,820<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">ms</span></div>
+              <div class="card-trend up"><i class="el-icon-top"></i>较昨日 -12.3%</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon cyan"><i class="el-icon-coin"></i></div>
+            <div class="card-info">
+              <div class="card-label">今日缓存命中率</div>
+              <div class="card-value" style="color:#13c2c2">67.2<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">%</span></div>
+              <div class="card-trend up"><i class="el-icon-top"></i>较昨日 +2.7pp</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon blue"><i class="el-icon-data-line"></i></div>
+            <div class="card-info">
+              <div class="card-label">今日总调用</div>
+              <div class="card-value">18.7<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">万次</span></div>
+              <div class="card-trend up"><i class="el-icon-top"></i>较昨日 +5.2%</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon red"><i class="el-icon-warning"></i></div>
+            <div class="card-info">
+              <div class="card-label">今日失败次数</div>
+              <div class="card-value" style="color:#f5222d">1,247<span style="font-size:14px;font-weight:400;color:#999;margin-left:4px">次</span></div>
+              <div class="card-trend down"><i class="el-icon-bottom"></i>较昨日 +3.1%</div>
+            </div>
+          </div>
+        </div>
 
-  <!-- Pagination -->
-  <div class="pagination">
-    <span class="page-info">共 8 条</span>
-    <button disabled>&lt;</button>
-    <button class="active">1</button>
-    <button disabled>&gt;</button>
-    <select>
-      <option>10条/页</option>
-      <option>20条/页</option>
-      <option>50条/页</option>
-    </select>
-    <div class="page-jump">
-      前往 <input type="text" value="1"> 页
-    </div>
-  </div>
-  </div>
+        <!-- Filter: 服务 + 周期范围 -->
+        <div class="filter-section">
+          <div class="filter-group">
+            <label>服务</label>
+            <select>
+              <option>全部</option>
+              <option>企业全景画像</option>
+              <option>企业基本信息</option>
+              <option>信用评分</option>
+              <option>司法风险</option>
+              <option>融资历史</option>
+              <option>经营状况</option>
+              <option>反欺诈评分</option>
+              <option>企业图谱</option>
+              <option>知识产权</option>
+              <option>企业关联关系</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>周期范围</label>
+            <div class="date-range-picker" id="dateRangePicker">
+              <span class="drp-icon" onclick="toggleDatePicker(event)"><i class="el-icon-date"></i></span>
+              <span class="drp-display" id="drpDisplay" onclick="toggleDatePicker(event)">2026-05-25<span class="drp-sep">~</span>2026-05-31</span>
+              <div class="drp-dropdown" id="drpDropdown">
+                <div class="drp-shortcuts">
+                  <button class="shortcut" onclick="applyShortcut('today',event)">今天</button>
+                  <button class="shortcut" onclick="applyShortcut('yesterday',event)">昨天</button>
+                  <button class="shortcut" onclick="applyShortcut('week',event)">本周</button>
+                  <button class="shortcut" onclick="applyShortcut('lastWeek',event)">上周</button>
+                  <button class="shortcut" onclick="applyShortcut('month',event)">本月</button>
+                  <button class="shortcut" onclick="applyShortcut('last7',event)">近7天</button>
+                  <button class="shortcut" onclick="applyShortcut('last30',event)">近30天</button>
+                  <button class="shortcut" onclick="applyShortcut('last90',event)">近90天</button>
+                  <button class="shortcut" onclick="applyShortcut('quarter',event)">本季度</button>
+                </div>
+                <div class="drp-calendars">
+                  <div class="drp-cal" id="calLeft">
+                    <div class="drp-cal-header">
+                      <button onclick="navMonth('left',-1,event)"><i class="el-icon-d-arrow-left"></i></button>
+                      <span class="cal-title" id="calLeftTitle"></span>
+                      <button onclick="navMonth('left',1,event)"><i class="el-icon-d-arrow-right"></i></button>
+                    </div>
+                    <div class="drp-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                    <div class="drp-days" id="calLeftDays"></div>
+                  </div>
+                  <div class="drp-cal" id="calRight">
+                    <div class="drp-cal-header">
+                      <button onclick="navMonth('right',-1,event)"><i class="el-icon-d-arrow-left"></i></button>
+                      <span class="cal-title" id="calRightTitle"></span>
+                      <button onclick="navMonth('right',1,event)"><i class="el-icon-d-arrow-right"></i></button>
+                    </div>
+                    <div class="drp-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                    <div class="drp-days" id="calRightDays"></div>
+                  </div>
+                </div>
+                <div class="drp-footer">
+                  <button class="drp-btn-cancel" onclick="closeDatePicker(event)">取消</button>
+                  <button class="drp-btn-ok" onclick="confirmDateRange(event)">确定</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-query">查询</button>
+          <button class="btn-reset">重置</button>
+        </div>
 
-  <!-- Performance Charts Section -->
-  <div class="charts-section">
-    <div class="chart-card">
-      <h3>服务响应时间对比</h3>
-      <div class="chart-container" id="chart-response"></div>
+        <div class="flex-table-container">
+          <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>服务名称</th>
+                <th>调用次数</th>
+                <th>成功率</th>
+                <th>命中缓存</th>
+                <th>平均响应时间(ms)</th>
+                <th>最大响应时间(ms)</th>
+                <th>日用峰值</th>
+                <th>周期范围</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="serviceTableBody"></tbody>
+          </table>
+          </div>
+          <div class="pagination">
+            <span class="page-info">共 10 条</span>
+            <button disabled>&lt;</button>
+            <button class="active">1</button>
+            <button disabled>&gt;</button>
+            <select>
+              <option>10条/页</option>
+              <option>20条/页</option>
+              <option>50条/页</option>
+            </select>
+            <div class="page-jump">前往 <input type="text" value="1"> 页</div>
+          </div>
+        </div>
+
+        <div class="charts-section">
+          <div class="chart-card">
+            <h3>服务响应时间 — 缓存 vs 直连对比</h3>
+            <div class="chart-container" id="chart-response"></div>
+          </div>
+          <div class="chart-card">
+            <h3>调用量与成功率</h3>
+            <div class="chart-container" id="chart-volume"></div>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="chart-card">
-      <h3>调用量与错误率</h3>
-      <div class="chart-container" id="chart-volume"></div>
-    </div>
   </div>
-  </div>
-  </div>
-</div>
 </main>
 
-<!-- ===== Trend Analysis Modal ===== -->
-<div class="modal-mask" id="trendModal">
-  <div class="modal">
+<!-- Detail Modal -->
+<div class="modal-mask" id="detailModal">
+  <div class="detail-modal">
     <div class="modal-header">
-      <h3 id="trendModalTitle">趋势分析 - 企业基本信息</h3>
-      <button class="modal-close" onclick="closeTrendModal()">&times;</button>
+      <div>
+        <h3 id="detailTitle">服务性能详情</h3>
+        <div class="detail-summary-tags" id="detailHeaderTags"></div>
+      </div>
+      <button class="modal-close" onclick="closeDetailModal()">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="trend-summary">
-        <div class="ts-item">
-          <div class="ts-label">服务名称</div>
-          <div class="ts-value" id="trendServiceName">企业基本信息</div>
+      <!-- Service-level metrics -->
+      <div class="section-title">服务级性能指标</div>
+      <div class="svc-metrics" id="svcMetrics"></div>
+
+      <!-- Cache vs Direct comparison -->
+      <div class="section-title">编排模式 — 缓存 vs 直连对比</div>
+      <div class="compare-row" id="compareRow"></div>
+
+      <!-- Comparison chart -->
+      <div style="margin-top:16px">
+        <div class="legend-row">
+          <div class="legend-item"><div class="legend-dot" style="background:#52c41a"></div>命中缓存</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1152c5"></div>请求供应商</div>
         </div>
-        <div class="ts-item">
-          <div class="ts-label">供应商</div>
-          <div class="ts-value">天眼查</div>
-        </div>
-        <div class="ts-item">
-          <div class="ts-label">统计周期</div>
-          <div class="ts-value">近7天</div>
-        </div>
-        <div class="ts-item">
-          <div class="ts-label">性能状态</div>
-          <div class="ts-value"><span class="badge-status badge-excellent">优秀</span></div>
+        <div class="modal-chart" id="detailCompareChart"></div>
+      </div>
+
+      <!-- API detail table -->
+      <div class="section-title">各API性能明细</div>
+      <table class="api-detail-table">
+        <thead>
+          <tr>
+            <th style="width:40px">序号</th>
+            <th>供应商</th>
+            <th style="text-align:left">API名称</th>
+            <th>数据来源</th>
+            <th>调用次数</th>
+            <th>平均响应(ms)</th>
+            <th>最大响应(ms)</th>
+            <th>成功率</th>
+            <th>日用峰值</th>
+            <th>节省时间(ms)</th>
+          </tr>
+        </thead>
+        <tbody id="detailApiTableBody"></tbody>
+      </table>
+
+      <!-- API failure status codes -->
+      <div class="section-title">API失败状态码分布</div>
+      <div class="fail-codes-section">
+        <div class="fail-codes-layout">
+          <div class="fail-codes-chart" id="failCodesChart"></div>
+          <div class="fail-codes-table-wrap">
+            <table class="fail-code-table">
+              <thead>
+                <tr>
+                  <th style="width:90px">状态码</th>
+                  <th style="text-align:left">描述</th>
+                  <th style="width:100px">次数</th>
+                  <th style="width:60px">占比</th>
+                  <th style="width:130px">占比图示</th>
+                </tr>
+              </thead>
+              <tbody id="failCodesTableBody"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" style="text-align:right;padding-right:16px">合计</td>
+                  <td id="failCodesTotal">—</td>
+                  <td>100%</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div class="trend-chart" id="trendChart"></div>
-
-      <h4 style="font-size:15px;font-weight:600;color:#1f2f3d;margin-bottom:12px">每日统计明细</h4>
+      <!-- Performance trend -->
+      <div class="section-title">性能趋势（周期内每日）</div>
+      <div class="trend-chart-detail" id="detailTrendChart"></div>
       <table class="trend-table">
         <thead>
           <tr>
@@ -590,194 +562,862 @@
             <th>失败次数</th>
             <th>成功率</th>
             <th>平均响应(ms)</th>
-            <th>P95响应(ms)</th>
             <th>最大响应(ms)</th>
+            <th>缓存命中率</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>2026-05-25</td>
-            <td>42,150</td>
-            <td>42,066</td>
-            <td>84</td>
-            <td>99.8%</td>
-            <td>118</td>
-            <td>275</td>
-            <td>2,100</td>
-          </tr>
-          <tr>
-            <td>2026-05-26</td>
-            <td>39,820</td>
-            <td>39,740</td>
-            <td>80</td>
-            <td>99.8%</td>
-            <td>122</td>
-            <td>280</td>
-            <td>1,980</td>
-          </tr>
-          <tr>
-            <td>2026-05-27</td>
-            <td>44,560</td>
-            <td>44,471</td>
-            <td>89</td>
-            <td>99.8%</td>
-            <td>130</td>
-            <td>295</td>
-            <td>2,340</td>
-          </tr>
-          <tr>
-            <td>2026-05-28</td>
-            <td>41,230</td>
-            <td>41,147</td>
-            <td>83</td>
-            <td>99.8%</td>
-            <td>125</td>
-            <td>282</td>
-            <td>2,150</td>
-          </tr>
-          <tr>
-            <td>2026-05-29</td>
-            <td>38,910</td>
-            <td>38,832</td>
-            <td>78</td>
-            <td>99.8%</td>
-            <td>120</td>
-            <td>270</td>
-            <td>1,890</td>
-          </tr>
-          <tr>
-            <td>2026-05-30</td>
-            <td>40,550</td>
-            <td>40,469</td>
-            <td>81</td>
-            <td>99.8%</td>
-            <td>128</td>
-            <td>290</td>
-            <td>2,250</td>
-          </tr>
-          <tr>
-            <td>2026-05-31</td>
-            <td>38,212</td>
-            <td>38,137</td>
-            <td>75</td>
-            <td>99.8%</td>
-            <td>115</td>
-            <td>265</td>
-            <td>1,780</td>
-          </tr>
-        </tbody>
+        <tbody id="detailTrendTableBody"></tbody>
       </table>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeTrendModal()">关闭</button>
+      <button class="btn-cancel" onclick="closeDetailModal()">关闭</button>
       <button class="btn-confirm">导出数据</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===== Response Time Bar Chart =====
-(function() {
-  var chart = echarts.init(document.getElementById('chart-response'));
-  var services = ['企业基本信息', '信用评分', '司法风险', '融资历史', '经营状况', '企业图谱', '反欺诈评分', '知识产权'];
-  chart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    legend: { data: ['平均响应(ms)', 'P95响应(ms)', '最大响应(ms)'], top: 0, textStyle: { fontSize: 12 } },
-    grid: { left: 60, right: 20, bottom: 40, top: 40 },
-    xAxis: {
-      type: 'category', data: services,
-      axisLabel: { fontSize: 11, rotate: 20, color: '#666' },
-      axisTick: { alignWithLabel: true }
-    },
-    yAxis: { type: 'value', name: 'ms', axisLabel: { fontSize: 12 }, nameTextStyle: { fontSize: 12, color: '#999' } },
-    series: [
-      {
-        name: '平均响应(ms)', type: 'bar', barWidth: 14,
-        data: [125, 198, 145, 235, 168, 1250, 520, 112],
-        itemStyle: { color: '#1152c5', borderRadius: [2,2,0,0] }
-      },
-      {
-        name: 'P95响应(ms)', type: 'bar', barWidth: 14,
-        data: [285, 456, 320, 520, 385, 3200, 1100, 245],
-        itemStyle: { color: '#fa8c16', borderRadius: [2,2,0,0] }
-      },
-      {
-        name: '最大响应(ms)', type: 'bar', barWidth: 14,
-        data: [2340, 3560, 1890, 4120, 2560, 8500, 5200, 1230],
-        itemStyle: { color: '#f5222d', borderRadius: [2,2,0,0] }
-      }
-    ]
-  });
-  window.addEventListener('resize', function() { chart.resize(); });
-})();
+// ===== DATA MODEL =====
+// 服务级: { id, name, totalCalls, avgTime, maxTime, successRate, dailyPeak, orchType, periodStart, periodEnd, failCodes[], apis[] }
+// failCodes: [{code, desc, count}] — 失败状态码分布
+// API级:  { vendor, apiName, cache:{calls,avgTime,maxTime,successRate,dailyPeak}, vendor:{calls,avgTime,maxTime,successRate,dailyPeak}, vendorDirectTime }
 
-// ===== Volume & Error Rate Dual-axis Chart =====
-(function() {
-  var chart = echarts.init(document.getElementById('chart-volume'));
-  var services = ['企业基本信息', '信用评分', '司法风险', '融资历史', '经营状况', '企业图谱', '反欺诈评分', '知识产权'];
-  var callVolume = [285432, 178234, 156789, 134567, 98765, 67890, 52345, 45678];
-  var errorRate = [0.2, 1.0, 0.5, 1.0, 0.5, 5.0, 4.0, 0.2];
-  chart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-    legend: { data: ['调用次数', '错误率(%)'], top: 0, textStyle: { fontSize: 12 } },
-    grid: { left: 70, right: 60, bottom: 40, top: 40 },
-    xAxis: {
-      type: 'category', data: services,
-      axisLabel: { fontSize: 11, rotate: 20, color: '#666' },
-      axisTick: { alignWithLabel: true }
-    },
-    yAxis: [
-      { type: 'value', name: '调用次数', axisLabel: { fontSize: 12, formatter: function(v) { return v >= 10000 ? (v/10000).toFixed(0) + '万' : v; } }, nameTextStyle: { fontSize: 12, color: '#999' } },
-      { type: 'value', name: '错误率(%)', axisLabel: { fontSize: 12 }, nameTextStyle: { fontSize: 12, color: '#999' }, max: 8 }
+var SERVICES = [
+  {
+    id:'SVC-001', name:'企业全景画像', orchType:'mixed',
+    totalCalls:325432, avgTime:459, maxTime:12500, successRate:99.4, dailyPeak:52340,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'500',desc:'供应商服务器内部错误',count:823},
+      {code:'504',desc:'请求超时（网关超时）',count:512},
+      {code:'429',desc:'请求频率超限',count:347},
+      {code:'403',desc:'鉴权失败 / 令牌过期',count:168},
+      {code:'502',desc:'供应商网关错误',count:103}
     ],
-    series: [
-      {
-        name: '调用次数', type: 'bar', barWidth: 24,
-        data: callVolume,
-        itemStyle: { color: '#84B9FD', borderRadius: [3,3,0,0] }
-      },
-      {
-        name: '错误率(%)', type: 'line', yAxisIndex: 1,
-        data: errorRate, smooth: true,
-        lineStyle: { color: '#f5222d', width: 2 },
-        itemStyle: { color: '#f5222d' },
-        symbol: 'circle', symbolSize: 8
+    apis:[
+      {vendor:'天眼查',apiName:'企业基本信息',
+        cache:{calls:180000,avgTime:85,maxTime:220,successRate:99.9,dailyPeak:29100},
+        vendor:{calls:145432,avgTime:1200,maxTime:8500,successRate:99.1,dailyPeak:23240},
+        vendorDirectTime:1200},
+      {vendor:'天眼查',apiName:'司法风险',
+        cache:{calls:260000,avgTime:65,maxTime:180,successRate:99.9,dailyPeak:41800},
+        vendor:{calls:65432,avgTime:980,maxTime:6200,successRate:99.2,dailyPeak:10540},
+        vendorDirectTime:980},
+      {vendor:'中诚信',apiName:'信用评分',
+        cache:{calls:200000,avgTime:92,maxTime:250,successRate:99.8,dailyPeak:32200},
+        vendor:{calls:125432,avgTime:1350,maxTime:12500,successRate:98.8,dailyPeak:20140},
+        vendorDirectTime:1350}
+    ]
+  },
+  {
+    id:'SVC-002', name:'企业基本信息', orchType:'cache',
+    totalCalls:285432, avgTime:125, maxTime:2340, successRate:99.8, dailyPeak:45900,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'504',desc:'请求超时（网关超时）',count:218},
+      {code:'500',desc:'供应商服务器内部错误',count:187},
+      {code:'429',desc:'请求频率超限',count:98},
+      {code:'502',desc:'供应商网关错误',count:68}
+    ],
+    apis:[
+      {vendor:'天眼查',apiName:'企业基本信息',
+        cache:{calls:242000,avgTime:85,maxTime:220,successRate:99.9,dailyPeak:38950},
+        vendor:{calls:43432,avgTime:340,maxTime:2340,successRate:99.3,dailyPeak:6950},
+        vendorDirectTime:850}
+    ]
+  },
+  {
+    id:'SVC-003', name:'信用评分', orchType:'mixed',
+    totalCalls:178234, avgTime:198, maxTime:3560, successRate:99.0, dailyPeak:28700,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'500',desc:'供应商服务器内部错误',count:742},
+      {code:'504',desc:'请求超时（网关超时）',count:518},
+      {code:'429',desc:'请求频率超限',count:286},
+      {code:'403',desc:'鉴权失败 / 令牌过期',count:142},
+      {code:'502',desc:'供应商网关错误',count:94}
+    ],
+    apis:[
+      {vendor:'中诚信',apiName:'信用评分',
+        cache:{calls:100000,avgTime:95,maxTime:280,successRate:99.8,dailyPeak:16100},
+        vendor:{calls:78234,avgTime:350,maxTime:3560,successRate:98.2,dailyPeak:12600},
+        vendorDirectTime:350},
+      {vendor:'天眼查',apiName:'企业基本信息',
+        cache:{calls:160000,avgTime:82,maxTime:200,successRate:99.9,dailyPeak:25750},
+        vendor:{calls:18234,avgTime:310,maxTime:1800,successRate:99.4,dailyPeak:2950},
+        vendorDirectTime:850}
+    ]
+  },
+  {
+    id:'SVC-004', name:'司法风险', orchType:'cache',
+    totalCalls:156789, avgTime:145, maxTime:1890, successRate:99.5, dailyPeak:25300,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'500',desc:'供应商服务器内部错误',count:328},
+      {code:'504',desc:'请求超时（网关超时）',count:227},
+      {code:'429',desc:'请求频率超限',count:131},
+      {code:'502',desc:'供应商网关错误',count:98}
+    ],
+    apis:[
+      {vendor:'天眼查',apiName:'司法风险',
+        cache:{calls:110000,avgTime:65,maxTime:180,successRate:99.9,dailyPeak:17710},
+        vendor:{calls:46789,avgTime:335,maxTime:1890,successRate:98.8,dailyPeak:7590},
+        vendorDirectTime:980}
+    ]
+  },
+  {
+    id:'SVC-005', name:'融资历史', orchType:'direct',
+    totalCalls:134567, avgTime:235, maxTime:4120, successRate:99.0, dailyPeak:21700,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'504',desc:'请求超时（网关超时）',count:528},
+      {code:'500',desc:'供应商服务器内部错误',count:412},
+      {code:'429',desc:'请求频率超限',count:245},
+      {code:'403',desc:'鉴权失败 / 令牌过期',count:96},
+      {code:'502',desc:'供应商网关错误',count:65}
+    ],
+    apis:[
+      {vendor:'企查查',apiName:'融资信息',
+        cache:{calls:0,avgTime:0,maxTime:0,successRate:0,dailyPeak:0},
+        vendor:{calls:134567,avgTime:235,maxTime:4120,successRate:99.0,dailyPeak:21700},
+        vendorDirectTime:235}
+    ]
+  },
+  {
+    id:'SVC-006', name:'经营状况', orchType:'cache',
+    totalCalls:98765, avgTime:105, maxTime:2560, successRate:99.5, dailyPeak:15900,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'500',desc:'供应商服务器内部错误',count:201},
+      {code:'504',desc:'请求超时（网关超时）',count:152},
+      {code:'429',desc:'请求频率超限',count:87},
+      {code:'502',desc:'供应商网关错误',count:54}
+    ],
+    apis:[
+      {vendor:'天眼查',apiName:'企业基本信息',
+        cache:{calls:90000,avgTime:85,maxTime:200,successRate:99.9,dailyPeak:14500},
+        vendor:{calls:8765,avgTime:310,maxTime:2560,successRate:99.2,dailyPeak:1410},
+        vendorDirectTime:850},
+      {vendor:'天眼查',apiName:'经营状态',
+        cache:{calls:85000,avgTime:72,maxTime:160,successRate:99.9,dailyPeak:13680},
+        vendor:{calls:13765,avgTime:280,maxTime:1800,successRate:99.1,dailyPeak:2220},
+        vendorDirectTime:750}
+    ]
+  },
+  {
+    id:'SVC-007', name:'反欺诈评分', orchType:'mixed',
+    totalCalls:52345, avgTime:520, maxTime:5200, successRate:96.0, dailyPeak:8430,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'500',desc:'供应商服务器内部错误',count:886},
+      {code:'504',desc:'请求超时（网关超时）',count:572},
+      {code:'429',desc:'请求频率超限',count:341},
+      {code:'403',desc:'鉴权失败 / 令牌过期',count:198},
+      {code:'502',desc:'供应商网关错误',count:97}
+    ],
+    apis:[
+      {vendor:'百行征信',apiName:'反欺诈评分',
+        cache:{calls:26000,avgTime:95,maxTime:280,successRate:99.5,dailyPeak:4190},
+        vendor:{calls:26345,avgTime:680,maxTime:5200,successRate:93.2,dailyPeak:4240},
+        vendorDirectTime:680},
+      {vendor:'百行征信',apiName:'个人信用报告',
+        cache:{calls:40000,avgTime:80,maxTime:200,successRate:99.8,dailyPeak:6440},
+        vendor:{calls:12345,avgTime:520,maxTime:3800,successRate:94.5,dailyPeak:1990},
+        vendorDirectTime:520}
+    ]
+  },
+  {
+    id:'SVC-008', name:'知识产权', orchType:'cache',
+    totalCalls:45678, avgTime:112, maxTime:1230, successRate:99.8, dailyPeak:7360,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'504',desc:'请求超时（网关超时）',count:38},
+      {code:'500',desc:'供应商服务器内部错误',count:31},
+      {code:'429',desc:'请求频率超限',count:14},
+      {code:'502',desc:'供应商网关错误',count:8}
+    ],
+    apis:[
+      {vendor:'天眼查',apiName:'知识产权',
+        cache:{calls:41000,avgTime:78,maxTime:180,successRate:99.9,dailyPeak:6600},
+        vendor:{calls:4678,avgTime:410,maxTime:1230,successRate:99.0,dailyPeak:760},
+        vendorDirectTime:950}
+    ]
+  },
+  {
+    id:'SVC-009', name:'企业图谱', orchType:'mixed',
+    totalCalls:67890, avgTime:1250, maxTime:8500, successRate:95.0, dailyPeak:10940,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'504',desc:'请求超时（网关超时）',count:1428},
+      {code:'500',desc:'供应商服务器内部错误',count:987},
+      {code:'429',desc:'请求频率超限',count:548},
+      {code:'403',desc:'鉴权失败 / 令牌过期',count:272},
+      {code:'502',desc:'供应商网关错误',count:160}
+    ],
+    apis:[
+      {vendor:'企查查',apiName:'企业工商基本信息',
+        cache:{calls:0,avgTime:0,maxTime:0,successRate:0,dailyPeak:0},
+        vendor:{calls:67890,avgTime:1850,maxTime:8500,successRate:94.5,dailyPeak:10940},
+        vendorDirectTime:1850},
+      {vendor:'企查查',apiName:'股东信息',
+        cache:{calls:45000,avgTime:85,maxTime:220,successRate:99.8,dailyPeak:7250},
+        vendor:{calls:22890,avgTime:650,maxTime:4200,successRate:95.8,dailyPeak:3690},
+        vendorDirectTime:650},
+      {vendor:'天眼查',apiName:'股东信息',
+        cache:{calls:0,avgTime:0,maxTime:0,successRate:0,dailyPeak:0},
+        vendor:{calls:67890,avgTime:2100,maxTime:8500,successRate:93.2,dailyPeak:10940},
+        vendorDirectTime:2100}
+    ]
+  },
+  {
+    id:'SVC-010', name:'企业关联关系', orchType:'direct',
+    totalCalls:34567, avgTime:890, maxTime:6800, successRate:98.0, dailyPeak:5570,
+    periodStart:'2026-05-25', periodEnd:'2026-05-31',
+    failCodes:[
+      {code:'504',desc:'请求超时（网关超时）',count:278},
+      {code:'500',desc:'供应商服务器内部错误',count:214},
+      {code:'429',desc:'请求频率超限',count:118},
+      {code:'403',desc:'鉴权失败 / 令牌过期',count:81}
+    ],
+    apis:[
+      {vendor:'企查查',apiName:'股东信息',
+        cache:{calls:0,avgTime:0,maxTime:0,successRate:0,dailyPeak:0},
+        vendor:{calls:34567,avgTime:650,maxTime:4500,successRate:98.2,dailyPeak:5570},
+        vendorDirectTime:650},
+      {vendor:'天眼查',apiName:'股东信息',
+        cache:{calls:0,avgTime:0,maxTime:0,successRate:0,dailyPeak:0},
+        vendor:{calls:34567,avgTime:1580,maxTime:6800,successRate:97.5,dailyPeak:5570},
+        vendorDirectTime:1580}
+    ]
+  }
+];
+
+// ===== Helpers =====
+function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function orchLabel(t){return t==='cache'?'纯缓存':t==='direct'?'纯直连':'缓存+直连'}
+function orchHtml(t){
+  if(t==='cache') return '<span class="orch-badge cache"><i class="el-icon-coin"></i>纯缓存</span>';
+  if(t==='direct') return '<span class="orch-badge direct"><i class="el-icon-connection"></i>纯直连</span>';
+  return '<span class="orch-badge mixed"><i class="el-icon-sort"></i>缓存+直连</span>';
+}
+function calcCacheRate(svc){
+  var totalC=0,totalV=0;
+  svc.apis.forEach(function(a){totalC+=a.cache.calls;totalV+=a.vendor.calls});
+  var total=totalC+totalV;
+  return total>0?((totalC/total)*100).toFixed(1):'0.0';
+}
+
+// ===== Render Main Table =====
+function renderServiceTable(){
+  var tbody=document.getElementById('serviceTableBody');
+  var html='';
+  SERVICES.forEach(function(svc,idx){
+    var rateColor=svc.successRate>=99.5?'#52c41a':svc.successRate>=98?'#1890ff':svc.successRate>=96?'#fa8c16':'#f5222d';
+    var maxColor=svc.maxTime<=2000?'':'color:#f5222d;font-weight:600';
+    var cacheRate=calcCacheRate(svc);
+    var cacheColor=parseFloat(cacheRate)>=80?'#52c41a':parseFloat(cacheRate)>=50?'#fa8c16':'#f5222d';
+    html+='<tr>'+
+      '<td style="color:#999">'+svc.id+'</td>'+
+      '<td style="font-weight:500;text-align:left;padding-left:16px">'+svc.name+'</td>'+
+      '<td>'+fmt(svc.totalCalls)+'</td>'+
+      '<td style="color:'+rateColor+';font-weight:600">'+svc.successRate+'%</td>'+
+      '<td><span class="cache-rate" style="color:'+cacheColor+'"><i class="el-icon-coin cache-icon"></i>'+cacheRate+'%</span></td>'+
+      '<td style="font-weight:600">'+svc.avgTime+'</td>'+
+      '<td style="'+maxColor+'">'+fmt(svc.maxTime)+'</td>'+
+      '<td style="font-weight:600;color:#1152c5">'+fmt(svc.dailyPeak)+'</td>'+
+      '<td style="font-size:12px;color:#666">'+svc.periodStart+' ~ '+svc.periodEnd+'</td>'+
+      '<td><a class="action-link" href="javascript:void(0)" onclick="openDetailModal('+idx+')">服务详情</a></td>'+
+    '</tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+// ===== Detail Modal =====
+var compareChart=null, trendDetailChart=null, failCodesChart=null;
+
+function openDetailModal(idx){
+  var svc=SERVICES[idx];
+  if(!svc) return;
+
+  // Header
+  document.getElementById('detailTitle').textContent='服务性能详情 — '+svc.name;
+  var cacheRate=calcCacheRate(svc);
+  var tags=orchHtml(svc.orchType)+
+    '<span style="font-size:13px;color:#999;margin-left:8px">'+svc.periodStart+' ~ '+svc.periodEnd+'</span>';
+  document.getElementById('detailHeaderTags').innerHTML=tags;
+
+  // Service-level metrics
+  document.getElementById('svcMetrics').innerHTML=
+    metricCard('调用次数',fmt(svc.totalCalls),'')+
+    metricCard('平均响应',svc.avgTime,'ms')+
+    metricCard('最大响应',fmt(svc.maxTime),'ms')+
+    metricCard('成功率',svc.successRate,'%')+
+    metricCard('缓存命中率',cacheRate,'%')+
+    metricCard('日用峰值',fmt(svc.dailyPeak),'次/天');
+
+  // Cache vs Direct aggregate
+  var totalCacheCalls=0,totalVendorCalls=0;
+  var cacheTimeSum=0,vendorTimeSum=0;
+  var cacheMax=0,vendorMax=0;
+  var cacheDailyPeak=0,vendorDailyPeak=0;
+  var cacheSuccessWeighted=0,vendorSuccessWeighted=0;
+
+  svc.apis.forEach(function(api){
+    if(api.cache.calls>0){
+      totalCacheCalls+=api.cache.calls;
+      cacheTimeSum+=api.cache.avgTime*api.cache.calls;
+      cacheMax=Math.max(cacheMax,api.cache.maxTime);
+      cacheDailyPeak=Math.max(cacheDailyPeak,api.cache.dailyPeak);
+      cacheSuccessWeighted+=api.cache.successRate*api.cache.calls;
+    }
+    if(api.vendor.calls>0){
+      totalVendorCalls+=api.vendor.calls;
+      vendorTimeSum+=api.vendor.avgTime*api.vendor.calls;
+      vendorMax=Math.max(vendorMax,api.vendor.maxTime);
+      vendorDailyPeak=Math.max(vendorDailyPeak,api.vendor.dailyPeak);
+      vendorSuccessWeighted+=api.vendor.successRate*api.vendor.calls;
+    }
+  });
+
+  var cacheAvg=totalCacheCalls>0?Math.round(cacheTimeSum/totalCacheCalls):0;
+  var vendorAvg=totalVendorCalls>0?Math.round(vendorTimeSum/totalVendorCalls):0;
+  var cacheRateAgg=totalCacheCalls>0?(cacheSuccessWeighted/totalCacheCalls).toFixed(1):'—';
+  var vendorRateAgg=totalVendorCalls>0?(vendorSuccessWeighted/totalVendorCalls).toFixed(1):'—';
+
+  var hasCache=totalCacheCalls>0, hasDirect=totalVendorCalls>0;
+
+  document.getElementById('compareRow').innerHTML=
+    '<div class="compare-box cache-box">'+
+      '<div class="cb-title"><i class="el-icon-coin"></i>命中缓存'+(hasCache?'':' (无)')+'</div>'+
+      '<div class="cb-stats">'+
+        '<div class="cb-stat"><div class="cbs-label">调用次数</div><div class="cbs-value">'+(hasCache?fmt(totalCacheCalls):'0')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">平均响应</div><div class="cbs-value">'+(hasCache?cacheAvg+'ms':'—')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">最大响应</div><div class="cbs-value">'+(hasCache?fmt(cacheMax)+'ms':'—')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">成功率</div><div class="cbs-value">'+(hasCache?cacheRateAgg+'%':'—')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">日用峰值</div><div class="cbs-value">'+(hasCache?fmt(cacheDailyPeak):'—')+'</div></div>'+
+      '</div>'+
+      '<div class="cb-watermark">CACHE</div>'+
+    '</div>'+
+    '<div class="compare-box direct-box">'+
+      '<div class="cb-title"><i class="el-icon-connection"></i>请求供应商'+(hasDirect?'':' (无)')+'</div>'+
+      '<div class="cb-stats">'+
+        '<div class="cb-stat"><div class="cbs-label">调用次数</div><div class="cbs-value">'+(hasDirect?fmt(totalVendorCalls):'0')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">平均响应</div><div class="cbs-value">'+(hasDirect?vendorAvg+'ms':'—')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">最大响应</div><div class="cbs-value">'+(hasDirect?fmt(vendorMax)+'ms':'—')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">成功率</div><div class="cbs-value">'+(hasDirect?vendorRateAgg+'%':'—')+'</div></div>'+
+        '<div class="cb-stat"><div class="cbs-label">日用峰值</div><div class="cbs-value">'+(hasDirect?fmt(vendorDailyPeak):'—')+'</div></div>'+
+      '</div>'+
+      '<div class="cb-watermark">VENDOR</div>'+
+    '</div>';
+
+  document.getElementById('detailModal').classList.add('show');
+
+  setTimeout(function(){
+    renderCompareChart(svc);
+    renderApiTable(svc);
+    renderFailCodes(svc);
+    renderTrendChart(svc);
+    renderTrendTable(svc);
+  },120);
+}
+
+function metricCard(label,value,unit){
+  var style='';
+  if(unit==='%') style=' style="color:#52c41a"';
+  if(unit==='ms') style=' style="color:#1152c5"';
+  if(unit==='次/天') style=' style="color:#fa8c16"';
+  return '<div class="svc-metric"><div class="sm-label">'+label+'</div><div class="sm-value"'+style+'>'+value+(unit?'<span class="sm-unit">'+unit+'</span>':'')+'</div></div>';
+}
+
+// ===== Compare Chart =====
+function renderCompareChart(svc){
+  if(compareChart) compareChart.dispose();
+  compareChart=echarts.init(document.getElementById('detailCompareChart'));
+
+  var categories=[], cacheData=[], vendorData=[];
+  svc.apis.forEach(function(api){
+    categories.push(api.vendor+'·'+api.apiName);
+    cacheData.push(api.cache.calls>0?api.cache.avgTime:0);
+    vendorData.push(api.vendor.calls>0?api.vendor.avgTime:0);
+  });
+
+  compareChart.setOption({
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},
+      formatter:function(params){
+        var tip=params[0].name+'<br/>';
+        params.forEach(function(p){if(p.value>0) tip+=p.marker+p.seriesName+': <b>'+p.value+'ms</b><br/>'});
+        return tip;
       }
+    },
+    legend:{data:['命中缓存','请求供应商'],top:0,textStyle:{fontSize:12}},
+    grid:{left:160,right:60,top:30,bottom:10},
+    xAxis:{type:'value',name:'平均响应(ms)',axisLabel:{fontSize:12,color:'#666'},nameTextStyle:{fontSize:12,color:'#999'}},
+    yAxis:{type:'category',data:categories.slice().reverse(),axisLabel:{fontSize:12,color:'#333'}},
+    series:[
+      {name:'命中缓存',type:'bar',barWidth:18,data:cacheData.slice().reverse(),itemStyle:{color:'#52c41a',borderRadius:[0,3,3,0]},
+        label:{show:true,position:'right',fontSize:11,color:'#52c41a',formatter:function(p){return p.value>0?p.value+'ms':''}}},
+      {name:'请求供应商',type:'bar',barWidth:18,data:vendorData.slice().reverse(),itemStyle:{color:'#1152c5',borderRadius:[0,3,3,0]},
+        label:{show:true,position:'right',fontSize:11,color:'#1152c5',formatter:function(p){return p.value>0?p.value+'ms':''}}}
     ]
   });
-  window.addEventListener('resize', function() { chart.resize(); });
+}
+
+// ===== API Detail Table =====
+function renderApiTable(svc){
+  var tbody=document.getElementById('detailApiTableBody');
+  var html='';
+
+  svc.apis.forEach(function(api,idx){
+    var hasCache=api.cache.calls>0;
+    var hasVendor=api.vendor.calls>0;
+
+    if(hasCache && hasVendor){
+      html+='<tr class="group-header"><td colspan="10" style="text-align:left;padding-left:14px">'+
+        '<b>'+(idx+1)+'. '+api.vendor+' · '+api.apiName+'</b> <span style="font-size:12px;color:#999;margin-left:8px">（既有缓存也有直连）</span></td></tr>';
+
+      var cacheSaved=api.vendorDirectTime-api.cache.avgTime;
+      html+='<tr class="src-cache">'+
+        '<td></td><td></td>'+
+        '<td class="api-name-cell" style="padding-left:28px;color:#666">↳ 同上</td>'+
+        '<td><span class="src-cell cache"><i class="el-icon-coin"></i>缓存</span></td>'+
+        '<td>'+fmt(api.cache.calls)+'</td>'+
+        '<td style="font-weight:600;color:#52c41a">'+api.cache.avgTime+'</td>'+
+        '<td>'+api.cache.maxTime+'</td>'+
+        '<td style="color:#52c41a">'+api.cache.successRate+'%</td>'+
+        '<td>'+fmt(api.cache.dailyPeak)+'</td>'+
+        '<td style="color:#52c41a;font-weight:600">-'+cacheSaved+'</td>'+
+      '</tr>';
+
+      html+='<tr class="src-direct">'+
+        '<td></td><td></td>'+
+        '<td class="api-name-cell" style="padding-left:28px;color:#666">↳ 同上</td>'+
+        '<td><span class="src-cell direct"><i class="el-icon-connection"></i>直连</span></td>'+
+        '<td>'+fmt(api.vendor.calls)+'</td>'+
+        '<td style="font-weight:600;color:#1152c5">'+api.vendor.avgTime+'</td>'+
+        '<td>'+api.vendor.maxTime+'</td>'+
+        '<td style="color:#1152c5">'+api.vendor.successRate+'%</td>'+
+        '<td>'+fmt(api.vendor.dailyPeak)+'</td>'+
+        '<td style="color:#999">—</td>'+
+      '</tr>';
+    } else if(hasCache){
+      html+='<tr class="src-cache">'+
+        '<td>'+(idx+1)+'</td>'+
+        '<td>'+api.vendor+'</td>'+
+        '<td class="api-name-cell">'+api.apiName+'</td>'+
+        '<td><span class="src-cell cache"><i class="el-icon-coin"></i>缓存</span></td>'+
+        '<td>'+fmt(api.cache.calls)+'</td>'+
+        '<td style="font-weight:600;color:#52c41a">'+api.cache.avgTime+'</td>'+
+        '<td>'+api.cache.maxTime+'</td>'+
+        '<td style="color:#52c41a">'+api.cache.successRate+'%</td>'+
+        '<td>'+fmt(api.cache.dailyPeak)+'</td>'+
+        '<td style="color:#52c41a;font-weight:600">-'+(api.vendorDirectTime-api.cache.avgTime)+'</td>'+
+      '</tr>';
+      if(api.vendor.calls>0){
+        html+='<tr class="src-direct" style="opacity:0.6">'+
+          '<td></td><td></td>'+
+          '<td class="api-name-cell" style="padding-left:28px;color:#999">↳ (未命中时回源)</td>'+
+          '<td><span class="src-cell direct"><i class="el-icon-connection"></i>直连</span></td>'+
+          '<td>'+fmt(api.vendor.calls)+'</td>'+
+          '<td style="font-weight:600;color:#1152c5">'+api.vendor.avgTime+'</td>'+
+          '<td>'+api.vendor.maxTime+'</td>'+
+          '<td style="color:#1152c5">'+api.vendor.successRate+'%</td>'+
+          '<td>'+fmt(api.vendor.dailyPeak)+'</td>'+
+          '<td style="color:#999">—</td>'+
+        '</tr>';
+      }
+    } else {
+      html+='<tr class="src-direct">'+
+        '<td>'+(idx+1)+'</td>'+
+        '<td>'+api.vendor+'</td>'+
+        '<td class="api-name-cell">'+api.apiName+'</td>'+
+        '<td><span class="src-cell direct"><i class="el-icon-connection"></i>直连</span></td>'+
+        '<td>'+fmt(api.vendor.calls)+'</td>'+
+        '<td style="font-weight:600;color:#1152c5">'+api.vendor.avgTime+'</td>'+
+        '<td>'+api.vendor.maxTime+'</td>'+
+        '<td style="color:#1152c5">'+api.vendor.successRate+'%</td>'+
+        '<td>'+fmt(api.vendor.dailyPeak)+'</td>'+
+        '<td style="color:#999">—</td>'+
+      '</tr>';
+    }
+  });
+
+  tbody.innerHTML=html;
+}
+
+// ===== Failure Status Codes =====
+function renderFailCodes(svc){
+  var codes=svc.failCodes||[];
+  var tbody=document.getElementById('failCodesTableBody');
+  var totalEl=document.getElementById('failCodesTotal');
+
+  if(codes.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="color:#999;padding:24px 0">本周期内无失败记录</td></tr>';
+    totalEl.textContent='0';
+    if(failCodesChart){failCodesChart.dispose();failCodesChart=null}
+    document.getElementById('failCodesChart').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ccc;font-size:14px">无数据</div>';
+    return;
+  }
+
+  var totalFail=codes.reduce(function(s,c){return s+c.count},0);
+  totalEl.textContent=fmt(totalFail);
+
+  // Sort descending by count
+  var sorted=codes.slice().sort(function(a,b){return b.count-a.count});
+
+  var colors=['#f5222d','#fa541c','#fa8c16','#fadb14','#a0d911','#13c2c2','#1890ff','#722ed1'];
+
+  var html='';
+  sorted.forEach(function(c,i){
+    var pct=(c.count/totalFail*100).toFixed(1);
+    var barW=Math.max(2,parseFloat(pct)*0.8);
+    var color=colors[i%colors.length];
+    html+='<tr>'+
+      '<td class="code-cell">'+c.code+'</td>'+
+      '<td class="desc-cell">'+c.desc+'</td>'+
+      '<td style="font-weight:600">'+fmt(c.count)+'</td>'+
+      '<td style="color:'+color+';font-weight:600">'+pct+'%</td>'+
+      '<td>'+
+        '<div class="pct-bar">'+
+          '<div class="bar-bg"><div class="bar-fill" style="width:'+barW+'%;background:linear-gradient(90deg,'+color+'cc,'+color+')"></div></div>'+
+        '</div>'+
+      '</td>'+
+    '</tr>';
+  });
+  tbody.innerHTML=html;
+
+  // Pie chart
+  if(failCodesChart) failCodesChart.dispose();
+  failCodesChart=echarts.init(document.getElementById('failCodesChart'));
+  var pieData=sorted.map(function(c,i){
+    return {name:c.code+' '+c.desc.substring(0,8),value:c.count,itemStyle:{color:colors[i%colors.length]}};
+  });
+  failCodesChart.setOption({
+    tooltip:{trigger:'item',formatter:function(p){return p.name+'<br/>次数: <b>'+fmt(p.value)+'</b><br/>占比: <b>'+p.percent.toFixed(1)+'%</b>'}},
+    legend:{show:false},
+    series:[{
+      type:'pie',
+      radius:['38%','72%'],
+      center:['50%','50%'],
+      avoidLabelOverlap:true,
+      itemStyle:{borderColor:'#fff',borderWidth:2,borderRadius:4},
+      label:{show:true,formatter:'{b}\n{d}%',fontSize:11,color:'#555',lineHeight:16},
+      labelLine:{length:8,length2:6,lineStyle:{color:'#ccc'}},
+      emphasis:{
+        label:{fontSize:12,fontWeight:'bold'},
+        itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.15)'}
+      },
+      data:pieData
+    }]
+  });
+}
+
+// ===== Trend Chart =====
+function renderTrendChart(svc){
+  if(trendDetailChart) trendDetailChart.dispose();
+  trendDetailChart=echarts.init(document.getElementById('detailTrendChart'));
+  var days=['05-25','05-26','05-27','05-28','05-29','05-30','05-31'];
+  var avgData=[],maxData=[],cacheRateData=[];
+  for(var i=0;i<7;i++){
+    avgData.push(Math.round(svc.avgTime*(0.88+Math.random()*0.24)));
+    maxData.push(Math.round(svc.maxTime*(0.85+Math.random()*0.3)));
+    cacheRateData.push(Math.round((svc.orchType==='direct'?0:50+Math.random()*40)*10)/10);
+  }
+  trendDetailChart.setOption({
+    tooltip:{trigger:'axis'},
+    legend:{data:['平均响应(ms)','最大响应(ms)','缓存命中率(%)'],top:0,textStyle:{fontSize:12}},
+    grid:{left:50,right:60,bottom:30,top:36},
+    xAxis:{type:'category',data:days,axisLabel:{fontSize:12}},
+    yAxis:[
+      {type:'value',name:'ms',axisLabel:{fontSize:12},nameTextStyle:{fontSize:12,color:'#999'}},
+      {type:'value',name:'%',axisLabel:{fontSize:12},nameTextStyle:{fontSize:12,color:'#999'},min:0,max:100}
+    ],
+    series:[
+      {name:'平均响应(ms)',type:'line',smooth:true,data:avgData,lineStyle:{color:'#1152c5',width:2},itemStyle:{color:'#1152c5'},symbol:'circle',symbolSize:6},
+      {name:'最大响应(ms)',type:'line',smooth:true,data:maxData,lineStyle:{color:'#f5222d',width:2,type:'dashed'},itemStyle:{color:'#f5222d'},symbol:'diamond',symbolSize:6},
+      {name:'缓存命中率(%)',type:'line',smooth:true,yAxisIndex:1,data:cacheRateData,lineStyle:{color:'#13c2c2',width:2},itemStyle:{color:'#13c2c2'},symbol:'circle',symbolSize:6,
+        areaStyle:{color:'rgba(19,194,194,0.08)'}}
+    ]
+  });
+}
+
+// ===== Trend Table =====
+function renderTrendTable(svc){
+  var tbody=document.getElementById('detailTrendTableBody');
+  var html='';
+  var dates=['2026-05-25','2026-05-26','2026-05-27','2026-05-28','2026-05-29','2026-05-30','2026-05-31'];
+  var dailyCalls=Math.round(svc.totalCalls/7);
+  for(var i=0;i<7;i++){
+    var calls=Math.round(dailyCalls*(0.9+Math.random()*0.2));
+    var avg=Math.round(svc.avgTime*(0.88+Math.random()*0.24));
+    var max=Math.round(svc.maxTime*(0.85+Math.random()*0.3));
+    var fail=Math.round(calls*(1-svc.successRate/100));
+    var success=calls-fail;
+    var rate=((success/calls)*100).toFixed(1);
+    var cacheR=svc.orchType==='direct'?'0%':Math.round((50+Math.random()*40)*10)/10+'%';
+    html+='<tr><td>'+dates[i]+'</td><td>'+fmt(calls)+'</td><td>'+fmt(success)+'</td><td>'+fmt(fail)+'</td><td>'+rate+'%</td><td>'+avg+'</td><td>'+fmt(max)+'</td><td>'+cacheR+'</td></tr>';
+  }
+  tbody.innerHTML=html;
+}
+
+function closeDetailModal(){
+  document.getElementById('detailModal').classList.remove('show');
+  if(compareChart){compareChart.dispose();compareChart=null}
+  if(trendDetailChart){trendDetailChart.dispose();trendDetailChart=null}
+  if(failCodesChart){failCodesChart.dispose();failCodesChart=null}
+}
+
+// ===== Page Charts =====
+(function(){
+  var chart=echarts.init(document.getElementById('chart-response'));
+  var names=[],cacheTimes=[],vendorTimes=[];
+  SERVICES.forEach(function(svc){
+    names.push(svc.name);
+    var totalCCalls=0,totalVCalls=0;
+    svc.apis.forEach(function(a){totalCCalls+=a.cache.calls;totalVCalls+=a.vendor.calls});
+    var total=totalCCalls+totalVCalls;
+    var cacheRatio=total>0?totalCCalls/total:0;
+    cacheTimes.push(Math.round(svc.avgTime*cacheRatio));
+    vendorTimes.push(svc.avgTime-Math.round(svc.avgTime*cacheRatio));
+  });
+
+  chart.setOption({
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},
+      formatter:function(params){
+        var total=0;params.forEach(function(p){total+=p.value});
+        var tip=params[0].name+'<br/>总响应: <b>'+total+'ms</b><br/>';
+        params.forEach(function(p){if(p.value>0)tip+=p.marker+p.seriesName+': '+p.value+'ms<br/>'});
+        return tip;
+      }
+    },
+    legend:{data:['缓存耗时','直连耗时'],top:0,textStyle:{fontSize:12}},
+    grid:{left:60,right:20,bottom:60,top:40},
+    xAxis:{type:'category',data:names,axisLabel:{fontSize:11,rotate:25,color:'#666'},axisTick:{alignWithLabel:true}},
+    yAxis:{type:'value',name:'ms',axisLabel:{fontSize:12},nameTextStyle:{fontSize:12,color:'#999'}},
+    series:[
+      {name:'缓存耗时',type:'bar',stack:'time',barWidth:24,data:cacheTimes,itemStyle:{color:'#52c41a'}},
+      {name:'直连耗时',type:'bar',stack:'time',barWidth:24,data:vendorTimes,itemStyle:{color:'#1152c5',borderRadius:[3,3,0,0]}}
+    ]
+  });
+  window.addEventListener('resize',function(){chart.resize()});
 })();
 
-// ===== Trend Modal =====
-var trendChartInstance = null;
-function openTrendModal(serviceName) {
-  document.getElementById('trendModalTitle').textContent = '趋势分析 - ' + serviceName;
-  document.getElementById('trendServiceName').textContent = serviceName;
-  document.getElementById('trendModal').classList.add('show');
+(function(){
+  var chart=echarts.init(document.getElementById('chart-volume'));
+  var names=[],volumes=[],rates=[];
+  SERVICES.forEach(function(svc){names.push(svc.name);volumes.push(svc.totalCalls);rates.push(svc.successRate)});
+  chart.setOption({
+    tooltip:{trigger:'axis',axisPointer:{type:'cross'}},
+    legend:{data:['调用次数','成功率(%)'],top:0,textStyle:{fontSize:12}},
+    grid:{left:70,right:60,bottom:60,top:40},
+    xAxis:{type:'category',data:names,axisLabel:{fontSize:11,rotate:25,color:'#666'},axisTick:{alignWithLabel:true}},
+    yAxis:[
+      {type:'value',name:'调用次数',axisLabel:{fontSize:12,formatter:function(v){return v>=10000?(v/10000).toFixed(0)+'万':v}},nameTextStyle:{fontSize:12,color:'#999'}},
+      {type:'value',name:'成功率(%)',axisLabel:{fontSize:12},nameTextStyle:{fontSize:12,color:'#999'},min:93,max:100}
+    ],
+    series:[
+      {name:'调用次数',type:'bar',barWidth:24,data:volumes,itemStyle:{color:'#84B9FD',borderRadius:[3,3,0,0]}},
+      {name:'成功率(%)',type:'line',yAxisIndex:1,data:rates,smooth:true,lineStyle:{color:'#52c41a',width:2},itemStyle:{color:'#52c41a'},symbol:'circle',symbolSize:8}
+    ]
+  });
+  window.addEventListener('resize',function(){chart.resize()});
+})();
 
-  setTimeout(function() {
-    if (trendChartInstance) trendChartInstance.dispose();
-    trendChartInstance = echarts.init(document.getElementById('trendChart'));
-    var days = ['05-25', '05-26', '05-27', '05-28', '05-29', '05-30', '05-31'];
-    trendChartInstance.setOption({
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['平均响应(ms)', 'P95响应(ms)', '最大响应(ms)'], top: 0, textStyle: { fontSize: 12 } },
-      grid: { left: 50, right: 20, bottom: 30, top: 36 },
-      xAxis: { type: 'category', data: days, axisLabel: { fontSize: 12 } },
-      yAxis: { type: 'value', name: 'ms', axisLabel: { fontSize: 12 } },
-      series: [
-        { name: '平均响应(ms)', type: 'line', smooth: true, data: [118, 122, 130, 125, 120, 128, 115], lineStyle: { color: '#1152c5', width: 2 }, itemStyle: { color: '#1152c5' }, symbol: 'circle', symbolSize: 6 },
-        { name: 'P95响应(ms)', type: 'line', smooth: true, data: [275, 280, 295, 282, 270, 290, 265], lineStyle: { color: '#fa8c16', width: 2 }, itemStyle: { color: '#fa8c16' }, symbol: 'circle', symbolSize: 6 },
-        { name: '最大响应(ms)', type: 'line', smooth: true, data: [2100, 1980, 2340, 2150, 1890, 2250, 1780], lineStyle: { color: '#f5222d', width: 2, type: 'dashed' }, itemStyle: { color: '#f5222d' }, symbol: 'diamond', symbolSize: 6 }
-      ]
-    });
-  }, 100);
+// ===== Custom Date Range Picker =====
+var drpState={
+  startDate:new Date(2026,4,25), // May 25, 2026
+  endDate:new Date(2026,4,31),   // May 31, 2026
+  tempStart:null,
+  tempEnd:null,
+  leftMonth:new Date(2026,4,1),  // May 2026
+  rightMonth:new Date(2026,5,1), // June 2026
+  selecting:false, // false=waiting for start, true=waiting for end
+  pickerOpen:false
+};
+
+function toggleDatePicker(e){
+  e.stopPropagation();
+  if(drpState.pickerOpen){closeDatePicker(e);return}
+  drpState.pickerOpen=true;
+  drpState.tempStart=new Date(drpState.startDate);
+  drpState.tempEnd=new Date(drpState.endDate);
+  drpState.selecting=false;
+  document.getElementById('dateRangePicker').classList.add('active');
+  document.getElementById('drpDropdown').classList.add('show');
+  // Sync months to current selection
+  drpState.leftMonth=new Date(drpState.startDate.getFullYear(),drpState.startDate.getMonth(),1);
+  var nextM=new Date(drpState.leftMonth);nextM.setMonth(nextM.getMonth()+1);
+  drpState.rightMonth=nextM;
+  renderCalendars();
+  highlightShortcut();
 }
-function closeTrendModal() {
-  document.getElementById('trendModal').classList.remove('show');
-  if (trendChartInstance) { trendChartInstance.dispose(); trendChartInstance = null; }
+
+function closeDatePicker(e){
+  if(e) e.stopPropagation();
+  drpState.pickerOpen=false;
+  document.getElementById('dateRangePicker').classList.remove('active');
+  document.getElementById('drpDropdown').classList.remove('show');
 }
+
+function confirmDateRange(e){
+  if(e) e.stopPropagation();
+  if(drpState.tempStart && drpState.tempEnd){
+    drpState.startDate=new Date(drpState.tempStart);
+    drpState.endDate=new Date(drpState.tempEnd);
+    updateDisplay();
+  }
+  closeDatePicker(e);
+}
+
+function updateDisplay(){
+  var s=fmtDate(drpState.startDate), e=fmtDate(drpState.endDate);
+  document.getElementById('drpDisplay').innerHTML=s+'<span class="drp-sep">~</span>'+e;
+}
+
+function fmtDate(d){
+  var y=d.getFullYear();
+  var m=('0'+(d.getMonth()+1)).slice(-2);
+  var day=('0'+d.getDate()).slice(-2);
+  return y+'-'+m+'-'+day;
+}
+
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+
+function navMonth(side,dir,e){
+  if(e) e.stopPropagation();
+  if(side==='left'){
+    drpState.leftMonth.setMonth(drpState.leftMonth.getMonth()+dir);
+    var rm=new Date(drpState.leftMonth);rm.setMonth(rm.getMonth()+1);drpState.rightMonth=rm;
+  } else {
+    drpState.rightMonth.setMonth(drpState.rightMonth.getMonth()+dir);
+    var lm=new Date(drpState.rightMonth);lm.setMonth(lm.getMonth()-1);drpState.leftMonth=lm;
+  }
+  renderCalendars();
+}
+
+function renderCalendars(){
+  renderOneCal('calLeftTitle','calLeftDays',drpState.leftMonth);
+  renderOneCal('calRightTitle','calRightDays',drpState.rightMonth);
+}
+
+function renderOneCal(titleId,daysId,monthDate){
+  var y=monthDate.getFullYear(), m=monthDate.getMonth();
+  var monthNames=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById(titleId).textContent=y+'年 '+monthNames[m];
+
+  var firstDay=new Date(y,m,1).getDay();
+  var daysInMonth=new Date(y,m+1,0).getDate();
+  var prevDays=new Date(y,m,0).getDate();
+  var today=new Date(2026,5,5); // Today is June 5, 2026
+
+  var ts=drpState.tempStart, te=drpState.tempEnd;
+  var html='';
+
+  // Previous month trailing days
+  for(var i=firstDay-1;i>=0;i--){
+    var d=new Date(y,m-1,prevDays-i);
+    html+='<div class="day other-month" data-date="'+fmtDate(d)+'" onclick="pickDay(this,event)">'+(prevDays-i)+'</div>';
+  }
+  // Current month
+  for(var d=1;d<=daysInMonth;d++){
+    var dateObj=new Date(y,m,d);
+    var cls='day';
+    if(sameDay(dateObj,today)) cls+=' today';
+    if(ts && sameDay(dateObj,ts)) cls+=' range-start';
+    if(te && sameDay(dateObj,te)) cls+=' range-end';
+    if(ts && te && dateObj>ts && dateObj<te) cls+=' in-range';
+    html+='<div class="'+cls+'" data-date="'+fmtDate(dateObj)+'" onclick="pickDay(this,event)">'+d+'</div>';
+  }
+  // Next month leading days
+  var total=firstDay+daysInMonth;
+  var remain=(total%7===0)?0:(7-total%7);
+  for(var i=1;i<=remain;i++){
+    var d=new Date(y,m+1,i);
+    html+='<div class="day other-month" data-date="'+fmtDate(d)+'" onclick="pickDay(this,event)">'+i+'</div>';
+  }
+  document.getElementById(daysId).innerHTML=html;
+}
+
+function pickDay(el,e){
+  if(e) e.stopPropagation();
+  var dateStr=el.getAttribute('data-date');
+  var parts=dateStr.split('-');
+  var picked=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+
+  if(!drpState.selecting){
+    // First click = start date
+    drpState.tempStart=picked;
+    drpState.tempEnd=null;
+    drpState.selecting=true;
+  } else {
+    // Second click = end date
+    if(picked<drpState.tempStart){
+      drpState.tempEnd=drpState.tempStart;
+      drpState.tempStart=picked;
+    } else {
+      drpState.tempEnd=picked;
+    }
+    drpState.selecting=false;
+  }
+  renderCalendars();
+}
+
+function applyShortcut(key,e){
+  if(e) e.stopPropagation();
+  var today=new Date(2026,5,5); // June 5, 2026 (Friday)
+  var s,e2;
+  switch(key){
+    case 'today':
+      s=new Date(today);e2=new Date(today);break;
+    case 'yesterday':
+      s=new Date(today);s.setDate(s.getDate()-1);e2=new Date(s);break;
+    case 'week':
+      s=new Date(today);s.setDate(s.getDate()-s.getDay());e2=new Date(today);break;
+    case 'lastWeek':
+      s=new Date(today);s.setDate(s.getDate()-s.getDay()-7);e2=new Date(s);e2.setDate(e2.getDate()+6);break;
+    case 'month':
+      s=new Date(2026,5,1);e2=new Date(today);break;
+    case 'last7':
+      s=new Date(today);s.setDate(s.getDate()-6);e2=new Date(today);break;
+    case 'last30':
+      s=new Date(today);s.setDate(s.getDate()-29);e2=new Date(today);break;
+    case 'last90':
+      s=new Date(today);s.setDate(s.getDate()-89);e2=new Date(today);break;
+    case 'quarter':
+      var q=Math.floor(today.getMonth()/3)*3;
+      s=new Date(today.getFullYear(),q,1);e2=new Date(today);break;
+  }
+  drpState.tempStart=s;
+  drpState.tempEnd=e2;
+  drpState.selecting=false;
+  // Sync months
+  drpState.leftMonth=new Date(s.getFullYear(),s.getMonth(),1);
+  var nextM=new Date(drpState.leftMonth);nextM.setMonth(nextM.getMonth()+1);
+  drpState.rightMonth=nextM;
+  renderCalendars();
+  // Highlight active shortcut
+  document.querySelectorAll('.drp-shortcuts .shortcut').forEach(function(btn){btn.classList.remove('active')});
+  if(e && e.target) e.target.classList.add('active');
+  // Auto confirm
+  drpState.startDate=new Date(s);
+  drpState.endDate=new Date(e2);
+  updateDisplay();
+  setTimeout(function(){closeDatePicker()},150);
+}
+
+function highlightShortcut(){
+  document.querySelectorAll('.drp-shortcuts .shortcut').forEach(function(btn){btn.classList.remove('active')});
+}
+
+// Close picker when clicking outside
+document.addEventListener('click',function(e){
+  var picker=document.getElementById('dateRangePicker');
+  var dropdown=document.getElementById('drpDropdown');
+  if(picker && dropdown && !picker.contains(e.target) && !dropdown.contains(e.target)){
+    closeDatePicker();
+  }
+});
+
+renderServiceTable();
 </script>
-
 </body>
 </html>

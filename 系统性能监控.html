@@ -40,14 +40,24 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
 .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
 .breadcrumb span { color: #333; }
-.forecast-layout { flex: 1; display: flex; flex-direction: column; }
-.forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
-.flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
-.filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
+.forecast-layout { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.forecast-white-card { background: #fff; border-radius: 6px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
 
 /* ===== Auto Refresh Bar ===== */
-.refresh-bar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 16px; font-size: 14px; color: #666; }
-.refresh-bar .toggle-label { display: flex; align-items: center; gap: 6px; }
+.refresh-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 14px; color: #666; }
+.refresh-bar .left-section { display: flex; align-items: center; gap: 16px; }
+.refresh-bar .right-section { display: flex; align-items: center; gap: 12px; }
+.system-health-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+.health-good { background: #e6f7e6; color: #52c41a; }
+.health-warn { background: #fff7e6; color: #fa8c16; }
+.health-danger { background: #ffe7e7; color: #f5222d; }
+.health-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+.health-dot.green { background: #52c41a; }
+.health-dot.orange { background: #fa8c16; }
+.health-dot.red { background: #f5222d; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.env-select { height: 28px; padding: 0 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333; background: #fff; cursor: pointer; }
+.refresh-countdown { font-size: 12px; color: #999; min-width: 30px; text-align: right; }
 
 /* ===== Toggle Switch ===== */
 .toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -58,62 +68,102 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 /* ===== Metric Cards ===== */
-.metric-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
-.metric-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.metric-card .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.metric-card .card-title { font-size: 14px; color: #999; }
-.metric-card .card-status { font-size: 12px; padding: 2px 10px; border-radius: 20px; }
-.metric-card .card-value { font-size: 36px; font-weight: 700; font-family: 'Source Sans Pro', sans-serif; margin-bottom: 4px; }
-.metric-card .card-sub { font-size: 12px; color: #999; margin-bottom: 12px; }
-.metric-card .sparkline { width: 100%; height: 60px; }
+.metric-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 0; }
+.metric-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: box-shadow 0.3s, transform 0.2s; cursor: default; }
+.metric-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
+.metric-card .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.metric-card .card-title { font-size: 13px; color: #999; }
+.metric-card .card-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.metric-card .card-value { font-size: 32px; font-weight: 700; font-family: 'Source Sans Pro', sans-serif; margin-bottom: 2px; line-height: 1.2; }
+.metric-card .card-sub { font-size: 11px; color: #999; margin-bottom: 8px; }
+.metric-card .sparkline { width: 100%; height: 50px; }
 .status-normal { background: #e6f7e6; color: #52c41a; }
 .status-warn { background: #fff7e6; color: #fa8c16; }
 .status-danger { background: #ffe7e7; color: #f5222d; }
 .color-green { color: #52c41a; }
 .color-orange { color: #fa8c16; }
 .color-red { color: #f5222d; }
+.color-blue { color: #1152c5; }
 
 /* ===== Charts Section ===== */
-.charts-row { display: flex; gap: 16px; margin-bottom: 20px; }
-.chart-panel { flex: 1; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.chart-panel h4 { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; }
-.chart-container { width: 100%; height: 300px; }
+.charts-row { display: flex; gap: 16px; }
+.chart-panel { flex: 1; background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.chart-panel h4 { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.chart-panel h4 .chart-legend { font-size: 12px; font-weight: 400; color: #999; display: flex; gap: 12px; }
+.chart-panel h4 .legend-item { display: flex; align-items: center; gap: 4px; }
+.chart-panel h4 .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.chart-container { width: 100%; height: 260px; }
 
 /* ===== Bottom Section ===== */
 .bottom-row { display: flex; gap: 16px; }
-.bottom-left { flex: 0 0 60%; }
-.bottom-right { flex: 0 0 calc(40% - 16px); }
 
 /* ===== Data Table ===== */
-.panel { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.panel h4 { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; }
+.panel { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.panel h4 { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.panel h4 .panel-action { font-size: 12px; color: #0d6cff; cursor: pointer; font-weight: 400; }
+.panel h4 .panel-action:hover { color: #f89d34; }
 .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; padding: 0; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
-.data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { padding: 0 10px; height: 42px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 13px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
+.data-table td { padding: 0 10px; height: 38px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
 .data-table th:last-child, .data-table td:last-child { border-right: none; }
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tr:hover td { background: #f8fafc; }
+.node-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-weight: 500; }
+.node-link:hover { color: #f89d34; text-decoration: underline; }
+.progress-bar { display: inline-block; width: 60px; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; vertical-align: middle; margin-right: 4px; }
+.progress-bar .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
 
 /* ===== Status Badges ===== */
-.badge-status { display: inline-block; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 500; }
+.badge-status { display: inline-block; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 500; }
 .badge-success { background: #e6f7e6; color: #52c41a; }
 .badge-danger { background: #ffe7e7; color: #f5222d; }
 .badge-warning { background: #fff7e6; color: #fa8c16; }
 
-/* ===== Alert Threshold Config ===== */
+/* ===== Threshold Config ===== */
 .threshold-list { list-style: none; }
-.threshold-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+.threshold-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
 .threshold-item:last-child { border-bottom: none; }
 .threshold-info { flex: 1; }
-.threshold-metric { font-size: 14px; color: #333; font-weight: 500; }
-.threshold-condition { font-size: 12px; color: #999; margin-top: 2px; }
-.threshold-level { font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-right: 12px; }
+.threshold-metric { font-size: 13px; color: #333; font-weight: 500; }
+.threshold-condition { font-size: 11px; color: #999; margin-top: 1px; }
+.threshold-level { font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-right: 10px; }
 .level-warn { background: #fff7e6; color: #fa8c16; }
 .level-critical { background: #ffe7e7; color: #f5222d; }
 .threshold-actions { display: flex; align-items: center; gap: 8px; }
-.edit-icon { cursor: pointer; color: #0d6cff; font-size: 16px; }
+.edit-icon { cursor: pointer; color: #0d6cff; font-size: 14px; }
 .edit-icon:hover { color: #f89d34; }
+
+/* ===== Section Headers ===== */
+.section-header { font-size: 16px; font-weight: 600; color: #1f2f3d; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.section-header .section-icon { color: #f89d34; font-size: 18px; }
+.section-header .section-count { font-size: 12px; font-weight: 400; color: #999; background: #f5f5f5; padding: 2px 8px; border-radius: 10px; }
+
+/* ===== Node Detail Modal ===== */
+.modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+.modal-mask.show { display: flex; }
+.modal { background: #fff; border-radius: 8px; width: 860px; max-height: 85vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #ebeef5; }
+.modal-header h3 { font-size: 16px; font-weight: 700; color: #1f2f3d; }
+.modal-close { cursor: pointer; font-size: 20px; color: #999; background: none; border: none; }
+.modal-close:hover { color: #333; }
+.modal-body { padding: 20px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.detail-item { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #f9fafb; border-radius: 6px; }
+.detail-item .detail-label { font-size: 12px; color: #999; }
+.detail-item .detail-value { font-size: 16px; font-weight: 600; color: #1f2f3d; font-family: 'Source Sans Pro', sans-serif; }
+.detail-chart { width: 100%; height: 220px; margin-bottom: 16px; }
+.detail-section-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed #e4e7ed; }
+
+/* ===== Responsive ===== */
+@media (max-width: 1600px) {
+  .metric-cards { grid-template-columns: repeat(5, 1fr); }
+}
+@media (max-width: 1400px) {
+  .metric-cards { grid-template-columns: repeat(3, 1fr); }
+  .bottom-row { flex-direction: column; }
+  .bottom-left, .bottom-right { flex: 1; }
+}
 </style>
 </head>
 <body>
@@ -136,7 +186,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
   <div class="nav-user">
     <div class="nav-bell">
       <i class="el-icon-bell"></i>
-      <span class="badge">3</span>
+      <span class="badge" id="alertBadge">3</span>
     </div>
     <span class="nav-tenant">某某金控</span>
     <div class="nav-avatar">席</div>
@@ -162,399 +212,772 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
   <div class="content-card">
     <div class="breadcrumb">监控统计 / <span>系统性能监控</span></div>
     <div class="forecast-layout">
-      <div class="forecast-white-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-    <div class="refresh-bar">
-      <span style="color:#999">最后更新: 2024-06-01 10:30:15</span>
-      <div class="toggle-label">
-        <span>自动刷新: 15s</span>
-        <label class="toggle-switch">
-          <input type="checkbox" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    </div>
-  </div>
 
-  <!-- ===== Metric Cards ===== -->
-  <div class="metric-cards">
-    <!-- CPU -->
-    <div class="metric-card">
-      <div class="card-header">
-        <span class="card-title">CPU使用率</span>
-        <span class="card-status status-normal">正常</span>
-      </div>
-      <div class="card-value color-green">45.2%</div>
-      <div class="card-sub">当前使用率</div>
-      <div class="sparkline" id="spark-cpu"></div>
-    </div>
-    <!-- Memory -->
-    <div class="metric-card">
-      <div class="card-header">
-        <span class="card-title">内存使用率</span>
-        <span class="card-status status-warn">偏高</span>
-      </div>
-      <div class="card-value color-orange">68.5%</div>
-      <div class="card-sub">Used: 5.48 GB / Total: 8 GB</div>
-      <div class="sparkline" id="spark-mem"></div>
-    </div>
-    <!-- JVM -->
-    <div class="metric-card">
-      <div class="card-header">
-        <span class="card-title">JVM堆内存</span>
-        <span class="card-status status-warn">偏高</span>
-      </div>
-      <div class="card-value color-orange">72.3%</div>
-      <div class="card-sub">Used: 2.89 GB / Max: 4 GB</div>
-      <div class="sparkline" id="spark-jvm"></div>
-    </div>
-    <!-- Disk -->
-    <div class="metric-card">
-      <div class="card-header">
-        <span class="card-title">磁盘使用率</span>
-        <span class="card-status status-normal">正常</span>
-      </div>
-      <div class="card-value color-green">52.1%</div>
-      <div class="card-sub">Used: 260 GB / Total: 500 GB</div>
-      <div class="sparkline" id="spark-disk"></div>
-    </div>
-  </div>
+      <!-- ===== Refresh Bar & Health Overview ===== -->
+      <div class="forecast-white-card" style="padding-bottom:12px;">
+        <div class="refresh-bar">
+          <div class="left-section">
+            <span class="system-health-badge health-good" id="systemHealthBadge">
+              <span class="health-dot green" id="systemHealthDot"></span>
+              <span id="systemHealthText">系统健康</span>
+            </span>
+            <select class="env-select" id="envSelect">
+              <option value="all">全部节点</option>
+              <option value="gateway">网关层 (crds-gateway)</option>
+              <option value="core">核心层 (crds-core)</option>
+              <option value="consumer">消费层 (consumer)</option>
+            </select>
+            <span style="color:#bbb;font-size:12px;">数据源: Prometheus + Actuator</span>
+          </div>
+          <div class="right-section">
+            <span style="color:#999;font-size:13px;" id="lastUpdate">最后更新: --:--:--</span>
+            <span class="refresh-countdown" id="countdown">15s</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:13px;">自动刷新</span>
+              <label class="toggle-switch">
+                <input type="checkbox" checked id="autoRefreshToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
 
-  <!-- ===== Charts Row ===== -->
-  <div class="charts-row">
-    <div class="chart-panel">
-      <h4>请求吞吐量 (QPS)</h4>
-      <div class="chart-container" id="chart-qps"></div>
-    </div>
-    <div class="chart-panel">
-      <h4>响应时间趋势</h4>
-      <div class="chart-container" id="chart-rt"></div>
-    </div>
-  </div>
-
-  <!-- ===== Bottom Row ===== -->
-  <div class="bottom-row">
-    <!-- Node Status Table -->
-    <div class="bottom-left">
-      <div class="panel">
-        <h4>节点状态</h4>
-        <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>节点</th>
-              <th>IP地址</th>
-              <th>CPU</th>
-              <th>内存</th>
-              <th>JVM</th>
-              <th>运行时间</th>
-              <th>状态</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>app-gateway-01</td>
-              <td>10.0.1.101</td>
-              <td>35.2%</td>
-              <td>62.1%</td>
-              <td>68.5%</td>
-              <td>15天3小时</td>
-              <td><span class="badge-status badge-success">正常</span></td>
-            </tr>
-            <tr>
-              <td>app-gateway-02</td>
-              <td>10.0.1.102</td>
-              <td>42.8%</td>
-              <td>65.3%</td>
-              <td>71.2%</td>
-              <td>15天3小时</td>
-              <td><span class="badge-status badge-success">正常</span></td>
-            </tr>
-            <tr>
-              <td>app-core-01</td>
-              <td>10.0.2.101</td>
-              <td>55.6%</td>
-              <td>72.8%</td>
-              <td>78.3%</td>
-              <td>10天8小时</td>
-              <td><span class="badge-status badge-success">正常</span></td>
-            </tr>
-            <tr>
-              <td>app-core-02</td>
-              <td>10.0.2.102</td>
-              <td>48.3%</td>
-              <td>68.5%</td>
-              <td>74.6%</td>
-              <td>10天8小时</td>
-              <td><span class="badge-status badge-success">正常</span></td>
-            </tr>
-            <tr>
-              <td>app-consumer-01</td>
-              <td>10.0.3.101</td>
-              <td>38.9%</td>
-              <td>58.2%</td>
-              <td>62.1%</td>
-              <td>7天12小时</td>
-              <td><span class="badge-status badge-success">正常</span></td>
-            </tr>
-            <tr>
-              <td>app-consumer-02</td>
-              <td>10.0.3.102</td>
-              <td>41.5%</td>
-              <td>61.7%</td>
-              <td>65.8%</td>
-              <td>7天12小时</td>
-              <td><span class="badge-status badge-success">正常</span></td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- ===== Metric Cards (5 columns) ===== -->
+        <div class="metric-cards" id="metricCards">
+          <!-- CPU -->
+          <div class="metric-card" id="card-cpu">
+            <div class="card-header">
+              <span class="card-title">CPU使用率</span>
+              <span class="card-status status-normal" id="status-cpu">正常</span>
+            </div>
+            <div class="card-value color-green" id="value-cpu">--</div>
+            <div class="card-sub" id="sub-cpu">当前使用率</div>
+            <div class="sparkline" id="spark-cpu"></div>
+          </div>
+          <!-- Memory -->
+          <div class="metric-card" id="card-mem">
+            <div class="card-header">
+              <span class="card-title">内存使用率</span>
+              <span class="card-status status-normal" id="status-mem">正常</span>
+            </div>
+            <div class="card-value color-green" id="value-mem">--</div>
+            <div class="card-sub" id="sub-mem">--</div>
+            <div class="sparkline" id="spark-mem"></div>
+          </div>
+          <!-- JVM -->
+          <div class="metric-card" id="card-jvm">
+            <div class="card-header">
+              <span class="card-title">JVM堆内存</span>
+              <span class="card-status status-normal" id="status-jvm">正常</span>
+            </div>
+            <div class="card-value color-green" id="value-jvm">--</div>
+            <div class="card-sub" id="sub-jvm">--</div>
+            <div class="sparkline" id="spark-jvm"></div>
+          </div>
+          <!-- Disk -->
+          <div class="metric-card" id="card-disk">
+            <div class="card-header">
+              <span class="card-title">磁盘使用率</span>
+              <span class="card-status status-normal" id="status-disk">正常</span>
+            </div>
+            <div class="card-value color-green" id="value-disk">--</div>
+            <div class="card-sub" id="sub-disk">--</div>
+            <div class="sparkline" id="spark-disk"></div>
+          </div>
+          <!-- Network I/O -->
+          <div class="metric-card" id="card-net">
+            <div class="card-header">
+              <span class="card-title">网络吞吐</span>
+              <span class="card-status status-normal" id="status-net">正常</span>
+            </div>
+            <div class="card-value color-blue" id="value-net">--</div>
+            <div class="card-sub" id="sub-net">--</div>
+            <div class="sparkline" id="spark-net"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Alert Threshold Config -->
-    <div class="bottom-right">
-      <div class="panel">
-        <h4>告警阈值配置</h4>
-        <ul class="threshold-list">
-          <li class="threshold-item">
-            <div class="threshold-info">
-              <div class="threshold-metric">CPU使用率 &gt; 80%</div>
-              <div class="threshold-condition">触发条件: 持续1分钟</div>
+      <!-- ===== Charts Row: QPS + Response Time ===== -->
+      <div class="charts-row">
+        <div class="chart-panel">
+          <h4>
+            <span>请求吞吐量 (QPS)</span>
+            <span class="chart-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#1152c5"></span>入站</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#f89d34"></span>出站(供应商)</span>
+            </span>
+          </h4>
+          <div class="chart-container" id="chart-qps"></div>
+        </div>
+        <div class="chart-panel">
+          <h4>
+            <span>响应时间趋势</span>
+            <span class="chart-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#52c41a"></span>P50</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#fa8c16"></span>P95</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#f5222d"></span>P99</span>
+            </span>
+          </h4>
+          <div class="chart-container" id="chart-rt"></div>
+        </div>
+      </div>
+
+      <!-- ===== Bottom Row: Node Status ===== -->
+      <div class="bottom-row">
+        <div style="flex:1;">
+          <div class="panel">
+            <h4>
+              节点状态
+              <span class="panel-action" onclick="refreshNodeTable()"><i class="el-icon-refresh"></i> 刷新</span>
+            </h4>
+            <div class="table-container">
+              <table class="data-table" id="nodeTable">
+                <thead>
+                  <tr>
+                    <th>节点</th>
+                    <th>IP地址</th>
+                    <th>CPU</th>
+                    <th>内存</th>
+                    <th>JVM</th>
+                    <th>线程池</th>
+                    <th>GC频率</th>
+                    <th>运行时间</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody id="nodeTableBody">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
             </div>
-            <span class="threshold-level level-warn">警告</span>
-            <div class="threshold-actions">
-              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <i class="el-icon-edit edit-icon"></i>
-            </div>
-          </li>
-          <li class="threshold-item">
-            <div class="threshold-info">
-              <div class="threshold-metric">CPU使用率 &gt; 95%</div>
-              <div class="threshold-condition">触发条件: 持续30秒</div>
-            </div>
-            <span class="threshold-level level-critical">严重</span>
-            <div class="threshold-actions">
-              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <i class="el-icon-edit edit-icon"></i>
-            </div>
-          </li>
-          <li class="threshold-item">
-            <div class="threshold-info">
-              <div class="threshold-metric">内存使用率 &gt; 85%</div>
-              <div class="threshold-condition">触发条件: 持续2分钟</div>
-            </div>
-            <span class="threshold-level level-warn">警告</span>
-            <div class="threshold-actions">
-              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <i class="el-icon-edit edit-icon"></i>
-            </div>
-          </li>
-          <li class="threshold-item">
-            <div class="threshold-info">
-              <div class="threshold-metric">JVM堆内存 &gt; 90%</div>
-              <div class="threshold-condition">触发条件: 持续1分钟</div>
-            </div>
-            <span class="threshold-level level-critical">严重</span>
-            <div class="threshold-actions">
-              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <i class="el-icon-edit edit-icon"></i>
-            </div>
-          </li>
-          <li class="threshold-item">
-            <div class="threshold-info">
-              <div class="threshold-metric">磁盘使用率 &gt; 85%</div>
-              <div class="threshold-condition">触发条件: 持续5分钟</div>
-            </div>
-            <span class="threshold-level level-warn">警告</span>
-            <div class="threshold-actions">
-              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <i class="el-icon-edit edit-icon"></i>
-            </div>
-          </li>
-          <li class="threshold-item">
-            <div class="threshold-info">
-              <div class="threshold-metric">响应时间P95 &gt; 3000ms</div>
-              <div class="threshold-condition">触发条件: 持续1分钟</div>
-            </div>
-            <span class="threshold-level level-warn">警告</span>
-            <div class="threshold-actions">
-              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-              <i class="el-icon-edit edit-icon"></i>
-            </div>
-          </li>
-        </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Threshold Config ===== -->
+      <div class="forecast-white-card">
+        <div class="section-header">
+          <i class="el-icon-setting section-icon"></i>
+          告警阈值配置
+          <span class="section-count">与告警管理联动</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;">
+          <ul class="threshold-list" id="thresholdListLeft">
+            <li class="threshold-item">
+              <div class="threshold-info">
+                <div class="threshold-metric">CPU使用率 &gt; 80%</div>
+                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+              </div>
+              <span class="threshold-level level-warn">警告</span>
+              <div class="threshold-actions">
+                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                <i class="el-icon-edit edit-icon"></i>
+              </div>
+            </li>
+            <li class="threshold-item">
+              <div class="threshold-info">
+                <div class="threshold-metric">CPU使用率 &gt; 95%</div>
+                <div class="threshold-condition">Prometheus规则: 持续30秒</div>
+              </div>
+              <span class="threshold-level level-critical">严重</span>
+              <div class="threshold-actions">
+                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                <i class="el-icon-edit edit-icon"></i>
+              </div>
+            </li>
+            <li class="threshold-item">
+              <div class="threshold-info">
+                <div class="threshold-metric">内存使用率 &gt; 85%</div>
+                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+              </div>
+              <span class="threshold-level level-warn">警告</span>
+              <div class="threshold-actions">
+                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                <i class="el-icon-edit edit-icon"></i>
+              </div>
+            </li>
+          </ul>
+          <ul class="threshold-list" id="thresholdListRight">
+            <li class="threshold-item">
+              <div class="threshold-info">
+                <div class="threshold-metric">JVM堆内存 &gt; 85%</div>
+                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+              </div>
+              <span class="threshold-level level-critical">严重</span>
+              <div class="threshold-actions">
+                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                <i class="el-icon-edit edit-icon"></i>
+              </div>
+            </li>
+            <li class="threshold-item">
+              <div class="threshold-info">
+                <div class="threshold-metric">HTTP P95延迟 &gt; 3000ms</div>
+                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+              </div>
+              <span class="threshold-level level-warn">警告</span>
+              <div class="threshold-actions">
+                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                <i class="el-icon-edit edit-icon"></i>
+              </div>
+            </li>
+            <li class="threshold-item">
+              <div class="threshold-info">
+                <div class="threshold-metric">HTTP 5xx错误率 &gt; 5%</div>
+                <div class="threshold-condition">Prometheus规则: 持续3分钟</div>
+              </div>
+              <span class="threshold-level level-critical">严重</span>
+              <div class="threshold-actions">
+                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                <i class="el-icon-edit edit-icon"></i>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- ===== Node Detail Modal ===== -->
+<div class="modal-mask" id="nodeDetailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="nodeDetailTitle">节点详情 - app-gateway-01</h3>
+      <button class="modal-close" onclick="closeNodeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="nodeDetailGrid">
+        <!-- Dynamic -->
+      </div>
+      <div class="detail-section-title">JVM内存趋势 (近30分钟)</div>
+      <div class="detail-chart" id="nodeDetailChart"></div>
+      <div class="detail-section-title">线程状态</div>
+      <div class="detail-grid" id="threadDetailGrid">
+        <!-- Dynamic -->
       </div>
     </div>
   </div>
-  </div>
-  </div>
 </div>
-</main>
 
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script>
 (function() {
-  // ===== Helper: generate sparkline data =====
-  function genSparkData(base, variance, count) {
-    var data = [];
-    for (var i = 0; i < count; i++) {
-      data.push(+(base + (Math.random() - 0.5) * variance).toFixed(1));
-    }
-    return data;
+  'use strict';
+
+  // ===================================================================
+  // DATA ENGINE - Simulates real-time metrics with realistic patterns
+  // ===================================================================
+  var DATA_POINTS = 30; // sparkline history length
+  var CHART_POINTS = 24; // main chart data points
+  var REFRESH_INTERVAL = 15; // seconds
+  var countdown = REFRESH_INTERVAL;
+  var autoRefresh = true;
+  var refreshTimer = null;
+  var allCharts = [];
+
+  // Rolling data buffers
+  var sparkBuffers = {
+    cpu: [], mem: [], jvm: [], disk: [], net: []
+  };
+  var qpsBuffer = { inbound: [], outbound: [] };
+  var rtBuffer = { p50: [], p95: [], p99: [] };
+  var timeLabelsBuffer = [];
+
+  // Node data
+  var nodes = [
+    { name: 'app-gateway-01', ip: '10.0.1.101', layer: 'gateway', cpu: 35, mem: 62, jvm: 68, threadPool: 72, gcRate: 2, uptime: '15天3小时', status: '正常' },
+    { name: 'app-gateway-02', ip: '10.0.1.102', layer: 'gateway', cpu: 42, mem: 65, jvm: 71, threadPool: 68, gcRate: 3, uptime: '15天3小时', status: '正常' },
+    { name: 'app-core-01', ip: '10.0.2.101', layer: 'core', cpu: 55, mem: 72, jvm: 78, threadPool: 85, gcRate: 5, uptime: '10天8小时', status: '正常' },
+    { name: 'app-core-02', ip: '10.0.2.102', layer: 'core', cpu: 48, mem: 68, jvm: 74, threadPool: 78, gcRate: 4, uptime: '10天8小时', status: '正常' },
+    { name: 'app-consumer-01', ip: '10.0.3.101', layer: 'consumer', cpu: 38, mem: 58, jvm: 62, threadPool: 45, gcRate: 1, uptime: '7天12小时', status: '正常' },
+    { name: 'app-consumer-02', ip: '10.0.3.102', layer: 'consumer', cpu: 41, mem: 61, jvm: 65, threadPool: 52, gcRate: 2, uptime: '7天12小时', status: '正常' }
+  ];
+
+  // Alert events removed (告警事件板块已移除)
+
+  // ===================================================================
+  // UTILITY FUNCTIONS
+  // ===================================================================
+  function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+  function randAround(base, variance) { return +(base + (Math.random() - 0.5) * variance).toFixed(1); }
+  function randInt(base, variance) { return Math.round(base + (Math.random() - 0.5) * variance); }
+  function formatTime() {
+    var d = new Date();
+    return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function getStatusInfo(val, warnThresh, critThresh) {
+    if (val >= critThresh) return { status: 'danger', label: '过高', colorClass: 'color-red', statusClass: 'status-danger' };
+    if (val >= warnThresh) return { status: 'warn', label: '偏高', colorClass: 'color-orange', statusClass: 'status-warn' };
+    return { status: 'normal', label: '正常', colorClass: 'color-green', statusClass: 'status-normal' };
   }
 
-  // ===== Sparkline factory =====
+  function getProgressColor(val) {
+    if (val >= 90) return '#f5222d';
+    if (val >= 75) return '#fa8c16';
+    return '#52c41a';
+  }
+
+  // ===================================================================
+  // INITIALIZE DATA BUFFERS
+  // ===================================================================
+  function initBuffers() {
+    for (var i = 0; i < DATA_POINTS; i++) {
+      sparkBuffers.cpu.push(randAround(45, 15));
+      sparkBuffers.mem.push(randAround(68, 10));
+      sparkBuffers.jvm.push(randAround(72, 8));
+      sparkBuffers.disk.push(randAround(52, 4));
+      sparkBuffers.net.push(randAround(120, 60));
+    }
+    var now = new Date();
+    for (var i = CHART_POINTS - 1; i >= 0; i--) {
+      var t = new Date(now.getTime() - i * 5 * 60000);
+      timeLabelsBuffer.push(pad(t.getHours()) + ':' + pad(t.getMinutes()));
+      // Simulate daily traffic pattern
+      var hourFactor = 0.6 + 0.4 * Math.sin((t.getHours() - 6) * Math.PI / 12);
+      qpsBuffer.inbound.push(randInt(1200 * hourFactor, 400));
+      qpsBuffer.outbound.push(randInt(900 * hourFactor, 350));
+      rtBuffer.p50.push(randInt(90 * (2 - hourFactor), 30));
+      rtBuffer.p95.push(randInt(250 * (2 - hourFactor), 80));
+      rtBuffer.p99.push(randInt(600 * (2 - hourFactor), 200));
+    }
+  }
+
+  // ===================================================================
+  // UPDATE DATA - called on each refresh
+  // ===================================================================
+  function updateData() {
+    // Update sparklines with new data points
+    sparkBuffers.cpu.push(clamp(randAround(sparkBuffers.cpu[sparkBuffers.cpu.length - 1], 8), 5, 98));
+    sparkBuffers.cpu.shift();
+    sparkBuffers.mem.push(clamp(randAround(sparkBuffers.mem[sparkBuffers.mem.length - 1], 5), 20, 95));
+    sparkBuffers.mem.shift();
+    sparkBuffers.jvm.push(clamp(randAround(sparkBuffers.jvm[sparkBuffers.jvm.length - 1], 4), 30, 95));
+    sparkBuffers.jvm.shift();
+    sparkBuffers.disk.push(clamp(randAround(sparkBuffers.disk[sparkBuffers.disk.length - 1], 1), 30, 90));
+    sparkBuffers.disk.shift();
+    sparkBuffers.net.push(clamp(randAround(sparkBuffers.net[sparkBuffers.net.length - 1], 30), 20, 500));
+    sparkBuffers.net.shift();
+
+    // Update QPS/RT charts
+    var now = new Date();
+    var hourFactor = 0.6 + 0.4 * Math.sin((now.getHours() - 6) * Math.PI / 12);
+    timeLabelsBuffer.push(pad(now.getHours()) + ':' + pad(now.getMinutes()));
+    timeLabelsBuffer.shift();
+    qpsBuffer.inbound.push(randInt(1200 * hourFactor, 400));
+    qpsBuffer.inbound.shift();
+    qpsBuffer.outbound.push(randInt(900 * hourFactor, 350));
+    qpsBuffer.outbound.shift();
+    rtBuffer.p50.push(randInt(90 * (2 - hourFactor), 30));
+    rtBuffer.p50.shift();
+    rtBuffer.p95.push(randInt(250 * (2 - hourFactor), 80));
+    rtBuffer.p95.shift();
+    rtBuffer.p99.push(randInt(600 * (2 - hourFactor), 200));
+    rtBuffer.p99.shift();
+
+    // Update node data with small fluctuations
+    nodes.forEach(function(n) {
+      n.cpu = clamp(randAround(n.cpu, 6), 5, 98);
+      n.mem = clamp(randAround(n.mem, 3), 20, 95);
+      n.jvm = clamp(randAround(n.jvm, 3), 30, 95);
+      n.threadPool = clamp(randAround(n.threadPool, 5), 10, 98);
+      n.gcRate = clamp(randInt(n.gcRate, 2), 0, 20);
+      // Determine status
+      if (n.cpu > 90 || n.mem > 90 || n.jvm > 90) n.status = '告警';
+      else if (n.cpu > 75 || n.mem > 80 || n.jvm > 80) n.status = '偏高';
+      else n.status = '正常';
+    });
+  }
+
+  // ===================================================================
+  // SPARKLINE FACTORY
+  // ===================================================================
   function createSparkline(domId, data, color) {
-    var chart = echarts.init(document.getElementById(domId));
+    var el = document.getElementById(domId);
+    if (!el) return null;
+    var chart = echarts.init(el);
     chart.setOption({
       grid: { top: 5, right: 5, bottom: 5, left: 5 },
       xAxis: { type: 'category', show: false, data: data.map(function(_, i) { return i; }) },
       yAxis: { type: 'value', show: false },
       series: [{
-        type: 'line',
-        data: data,
-        smooth: true,
-        symbol: 'none',
+        type: 'line', data: data, smooth: true, symbol: 'none',
         lineStyle: { width: 2, color: color },
         areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: color.replace(')', ',0.25)').replace('rgb', 'rgba') },
           { offset: 1, color: color.replace(')', ',0.02)').replace('rgb', 'rgba') }
         ])}
       }],
-      tooltip: { trigger: 'axis', formatter: '{c}%' }
+      tooltip: { trigger: 'axis', formatter: '{c}', textStyle: { fontSize: 11 } },
+      animation: true, animationDuration: 500
     });
+    allCharts.push(chart);
     return chart;
   }
 
-  // ===== Sparklines =====
-  var cpuData = genSparkData(45, 15, 30);
-  var memData = genSparkData(68, 10, 30);
-  var jvmData = genSparkData(72, 8, 30);
-  var diskData = genSparkData(52, 4, 30);
-
-  var sparkCpu = createSparkline('spark-cpu', cpuData, 'rgb(82,196,26)');
-  var sparkMem = createSparkline('spark-mem', memData, 'rgb(250,140,22)');
-  var sparkJvm = createSparkline('spark-jvm', jvmData, 'rgb(250,140,22)');
-  var sparkDisk = createSparkline('spark-disk', diskData, 'rgb(82,196,26)');
-
-  // ===== Time labels for charts =====
-  var timeLabels = [];
-  for (var h = 0; h < 12; h++) {
-    var hour = 9 + Math.floor(h / 2);
-    var min = (h % 2 === 0) ? '00' : '30';
-    if (hour < 10) hour = '0' + hour;
-    timeLabels.push(hour + ':' + min);
+  function updateSparkline(chart, data, color) {
+    if (!chart) return;
+    chart.setOption({
+      xAxis: { data: data.map(function(_, i) { return i; }) },
+      series: [{ data: data }]
+    });
   }
 
-  // ===== QPS Chart =====
-  var qpsIn = [], qpsOut = [];
-  for (var i = 0; i < 12; i++) {
-    qpsIn.push(Math.round(800 + Math.random() * 1200));
-    qpsOut.push(Math.round(500 + Math.random() * 1000));
+  // ===================================================================
+  // METRIC CARDS UPDATE
+  // ===================================================================
+  var sparkCharts = {};
+
+  function renderMetricCards() {
+    var cpuVal = sparkBuffers.cpu[sparkBuffers.cpu.length - 1];
+    var memVal = sparkBuffers.mem[sparkBuffers.mem.length - 1];
+    var jvmVal = sparkBuffers.jvm[sparkBuffers.jvm.length - 1];
+    var diskVal = sparkBuffers.disk[sparkBuffers.disk.length - 1];
+    var netVal = sparkBuffers.net[sparkBuffers.net.length - 1];
+
+    setCardMetric('cpu', cpuVal.toFixed(1) + '%', getStatusInfo(cpuVal, 70, 85),
+      '当前使用率');
+    setCardMetric('mem', memVal.toFixed(1) + '%', getStatusInfo(memVal, 75, 85),
+      'Used: ' + (memVal / 100 * 8).toFixed(2) + ' GB / Total: 8 GB');
+    setCardMetric('jvm', jvmVal.toFixed(1) + '%', getStatusInfo(jvmVal, 75, 85),
+      'Used: ' + (jvmVal / 100 * 4).toFixed(2) + ' GB / Max: 4 GB');
+    setCardMetric('disk', diskVal.toFixed(1) + '%', getStatusInfo(diskVal, 75, 85),
+      'Used: ' + (diskVal / 100 * 500).toFixed(0) + ' GB / Total: 500 GB');
+
+    var netMBps = (netVal / 8).toFixed(1);
+    var netInfo = netVal > 300 ? getStatusInfo(netVal, 250, 400) : { status: 'normal', label: '正常', colorClass: 'color-blue', statusClass: 'status-normal' };
+    setCardMetric('net', netMBps + ' MB/s', netInfo,
+      '↑ ' + (netVal * 0.6 / 8).toFixed(1) + ' MB/s  ↓ ' + (netVal * 0.4 / 8).toFixed(1) + ' MB/s');
+
+    // Update system health badge
+    updateSystemHealth(cpuVal, memVal, jvmVal);
   }
 
-  var chartQps = echarts.init(document.getElementById('chart-qps'));
-  chartQps.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['入站QPS', '出站QPS'], bottom: 0, textStyle: { fontSize: 12 } },
-    grid: { top: 20, right: 20, bottom: 40, left: 60 },
-    xAxis: { type: 'category', data: timeLabels, axisLabel: { fontSize: 12, color: '#999' }, axisLine: { lineStyle: { color: '#e8e8e8' } } },
-    yAxis: { type: 'value', axisLabel: { fontSize: 12, color: '#999' }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
-    series: [
-      {
-        name: '入站QPS',
-        type: 'line',
-        data: qpsIn,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { width: 2, color: '#1152c5' },
-        itemStyle: { color: '#1152c5' },
-        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(17,82,197,0.15)' },
-          { offset: 1, color: 'rgba(17,82,197,0.01)' }
-        ])}
+  function setCardMetric(key, value, info, sub) {
+    var valEl = document.getElementById('value-' + key);
+    var statusEl = document.getElementById('status-' + key);
+    var subEl = document.getElementById('sub-' + key);
+    if (valEl) { valEl.textContent = value; valEl.className = 'card-value ' + info.colorClass; }
+    if (statusEl) { statusEl.textContent = info.label; statusEl.className = 'card-status ' + info.statusClass; }
+    if (subEl) subEl.textContent = sub;
+  }
+
+  function updateSystemHealth(cpu, mem, jvm) {
+    var badge = document.getElementById('systemHealthBadge');
+    var dot = document.getElementById('systemHealthDot');
+    var text = document.getElementById('systemHealthText');
+    var alertCount = 0;
+    nodes.forEach(function(n) { if (n.status === '告警') alertCount++; });
+
+    if (alertCount > 0 || cpu > 85 || mem > 85 || jvm > 85) {
+      badge.className = 'system-health-badge health-warn';
+      dot.className = 'health-dot orange';
+      text.textContent = '存在告警 (' + alertCount + ')';
+    } else if (cpu > 70 || mem > 70) {
+      badge.className = 'system-health-badge health-warn';
+      dot.className = 'health-dot orange';
+      text.textContent = '负载偏高';
+    } else {
+      badge.className = 'system-health-badge health-good';
+      dot.className = 'health-dot green';
+      text.textContent = '系统健康';
+    }
+  }
+
+  // ===================================================================
+  // MAIN CHARTS
+  // ===================================================================
+  var chartQps, chartRt;
+
+  function createMainCharts() {
+    // QPS Chart
+    chartQps = echarts.init(document.getElementById('chart-qps'));
+    chartQps.setOption({
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(255,255,255,0.96)',
+        borderColor: '#eee', borderWidth: 1,
+        textStyle: { color: '#333', fontSize: 12 },
+        formatter: function(params) {
+          var s = '<div style="font-weight:600;margin-bottom:4px">' + params[0].axisValue + '</div>';
+          params.forEach(function(p) {
+            s += '<div style="display:flex;justify-content:space-between;gap:16px">' +
+              '<span>' + p.marker + ' ' + p.seriesName + '</span>' +
+              '<span style="font-weight:600">' + p.value + ' req/s</span></div>';
+          });
+          return s;
+        }
       },
-      {
-        name: '出站QPS',
-        type: 'line',
-        data: qpsOut,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { width: 2, color: '#f89d34' },
-        itemStyle: { color: '#f89d34' },
-        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(248,157,52,0.15)' },
-          { offset: 1, color: 'rgba(248,157,52,0.01)' }
-        ])}
+      grid: { top: 15, right: 15, bottom: 30, left: 55 },
+      xAxis: { type: 'category', data: timeLabelsBuffer, axisLabel: { fontSize: 11, color: '#999' }, axisLine: { lineStyle: { color: '#e8e8e8' } }, boundaryGap: false },
+      yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#999' }, splitLine: { lineStyle: { color: '#f5f5f5' } } },
+      series: [
+        {
+          name: '入站QPS', type: 'line', data: qpsBuffer.inbound, smooth: true, symbol: 'none',
+          lineStyle: { width: 2, color: '#1152c5' },
+          areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(17,82,197,0.12)' },
+            { offset: 1, color: 'rgba(17,82,197,0.01)' }
+          ])}
+        },
+        {
+          name: '出站QPS', type: 'line', data: qpsBuffer.outbound, smooth: true, symbol: 'none',
+          lineStyle: { width: 2, color: '#f89d34' },
+          areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(248,157,52,0.12)' },
+            { offset: 1, color: 'rgba(248,157,52,0.01)' }
+          ])}
+        }
+      ],
+      animation: true, animationDuration: 800, animationEasing: 'cubicOut'
+    });
+    allCharts.push(chartQps);
+
+    // Response Time Chart
+    chartRt = echarts.init(document.getElementById('chart-rt'));
+    chartRt.setOption({
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(255,255,255,0.96)',
+        borderColor: '#eee', borderWidth: 1,
+        textStyle: { color: '#333', fontSize: 12 },
+        formatter: function(params) {
+          var s = '<div style="font-weight:600;margin-bottom:4px">' + params[0].axisValue + '</div>';
+          params.forEach(function(p) {
+            s += '<div style="display:flex;justify-content:space-between;gap:16px">' +
+              '<span>' + p.marker + ' ' + p.seriesName + '</span>' +
+              '<span style="font-weight:600">' + p.value + ' ms</span></div>';
+          });
+          return s;
+        }
+      },
+      grid: { top: 15, right: 15, bottom: 30, left: 55 },
+      xAxis: { type: 'category', data: timeLabelsBuffer, axisLabel: { fontSize: 11, color: '#999' }, axisLine: { lineStyle: { color: '#e8e8e8' } }, boundaryGap: false },
+      yAxis: { type: 'value', name: 'ms', axisLabel: { fontSize: 11, color: '#999' }, splitLine: { lineStyle: { color: '#f5f5f5' } }, nameTextStyle: { color: '#999', fontSize: 11 } },
+      series: [
+        { name: 'P50', type: 'line', data: rtBuffer.p50, smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#52c41a' }, areaStyle: { color: 'rgba(82,196,26,0.05)' } },
+        { name: 'P95', type: 'line', data: rtBuffer.p95, smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#fa8c16' } },
+        { name: 'P99', type: 'line', data: rtBuffer.p99, smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#f5222d', type: 'dashed' } }
+      ],
+      animation: true, animationDuration: 800, animationEasing: 'cubicOut'
+    });
+    allCharts.push(chartRt);
+  }
+
+  function updateMainCharts() {
+    if (chartQps) {
+      chartQps.setOption({
+        xAxis: { data: timeLabelsBuffer },
+        series: [
+          { data: qpsBuffer.inbound },
+          { data: qpsBuffer.outbound }
+        ]
+      });
+    }
+    if (chartRt) {
+      chartRt.setOption({
+        xAxis: { data: timeLabelsBuffer },
+        series: [
+          { data: rtBuffer.p50 },
+          { data: rtBuffer.p95 },
+          { data: rtBuffer.p99 }
+        ]
+      });
+    }
+  }
+
+  // ===================================================================
+  // SPARKLINES
+  // ===================================================================
+  function initSparklines() {
+    sparkCharts.cpu = createSparkline('spark-cpu', sparkBuffers.cpu, 'rgb(82,196,26)');
+    sparkCharts.mem = createSparkline('spark-mem', sparkBuffers.mem, 'rgb(250,140,22)');
+    sparkCharts.jvm = createSparkline('spark-jvm', sparkBuffers.jvm, 'rgb(250,140,22)');
+    sparkCharts.disk = createSparkline('spark-disk', sparkBuffers.disk, 'rgb(82,196,26)');
+    sparkCharts.net = createSparkline('spark-net', sparkBuffers.net, 'rgb(17,82,197)');
+  }
+
+  function updateSparklines() {
+    updateSparkline(sparkCharts.cpu, sparkBuffers.cpu, 'rgb(82,196,26)');
+    updateSparkline(sparkCharts.mem, sparkBuffers.mem, 'rgb(250,140,22)');
+    updateSparkline(sparkCharts.jvm, sparkBuffers.jvm, 'rgb(250,140,22)');
+    updateSparkline(sparkCharts.disk, sparkBuffers.disk, 'rgb(82,196,26)');
+    updateSparkline(sparkCharts.net, sparkBuffers.net, 'rgb(17,82,197)');
+
+    // Update sparkline colors based on thresholds
+    var cpuVal = sparkBuffers.cpu[sparkBuffers.cpu.length - 1];
+    var cpuColor = cpuVal > 85 ? 'rgb(245,34,45)' : (cpuVal > 70 ? 'rgb(250,140,22)' : 'rgb(82,196,26)');
+    if (sparkCharts.cpu) sparkCharts.cpu.setOption({ series: [{ lineStyle: { color: cpuColor }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: cpuColor.replace(')', ',0.25)').replace('rgb', 'rgba') }, { offset: 1, color: cpuColor.replace(')', ',0.02)').replace('rgb', 'rgba') }]) } }] });
+  }
+
+  // ===================================================================
+  // NODE STATUS TABLE
+  // ===================================================================
+  function renderNodeTable() {
+    var tbody = document.getElementById('nodeTableBody');
+    var envFilter = document.getElementById('envSelect').value;
+    var filtered = nodes.filter(function(n) {
+      return envFilter === 'all' || n.layer === envFilter;
+    });
+    var html = '';
+    filtered.forEach(function(n) {
+      var cpuColor = getProgressColor(n.cpu);
+      var memColor = getProgressColor(n.mem);
+      var jvmColor = getProgressColor(n.jvm);
+      var threadColor = getProgressColor(n.threadPool);
+      var gcColor = n.gcRate > 8 ? '#f5222d' : (n.gcRate > 4 ? '#fa8c16' : '#52c41a');
+      var statusBadge = n.status === '正常' ? 'badge-success' : (n.status === '告警' ? 'badge-danger' : 'badge-warning');
+      html += '<tr>' +
+        '<td><a class="node-link" onclick="openNodeDetail(\'' + n.name + '\')">' + n.name + '</a></td>' +
+        '<td>' + n.ip + '</td>' +
+        '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.cpu + '%;background:' + cpuColor + '"></span></span>' + n.cpu.toFixed(1) + '%</td>' +
+        '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.mem + '%;background:' + memColor + '"></span></span>' + n.mem.toFixed(1) + '%</td>' +
+        '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.jvm + '%;background:' + jvmColor + '"></span></span>' + n.jvm.toFixed(1) + '%</td>' +
+        '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.threadPool + '%;background:' + threadColor + '"></span></span>' + n.threadPool.toFixed(0) + '%</td>' +
+        '<td style="color:' + gcColor + ';font-weight:600">' + n.gcRate + '/min</td>' +
+        '<td>' + n.uptime + '</td>' +
+        '<td><span class="badge-status ' + statusBadge + '">' + n.status + '</span></td>' +
+      '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  // ===================================================================
+  // NODE DETAIL MODAL
+  // ===================================================================
+  var nodeDetailChart = null;
+
+  window.openNodeDetail = function(nodeName) {
+    var node = nodes.find(function(n) { return n.name === nodeName; });
+    if (!node) return;
+
+    document.getElementById('nodeDetailTitle').textContent = '节点详情 - ' + node.name;
+    var grid = document.getElementById('nodeDetailGrid');
+    grid.innerHTML = '' +
+      '<div class="detail-item"><span class="detail-label">节点名称</span><span class="detail-value">' + node.name + '</span></div>' +
+      '<div class="detail-item"><span class="detail-label">IP地址</span><span class="detail-value">' + node.ip + '</span></div>' +
+      '<div class="detail-item"><span class="detail-label">服务层</span><span class="detail-value">' + (node.layer === 'gateway' ? 'crds-gateway' : (node.layer === 'core' ? 'crds-core' : 'consumer')) + '</span></div>' +
+      '<div class="detail-item"><span class="detail-label">运行时间</span><span class="detail-value">' + node.uptime + '</span></div>' +
+      '<div class="detail-item"><span class="detail-label">CPU使用率</span><span class="detail-value" style="color:' + getProgressColor(node.cpu) + '">' + node.cpu.toFixed(1) + '%</span></div>' +
+      '<div class="detail-item"><span class="detail-label">内存使用率</span><span class="detail-value" style="color:' + getProgressColor(node.mem) + '">' + node.mem.toFixed(1) + '%</span></div>' +
+      '<div class="detail-item"><span class="detail-label">JVM堆内存</span><span class="detail-value" style="color:' + getProgressColor(node.jvm) + '">' + node.jvm.toFixed(1) + '%</span></div>' +
+      '<div class="detail-item"><span class="detail-label">GC频率</span><span class="detail-value" style="color:' + (node.gcRate > 8 ? '#f5222d' : '#333') + '">' + node.gcRate + ' 次/分钟</span></div>';
+
+    // Thread detail
+    var threadGrid = document.getElementById('threadDetailGrid');
+    var activeThreads = Math.round(node.threadPool / 100 * 200);
+    threadGrid.innerHTML = '' +
+      '<div class="detail-item"><span class="detail-label">线程池使用率</span><span class="detail-value" style="color:' + getProgressColor(node.threadPool) + '">' + node.threadPool.toFixed(1) + '%</span></div>' +
+      '<div class="detail-item"><span class="detail-label">活跃线程/最大线程</span><span class="detail-value">' + activeThreads + ' / 200</span></div>' +
+      '<div class="detail-item"><span class="detail-label">队列等待数</span><span class="detail-value">' + randInt(5, 10) + '</span></div>' +
+      '<div class="detail-item"><span class="detail-label">拒绝任务数</span><span class="detail-value" style="color:' + (node.threadPool > 90 ? '#f5222d' : '#52c41a') + '">' + (node.threadPool > 90 ? randInt(3, 5) : 0) + '</span></div>';
+
+    // JVM chart
+    if (nodeDetailChart) nodeDetailChart.dispose();
+    nodeDetailChart = echarts.init(document.getElementById('nodeDetailChart'));
+    var jvmHistory = [];
+    var gcHistory = [];
+    var labels = [];
+    for (var i = 0; i < 30; i++) {
+      labels.push(i + 'min');
+      jvmHistory.push(clamp(randAround(node.jvm, 10), 30, 95));
+      gcHistory.push(clamp(randInt(node.gcRate, 3), 0, 20));
+    }
+    nodeDetailChart.setOption({
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['JVM堆使用率(%)', 'GC次数/分钟'], top: 0, textStyle: { fontSize: 11 } },
+      grid: { top: 30, right: 50, bottom: 25, left: 50 },
+      xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 10, color: '#999' } },
+      yAxis: [
+        { type: 'value', name: 'JVM%', axisLabel: { fontSize: 10 }, max: 100 },
+        { type: 'value', name: 'GC', axisLabel: { fontSize: 10 } }
+      ],
+      series: [
+        { name: 'JVM堆使用率(%)', type: 'line', smooth: true, data: jvmHistory, lineStyle: { color: '#1152c5', width: 2 }, itemStyle: { color: '#1152c5' }, symbol: 'none', areaStyle: { color: 'rgba(17,82,197,0.08)' } },
+        { name: 'GC次数/分钟', type: 'bar', yAxisIndex: 1, data: gcHistory, barWidth: 8, itemStyle: { color: 'rgba(248,157,52,0.5)', borderRadius: [2,2,0,0] } }
+      ]
+    });
+
+    document.getElementById('nodeDetailModal').classList.add('show');
+  };
+
+  window.closeNodeModal = function() {
+    document.getElementById('nodeDetailModal').classList.remove('show');
+    if (nodeDetailChart) { nodeDetailChart.dispose(); nodeDetailChart = null; }
+  };
+
+  window.refreshNodeTable = function() {
+    updateData();
+    renderNodeTable();
+  };
+
+  // ===================================================================
+  // REFRESH CYCLE
+  // ===================================================================
+  function fullRefresh() {
+    updateData();
+    renderMetricCards();
+    updateSparklines();
+    updateMainCharts();
+    renderNodeTable();
+    document.getElementById('lastUpdate').textContent = '最后更新: ' + formatTime();
+    countdown = REFRESH_INTERVAL;
+  }
+
+  function startCountdown() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(function() {
+      if (!autoRefresh) return;
+      countdown--;
+      var countdownEl = document.getElementById('countdown');
+      if (countdownEl) countdownEl.textContent = countdown + 's';
+      if (countdown <= 0) {
+        fullRefresh();
       }
-    ]
+    }, 1000);
+  }
+
+  // ===================================================================
+  // EVENT BINDINGS
+  // ===================================================================
+  document.getElementById('autoRefreshToggle').addEventListener('change', function() {
+    autoRefresh = this.checked;
+    if (autoRefresh) {
+      countdown = REFRESH_INTERVAL;
+    } else {
+      document.getElementById('countdown').textContent = '已暂停';
+    }
   });
 
-  // ===== Response Time Chart =====
-  var rtP50 = [], rtP95 = [], rtP99 = [];
-  for (var i = 0; i < 12; i++) {
-    rtP50.push(Math.round(80 + Math.random() * 70));
-    rtP95.push(Math.round(200 + Math.random() * 300));
-    rtP99.push(Math.round(500 + Math.random() * 1000));
-  }
-
-  var chartRt = echarts.init(document.getElementById('chart-rt'));
-  chartRt.setOption({
-    tooltip: { trigger: 'axis', formatter: function(params) {
-      var s = params[0].axisValue + '<br/>';
-      params.forEach(function(p) { s += p.marker + p.seriesName + ': ' + p.value + 'ms<br/>'; });
-      return s;
-    }},
-    legend: { data: ['P50', 'P95', 'P99'], bottom: 0, textStyle: { fontSize: 12 } },
-    grid: { top: 20, right: 20, bottom: 40, left: 60 },
-    xAxis: { type: 'category', data: timeLabels, axisLabel: { fontSize: 12, color: '#999' }, axisLine: { lineStyle: { color: '#e8e8e8' } } },
-    yAxis: { type: 'value', name: 'ms', axisLabel: { fontSize: 12, color: '#999' }, splitLine: { lineStyle: { color: '#f0f0f0' } }, nameTextStyle: { color: '#999', fontSize: 12 } },
-    series: [
-      {
-        name: 'P50',
-        type: 'line',
-        data: rtP50,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { width: 2, color: '#52c41a' },
-        itemStyle: { color: '#52c41a' }
-      },
-      {
-        name: 'P95',
-        type: 'line',
-        data: rtP95,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { width: 2, color: '#fa8c16' },
-        itemStyle: { color: '#fa8c16' }
-      },
-      {
-        name: 'P99',
-        type: 'line',
-        data: rtP99,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { width: 2, color: '#f5222d' },
-        itemStyle: { color: '#f5222d' }
-      }
-    ]
+  document.getElementById('envSelect').addEventListener('change', function() {
+    renderNodeTable();
   });
 
-  // ===== Resize handler =====
+  document.getElementById('nodeDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeNodeModal();
+  });
+
+  // ===================================================================
+  // RESIZE HANDLER
+  // ===================================================================
   window.addEventListener('resize', function() {
-    sparkCpu.resize();
-    sparkMem.resize();
-    sparkJvm.resize();
-    sparkDisk.resize();
-    chartQps.resize();
-    chartRt.resize();
+    allCharts.forEach(function(c) { c.resize(); });
+    if (nodeDetailChart) nodeDetailChart.resize();
   });
+
+  // ===================================================================
+  // INITIALIZATION
+  // ===================================================================
+  initBuffers();
+  renderMetricCards();
+  initSparklines();
+  createMainCharts();
+  renderNodeTable();
+  document.getElementById('lastUpdate').textContent = '最后更新: ' + formatTime();
+  startCountdown();
+
 })();
 </script>
 </body>
