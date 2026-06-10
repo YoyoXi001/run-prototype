@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- SheetJS: Excel 导出 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -53,7 +55,7 @@
         .menu-item i { font-size: 18px; width: 22px; }
 
         /* 右侧内容区域 */
-        .main-content { margin-left: 240px; padding: 0; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; height: calc(100vh - 80px); overflow: hidden; }
+        .main-content { margin-left: 240px; padding: 0; background: #F5F7FA; display: flex; flex-direction: column; height: calc(100vh - 80px); overflow: hidden; }
         .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 
         /* 顶部操作栏 */
@@ -63,15 +65,31 @@
             flex-shrink: 0;
             border-bottom: 1px solid #e8e8e8;
         }
+        /* 操作栏 */
+        .action-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; border-radius: 6px; padding: 12px 16px;
+            margin-top: 16px; margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
         .btn-back {
             display: inline-flex; align-items: center; gap: 4px;
             height: 32px; padding: 0 16px; border-radius: 4px;
             font-size: 14px; font-family: inherit;
             color: #f89d34; background: #fff; border: 1px solid #f89d34;
-            cursor: pointer; transition: 0.2s; margin-bottom: 8px;
+            cursor: pointer; transition: 0.2s;
         }
         .btn-back:hover { background: #fef5ec; }
         .btn-back i { font-size: 14px; }
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 32px; padding: 0 16px; border-radius: 4px;
+            font-size: 14px; font-family: inherit;
+            color: #fff; background: #f89d34; border: none;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-export:hover { background: #e68f2a; }
+        .btn-export i { font-size: 14px; }
 
         .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
         .breadcrumb a { color: #666; text-decoration: none; }
@@ -79,8 +97,8 @@
         .breadcrumb .separator { margin: 0 8px; color: #c0c4cc; }
         .breadcrumb .current { color: #333; font-weight: 500; }
 
-        /* 滚动内容区 */
-        .scroll-body { flex: 1; overflow-y: auto; padding: 0 16px 16px 16px; min-height: 0; }
+        /* 内容区 */
+        .scroll-body { flex: 1; padding: 0 16px 16px 16px; }
         .forecast-white-card { display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
 
         /* 明细区块 */
@@ -94,8 +112,9 @@
         .detail-kv-value { font-size: 13px; color: #333; font-weight: 500; }
 
         /* 表格 */
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; max-height: 460px; padding: 0; }
         .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
         .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
         .data-table th:last-child, .data-table td:last-child { border-right: none; }
         .data-table tr:last-child td { border-bottom: none; }
@@ -117,6 +136,9 @@
         .modal-footer { padding: 16px 24px; display: flex; justify-content: center; gap: 12px; border-top: 1px solid #ebeef5; }
         .btn-cancel { background: #fff; color: #666; border: 1px solid #dcdfe6; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
         .btn-cancel:hover { background: #f5f7fa; }
+        .table-toolbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+        .btn-export { display: inline-flex; align-items: center; gap: 4px; background: #f89d34; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+        .btn-export:hover { background: #e88a2e; }
     </style>
 </head>
 <body>
@@ -165,11 +187,8 @@
     <!-- 主内容区 -->
     <main class="main-content">
         <div class="content-card">
-            <!-- 顶部操作栏 -->
+            <!-- 顶部面包屑 -->
             <div class="sticky-top-bar">
-                <button class="btn-back" onclick="goBack()">
-                    <i class="el-icon-back"></i> 返回
-                </button>
                 <div class="breadcrumb">
                     <a href="告警管理V1.2.html?nav=operation#rule">运营管理</a>
                     <span class="separator">/</span>
@@ -181,6 +200,16 @@
 
             <!-- 滚动内容 -->
             <div class="scroll-body">
+                <!-- 操作栏 -->
+                <div class="action-bar">
+                    <button class="btn-back" onclick="goBack()">
+                        <i class="el-icon-back"></i> 返回
+                    </button>
+                    <button class="btn-export" onclick="doExport()">
+                        <i class="el-icon-download"></i> 导出
+                    </button>
+                </div>
+
                 <!-- 基本信息 -->
                 <div class="forecast-white-card">
                     <div class="detail-section-title" style="margin-top:0;">基本信息</div>
@@ -189,8 +218,9 @@
                 </div>
 
                 <!-- 用量明细 -->
-                <div class="forecast-white-card">
+                <div class="forecast-white-card" style="flex:1;min-height:0;">
                     <div class="detail-section-title" style="margin-top:0;">用量明细</div>
+                    <div class="table-container">
                     <table class="data-table" style="font-size:13px;">
                         <thead>
                             <tr>
@@ -207,6 +237,7 @@
                         <tbody id="usageDetailBody">
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <!-- 计算公式说明 -->
@@ -228,7 +259,10 @@
             <button class="modal-close" onclick="closeUsageDetailModal()"><i class="el-icon-close"></i></button>
         </div>
         <div class="modal-body">
-            <div class="detail-section-title" style="margin-top:0;">服务级消费明细</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div class="detail-section-title" style="margin:0;">服务级消费明细</div>
+                <button class="btn-export" onclick="exportUsageDetail()"><i class="el-icon-download"></i> 导出</button>
+            </div>
             <table class="data-table" style="font-size:13px;">
                 <thead>
                     <tr>
@@ -306,65 +340,6 @@
         }
     };
 
-    var usageDetailData = {
-        'BILL-202606-001': {
-            '企业工商信息': [
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'企业工商查询服务', api:'企业基本信息', billable:1100, cache:280 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'企业风险画像', api:'企业基本信息', billable:800, cache:150 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'工商异常检测', api:'企业基本信息', billable:350, cache:90 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'企业信息核验', api:'企业基本信息', billable:200, cache:60 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'工商核验服务', api:'企业基本信息', billable:680, cache:140 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'授信主体核验', api:'企业基本信息', billable:400, cache:80 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'借款企业查询', api:'企业基本信息', billable:280, cache:70 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'企业存续状态查询', api:'企业基本信息', billable:190, cache:50 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'企业工商信息采集', api:'企业基本信息', billable:520, cache:110 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'合规主体校验', api:'企业基本信息', billable:280, cache:60 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'审计企业信息查询', api:'企业基本信息', billable:220, cache:50 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'企业状态核查', api:'企业基本信息', billable:180, cache:40 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'工商数据接口', api:'企业基本信息', billable:380, cache:80 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'企业信用查询', api:'企业基本信息', billable:320, cache:70 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的企业查询', api:'企业基本信息', billable:200, cache:45 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'投资风险评估', api:'企业基本信息', billable:100, cache:30 }
-            ],
-            '股东信息': [
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'股东穿透查询', api:'股东信息', billable:580, cache:120 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'实控人识别', api:'股东信息', billable:380, cache:80 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'关联股东排查', api:'股东信息', billable:220, cache:50 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'股权异常检测', api:'股东信息', billable:150, cache:35 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'股东信息核验', api:'股东信息', billable:420, cache:90 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'股权关联分析', api:'股东信息', billable:280, cache:60 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'股东变更监控', api:'股东信息', billable:200, cache:45 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'股权质押查询', api:'股东信息', billable:170, cache:40 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'股东合规审查', api:'股东信息', billable:320, cache:70 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'持股异常预警', api:'股东信息', billable:200, cache:45 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'股东变更审计', api:'股东信息', billable:180, cache:40 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'关联交易排查', api:'股东信息', billable:100, cache:25 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'股权结构分析', api:'股东信息', billable:250, cache:55 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'投资方背景查询', api:'股东信息', billable:150, cache:35 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的股东核查', api:'股东信息', billable:120, cache:30 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'股权估值辅助', api:'股东信息', billable:80, cache:20 }
-            ],
-            '变更记录': [
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'变更事项预警', api:'变更记录', billable:400, cache:80 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'法人变更监控', api:'变更记录', billable:260, cache:55 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'经营异常检测', api:'变更记录', billable:180, cache:40 },
-                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'注册地址变更预警', api:'变更记录', billable:160, cache:35 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'企业变更核验', api:'变更记录', billable:220, cache:50 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'经营范围变更查询', api:'变更记录', billable:180, cache:40 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'贷后变更监控', api:'变更记录', billable:100, cache:25 },
-                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'重大变更预警', api:'变更记录', billable:80, cache:20 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'工商变更追踪', api:'变更记录', billable:200, cache:45 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'合规变更审查', api:'变更记录', billable:150, cache:35 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'变更历史审计', api:'变更记录', billable:120, cache:30 },
-                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'变更记录比对', api:'变更记录', billable:80, cache:20 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'变更历史查询', api:'变更记录', billable:150, cache:35 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'企业演变分析', api:'变更记录', billable:120, cache:28 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的变更追踪', api:'变更记录', billable:70, cache:18 },
-                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'投资风险评估', api:'变更记录', billable:50, cache:15 }
-            ]
-        }
-    };
-
     // ========== 页面初始化 ==========
     var params = new URLSearchParams(window.location.search);
     var billingId = params.get('id') || '';
@@ -426,7 +401,7 @@
                     html += '<td>' + tn.usage.toLocaleString() + '</td>';
                     html += '<td>' + (ratio * 100).toFixed(1) + '%</td>';
                     html += '<td class="amount-text">¥' + shareAmt.toFixed(2) + '</td>';
-                    html += '<td><a class="action-link" onclick="openUsageDetailModal(\'' + billingId + '\',\'' + api.name + '\')">已用明细</a></td>';
+                    html += '<td><a class="action-link" onclick="openUsageDetailModal(\'' + billingId + '\',\'' + api.name + '\',\'' + tn.name + '\')">已用明细</a></td>';
                     html += '</tr>';
                 }
             }
@@ -461,10 +436,150 @@
     }
 
     // ========== 已用明细弹窗 ==========
-    function openUsageDetailModal(billId, apiName) {
-        document.getElementById('usageDetailTitle').textContent = '已用明细 - ' + apiName;
-        var billData = usageDetailData[billId];
-        var list = (billData && billData[apiName]) || [];
+    var _modalBillId = null;
+    var _modalApiName = null;
+    var _modalTenant = null;
+
+    // 租户组织架构模板（2公司×2部门×2系统）
+    var tenantProfiles = {
+        '租赁': [
+            { company:'华润置地', department:'风险管理部', system:'风控决策系统' },
+            { company:'华润置地', department:'风险管理部', system:'反欺诈平台' },
+            { company:'华润置地', department:'信贷审批部', system:'信贷审批系统' },
+            { company:'华润置地', department:'信贷审批部', system:'贷后管理系统' },
+            { company:'万科集团', department:'合规管理部', system:'合规管理平台' },
+            { company:'万科集团', department:'合规管理部', system:'审计系统' },
+            { company:'万科集团', department:'战略投资部', system:'投研分析系统' },
+            { company:'万科集团', department:'战略投资部', system:'投资决策系统' }
+        ],
+        '保险': [
+            { company:'中国平安', department:'核保部', system:'核保系统' },
+            { company:'中国平安', department:'核保部', system:'风控系统' },
+            { company:'中国平安', department:'理赔部', system:'理赔系统' },
+            { company:'中国平安', department:'理赔部', system:'反欺诈系统' },
+            { company:'太平洋保险', department:'核保部', system:'核保系统' },
+            { company:'太平洋保险', department:'核保部', system:'风控系统' },
+            { company:'太平洋保险', department:'理赔部', system:'理赔系统' },
+            { company:'太平洋保险', department:'理赔部', system:'反欺诈系统' }
+        ],
+        '资产': [
+            { company:'华润信托', department:'投资管理部', system:'投资决策系统' },
+            { company:'华润信托', department:'投资管理部', system:'风控系统' },
+            { company:'华润信托', department:'资产管理部', system:'资管系统' },
+            { company:'华润信托', department:'资产管理部', system:'合规系统' },
+            { company:'中粮信托', department:'投资管理部', system:'投资决策系统' },
+            { company:'中粮信托', department:'投资管理部', system:'风控系统' },
+            { company:'中粮信托', department:'资产管理部', system:'资管系统' },
+            { company:'中粮信托', department:'资产管理部', system:'合规系统' }
+        ],
+        '信贷': [
+            { company:'招联消费金融', department:'审批部', system:'信贷审批系统' },
+            { company:'招联消费金融', department:'审批部', system:'风控引擎' },
+            { company:'招联消费金融', department:'市场部', system:'营销系统' },
+            { company:'招联消费金融', department:'市场部', system:'客服系统' },
+            { company:'中银消费金融', department:'审批部', system:'信贷审批系统' },
+            { company:'中银消费金融', department:'审批部', system:'风控引擎' },
+            { company:'中银消费金融', department:'市场部', system:'营销系统' },
+            { company:'中银消费金融', department:'市场部', system:'客服系统' }
+        ],
+        '风控': [
+            { company:'华润银行', department:'信贷部', system:'信贷审批系统' },
+            { company:'华润银行', department:'信贷部', system:'风控平台' },
+            { company:'华润银行', department:'合规部', system:'合规系统' },
+            { company:'华润银行', department:'合规部', system:'审计系统' },
+            { company:'万科金融', department:'信贷部', system:'信贷审批系统' },
+            { company:'万科金融', department:'信贷部', system:'风控平台' },
+            { company:'万科金融', department:'合规部', system:'合规系统' },
+            { company:'万科金融', department:'合规部', system:'审计系统' }
+        ]
+    };
+
+    // API对应的服务名称映射
+    var apiServiceNames = {
+        '企业工商信息': ['企业工商查询服务','企业风险画像','工商异常检测','企业信息核验','工商核验服务','授信主体核验','借款企业查询','企业存续状态查询','企业工商信息采集','合规主体校验','审计企业信息查询','企业状态核查','工商数据接口','企业信用查询','标的企业查询','投资风险评估'],
+        '股东信息': ['股东穿透查询','实控人识别','关联股东排查','股权异常检测','股东信息核验','股权关联分析','股东变更监控','股权质押查询','股东合规审查','持股异常预警','股东变更审计','关联交易排查','股权结构分析','投资方背景查询','标的股东核查','股权估值辅助'],
+        '变更记录': ['变更事项预警','法人变更监控','经营异常检测','注册地址变更预警','企业变更核验','经营范围变更查询','贷后变更监控','重大变更预警','工商变更追踪','合规变更审查','变更历史审计','变更记录比对','变更历史查询','企业演变分析','标的变更追踪','投资风险评估'],
+        '司法风险': ['涉诉信息查询','被执行人查询','司法风险预警','案件风险评估','借款人司法风险','担保方涉诉查询','贷后司法风险','执行案件监控','合规司法风险','诉讼案件管理','司法案件审计','法律风险审查','标的司法风险','涉诉风险评估','投资司法风险','法律尽调查询'],
+        '企业图谱': ['关联关系分析','股权穿透分析','关联图谱排查','利益冲突检测','集团客户识别','关联方授信管理','关联风险监控','担保圈分析','关联合规审查','实控人穿透','关联交易审计','利益输送排查','产业链图谱','竞争格局分析','投资关联分析','尽调图谱查询'],
+        '信用评分': ['企业信用评分','信用评级查询','信用风险评估','违约概率查询','资产信用评估','底层企业评分','合规信用审查','信用资质核验','标的信用查询','交易对手评分','信用风险预警','行业信用分析','组合信用评估','持仓信用监控','信用合规审查','资质信用核验'],
+        '反欺诈评分': ['反欺诈评分查询','欺诈风险评估','实时反欺诈','设备指纹核验','客户欺诈筛查','获客风险评估','身份欺诈核验','异常行为检测','申请反欺诈','欺诈关联检测','风险评分查询','团伙欺诈识别','渠道欺诈监控','营销反欺诈','客户身份核验','投诉欺诈筛查'],
+        '个人信用报告': ['征信报告查询','信用评估服务','个人风险评分','逾期风险预测','征信合规查询','授权核验服务','征信使用审计','异常查询监控','贷前征信查询','信用报告解析','综合风险评估','多头借贷检测','征信合规审查','征信授权管理','征信审计查询','合规风险排查']
+    };
+
+    function getTenantUsageData(billId, apiName, tenantName, totalUsage) {
+        // 先从预置数据查找
+        var preData = usageDetailData[billId];
+        if (preData && preData[apiName] && preData[apiName][tenantName]) {
+            return preData[apiName][tenantName];
+        }
+        // 动态生成
+        var profile = tenantProfiles[tenantName] || tenantProfiles['租赁'];
+        var services = apiServiceNames[apiName] || apiServiceNames['企业工商信息'];
+        var rows = [];
+        var remaining = totalUsage;
+        for (var i = 0; i < profile.length; i++) {
+            var p = profile[i];
+            var isLast = (i === profile.length - 1);
+            var billable = isLast ? remaining : Math.round(totalUsage * (0.08 + Math.random() * 0.18));
+            if (billable > remaining) billable = remaining;
+            if (billable < 1) billable = 1;
+            remaining -= billable;
+            rows.push({
+                tenant: tenantName,
+                company: p.company,
+                department: p.department,
+                system: p.system,
+                service: services[i] || (p.system + '服务'),
+                api: apiName,
+                billable: billable,
+                cache: Math.round(billable * (0.15 + Math.random() * 0.15))
+            });
+        }
+        return rows;
+    }
+
+    // 预置已用明细数据（BILL-202606-001 企业工商信息 - 租赁租户）
+    var usageDetailData = {
+        'BILL-202606-001': {
+            '企业工商信息': {
+                '租赁': [
+                    { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'企业工商查询服务', api:'企业基本信息', billable:1100, cache:280 },
+                    { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'工商异常检测', api:'企业基本信息', billable:350, cache:90 },
+                    { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'工商核验服务', api:'企业基本信息', billable:680, cache:140 },
+                    { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'借款企业查询', api:'企业基本信息', billable:280, cache:70 },
+                    { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'企业工商信息采集', api:'企业基本信息', billable:520, cache:110 },
+                    { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'审计企业信息查询', api:'企业基本信息', billable:220, cache:50 },
+                    { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'工商数据接口', api:'企业基本信息', billable:380, cache:80 },
+                    { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的企业查询', api:'企业基本信息', billable:200, cache:45 }
+                ]
+            }
+        }
+    };
+
+    function openUsageDetailModal(billId, apiName, tenantName) {
+        _modalBillId = billId;
+        _modalApiName = apiName;
+        _modalTenant = tenantName;
+        document.getElementById('usageDetailTitle').textContent = '已用明细 - ' + apiName + '（' + tenantName + '）';
+
+        // 查找当前租户在用量明细中的总查询量
+        var detail = billDetailsData[billId];
+        var tenantUsage = 0;
+        if (detail && detail.apis) {
+            for (var a = 0; a < detail.apis.length; a++) {
+                if (detail.apis[a].name === apiName) {
+                    for (var t = 0; t < detail.apis[a].tenants.length; t++) {
+                        if (detail.apis[a].tenants[t].name === tenantName) {
+                            tenantUsage = detail.apis[a].tenants[t].usage;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        var list = getTenantUsageData(billId, apiName, tenantName, tenantUsage);
         var html = '';
         var totalBillable = 0, totalCache = 0;
         for (var i = 0; i < list.length; i++) {
@@ -508,6 +623,230 @@
     // ========== 导航 ==========
     function goBack() {
         window.location.href = '账单管理.html';
+    }
+
+    // ========== 导出 Excel（天眼查对账单格式） ==========
+    var thinBorder = { style:'thin', color:{rgb:'FFB2B2B2'} };
+    var allBorders = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
+    var headerFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'} };
+    var headerFill = { fgColor:{rgb:'FFF2F2F2'} };
+    var headerAlign = { horizontal:'center', vertical:'center', wrapText:true };
+    var cellAlign = { horizontal:'center', vertical:'center' };
+    var dataFont = { sz:9, name:'Arial', color:{rgb:'FF333333'} };
+
+    function applyCellStyle(ws, ref, style) {
+        if (!ws[ref]) return;
+        ws[ref].s = style;
+    }
+
+    function styleRange(ws, rowIdx, colStart, colEnd, style) {
+        for (var c = colStart; c <= colEnd; c++) {
+            var ref = XLSX.utils.encode_cell({r:rowIdx, c:c});
+            applyCellStyle(ws, ref, style);
+        }
+    }
+
+    function downloadWorkbook(wb, filename) {
+        var wbout = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
+        var blob = new Blob([wbout], { type:'application/octet-stream' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function doExport() {
+        if (!currentBill || !currentDetail) return;
+        var r = currentBill;
+        var detail = currentDetail;
+
+        // API 明细数据
+        var apiRows = [];
+        if (detail && detail.apis) {
+            for (var a = 0; a < detail.apis.length; a++) {
+                var api = detail.apis[a];
+                var totalUsage = 0;
+                for (var t = 0; t < api.tenants.length; t++) {
+                    totalUsage += api.tenants[t].usage;
+                }
+                var billable = Math.round(totalUsage * 0.85);
+                var ratio = detail.totalUsage > 0 ? (totalUsage / detail.totalUsage) : 0;
+                var totalAmount = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
+                var amt = totalAmount * ratio;
+                apiRows.push({
+                    name: api.name,
+                    apiId: String(700 + a),
+                    totalCalls: totalUsage,
+                    billableCalls: billable,
+                    amount: amt
+                });
+            }
+        }
+
+        var aoa = [];
+        // Row 1: 标题
+        aoa.push(['', currentBill.supplier + ' - 数据开放平台对账单', '', '', '', '', '', '']);
+        // Row 2: 空行
+        aoa.push([]);
+        // Row 3: 客户名称 + 账单周期
+        aoa.push(['', '客户名称：某某金控', '', '', '', '账单周期：2026-06-01 至 2026-06-30', '', '', '', '']);
+        // Row 4: 订单信息标题
+        aoa.push(['', '订单信息']);
+        // Row 5: 订单表头
+        aoa.push(['', '订单编号', '', '计费模式', '总查询量', '有效查询量', '应付金额（元）']);
+        // Row 6: 订单数据
+        var billable = Math.round(detail.totalUsage * 0.85);
+        var totalAmount = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
+        aoa.push(['', r.billingCode, '', r.mode, detail.totalUsage.toLocaleString(), billable.toLocaleString(), totalAmount.toFixed(2)]);
+        // Row 7: 空行
+        aoa.push([]);
+        // Row 8: 账单信息标题
+        aoa.push(['', '账单信息']);
+        // Row 9: 账单表头
+        aoa.push(['', '调用接口', '', '接口ID', '计费次数', '应付金额（元）']);
+        // Row 10+: 账单数据
+        var detailTotalCalls = 0, detailTotalBillable = 0, detailTotalAmt = 0;
+        for (var j = 0; j < apiRows.length; j++) {
+            var d = apiRows[j];
+            detailTotalCalls += d.totalCalls;
+            detailTotalBillable += d.billableCalls;
+            detailTotalAmt += d.amount;
+            aoa.push(['', d.name, '', d.apiId, d.billableCalls.toLocaleString(), d.amount.toFixed(2)]);
+        }
+
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // 合并单元格
+        ws['!merges'] = [
+            { s:{r:0,c:1}, e:{r:0,c:7} },   // 标题 B1:H1
+            { s:{r:2,c:5}, e:{r:2,c:9} },   // 账单周期 F3:J3
+            { s:{r:4,c:5}, e:{r:4,c:6} },   // 订单表头 有效查询量合并
+            { s:{r:5,c:5}, e:{r:5,c:6} }    // 订单数据 有效查询量合并
+        ];
+        // API明细行的应付金额列合并
+        for (var k = 0; k < apiRows.length; k++) {
+            ws['!merges'].push({ s:{r:9+k,c:5}, e:{r:9+k,c:6} });
+        }
+
+        // 列宽
+        ws['!cols'] = [
+            {wch:3}, {wch:24}, {wch:4}, {wch:10}, {wch:14}, {wch:14}, {wch:14}
+        ];
+
+        // 样式
+        // 标题行 (row 0)
+        applyCellStyle(ws, 'B1', { font:{bold:true, sz:16, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
+        // 客户信息行 (row 2)
+        applyCellStyle(ws, 'B3', { font:{sz:9, name:'Arial'}, alignment:{vertical:'center'} });
+        applyCellStyle(ws, 'F3', { font:{sz:9, name:'Arial'}, alignment:{vertical:'center'} });
+        // 订单信息标题 (row 3)
+        applyCellStyle(ws, 'B4', { font:{bold:true, sz:10, name:'Arial'}, alignment:{vertical:'center'} });
+        // 订单表头 (row 4): B5-G5
+        styleRange(ws, 4, 1, 6, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 订单数据行 (row 5)
+        styleRange(ws, 5, 1, 6, { font:dataFont, alignment:cellAlign, border:allBorders });
+        // 账单信息标题 (row 7)
+        applyCellStyle(ws, 'B8', { font:{bold:true, sz:10, name:'Arial'}, alignment:{vertical:'center'} });
+        // 账单表头 (row 8): B9-F9
+        styleRange(ws, 8, 1, 5, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 账单数据行
+        for (var bi = 0; bi < apiRows.length; bi++) {
+            styleRange(ws, 9 + bi, 1, 5, { font:dataFont, alignment:cellAlign, border:allBorders });
+        }
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '对账单');
+        var fname = currentBill.supplier + '_对账单_' + currentBill.id + '.xlsx';
+        downloadWorkbook(wb, fname);
+    }
+
+    // ========== 导出已用明细 Excel ==========
+    function exportUsageDetail() {
+        if (!_modalBillId || !currentBill) return;
+        var billData = usageDetailData[_modalBillId];
+        var list = (billData && billData[_modalApiName]) || [];
+        if (list.length === 0) { alert('暂无数据可导出'); return; }
+
+        var supplier = currentBill.supplier;
+        var totalBillable = 0, totalCache = 0;
+        for (var i = 0; i < list.length; i++) {
+            totalBillable += list[i].billable;
+            totalCache += list[i].cache;
+        }
+
+        var aoa = [];
+        // Row 1: 标题
+        aoa.push(['', supplier + '-数据开放平台对账单', '', '', '', '', '', '', '', '']);
+        // Row 2: 空行
+        aoa.push([]);
+        // Row 3: 客户名称 + 账单周期
+        aoa.push(['', '客户名称：某某金控', '', '', '', '账单周期：2026-06-01 至 2026-06-30', '', '', '', '']);
+        // Row 4: 订单信息
+        aoa.push(['', '订单信息']);
+        // Row 5: 订单表头
+        aoa.push(['', '订单编号', '计费模式', '总查询量', '有效查询量', '应付金额（元）']);
+        // Row 6: 订单数据
+        var totalAmount = parseFloat(currentBill.amount.replace(/[¥,]/g, '')) || 0;
+        aoa.push(['', currentBill.billingCode, currentBill.mode, (totalBillable + totalCache).toLocaleString(), totalBillable.toLocaleString(), totalAmount.toFixed(2)]);
+        // Row 7: 账单信息
+        aoa.push(['', '账单信息']);
+        // Row 8: 账单表头
+        aoa.push(['', '租户', '公司', '部门', '系统', '服务', 'API', '计费次数', '命中缓存数', '周期范围']);
+        // Row 9+: 明细数据
+        for (var j = 0; j < list.length; j++) {
+            var d = list[j];
+            aoa.push(['', d.tenant, d.company, d.department, d.system, d.service, d.api, d.billable, d.cache, '2026-06-01 ~ 2026-06-30']);
+        }
+        // 合计行
+        aoa.push(['', '合计', '', '', '', '', '', totalBillable, totalCache, '']);
+
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // 合并单元格
+        ws['!merges'] = [
+            { s:{r:0,c:1}, e:{r:0,c:7} },   // 标题 B1:H1
+            { s:{r:2,c:1}, e:{r:2,c:4} },   // 客户名称 B3:E3
+            { s:{r:2,c:5}, e:{r:2,c:9} }    // 账单周期 F3:J3
+        ];
+
+        // 列宽
+        ws['!cols'] = [
+            {wch:3}, {wch:16}, {wch:12}, {wch:14}, {wch:16}, {wch:18}, {wch:16}, {wch:12}, {wch:12}, {wch:22}
+        ];
+
+        // 样式
+        // 标题行
+        applyCellStyle(ws, 'B1', { font:{bold:true, sz:14, name:'宋体'}, alignment:{horizontal:'center', vertical:'center'} });
+        // 客户信息行
+        applyCellStyle(ws, 'B3', { font:{sz:9, name:'宋体'}, alignment:{vertical:'center'} });
+        applyCellStyle(ws, 'F3', { font:{sz:9, name:'宋体'}, alignment:{vertical:'center'} });
+        // 订单信息标题
+        applyCellStyle(ws, 'B4', { font:{bold:true, sz:10, name:'宋体'}, alignment:{vertical:'center'} });
+        // 订单表头
+        styleRange(ws, 4, 1, 6, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 订单数据行
+        styleRange(ws, 5, 1, 6, { font:dataFont, alignment:cellAlign, border:allBorders });
+        // 账单信息标题
+        applyCellStyle(ws, 'B7', { font:{bold:true, sz:10, name:'宋体'}, alignment:{vertical:'center'} });
+        // 账单表头
+        styleRange(ws, 7, 1, 9, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 明细数据行
+        var dataStartRow = 8;
+        for (var di = 0; di < list.length; di++) {
+            styleRange(ws, dataStartRow + di, 1, 9, { font:dataFont, alignment:cellAlign, border:allBorders });
+        }
+        // 合计行
+        var sumRow = dataStartRow + list.length;
+        styleRange(ws, sumRow, 1, 9, { font:{bold:true, sz:9, name:'Arial', color:{rgb:'FF333333'}}, fill:{fgColor:{rgb:'FFFAFBFC'}}, alignment:cellAlign, border:allBorders });
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '已用明细');
+        var fname = supplier + '_已用明细_' + _modalApiName + '.xlsx';
+        downloadWorkbook(wb, fname);
     }
 
     // ========== 启动 ==========

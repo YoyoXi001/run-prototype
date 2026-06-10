@@ -86,7 +86,7 @@
         .btn-primary:hover { background: #e68f2a; }
         .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; color: #666666; }
         .btn-default:hover { background: #f5f7fa; }
-        .btn-add { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 0; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; width: 64px; height: 32px; line-height: 32px; }
+        .btn-add { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 0 16px; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; height: 32px; line-height: 32px; }
         .btn-add:hover { background: #fef5ec; }
 
         /* 内容区域 */
@@ -242,16 +242,12 @@
                         </div>
                         <div class="filter-item">
                             <label>账单周期</label>
-                            <input type="text" class="datepicker-input" id="filterDateStart" placeholder="开始日期">
-                            <span style="color:#999;">~</span>
-                            <input type="text" class="datepicker-input" id="filterDateEnd" placeholder="结束日期">
-                        </div>
-                        <div class="filter-item">
-                            <label>账单类型</label>
-                            <select id="filterBillType">
-                                <option value="">全部</option>
-                                <option value="standard">标准账单</option>
-                                <option value="non-standard">非标准账单</option>
+                            <select id="filterPeriodType" onchange="onPeriodTypeChange()">
+                                <option value="month">按月</option>
+                                <option value="quarter">按季</option>
+                                <option value="year">按年</option>
+                            </select>
+                            <select id="filterPeriodValue">
                             </select>
                         </div>
                     </div>
@@ -265,7 +261,7 @@
             <!-- 数据表格 -->
             <div class="forecast-white-card">
                 <div class="action-bar">
-                    <button class="btn-add" onclick="openExportModal()">导出</button>
+                    <button class="btn-add" onclick="openCustomBillModal()">自定义账单</button>
                 </div>
                 <div class="flex-table-container">
                 <div class="table-container">
@@ -312,101 +308,60 @@
     </main>
 </div>
 
-<!-- 导出账单弹窗 -->
-<div class="modal-mask" id="exportModal">
-    <div class="modal" style="width:680px;">
+<!-- 自定义账单弹窗 -->
+<div class="modal-mask" id="customBillModal">
+    <div class="modal" style="width:640px;">
         <div class="modal-header">
-            <div class="modal-title">导出账单</div>
-            <button class="modal-close" onclick="closeExportModal()"><i class="el-icon-close"></i></button>
+            <div class="modal-title">自定义账单</div>
+            <button class="modal-close" onclick="closeCustomBillModal()"><i class="el-icon-close"></i></button>
         </div>
         <div class="modal-body">
-            <!-- 账单类型切换 -->
-            <div class="export-mode-tabs">
-                <div class="export-mode-tab active" id="tabStandard" onclick="switchExportMode('standard')">标准账单</div>
-                <div class="export-mode-tab" id="tabNonStandard" onclick="switchExportMode('non-standard')">非标准账单</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;">
+                <div class="export-filter-item">
+                    <label>供应商</label>
+                    <select id="cbSupplier" onchange="cbOnSupplierChange()">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="export-filter-item">
+                    <label>计费模式</label>
+                    <select id="cbMode" onchange="cbOnModeChange()">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="export-filter-item">
+                    <label>API</label>
+                    <select id="cbApi">
+                        <option value="">不限</option>
+                        <option value="__all__">全部</option>
+                    </select>
+                </div>
+                <div class="export-filter-item">
+                    <label>租户</label>
+                    <select id="cbTenant">
+                        <option value="">不限</option>
+                        <option value="__all__">全部</option>
+                    </select>
+                </div>
+                <div class="export-filter-item">
+                    <label>租户明细</label>
+                    <select id="cbTenantDetail">
+                        <option value="hide">不展示</option>
+                        <option value="show">展示</option>
+                    </select>
+                </div>
             </div>
-
-            <!-- 标准账单内容 -->
-            <div id="exportStandardSection">
-                <div class="export-template-card">
-                    <div class="export-template-title">固定模板预览</div>
-                    <div class="export-template-row">
-                        <span class="export-template-label">账单周期</span>
-                        <span class="export-template-value" id="exportStdPeriod">--</span>
-                    </div>
-                    <div class="export-template-row">
-                        <span class="export-template-label">供应商</span>
-                        <span class="export-template-value" id="exportStdSupplier">--</span>
-                    </div>
-                    <div class="export-template-row">
-                        <span class="export-template-label">记录数</span>
-                        <span class="export-template-value" id="exportStdCount">--</span>
-                    </div>
-                </div>
-                <div class="export-section-block">
-                    <div><strong>第一部分 · 订单信息</strong></div>
-                    <div>计费编号 / 计费模式 / 合计次数 / 计费次数 / 应付金额</div>
-                    <div style="margin-top:8px;"><strong>第二部分 · 账单明细</strong></div>
-                    <div>接口名称 / 计费编号 / 总查询量 / 计费次数 / 应付金额（元）</div>
-                </div>
-                <div class="export-hint"><i class="el-icon-info"></i>标准账单按固定周期和模板导出，使用当前筛选栏条件，无需额外配置。</div>
-            </div>
-
-            <!-- 非标准账单内容 -->
-            <div id="exportNonStandardSection" style="display:none;">
-                <div class="export-template-card" style="padding:16px 20px;">
-                    <div class="export-template-title" style="margin-bottom:16px;">自定义筛选条件</div>
-                    <div class="export-filter-form">
-                        <div class="export-filter-item">
-                            <label>开始日期</label>
-                            <input type="text" id="exportDateStart" placeholder="选择开始日期">
-                        </div>
-                        <div class="export-filter-item">
-                            <label>结束日期</label>
-                            <input type="text" id="exportDateEnd" placeholder="选择结束日期">
-                        </div>
-                        <div class="export-filter-item">
-                            <label>供应商</label>
-                            <select id="exportSupplier">
-                                <option value="">全部</option>
-                                <option>企查查</option>
-                                <option>天眼查</option>
-                                <option>安硕</option>
-                                <option>中诚信</option>
-                                <option>百行征信</option>
-                                <option>前海征信</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="export-section-block">
-                    <div><strong>导出内容</strong></div>
-                    <div>账单编号 / 计费编号 / 供应商 / 计费模式 / 单价 / 账单周期 / 应付金额</div>
-                </div>
-                <div class="export-hint"><i class="el-icon-info"></i>非标准账单可自行设置筛选条件，导出符合条件的账单记录。</div>
+            <div id="cbPreview" style="margin-top:20px;padding:12px 16px;background:#fafbfc;border-radius:6px;font-size:13px;color:#666;line-height:1.8;">
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-save" onclick="doExport()">导出 Excel</button>
-            <button class="btn-cancel" onclick="closeExportModal()">取消</button>
+            <button class="btn-save" onclick="cbDoExport()">导出 Excel</button>
+            <button class="btn-cancel" onclick="closeCustomBillModal()">取消</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 获取当月起止日期
-    function getCurrentMonthRange() {
-        var now = new Date();
-        var y = now.getFullYear();
-        var m = now.getMonth();
-        var start = new Date(y, m, 1);
-        var end = new Date(y, m + 1, 0);
-        return {
-            start: formatDate(start),
-            end: formatDate(end)
-        };
-    }
-
     function formatDate(d) {
         var y = d.getFullYear();
         var m = ('0' + (d.getMonth() + 1)).slice(-2);
@@ -414,38 +369,80 @@
         return y + '-' + m + '-' + day;
     }
 
-    var defaultRange = getCurrentMonthRange();
+    // ========== 账单周期选择 ==========
+    function onPeriodTypeChange() {
+        var type = document.getElementById('filterPeriodType').value;
+        var sel = document.getElementById('filterPeriodValue');
+        sel.innerHTML = '';
+        var now = new Date();
+        var y = now.getFullYear();
+        var m = now.getMonth(); // 0-indexed
 
-    // 初始化 flatpickr
-    flatpickr("#filterDateStart", {
-        dateFormat: "Y-m-d",
-        locale: "zh",
-        allowInput: true,
-        defaultDate: defaultRange.start
-    });
-    flatpickr("#filterDateEnd", {
-        dateFormat: "Y-m-d",
-        locale: "zh",
-        allowInput: true,
-        defaultDate: defaultRange.end
-    });
+        if (type === 'month') {
+            // 最近12个月，默认上个月
+            for (var i = 1; i <= 12; i++) {
+                var d = new Date(y, m - i, 1);
+                var startY = d.getFullYear();
+                var startM = d.getMonth();
+                var start = formatDate(new Date(startY, startM, 1));
+                var end = formatDate(new Date(startY, startM + 1, 0));
+                var label = startY + '年' + (startM + 1) + '月';
+                var opt = document.createElement('option');
+                opt.value = start + '|' + end;
+                opt.textContent = label;
+                sel.appendChild(opt);
+            }
+        } else if (type === 'quarter') {
+            // 最近8个季度，默认上季度
+            var currentQ = Math.floor(m / 3); // 0-3
+            for (var i = 1; i <= 8; i++) {
+                var qOffset = currentQ - i;
+                var qYear = y + Math.floor(qOffset / 4);
+                var q = ((qOffset % 4) + 4) % 4; // 0-3
+                var start = formatDate(new Date(qYear, q * 3, 1));
+                var end = formatDate(new Date(qYear, q * 3 + 3, 0));
+                var label = qYear + '年Q' + (q + 1);
+                var opt = document.createElement('option');
+                opt.value = start + '|' + end;
+                opt.textContent = label;
+                sel.appendChild(opt);
+            }
+        } else if (type === 'year') {
+            // 最近5年，默认去年
+            for (var i = 1; i <= 5; i++) {
+                var yr = y - i;
+                var start = yr + '-01-01';
+                var end = yr + '-12-31';
+                var label = yr + '年';
+                var opt = document.createElement('option');
+                opt.value = start + '|' + end;
+                opt.textContent = label;
+                sel.appendChild(opt);
+            }
+        }
+    }
+
+    // 初始化周期选择器（默认按月-上个月）
+    onPeriodTypeChange();
 
     // 列表数据：计费模式仅保留 按次、包量、阶梯，与计费管理一致
     // price 字段支持 HTML（<br>换行），参考计费管理的 price-cell 样式
     // billingCode 引用计费管理中对应的计费编码
     var allData = [
-        { id:'BILL-202606-001', billingCode:'JF-API-QCC-QYJBXX-JT-003', supplier:'企查查', mode:'阶梯', price:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', usage:10000, amount:'¥500.00', type:'standard' },
-        { id:'BILL-202606-002', billingCode:'JF-API-TYC-SFXP-BL-002', supplier:'天眼查', mode:'包量', price:'¥60,000/8万次<br>超额¥0.8/次', usage:85000, amount:'¥85,000.00', type:'standard' },
-        { id:'BILL-202606-003', billingCode:'JF-API-TYC-QYJBXX-AC-001', supplier:'天眼查', mode:'按次', price:'¥1.0/次', usage:52000, amount:'¥52,000.00', type:'standard' },
-        { id:'BILL-202606-004', billingCode:'JF-API-ZCX-XYPF-JT-005', supplier:'中诚信', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', usage:92000, amount:'¥80,000.00', type:'non-standard' },
-        { id:'BILL-202606-005', billingCode:'JF-API-QHZX-FQZPF-AC-007', supplier:'前海征信', mode:'按次', price:'¥0.8/次', usage:38500, amount:'¥30,800.00', type:'standard' },
-        { id:'BILL-202606-006', billingCode:'JF-API-BSZX-GRXYBG-AC-006', supplier:'百行征信', mode:'按次', price:'¥2.5/次', usage:21800, amount:'¥54,500.00', type:'non-standard' }
+        { id:'BILL-202606-001', billingCode:'JF-API-QCC-QYJBXX-JT-003', supplier:'企查查', mode:'阶梯', price:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', usage:10000, amount:'¥500.00', apis:['企业基本信息'], tenants:[{name:'租赁',usage:5200},{name:'保险',usage:3000},{name:'资产',usage:1800}] },
+        { id:'BILL-202606-002', billingCode:'JF-API-TYC-SFXP-BL-002', supplier:'天眼查', mode:'包量', price:'¥60,000/8万次<br>超额¥0.8/次', usage:85000, amount:'¥85,000.00', apis:['司法风险'], tenants:[{name:'租赁',usage:45000},{name:'风控',usage:25000},{name:'信贷',usage:15000}] },
+        { id:'BILL-202606-003', billingCode:'JF-API-TYC-QYJBXX-AC-001', supplier:'天眼查', mode:'按次', price:'¥1.0/次', usage:52000, amount:'¥52,000.00', apis:['企业基本信息'], tenants:[{name:'保险',usage:32000},{name:'资产',usage:12000},{name:'信贷',usage:8000}] },
+        { id:'BILL-202606-004', billingCode:'JF-API-ZCX-XYPF-JT-005', supplier:'中诚信', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', usage:92000, amount:'¥80,000.00', apis:['信用评分'], tenants:[{name:'资产',usage:52000},{name:'风控',usage:28000},{name:'信贷',usage:12000}] },
+        { id:'BILL-202606-005', billingCode:'JF-API-QHZX-FQZPF-AC-007', supplier:'前海征信', mode:'按次', price:'¥0.8/次', usage:38500, amount:'¥30,800.00', apis:['反欺诈评分'], tenants:[{name:'信贷',usage:28500},{name:'风控',usage:10000}] },
+        { id:'BILL-202606-006', billingCode:'JF-API-BSZX-GRXYBG-AC-006', supplier:'百行征信', mode:'按次', price:'¥2.5/次', usage:21800, amount:'¥54,500.00', apis:['个人信用报告'], tenants:[{name:'风控',usage:15800},{name:'信贷',usage:6000}] }
     ];
 
     function getSelectedPeriod() {
-        var s = document.getElementById('filterDateStart').value || defaultRange.start;
-        var e = document.getElementById('filterDateEnd').value || defaultRange.end;
-        return s + ' ~ ' + e;
+        var val = document.getElementById('filterPeriodValue').value;
+        if (val) {
+            return val.replace('|', ' ~ ');
+        }
+        return '';
     }
 
     function renderTable(data) {
@@ -477,11 +474,9 @@
 
     function doQuery() {
         var supplier = document.getElementById('filterSupplier').value;
-        var billType = document.getElementById('filterBillType').value;
 
         var filtered = allData.filter(function(r) {
             if (supplier && r.supplier !== supplier) return false;
-            if (billType && r.type !== billType) return false;
             return true;
         });
         renderTable(filtered);
@@ -489,76 +484,145 @@
 
     function doReset() {
         document.getElementById('filterSupplier').value = '';
-        document.getElementById('filterBillType').value = '';
-        // 重置为当月
-        document.getElementById('filterDateStart')._flatpickr.setDate(defaultRange.start);
-        document.getElementById('filterDateEnd')._flatpickr.setDate(defaultRange.end);
+        // 重置为按月-上个月
+        document.getElementById('filterPeriodType').value = 'month';
+        onPeriodTypeChange();
         renderTable(allData);
     }
 
     // 初始渲染
     renderTable(allData);
 
-    // ========== 导出功能 ==========
-    var currentExportMode = 'standard';
-
-    function openExportModal() {
-        var billType = document.getElementById('filterBillType').value;
-        // 根据当前筛选自动选择模式
-        if (billType === 'non-standard') {
-            switchExportMode('non-standard');
-        } else {
-            switchExportMode('standard');
+    // ========== 自定义账单弹窗 ==========
+    // 联动辅助函数
+    function cbGetSuppliers() {
+        var set = {};
+        allData.forEach(function(r) { set[r.supplier] = true; });
+        return Object.keys(set);
+    }
+    function cbGetModes(supplier) {
+        var set = {};
+        allData.forEach(function(r) {
+            if (!supplier || r.supplier === supplier) set[r.mode] = true;
+        });
+        return Object.keys(set);
+    }
+    function cbGetApis(supplier, mode) {
+        var set = {};
+        allData.forEach(function(r) {
+            if ((!supplier || r.supplier === supplier) && (!mode || r.mode === mode)) {
+                r.apis.forEach(function(a) { set[a] = true; });
+            }
+        });
+        return Object.keys(set);
+    }
+    function cbGetTenants() {
+        var set = {};
+        allData.forEach(function(r) {
+            r.tenants.forEach(function(t) { set[t.name] = true; });
+        });
+        return Object.keys(set);
+    }
+    function cbPopulateSelect(id, options, includeAll) {
+        var sel = document.getElementById(id);
+        sel.innerHTML = '';
+        if (includeAll === 'unlimited' || includeAll === 'both') {
+            var o = document.createElement('option');
+            o.value = '';
+            o.textContent = '不限';
+            sel.appendChild(o);
         }
-        // 填充标准信息
-        var supplier = document.getElementById('filterSupplier').value;
-        var period = getSelectedPeriod();
-        var filtered = allData.filter(function(r) {
+        if (includeAll === 'all' || includeAll === 'both') {
+            var o = document.createElement('option');
+            o.value = '__all__';
+            o.textContent = '全部';
+            sel.appendChild(o);
+        }
+        options.forEach(function(opt) {
+            var o = document.createElement('option');
+            o.value = opt;
+            o.textContent = opt;
+            sel.appendChild(o);
+        });
+    }
+
+    function cbOnSupplierChange() {
+        var supplier = document.getElementById('cbSupplier').value;
+        cbPopulateSelect('cbMode', cbGetModes(supplier), 'all');
+        cbOnModeChange();
+    }
+    function cbOnModeChange() {
+        var supplier = document.getElementById('cbSupplier').value;
+        var mode = document.getElementById('cbMode').value;
+        cbPopulateSelect('cbApi', cbGetApis(supplier, mode), 'both');
+    }
+    function cbUpdatePreview() {
+        var filtered = cbGetFilteredData();
+        var showDetail = document.getElementById('cbTenantDetail').value === 'show';
+        var count = showDetail ? 0 : filtered.length;
+        if (showDetail) {
+            var tenant = document.getElementById('cbTenant').value;
+            filtered.forEach(function(r) {
+                var ts = r.tenants;
+                if (tenant && tenant !== '__all__') {
+                    ts = ts.filter(function(t) { return t.name === tenant; });
+                }
+                count += ts.length;
+            });
+        }
+        document.getElementById('cbPreview').innerHTML =
+            '<i class="el-icon-document" style="color:#f89d34;margin-right:4px;"></i>' +
+            '当前筛选条件匹配 <strong style="color:#f89d34;">' + count + '</strong> 条' +
+            (showDetail ? '租户明细' : '账单记录') + '，点击"导出 Excel"下载。';
+    }
+
+    function cbGetFilteredData() {
+        var supplier = document.getElementById('cbSupplier').value;
+        var mode = document.getElementById('cbMode').value;
+        var api = document.getElementById('cbApi').value;
+        var tenant = document.getElementById('cbTenant').value;
+        return allData.filter(function(r) {
             if (supplier && r.supplier !== supplier) return false;
-            if (billType && r.type !== billType) return false;
+            if (mode && r.mode !== mode) return false;
+            if (api && api !== '__all__') {
+                if (r.apis.indexOf(api) === -1) return false;
+            }
+            if (tenant && tenant !== '__all__') {
+                var hasTenant = r.tenants.some(function(t) { return t.name === tenant; });
+                if (!hasTenant) return false;
+            }
             return true;
         });
-        document.getElementById('exportStdPeriod').textContent = period;
-        document.getElementById('exportStdSupplier').textContent = supplier || '全部';
-        document.getElementById('exportStdCount').textContent = filtered.length + ' 条标准账单';
-        // 初始化非标准日期
-        if (!document.getElementById('exportDateStart')._flatpickr) {
-            flatpickr('#exportDateStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: defaultRange.start });
-            flatpickr('#exportDateEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: defaultRange.end });
-        }
-        document.getElementById('exportModal').classList.add('show');
     }
 
-    function closeExportModal() {
-        document.getElementById('exportModal').classList.remove('show');
+    function openCustomBillModal() {
+        cbPopulateSelect('cbSupplier', cbGetSuppliers(), 'all');
+        cbPopulateSelect('cbMode', cbGetModes(''), 'all');
+        cbPopulateSelect('cbApi', cbGetApis('', ''), 'both');
+        cbPopulateSelect('cbTenant', cbGetTenants(), 'both');
+        document.getElementById('cbTenantDetail').value = 'hide';
+        cbUpdatePreview();
+        document.getElementById('customBillModal').classList.add('show');
     }
 
-    function switchExportMode(mode) {
-        currentExportMode = mode;
-        document.getElementById('tabStandard').classList.toggle('active', mode === 'standard');
-        document.getElementById('tabNonStandard').classList.toggle('active', mode === 'non-standard');
-        document.getElementById('exportStandardSection').style.display = mode === 'standard' ? 'block' : 'none';
-        document.getElementById('exportNonStandardSection').style.display = mode === 'non-standard' ? 'block' : 'none';
+    function closeCustomBillModal() {
+        document.getElementById('customBillModal').classList.remove('show');
     }
 
-    document.getElementById('exportModal').addEventListener('click', function(e) {
-        if (e.target === this) closeExportModal();
+    document.getElementById('customBillModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCustomBillModal();
     });
 
-    function doExport() {
-        if (currentExportMode === 'standard') {
-            exportStandard();
-        } else {
-            exportNonStandard();
-        }
-    }
+    // 联动事件绑定（HTML onchange 已设置）
+    document.getElementById('cbTenantDetail').addEventListener('change', cbUpdatePreview);
+    document.getElementById('cbTenant').addEventListener('change', cbUpdatePreview);
+    document.getElementById('cbApi').addEventListener('change', cbUpdatePreview);
 
-    // ---------- 标准账单导出（参考天眼查模板） ----------
-    // 通用样式常量
-    var thinBorder = { style:'thin', color:{rgb:'FF999999'} };
+    // Excel 样式常量
+    var thinBorder = { style:'thin', color:{rgb:'FFB2B2B2'} };
     var allBorders = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
     var headerFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'} };
-    var headerFill = { fgColor:{rgb:'FFF5F7FA'} };
+    var headerFill = { fgColor:{rgb:'FFF2F2F2'} };
     var headerAlign = { horizontal:'center', vertical:'center', wrapText:true };
     var cellAlign = { horizontal:'center', vertical:'center' };
     var dataFont = { sz:9, name:'Arial', color:{rgb:'FF333333'} };
@@ -567,14 +631,11 @@
         if (!ws[ref]) return;
         ws[ref].s = style;
     }
-
     function styleRange(ws, rowIdx, colStart, colEnd, style) {
         for (var c = colStart; c <= colEnd; c++) {
-            var ref = XLSX.utils.encode_cell({r:rowIdx, c:c});
-            applyCellStyle(ws, ref, style);
+            applyCellStyle(ws, XLSX.utils.encode_cell({r:rowIdx, c:c}), style);
         }
     }
-
     function downloadWorkbook(wb, filename) {
         var wbout = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
         var blob = new Blob([wbout], { type:'application/octet-stream' });
@@ -588,176 +649,64 @@
         URL.revokeObjectURL(url);
     }
 
-    function exportStandard() {
-        var supplier = document.getElementById('filterSupplier').value;
-        var billType = document.getElementById('filterBillType').value;
+    function cbDoExport() {
+        var filtered = cbGetFilteredData();
+        var showDetail = document.getElementById('cbTenantDetail').value === 'show';
+        var tenant = document.getElementById('cbTenant').value;
         var period = getSelectedPeriod();
 
-        var data = allData.filter(function(r) {
-            if (supplier && r.supplier !== supplier) return false;
-            if (billType && r.type !== billType) return false;
-            return true;
-        });
-
-        // 用量明细示例数据（模拟每个账单下的 API 明细）
-        var apiDetails = [
-            { name:'企业工商信息', apiId:'757', totalCalls:2166, billableCalls:2166, amount:1083.00 },
-            { name:'股东信息', apiId:'826', totalCalls:850, billableCalls:805, amount:402.50 },
-            { name:'变更记录', apiId:'846', totalCalls:1421, billableCalls:1421, amount:710.50 },
-            { name:'经营异常', apiId:'848', totalCalls:2839, billableCalls:2839, amount:1419.50 },
-            { name:'企业联系方式', apiId:'1046', totalCalls:1593, billableCalls:1520, amount:760.00 }
-        ];
-
         var aoa = [];
-        // Row 1: 标题
-        aoa.push(['', '外数平台 - 标准账单对账单', '', '', '', '', '', '']);
-        // Row 2: 空行
+        aoa.push(['外数平台 - 自定义账单导出']);
+        aoa.push(['账单周期：' + period + ' 导出时间：' + new Date().toLocaleString('zh-CN')]);
         aoa.push([]);
-        // Row 3: 周期
-        aoa.push(['', '账单周期：' + period.replace(' ~ ', '-'), '', '', '', '', '', '']);
-        // Row 4: 订单信息标题
-        aoa.push(['', '订单信息']);
-        // Row 5: 订单表头
-        aoa.push(['', '计费编号', '计费模式', '合计次数', '计费次数', '应付金额（元）']);
-        // Row 6+: 订单数据
-        var totalAllUsage = 0, totalAllBillable = 0, totalAllAmount = 0;
-        for (var i = 0; i < data.length; i++) {
-            var r = data[i];
-            var billable = Math.round(r.usage * 0.85);
-            var amt = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
-            totalAllUsage += r.usage;
-            totalAllBillable += billable;
-            totalAllAmount += amt;
-            aoa.push(['', r.billingCode, r.mode, r.usage.toLocaleString(), billable.toLocaleString(), amt.toFixed(2)]);
-        }
-        // 订单合计
-        aoa.push(['', '合计', '', totalAllUsage.toLocaleString(), totalAllBillable.toLocaleString(), totalAllAmount.toFixed(2)]);
-        // 空行
-        aoa.push([]);
-        // 账单信息标题
-        aoa.push(['', '账单明细']);
-        // 账单表头
-        aoa.push(['', '接口名称', '接口ID', '总查询量', '计费次数', '应付金额（元）']);
-        // 账单数据
-        var detailTotalCalls = 0, detailTotalBillable = 0, detailTotalAmt = 0;
-        for (var j = 0; j < apiDetails.length; j++) {
-            var d = apiDetails[j];
-            detailTotalCalls += d.totalCalls;
-            detailTotalBillable += d.billableCalls;
-            detailTotalAmt += d.amount;
-            aoa.push(['', d.name, d.apiId, d.totalCalls.toLocaleString(), d.billableCalls.toLocaleString(), d.amount.toFixed(2)]);
-        }
-        // 账单合计
-        aoa.push(['', '合计', '', detailTotalCalls.toLocaleString(), detailTotalBillable.toLocaleString(), detailTotalAmt.toFixed(2)]);
 
-        var ws = XLSX.utils.aoa_to_sheet(aoa);
-        // 合并单元格
-        ws['!merges'] = [
-            { s:{r:0,c:1}, e:{r:0,c:7} }   // 标题 B1:H1
-        ];
-        // 列宽（A 列窄占位，B-G 数据列）
-        ws['!cols'] = [
-            {wch:3}, {wch:28}, {wch:14}, {wch:14}, {wch:14}, {wch:16}
-        ];
-
-        // 应用样式
-        // 标题行 (row 0): 加粗居中
-        applyCellStyle(ws, 'B1', { font:{bold:true, sz:12, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
-        // 客户信息行 (row 2)
-        applyCellStyle(ws, 'B3', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
-        // 订单信息标题 (row 3)
-        applyCellStyle(ws, 'B4', { font:{bold:true, sz:10, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{vertical:'center'} });
-        // 订单表头 (row 4): B5-F5
-        styleRange(ws, 4, 1, 5, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 订单数据行 + 合计行: row 5 到 row 5+data.length
-        var orderDataRowCount = data.length + 1; // +1 for 合计
-        for (var oi = 0; oi < orderDataRowCount; oi++) {
-            var rIdx = 5 + oi;
-            var isTotalRow = (oi === data.length);
-            var rowStyle = isTotalRow
-                ? { font:{bold:true, sz:9, name:'Arial', color:{rgb:'FFf89d34'}}, alignment:cellAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} }
-                : { font:dataFont, alignment:cellAlign, border:allBorders };
-            styleRange(ws, rIdx, 1, 5, rowStyle);
-        }
-        // 账单信息标题 (row 3+data.length+3 = row index for '账单明细')
-        var billTitleRow = 4 + data.length + 3;
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:billTitleRow, c:1}), { font:{bold:true, sz:10, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{vertical:'center'} });
-        // 账单表头 (billTitleRow + 1)
-        var billHeaderRow = billTitleRow + 1;
-        styleRange(ws, billHeaderRow, 1, 5, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 账单数据行
-        var billDataRowCount = apiDetails.length + 1; // +1 for 合计
-        for (var bi = 0; bi < billDataRowCount; bi++) {
-            var brIdx = billHeaderRow + 1 + bi;
-            var isBillTotal = (bi === apiDetails.length);
-            var bStyle = isBillTotal
-                ? { font:{bold:true, sz:9, name:'Arial', color:{rgb:'FFf89d34'}}, alignment:cellAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} }
-                : { font:dataFont, alignment:cellAlign, border:allBorders };
-            styleRange(ws, brIdx, 1, 5, bStyle);
+        if (showDetail) {
+            aoa.push(['计费编号', '供应商', '计费模式', 'API', '租户', '使用次数', '使用占比', '分摊金额']);
+            filtered.forEach(function(r) {
+                var tenants = r.tenants;
+                if (tenant && tenant !== '__all__') {
+                    tenants = tenants.filter(function(t) { return t.name === tenant; });
+                }
+                var totalUsage = r.usage;
+                var totalAmount = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
+                tenants.forEach(function(t) {
+                    var ratio = totalUsage > 0 ? (t.usage / totalUsage) : 0;
+                    var shareAmt = totalAmount * ratio;
+                    aoa.push([r.billingCode, r.supplier, r.mode, r.apis.join('、'), t.name, t.usage, (ratio * 100).toFixed(1) + '%', shareAmt.toFixed(2)]);
+                });
+            });
+        } else {
+            aoa.push(['计费编号', '供应商', '计费模式', '单价', 'API', '使用次数', '应付金额']);
+            filtered.forEach(function(r) {
+                var priceText = r.price.replace(/<br>/g, ' ');
+                aoa.push([r.billingCode, r.supplier, r.mode, priceText, r.apis.join('、'), r.usage, r.amount.replace(/[¥,]/g, '')]);
+            });
         }
 
-        var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, '对账单');
-        var fname = '标准账单_' + new Date().toISOString().slice(0,10) + '.xlsx';
-        downloadWorkbook(wb, fname);
-        closeExportModal();
-    }
-
-    // ---------- 非标准账单导出 ----------
-    function exportNonStandard() {
-        var eDateStart = document.getElementById('exportDateStart').value || defaultRange.start;
-        var eDateEnd = document.getElementById('exportDateEnd').value || defaultRange.end;
-        var eSupplier = document.getElementById('exportSupplier').value;
-
-        var data = allData.filter(function(r) {
-            if (r.type !== 'non-standard') return false;
-            if (eSupplier && r.supplier !== eSupplier) return false;
-            return true;
-        });
-
-        var aoa = [];
-        // Row 1: 标题
-        aoa.push(['外数平台 - 非标准账单导出']);
-        // Row 2: 周期
-        aoa.push(['账单周期：' + eDateStart + ' ~ ' + eDateEnd]);
-        // Row 3: 空行
-        aoa.push([]);
-        // Row 4: 表头
-        aoa.push(['账单编号', '计费编号', '供应商', '计费模式', '单价', '账单周期', '应付金额']);
-        // Row 5+: 数据
-        for (var i = 0; i < data.length; i++) {
-            var r = data[i];
-            var priceText = r.price.replace(/<br>/g, ' ');
-            aoa.push([r.id, r.billingCode, r.supplier, r.mode, priceText, eDateStart + ' ~ ' + eDateEnd, r.amount]);
-        }
-        // 空数据提示
-        if (data.length === 0) {
-            aoa.push(['暂无符合条件的非标准账单记录']);
-        }
-
+        var colCount = showDetail ? 8 : 7;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:6} },   // 标题 A1:G1
-            { s:{r:1,c:0}, e:{r:1,c:6} }    // 周期 A2:G2
+            { s:{r:0,c:0}, e:{r:0,c:colCount - 1} },
+            { s:{r:1,c:0}, e:{r:1,c:colCount - 1} }
         ];
-        ws['!cols'] = [
-            {wch:20}, {wch:32}, {wch:10}, {wch:10}, {wch:22}, {wch:26}, {wch:14}
-        ];
+        ws['!cols'] = showDetail
+            ? [{wch:28},{wch:10},{wch:10},{wch:16},{wch:8},{wch:12},{wch:10},{wch:14}]
+            : [{wch:28},{wch:10},{wch:10},{wch:22},{wch:16},{wch:12},{wch:14}];
+
         // 样式
         applyCellStyle(ws, 'A1', { font:{bold:true, sz:13, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{horizontal:'center', vertical:'center'} });
         applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
-        // 表头行 (row 3)
-        styleRange(ws, 3, 0, 6, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 数据行 (row 4+)
-        for (var di = 0; di < data.length; di++) {
-            styleRange(ws, 4 + di, 0, 6, { font:dataFont, alignment:cellAlign, border:allBorders });
+        styleRange(ws, 3, 0, colCount - 1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        var dataRowCount = aoa.length - 4;
+        for (var di = 0; di < dataRowCount; di++) {
+            styleRange(ws, 4 + di, 0, colCount - 1, { font:dataFont, alignment:cellAlign, border:allBorders });
         }
 
         var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, '非标准账单');
-        var fname = '非标准账单_' + eDateStart + '-' + eDateEnd + '.xlsx';
+        XLSX.utils.book_append_sheet(wb, ws, '自定义账单');
+        var fname = '自定义账单_' + new Date().toISOString().slice(0, 10) + '.xlsx';
         downloadWorkbook(wb, fname);
-        closeExportModal();
+        closeCustomBillModal();
     }
 </script>
 <script>

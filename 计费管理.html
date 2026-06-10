@@ -550,7 +550,7 @@
 
     // ========== 缩写映射（用于生成计费编码） ==========
     var supplierAbbr = { '天眼查':'TYC', '企查查':'QCC', '中诚信':'ZCX', '百行征信':'BSZX', '前海征信':'QHZX' };
-    var apiAbbr = { '不限':'ALL', '企业基本信息':'QYJBXX', '司法风险':'SFXP', '企业图谱':'QYTP', '信用评分':'XYPF', '个人信用报告':'GRXYBG', '反欺诈评分':'FQZPF', '经营状况':'JYZK', '融资历史':'RZLS', '知识产权':'ZSCQ' };
+    var apiAbbr = { '不限':'ALL', '企业基本信息':'QYJBXX', '股东信息':'GDXX', '变更记录':'BGJL', '司法风险':'SFXP', '企业图谱':'QYTP', '信用评分':'XYPF', '个人信用报告':'GRXYBG', '反欺诈评分':'FQZPF', '经营状况':'JYZK', '融资历史':'RZLS', '知识产权':'ZSCQ' };
     var modeAbbr = { perCall:'AC', volume:'BL', tiered:'JT' };
     var billingSeq = 1;
 
@@ -571,19 +571,19 @@
     var allData = [
         { id:1, billingCode:'JF-API-TYC-QYJBXX-AC-001', sourceType:'api', supplier:'天眼查', api:['企业基本信息'], mode:'perCall', priceText:'¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ price:'1.0' } },
-        { id:2, billingCode:'JF-API-TYC-SFXP-BL-002', sourceType:'api', supplier:'天眼查', api:['司法风险'], mode:'volume', priceText:'¥60,000/8万次<br>超额¥0.8/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+        { id:2, billingCode:'JF-API-TYC-SFXP-BL-002', sourceType:'api', supplier:'天眼查', api:['司法风险','企业图谱'], mode:'volume', priceText:'¥60,000/8万次<br>超额¥0.8/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ count:'80000', fee:'60000', overprice:'0.8' } },
-        { id:3, billingCode:'JF-API-QCC-QYJBXX-JT-003', sourceType:'api', supplier:'企查查', api:['企业基本信息'], mode:'tiered', priceText:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', period:'2024-03-01 ~ 2025-02-28', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算',
+        { id:3, billingCode:'JF-API-QCC-QYJBXX-JT-003', sourceType:'api', supplier:'企查查', api:['企业基本信息','股东信息','变更记录'], mode:'tiered', priceText:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', period:'2024-03-01 ~ 2025-02-28', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算',
           detail:{ tiers:[{from:'0',to:'30000',price:'1.8'},{from:'30001',to:'80000',price:'1.2'},{from:'80001',to:'',price:'0.8'}] } },
         { id:4, billingCode:'JF-API-QCC-QYTP-BL-004', sourceType:'api', supplier:'企查查', api:['企业图谱'], mode:'volume', priceText:'¥80,000/10万次<br>超额¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ count:'100000', fee:'80000', overprice:'1.0' } },
-        { id:5, billingCode:'JF-API-ZCX-XYPF-JT-005', sourceType:'api', supplier:'中诚信', api:['信用评分'], mode:'tiered', priceText:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', period:'2024-04-01 ~ 2025-03-31', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算，次月重置档位计数。',
+        { id:5, billingCode:'JF-API-ZCX-XYPF-JT-005', sourceType:'api', supplier:'中诚信', api:['信用评分','经营状况'], mode:'tiered', priceText:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', period:'2024-04-01 ~ 2025-03-31', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算，次月重置档位计数。',
           detail:{ tiers:[{from:'0',to:'50000',price:'2.0'},{from:'50001',to:'100000',price:'1.5'},{from:'100001',to:'',price:'1.0'}] } },
         { id:6, billingCode:'JF-API-BSZX-GRXYBG-AC-006', sourceType:'api', supplier:'百行征信', api:['个人信用报告'], mode:'perCall', priceText:'¥2.5/次', period:'2024-06-01 ~ 2025-05-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ price:'2.5' } },
         { id:7, billingCode:'JF-API-QHZX-FQZPF-AC-007', sourceType:'api', supplier:'前海征信', api:['反欺诈评分'], mode:'perCall', priceText:'¥0.8/次', period:'2023-07-01 ~ 2024-06-30', status:'停用', creator:'金控-管理员', remark:'',
           detail:{ price:'0.8' } },
-        { id:8, billingCode:'JF-API-TYC-JYZK-BL-008', sourceType:'api', supplier:'天眼查', api:['经营状况'], mode:'volume', priceText:'¥50,000/5万次<br>超额¥1.2/次', period:'2024-01-01 ~ 2024-12-31', status:'停用', creator:'金控-管理员', remark:'',
+        { id:8, billingCode:'JF-API-TYC-JYZK-BL-008', sourceType:'api', supplier:'天眼查', api:['经营状况','知识产权','融资历史'], mode:'volume', priceText:'¥50,000/5万次<br>超额¥1.2/次', period:'2024-01-01 ~ 2024-12-31', status:'停用', creator:'金控-管理员', remark:'',
           detail:{ count:'50000', fee:'50000', overprice:'1.2' } }
     ];
 
