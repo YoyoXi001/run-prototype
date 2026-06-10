@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 账单明细</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100;
+            height: 80px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* 左侧菜单 */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容区域 */
+        .main-content { margin-left: 240px; padding: 0; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; height: calc(100vh - 80px); overflow: hidden; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+        /* 顶部操作栏 */
+        .sticky-top-bar {
+            background: #F5F7FA;
+            padding: 4px 16px 0 16px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 32px; padding: 0 16px; border-radius: 4px;
+            font-size: 14px; font-family: inherit;
+            color: #f89d34; background: #fff; border: 1px solid #f89d34;
+            cursor: pointer; transition: 0.2s; margin-bottom: 8px;
+        }
+        .btn-back:hover { background: #fef5ec; }
+        .btn-back i { font-size: 14px; }
+
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb a { color: #666; text-decoration: none; }
+        .breadcrumb a:hover { color: #f89d34; }
+        .breadcrumb .separator { margin: 0 8px; color: #c0c4cc; }
+        .breadcrumb .current { color: #333; font-weight: 500; }
+
+        /* 滚动内容区 */
+        .scroll-body { flex: 1; overflow-y: auto; padding: 0 16px 16px 16px; min-height: 0; }
+        .forecast-white-card { display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+
+        /* 明细区块 */
+        .detail-section-title { font-size: 14px; font-weight: 600; color: #1f2f3d; margin: 20px 0 10px 0; }
+        .detail-section-title:first-child { margin-top: 0; }
+        .detail-kv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid #ebeef5; border-radius: 6px; overflow: hidden; }
+        .detail-kv-item { display: flex; padding: 12px 16px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; }
+        .detail-kv-item:nth-child(3n) { border-right: none; }
+        .detail-kv-item:last-child, .detail-kv-item:nth-last-child(2), .detail-kv-item:nth-last-child(3) { border-bottom: none; }
+        .detail-kv-label { font-size: 13px; color: #999; width: 80px; flex-shrink: 0; }
+        .detail-kv-value { font-size: 13px; color: #333; font-weight: 500; }
+
+        /* 表格 */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 13px; margin: 0 3px; display: inline-block; }
+        .action-link:hover { text-decoration: underline; }
+        .amount-text { font-weight: 600; color: #333; font-size: 13px; }
+        .price-cell { font-size: 12px; line-height: 1.6; color: #333; text-align: center; }
+
+        /* 弹窗 */
+        .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-mask.show { display: flex; }
+        .modal { background: #fff; border-radius: 8px; width: 1200px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+        .modal-header { padding: 20px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ebeef5; }
+        .modal-title { font-size: 18px; font-weight: 700; color: #1f2f3d; }
+        .modal-close { font-size: 20px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
+        .modal-close:hover { color: #f5222d; }
+        .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 16px 24px; display: flex; justify-content: center; gap: 12px; border-top: 1px solid #ebeef5; }
+        .btn-cancel { background: #fff; color: #666; border: 1px solid #dcdfe6; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        .btn-cancel:hover { background: #f5f7fa; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html?nav=portal" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html?nav=external" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html?nav=service" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
+            <a class="nav-tab active" href="告警管理V1.2.html?nav=operation#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html?nav=personal#approval" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab" href="用户管理.html?nav=system" style="text-decoration:none;">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">3</span>
+            </div>
+            <div class="tenant-info">
+                <span class="tenant-name">某某金控</span>
+            </div>
+            <div class="avatar">席</div>
+        </div>
+    </nav>
+
+    <!-- 左侧菜单 -->
+    <aside class="side-menu">
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#rule"><i class="el-icon-bell"></i>告警管理</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#forecast"><i class="el-icon-data-line"></i>用量预测</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#channel"><i class="el-icon-message"></i>告警渠道</a>
+        <a class="menu-item" href="配额管理V1.1.html"><i class="el-icon-s-grid"></i>配额管理</a>
+        <a class="menu-item" href="计费管理.html"><i class="el-icon-s-finance"></i>计费管理</a>
+        <a class="menu-item active" href="账单管理.html"><i class="el-icon-document"></i>账单管理</a>
+        <a class="menu-item" href="对账管理.html"><i class="el-icon-s-check"></i>对账管理</a>
+        <a class="menu-item" href="任务管理.html"><i class="el-icon-s-order"></i>任务管理</a>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="content-card">
+            <!-- 顶部操作栏 -->
+            <div class="sticky-top-bar">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="el-icon-back"></i> 返回
+                </button>
+                <div class="breadcrumb">
+                    <a href="告警管理V1.2.html?nav=operation#rule">运营管理</a>
+                    <span class="separator">/</span>
+                    <a href="账单管理.html">账单管理</a>
+                    <span class="separator">/</span>
+                    <span class="current">账单明细</span>
+                </div>
+            </div>
+
+            <!-- 滚动内容 -->
+            <div class="scroll-body">
+                <!-- 基本信息 -->
+                <div class="forecast-white-card">
+                    <div class="detail-section-title" style="margin-top:0;">基本信息</div>
+                    <div class="detail-kv-grid" id="basicInfoGrid">
+                    </div>
+                </div>
+
+                <!-- 用量明细 -->
+                <div class="forecast-white-card">
+                    <div class="detail-section-title" style="margin-top:0;">用量明细</div>
+                    <table class="data-table" style="font-size:13px;">
+                        <thead>
+                            <tr>
+                                <th style="height:40px;">编号</th>
+                                <th style="height:40px;">供应商</th>
+                                <th style="height:40px;">API</th>
+                                <th style="height:40px;">租户</th>
+                                <th style="height:40px;">总查询量</th>
+                                <th style="height:40px;">使用占比</th>
+                                <th style="height:40px;">分摊金额</th>
+                                <th style="height:40px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usageDetailBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 计算公式说明 -->
+                <div class="forecast-white-card">
+                    <div class="detail-section-title" style="margin-top:0;">计算公式说明</div>
+                    <div id="formulaSection" style="background:#fafbfc;border-radius:6px;padding:10px 16px;font-size:12px;color:#666;line-height:1.5;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 已用明细弹窗 -->
+<div class="modal-mask" id="usageDetailModal" style="z-index:3000;">
+    <div class="modal" style="width:1200px;">
+        <div class="modal-header">
+            <div class="modal-title" id="usageDetailTitle">已用明细</div>
+            <button class="modal-close" onclick="closeUsageDetailModal()"><i class="el-icon-close"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-section-title" style="margin-top:0;">服务级消费明细</div>
+            <table class="data-table" style="font-size:13px;">
+                <thead>
+                    <tr>
+                        <th style="height:40px;">租户</th>
+                        <th style="height:40px;">公司</th>
+                        <th style="height:40px;">部门</th>
+                        <th style="height:40px;">系统</th>
+                        <th style="height:40px;">服务</th>
+                        <th style="height:40px;">API</th>
+                        <th style="height:40px;">计费次数</th>
+                        <th style="height:40px;">命中缓存数</th>
+                        <th style="height:40px;">周期范围</th>
+                    </tr>
+                </thead>
+                <tbody id="usageDetailModalBody">
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeUsageDetailModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 数据（与账单管理一致） ==========
+    var allData = [
+        { id:'BILL-202606-001', billingCode:'JF-API-QCC-QYJBXX-JT-003', supplier:'企查查', mode:'阶梯', price:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', usage:10000, amount:'¥500.00', type:'standard' },
+        { id:'BILL-202606-002', billingCode:'JF-API-TYC-SFXP-BL-002', supplier:'天眼查', mode:'包量', price:'¥60,000/8万次<br>超额¥0.8/次', usage:85000, amount:'¥85,000.00', type:'standard' },
+        { id:'BILL-202606-003', billingCode:'JF-API-TYC-QYJBXX-AC-001', supplier:'天眼查', mode:'按次', price:'¥1.0/次', usage:52000, amount:'¥52,000.00', type:'standard' },
+        { id:'BILL-202606-004', billingCode:'JF-API-ZCX-XYPF-JT-005', supplier:'中诚信', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', usage:92000, amount:'¥80,000.00', type:'non-standard' },
+        { id:'BILL-202606-005', billingCode:'JF-API-QHZX-FQZPF-AC-007', supplier:'前海征信', mode:'按次', price:'¥0.8/次', usage:38500, amount:'¥30,800.00', type:'standard' },
+        { id:'BILL-202606-006', billingCode:'JF-API-BSZX-GRXYBG-AC-006', supplier:'百行征信', mode:'按次', price:'¥2.5/次', usage:21800, amount:'¥54,500.00', type:'non-standard' }
+    ];
+
+    var billDetailsData = {
+        'BILL-202606-001': {
+            totalUsage: 10000,
+            apis: [
+                { name: '企业工商信息', tenants: [{ name: '租赁', usage: 5200 }, { name: '保险', usage: 3000 }, { name: '资产', usage: 1800 }] },
+                { name: '股东信息', tenants: [{ name: '租赁', usage: 2800 }, { name: '风控', usage: 1200 }] },
+                { name: '变更记录', tenants: [{ name: '保险', usage: 2000 }] }
+            ]
+        },
+        'BILL-202606-002': {
+            totalUsage: 85000,
+            apis: [
+                { name: '司法风险', tenants: [{ name: '租赁', usage: 45000 }, { name: '风控', usage: 25000 }, { name: '信贷', usage: 15000 }] },
+                { name: '企业图谱', tenants: [{ name: '资产', usage: 12000 }, { name: '保险', usage: 8000 }] }
+            ]
+        },
+        'BILL-202606-003': {
+            totalUsage: 52000,
+            apis: [
+                { name: '企业工商信息', tenants: [{ name: '保险', usage: 32000 }, { name: '资产', usage: 12000 }, { name: '信贷', usage: 8000 }] }
+            ]
+        },
+        'BILL-202606-004': {
+            totalUsage: 92000,
+            apis: [
+                { name: '信用评分', tenants: [{ name: '资产', usage: 52000 }, { name: '风控', usage: 28000 }, { name: '信贷', usage: 12000 }] }
+            ]
+        },
+        'BILL-202606-005': {
+            totalUsage: 38500,
+            apis: [
+                { name: '反欺诈评分', tenants: [{ name: '信贷', usage: 28500 }, { name: '风控', usage: 10000 }] }
+            ]
+        },
+        'BILL-202606-006': {
+            totalUsage: 21800,
+            apis: [
+                { name: '个人信用报告', tenants: [{ name: '风控', usage: 15800 }, { name: '信贷', usage: 6000 }] }
+            ]
+        }
+    };
+
+    var usageDetailData = {
+        'BILL-202606-001': {
+            '企业工商信息': [
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'企业工商查询服务', api:'企业基本信息', billable:1100, cache:280 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'企业风险画像', api:'企业基本信息', billable:800, cache:150 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'工商异常检测', api:'企业基本信息', billable:350, cache:90 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'企业信息核验', api:'企业基本信息', billable:200, cache:60 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'工商核验服务', api:'企业基本信息', billable:680, cache:140 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'授信主体核验', api:'企业基本信息', billable:400, cache:80 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'借款企业查询', api:'企业基本信息', billable:280, cache:70 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'企业存续状态查询', api:'企业基本信息', billable:190, cache:50 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'企业工商信息采集', api:'企业基本信息', billable:520, cache:110 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'合规主体校验', api:'企业基本信息', billable:280, cache:60 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'审计企业信息查询', api:'企业基本信息', billable:220, cache:50 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'企业状态核查', api:'企业基本信息', billable:180, cache:40 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'工商数据接口', api:'企业基本信息', billable:380, cache:80 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'企业信用查询', api:'企业基本信息', billable:320, cache:70 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的企业查询', api:'企业基本信息', billable:200, cache:45 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'投资风险评估', api:'企业基本信息', billable:100, cache:30 }
+            ],
+            '股东信息': [
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'股东穿透查询', api:'股东信息', billable:580, cache:120 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'实控人识别', api:'股东信息', billable:380, cache:80 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'关联股东排查', api:'股东信息', billable:220, cache:50 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'股权异常检测', api:'股东信息', billable:150, cache:35 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'股东信息核验', api:'股东信息', billable:420, cache:90 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'股权关联分析', api:'股东信息', billable:280, cache:60 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'股东变更监控', api:'股东信息', billable:200, cache:45 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'股权质押查询', api:'股东信息', billable:170, cache:40 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'股东合规审查', api:'股东信息', billable:320, cache:70 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'持股异常预警', api:'股东信息', billable:200, cache:45 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'股东变更审计', api:'股东信息', billable:180, cache:40 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'关联交易排查', api:'股东信息', billable:100, cache:25 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'股权结构分析', api:'股东信息', billable:250, cache:55 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'投资方背景查询', api:'股东信息', billable:150, cache:35 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的股东核查', api:'股东信息', billable:120, cache:30 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'股权估值辅助', api:'股东信息', billable:80, cache:20 }
+            ],
+            '变更记录': [
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'变更事项预警', api:'变更记录', billable:400, cache:80 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'风控决策系统', service:'法人变更监控', api:'变更记录', billable:260, cache:55 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'经营异常检测', api:'变更记录', billable:180, cache:40 },
+                { tenant:'租赁', company:'华润置地', department:'风险管理部', system:'反欺诈平台', service:'注册地址变更预警', api:'变更记录', billable:160, cache:35 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'企业变更核验', api:'变更记录', billable:220, cache:50 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'信贷审批系统', service:'经营范围变更查询', api:'变更记录', billable:180, cache:40 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'贷后变更监控', api:'变更记录', billable:100, cache:25 },
+                { tenant:'租赁', company:'华润置地', department:'信贷审批部', system:'贷后管理系统', service:'重大变更预警', api:'变更记录', billable:80, cache:20 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'工商变更追踪', api:'变更记录', billable:200, cache:45 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'合规管理平台', service:'合规变更审查', api:'变更记录', billable:150, cache:35 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'变更历史审计', api:'变更记录', billable:120, cache:30 },
+                { tenant:'租赁', company:'万科集团', department:'合规管理部', system:'审计系统', service:'变更记录比对', api:'变更记录', billable:80, cache:20 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'变更历史查询', api:'变更记录', billable:150, cache:35 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投研分析系统', service:'企业演变分析', api:'变更记录', billable:120, cache:28 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'标的变更追踪', api:'变更记录', billable:70, cache:18 },
+                { tenant:'租赁', company:'万科集团', department:'战略投资部', system:'投资决策系统', service:'投资风险评估', api:'变更记录', billable:50, cache:15 }
+            ]
+        }
+    };
+
+    // ========== 页面初始化 ==========
+    var params = new URLSearchParams(window.location.search);
+    var billingId = params.get('id') || '';
+    var currentBill = null;
+    var currentDetail = null;
+
+    function init() {
+        // 查找账单记录
+        for (var i = 0; i < allData.length; i++) {
+            if (allData[i].id === billingId) { currentBill = allData[i]; break; }
+        }
+        currentDetail = billDetailsData[billingId];
+
+        if (!currentBill) {
+            document.querySelector('.scroll-body').innerHTML = '<div style="text-align:center;padding:60px 0;color:#999;font-size:16px;">未找到对应的账单记录</div>';
+            return;
+        }
+
+        renderBasicInfo();
+        renderUsageTable();
+        renderFormula();
+    }
+
+    // ========== 基本信息 ==========
+    function renderBasicInfo() {
+        var r = currentBill;
+        var html = '';
+        html += '<div class="detail-kv-item"><div class="detail-kv-label">账单编号</div><div class="detail-kv-value">' + r.id + '</div></div>';
+        html += '<div class="detail-kv-item"><div class="detail-kv-label">计费编号</div><div class="detail-kv-value" style="letter-spacing:0.3px;">' + r.billingCode + '</div></div>';
+        html += '<div class="detail-kv-item"><div class="detail-kv-label">供应商</div><div class="detail-kv-value">' + r.supplier + '</div></div>';
+        html += '<div class="detail-kv-item"><div class="detail-kv-label">计费模式</div><div class="detail-kv-value">' + r.mode + '</div></div>';
+        html += '<div class="detail-kv-item"><div class="detail-kv-label">单价</div><div class="detail-kv-value">' + r.price.replace(/<br>/g, ' ') + '</div></div>';
+        html += '<div class="detail-kv-item"><div class="detail-kv-label">应付金额</div><div class="detail-kv-value amount-text">' + r.amount + '</div></div>';
+        document.getElementById('basicInfoGrid').innerHTML = html;
+    }
+
+    // ========== 用量明细表 ==========
+    function renderUsageTable() {
+        var r = currentBill;
+        var detail = currentDetail;
+        var totalUsage = detail ? detail.totalUsage : 0;
+        var totalAmount = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
+
+        var html = '';
+        if (detail && detail.apis) {
+            var idx = 0;
+            for (var a = 0; a < detail.apis.length; a++) {
+                var api = detail.apis[a];
+                for (var t = 0; t < api.tenants.length; t++) {
+                    var tn = api.tenants[t];
+                    idx++;
+                    var ratio = totalUsage > 0 ? (tn.usage / totalUsage) : 0;
+                    var shareAmt = totalAmount * ratio;
+                    html += '<tr>';
+                    html += '<td style="font-size:12px;">' + idx + '</td>';
+                    html += '<td>' + r.supplier + '</td>';
+                    html += '<td>' + api.name + '</td>';
+                    html += '<td>' + tn.name + '</td>';
+                    html += '<td>' + tn.usage.toLocaleString() + '</td>';
+                    html += '<td>' + (ratio * 100).toFixed(1) + '%</td>';
+                    html += '<td class="amount-text">¥' + shareAmt.toFixed(2) + '</td>';
+                    html += '<td><a class="action-link" onclick="openUsageDetailModal(\'' + billingId + '\',\'' + api.name + '\')">已用明细</a></td>';
+                    html += '</tr>';
+                }
+            }
+            html += '<tr style="background:#fafbfc;font-weight:600;">';
+            html += '<td colspan="4" style="color:#333;text-align:center;">合计</td>';
+            html += '<td style="color:#f89d34;">' + totalUsage.toLocaleString() + '</td>';
+            html += '<td style="color:#f89d34;">100.0%</td>';
+            html += '<td class="amount-text" style="color:#f89d34;">' + r.amount + '</td>';
+            html += '<td></td>';
+            html += '</tr>';
+        } else {
+            html += '<tr><td colspan="8" style="padding:32px 0;color:#999;">暂无数据</td></tr>';
+        }
+        document.getElementById('usageDetailBody').innerHTML = html;
+    }
+
+    // ========== 计算公式 ==========
+    function renderFormula() {
+        var r = currentBill;
+        var html = '';
+        html += '<div><span style="color:#999;display:inline-block;width:160px;">总查询量</span> = 真实调用次数 + 命中缓存次数</div>';
+        html += '<div><span style="color:#999;display:inline-block;width:160px;">使用占比</span> = 该租户API查询量 / 总查询量</div>';
+        html += '<div><span style="color:#999;display:inline-block;width:160px;">分摊金额</span> = 应付金额 × 使用占比</div>';
+        if (r.mode === '按次') {
+            html += '<div style="margin-top:6px;"><span style="color:#999;display:inline-block;width:160px;">按次计费金额</span> = 计费次数 × 单价</div>';
+        } else if (r.mode === '包量') {
+            html += '<div style="margin-top:6px;"><span style="color:#999;display:inline-block;width:160px;">包量计费金额</span> = 包量费用 + MAX(0, 计费次数 - 包含次数) × 超额单价</div>';
+        } else if (r.mode === '阶梯') {
+            html += '<div style="margin-top:6px;"><span style="color:#999;display:inline-block;width:160px;">阶梯计费金额</span> = 按所在档位单价 × 计费次数</div>';
+        }
+        document.getElementById('formulaSection').innerHTML = html;
+    }
+
+    // ========== 已用明细弹窗 ==========
+    function openUsageDetailModal(billId, apiName) {
+        document.getElementById('usageDetailTitle').textContent = '已用明细 - ' + apiName;
+        var billData = usageDetailData[billId];
+        var list = (billData && billData[apiName]) || [];
+        var html = '';
+        var totalBillable = 0, totalCache = 0;
+        for (var i = 0; i < list.length; i++) {
+            var r = list[i];
+            totalBillable += r.billable;
+            totalCache += r.cache;
+            html += '<tr>'
+                + '<td>' + r.tenant + '</td>'
+                + '<td>' + r.company + '</td>'
+                + '<td>' + r.department + '</td>'
+                + '<td>' + r.system + '</td>'
+                + '<td>' + r.service + '</td>'
+                + '<td>' + r.api + '</td>'
+                + '<td style="color:#f89d34;font-weight:600;">' + r.billable.toLocaleString() + '</td>'
+                + '<td>' + r.cache.toLocaleString() + '</td>'
+                + '<td style="font-size:12px;white-space:nowrap;">2026-06-01 ~ 2026-06-30</td>'
+                + '</tr>';
+        }
+        if (list.length === 0) {
+            html = '<tr><td colspan="9" style="padding:32px 0;color:#999;">暂无数据</td></tr>';
+        } else {
+            html += '<tr style="background:#fafbfc;font-weight:600;">'
+                + '<td colspan="6" style="color:#333;text-align:center;">合计</td>'
+                + '<td style="color:#f89d34;">' + totalBillable.toLocaleString() + '</td>'
+                + '<td>' + totalCache.toLocaleString() + '</td>'
+                + '<td></td>'
+                + '</tr>';
+        }
+        document.getElementById('usageDetailModalBody').innerHTML = html;
+        document.getElementById('usageDetailModal').classList.add('show');
+    }
+
+    function closeUsageDetailModal() {
+        document.getElementById('usageDetailModal').classList.remove('show');
+    }
+
+    document.getElementById('usageDetailModal').addEventListener('click', function(e) {
+        if (e.target === this) closeUsageDetailModal();
+    });
+
+    // ========== 导航 ==========
+    function goBack() {
+        window.location.href = '账单管理.html';
+    }
+
+    // ========== 启动 ==========
+    init();
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a.sidebar-item, a.menu-item');
+    if (link && link.getAttribute('href') === 'index.html') {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar-item, .menu-item').forEach(function(m) { m.classList.remove('active'); });
+        link.classList.add('active');
+    }
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var navTab = e.target.closest('a.nav-tab');
+    if (navTab) {
+        var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+        var text = navTab.textContent.trim();
+        if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+    }
+});
+</script>
+</body>
+</html>

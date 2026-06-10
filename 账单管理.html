@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <!-- SheetJS: Excel 导出 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -147,6 +149,26 @@
         .detail-kv-value { font-size: 13px; color: #333; font-weight: 500; }
 
         .detail-highlight { color: #f89d34; font-weight: 700; font-size: 15px; }
+
+        /* 导出弹窗 */
+        .export-mode-tabs { display: flex; gap: 0; border: 1px solid #dcdfe6; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+        .export-mode-tab { flex: 1; padding: 10px 20px; text-align: center; cursor: pointer; font-size: 13px; color: #666; background: #fafbfc; transition: 0.2s; border-right: 1px solid #dcdfe6; }
+        .export-mode-tab:last-child { border-right: none; }
+        .export-mode-tab.active { background: #f89d34; color: #fff; font-weight: 600; }
+        .export-template-card { background: #fafbfc; border: 1px solid #ebeef5; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
+        .export-template-title { font-size: 14px; font-weight: 600; color: #1f2f3d; margin-bottom: 12px; }
+        .export-template-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+        .export-template-label { color: #999; width: 80px; flex-shrink: 0; }
+        .export-template-value { color: #333; font-weight: 500; }
+        .export-section-block { background: #f5f7fa; border-radius: 4px; padding: 10px 14px; margin-bottom: 8px; font-size: 12px; color: #666; line-height: 1.8; }
+        .export-section-block strong { color: #1f2f3d; font-size: 13px; }
+        .export-filter-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .export-filter-item { display: flex; align-items: center; gap: 8px; }
+        .export-filter-item label { font-size: 13px; color: #666; width: 70px; flex-shrink: 0; text-align: right; }
+        .export-filter-item input, .export-filter-item select { flex: 1; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; outline: none; color: #333; }
+        .export-filter-item input:focus, .export-filter-item select:focus { border-color: #f89d34; }
+        .export-hint { font-size: 12px; color: #999; margin-top: 8px; line-height: 1.6; }
+        .export-hint i { color: #f89d34; margin-right: 4px; }
     </style>
 </head>
 <body>
@@ -207,17 +229,6 @@
                 <div class="filter-bar">
                     <div class="filter-left">
                         <div class="filter-item">
-                            <label>租户</label>
-                            <select id="filterTenant">
-                                <option value="">全部</option>
-                                <option>租赁</option>
-                                <option>保险</option>
-                                <option>资产</option>
-                                <option>信贷</option>
-                                <option>风控</option>
-                            </select>
-                        </div>
-                        <div class="filter-item">
                             <label>供应商</label>
                             <select id="filterSupplier">
                                 <option value="">全部</option>
@@ -235,6 +246,14 @@
                             <span style="color:#999;">~</span>
                             <input type="text" class="datepicker-input" id="filterDateEnd" placeholder="结束日期">
                         </div>
+                        <div class="filter-item">
+                            <label>账单类型</label>
+                            <select id="filterBillType">
+                                <option value="">全部</option>
+                                <option value="standard">标准账单</option>
+                                <option value="non-standard">非标准账单</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="filter-right">
                         <button class="btn-primary" onclick="doQuery()">查询</button>
@@ -246,7 +265,7 @@
             <!-- 数据表格 -->
             <div class="forecast-white-card">
                 <div class="action-bar">
-                    <button class="btn-add">导出</button>
+                    <button class="btn-add" onclick="openExportModal()">导出</button>
                 </div>
                 <div class="flex-table-container">
                 <div class="table-container">
@@ -254,13 +273,11 @@
                         <thead>
                             <tr>
                                 <th>编号</th>
-                                <th>租户</th>
+                                <th>计费编号</th>
                                 <th>供应商</th>
-                                <th>API</th>
                                 <th>计费模式</th>
                                 <th>单价</th>
                                 <th>使用次数</th>
-                                <th>使用占比</th>
                                 <th>账单周期</th>
                                 <th>应付金额</th>
                                 <th>操作</th>
@@ -295,102 +312,83 @@
     </main>
 </div>
 
-<!-- 查看明细弹窗 -->
-<div class="modal-mask" id="detailModal">
-    <div class="modal" style="width:1060px;">
+<!-- 导出账单弹窗 -->
+<div class="modal-mask" id="exportModal">
+    <div class="modal" style="width:680px;">
         <div class="modal-header">
-            <div class="modal-title">账单明细</div>
-            <button class="modal-close" onclick="closeDetailModal()"><i class="el-icon-close"></i></button>
+            <div class="modal-title">导出账单</div>
+            <button class="modal-close" onclick="closeExportModal()"><i class="el-icon-close"></i></button>
         </div>
         <div class="modal-body">
-            <!-- 基本信息 -->
-            <div class="detail-section-title" style="margin-top:0;">基本信息</div>
-            <div class="detail-kv-grid">
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">租户</div>
-                    <div class="detail-kv-value">租赁</div>
-                </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">供应商</div>
-                    <div class="detail-kv-value">企查查</div>
-                </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">API</div>
-                    <div class="detail-kv-value">企业工商信息</div>
-                </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">单价</div>
-                    <div class="detail-kv-value">¥0.5/次</div>
-                </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">计费模式</div>
-                    <div class="detail-kv-value">按次</div>
-                </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">周期范围</div>
-                    <div class="detail-kv-value">2024-05-01 ~ 2024-05-31</div>
-                </div>
+            <!-- 账单类型切换 -->
+            <div class="export-mode-tabs">
+                <div class="export-mode-tab active" id="tabStandard" onclick="switchExportMode('standard')">标准账单</div>
+                <div class="export-mode-tab" id="tabNonStandard" onclick="switchExportMode('non-standard')">非标准账单</div>
             </div>
 
-            <!-- 租户用量明细 -->
-            <div class="detail-section-title">租户用量明细</div>
-            <div class="detail-kv-grid">
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">租户真实调用</div>
-                    <div class="detail-kv-value">8,500</div>
+            <!-- 标准账单内容 -->
+            <div id="exportStandardSection">
+                <div class="export-template-card">
+                    <div class="export-template-title">固定模板预览</div>
+                    <div class="export-template-row">
+                        <span class="export-template-label">账单周期</span>
+                        <span class="export-template-value" id="exportStdPeriod">--</span>
+                    </div>
+                    <div class="export-template-row">
+                        <span class="export-template-label">供应商</span>
+                        <span class="export-template-value" id="exportStdSupplier">--</span>
+                    </div>
+                    <div class="export-template-row">
+                        <span class="export-template-label">记录数</span>
+                        <span class="export-template-value" id="exportStdCount">--</span>
+                    </div>
                 </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">租户命中缓存</div>
-                    <div class="detail-kv-value">1,500</div>
+                <div class="export-section-block">
+                    <div><strong>第一部分 · 订单信息</strong></div>
+                    <div>计费编号 / 计费模式 / 合计次数 / 计费次数 / 应付金额</div>
+                    <div style="margin-top:8px;"><strong>第二部分 · 账单明细</strong></div>
+                    <div>接口名称 / 计费编号 / 总查询量 / 计费次数 / 应付金额（元）</div>
                 </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">租户合计使用</div>
-                    <div class="detail-kv-value detail-highlight">10,000</div>
-                </div>
+                <div class="export-hint"><i class="el-icon-info"></i>标准账单按固定周期和模板导出，使用当前筛选栏条件，无需额外配置。</div>
             </div>
 
-            <!-- API用量统计 -->
-            <div class="detail-section-title">API用量统计</div>
-            <div class="detail-kv-grid">
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">API使用总数</div>
-                    <div class="detail-kv-value">50,000</div>
+            <!-- 非标准账单内容 -->
+            <div id="exportNonStandardSection" style="display:none;">
+                <div class="export-template-card" style="padding:16px 20px;">
+                    <div class="export-template-title" style="margin-bottom:16px;">自定义筛选条件</div>
+                    <div class="export-filter-form">
+                        <div class="export-filter-item">
+                            <label>开始日期</label>
+                            <input type="text" id="exportDateStart" placeholder="选择开始日期">
+                        </div>
+                        <div class="export-filter-item">
+                            <label>结束日期</label>
+                            <input type="text" id="exportDateEnd" placeholder="选择结束日期">
+                        </div>
+                        <div class="export-filter-item">
+                            <label>供应商</label>
+                            <select id="exportSupplier">
+                                <option value="">全部</option>
+                                <option>企查查</option>
+                                <option>天眼查</option>
+                                <option>安硕</option>
+                                <option>中诚信</option>
+                                <option>百行征信</option>
+                                <option>前海征信</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">API总真实调用</div>
-                    <div class="detail-kv-value">45,000</div>
+                <div class="export-section-block">
+                    <div><strong>导出内容</strong></div>
+                    <div>账单编号 / 计费编号 / 供应商 / 计费模式 / 单价 / 账单周期 / 应付金额</div>
                 </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">API总费用</div>
-                    <div class="detail-kv-value">¥2,500.00</div>
-                </div>
-            </div>
-
-            <!-- 费用计算 -->
-            <div class="detail-section-title">费用计算</div>
-            <div class="detail-kv-grid" style="grid-template-columns: repeat(2, 1fr);">
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">租户使用占比</div>
-                    <div class="detail-kv-value">20.0%</div>
-                </div>
-                <div class="detail-kv-item">
-                    <div class="detail-kv-label">租户应付金额</div>
-                    <div class="detail-kv-value detail-highlight" style="font-size:18px;">¥500.00</div>
-                </div>
-            </div>
-
-            <!-- 计算公式说明 -->
-            <div class="detail-section-title">计算公式说明</div>
-            <div style="background:#fafbfc;border-radius:6px;padding:10px 16px;font-size:12px;color:#666;line-height:1.5;">
-                <div><span style="color:#999;display:inline-block;width:160px;">使用次数</span> = 真实调用次数 + 命中缓存次数</div>
-                <div><span style="color:#999;display:inline-block;width:160px;">使用占比</span> = 租户使用次数 / API总使用次数</div>
-                <div><span style="color:#999;display:inline-block;width:160px;">API总使用次数</span> = API真实调用 + API命中缓存</div>
-                <div><span style="color:#999;display:inline-block;width:160px;">应付金额</span> = 使用占比 × API使用总费用</div>
-                <div><span style="color:#999;display:inline-block;width:160px;">API使用总费用</span> = API真实调用 × 单价</div>
+                <div class="export-hint"><i class="el-icon-info"></i>非标准账单可自行设置筛选条件，导出符合条件的账单记录。</div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeDetailModal()">关闭</button>
+            <button class="btn-save" onclick="doExport()">导出 Excel</button>
+            <button class="btn-cancel" onclick="closeExportModal()">取消</button>
         </div>
     </div>
 </div>
@@ -434,13 +432,14 @@
 
     // 列表数据：计费模式仅保留 按次、包量、阶梯，与计费管理一致
     // price 字段支持 HTML（<br>换行），参考计费管理的 price-cell 样式
+    // billingCode 引用计费管理中对应的计费编码
     var allData = [
-        { id:'BILL-202606-001', tenant:'租赁', supplier:'企查查', api:'企业工商信息', mode:'按次', price:'¥0.5/次', usage:10000, ratio:'20.0%', amount:'¥500.00' },
-        { id:'BILL-202606-002', tenant:'租赁', supplier:'天眼查', api:'司法风险', mode:'按次', price:'¥1.0/次', usage:85000, ratio:'35.4%', amount:'¥85,000.00' },
-        { id:'BILL-202606-003', tenant:'保险', supplier:'安硕', api:'失信核查', mode:'按次', price:'¥0.8/次', usage:52000, ratio:'15.8%', amount:'¥41,600.00' },
-        { id:'BILL-202606-004', tenant:'资产', supplier:'中诚信', api:'信用评分', mode:'包量', price:'¥80,000/10万次<br>超额¥1.0/次', usage:92000, ratio:'28.3%', amount:'¥80,000.00' },
-        { id:'BILL-202606-005', tenant:'信贷', supplier:'百行征信', api:'反欺诈评分', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', usage:38500, ratio:'22.1%', amount:'¥57,750.00' },
-        { id:'BILL-202606-006', tenant:'风控', supplier:'前海征信', api:'个人信用报告', mode:'包量', price:'¥50,000/5万次<br>超额¥1.2/次', usage:21800, ratio:'18.5%', amount:'¥26,160.00' }
+        { id:'BILL-202606-001', billingCode:'JF-API-QCC-QYJBXX-JT-003', supplier:'企查查', mode:'阶梯', price:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', usage:10000, amount:'¥500.00', type:'standard' },
+        { id:'BILL-202606-002', billingCode:'JF-API-TYC-SFXP-BL-002', supplier:'天眼查', mode:'包量', price:'¥60,000/8万次<br>超额¥0.8/次', usage:85000, amount:'¥85,000.00', type:'standard' },
+        { id:'BILL-202606-003', billingCode:'JF-API-TYC-QYJBXX-AC-001', supplier:'天眼查', mode:'按次', price:'¥1.0/次', usage:52000, amount:'¥52,000.00', type:'standard' },
+        { id:'BILL-202606-004', billingCode:'JF-API-ZCX-XYPF-JT-005', supplier:'中诚信', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', usage:92000, amount:'¥80,000.00', type:'non-standard' },
+        { id:'BILL-202606-005', billingCode:'JF-API-QHZX-FQZPF-AC-007', supplier:'前海征信', mode:'按次', price:'¥0.8/次', usage:38500, amount:'¥30,800.00', type:'standard' },
+        { id:'BILL-202606-006', billingCode:'JF-API-BSZX-GRXYBG-AC-006', supplier:'百行征信', mode:'按次', price:'¥2.5/次', usage:21800, amount:'¥54,500.00', type:'non-standard' }
     ];
 
     function getSelectedPeriod() {
@@ -453,7 +452,7 @@
         var tbody = document.getElementById('tableBody');
         var period = getSelectedPeriod();
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="11" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
             document.getElementById('totalText').textContent = '共 0 条';
             return;
         }
@@ -462,16 +461,14 @@
             var r = data[i];
             html += '<tr>'
                 + '<td style="font-size:12px;">' + r.id + '</td>'
-                + '<td>' + r.tenant + '</td>'
+                + '<td style="font-size:12px;letter-spacing:0.3px;" title="' + r.billingCode + '">' + r.billingCode + '</td>'
                 + '<td>' + r.supplier + '</td>'
-                + '<td>' + r.api + '</td>'
                 + '<td>' + r.mode + '</td>'
                 + '<td class="price-cell">' + r.price + '</td>'
-                + '<td>' + r.usage.toLocaleString() + '</td>'
-                + '<td>' + r.ratio + '</td>'
+                + '<td>' + (r.usage || 0).toLocaleString() + '</td>'
                 + '<td style="white-space:nowrap;font-size:12px;">' + period + '</td>'
                 + '<td class="amount-text">' + r.amount + '</td>'
-                + '<td><a class="action-link" onclick="openDetailModal()">查看明细</a></td>'
+                + '<td><a class="action-link" href="账单明细.html?id=' + r.id + '">查看明细</a></td>'
                 + '</tr>';
         }
         tbody.innerHTML = html;
@@ -479,20 +476,20 @@
     }
 
     function doQuery() {
-        var tenant = document.getElementById('filterTenant').value;
         var supplier = document.getElementById('filterSupplier').value;
+        var billType = document.getElementById('filterBillType').value;
 
         var filtered = allData.filter(function(r) {
-            if (tenant && r.tenant !== tenant) return false;
             if (supplier && r.supplier !== supplier) return false;
+            if (billType && r.type !== billType) return false;
             return true;
         });
         renderTable(filtered);
     }
 
     function doReset() {
-        document.getElementById('filterTenant').value = '';
         document.getElementById('filterSupplier').value = '';
+        document.getElementById('filterBillType').value = '';
         // 重置为当月
         document.getElementById('filterDateStart')._flatpickr.setDate(defaultRange.start);
         document.getElementById('filterDateEnd')._flatpickr.setDate(defaultRange.end);
@@ -502,16 +499,266 @@
     // 初始渲染
     renderTable(allData);
 
-    function openDetailModal() {
-        document.getElementById('detailModal').classList.add('show');
-    }
-    function closeDetailModal() {
-        document.getElementById('detailModal').classList.remove('show');
+    // ========== 导出功能 ==========
+    var currentExportMode = 'standard';
+
+    function openExportModal() {
+        var billType = document.getElementById('filterBillType').value;
+        // 根据当前筛选自动选择模式
+        if (billType === 'non-standard') {
+            switchExportMode('non-standard');
+        } else {
+            switchExportMode('standard');
+        }
+        // 填充标准信息
+        var supplier = document.getElementById('filterSupplier').value;
+        var period = getSelectedPeriod();
+        var filtered = allData.filter(function(r) {
+            if (supplier && r.supplier !== supplier) return false;
+            if (billType && r.type !== billType) return false;
+            return true;
+        });
+        document.getElementById('exportStdPeriod').textContent = period;
+        document.getElementById('exportStdSupplier').textContent = supplier || '全部';
+        document.getElementById('exportStdCount').textContent = filtered.length + ' 条标准账单';
+        // 初始化非标准日期
+        if (!document.getElementById('exportDateStart')._flatpickr) {
+            flatpickr('#exportDateStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: defaultRange.start });
+            flatpickr('#exportDateEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: defaultRange.end });
+        }
+        document.getElementById('exportModal').classList.add('show');
     }
 
-    document.getElementById('detailModal').addEventListener('click', function(e) {
-        if (e.target === this) closeDetailModal();
+    function closeExportModal() {
+        document.getElementById('exportModal').classList.remove('show');
+    }
+
+    function switchExportMode(mode) {
+        currentExportMode = mode;
+        document.getElementById('tabStandard').classList.toggle('active', mode === 'standard');
+        document.getElementById('tabNonStandard').classList.toggle('active', mode === 'non-standard');
+        document.getElementById('exportStandardSection').style.display = mode === 'standard' ? 'block' : 'none';
+        document.getElementById('exportNonStandardSection').style.display = mode === 'non-standard' ? 'block' : 'none';
+    }
+
+    document.getElementById('exportModal').addEventListener('click', function(e) {
+        if (e.target === this) closeExportModal();
     });
+
+    function doExport() {
+        if (currentExportMode === 'standard') {
+            exportStandard();
+        } else {
+            exportNonStandard();
+        }
+    }
+
+    // ---------- 标准账单导出（参考天眼查模板） ----------
+    // 通用样式常量
+    var thinBorder = { style:'thin', color:{rgb:'FF999999'} };
+    var allBorders = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
+    var headerFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'} };
+    var headerFill = { fgColor:{rgb:'FFF5F7FA'} };
+    var headerAlign = { horizontal:'center', vertical:'center', wrapText:true };
+    var cellAlign = { horizontal:'center', vertical:'center' };
+    var dataFont = { sz:9, name:'Arial', color:{rgb:'FF333333'} };
+
+    function applyCellStyle(ws, ref, style) {
+        if (!ws[ref]) return;
+        ws[ref].s = style;
+    }
+
+    function styleRange(ws, rowIdx, colStart, colEnd, style) {
+        for (var c = colStart; c <= colEnd; c++) {
+            var ref = XLSX.utils.encode_cell({r:rowIdx, c:c});
+            applyCellStyle(ws, ref, style);
+        }
+    }
+
+    function downloadWorkbook(wb, filename) {
+        var wbout = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
+        var blob = new Blob([wbout], { type:'application/octet-stream' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportStandard() {
+        var supplier = document.getElementById('filterSupplier').value;
+        var billType = document.getElementById('filterBillType').value;
+        var period = getSelectedPeriod();
+
+        var data = allData.filter(function(r) {
+            if (supplier && r.supplier !== supplier) return false;
+            if (billType && r.type !== billType) return false;
+            return true;
+        });
+
+        // 用量明细示例数据（模拟每个账单下的 API 明细）
+        var apiDetails = [
+            { name:'企业工商信息', apiId:'757', totalCalls:2166, billableCalls:2166, amount:1083.00 },
+            { name:'股东信息', apiId:'826', totalCalls:850, billableCalls:805, amount:402.50 },
+            { name:'变更记录', apiId:'846', totalCalls:1421, billableCalls:1421, amount:710.50 },
+            { name:'经营异常', apiId:'848', totalCalls:2839, billableCalls:2839, amount:1419.50 },
+            { name:'企业联系方式', apiId:'1046', totalCalls:1593, billableCalls:1520, amount:760.00 }
+        ];
+
+        var aoa = [];
+        // Row 1: 标题
+        aoa.push(['', '外数平台 - 标准账单对账单', '', '', '', '', '', '']);
+        // Row 2: 空行
+        aoa.push([]);
+        // Row 3: 周期
+        aoa.push(['', '账单周期：' + period.replace(' ~ ', '-'), '', '', '', '', '', '']);
+        // Row 4: 订单信息标题
+        aoa.push(['', '订单信息']);
+        // Row 5: 订单表头
+        aoa.push(['', '计费编号', '计费模式', '合计次数', '计费次数', '应付金额（元）']);
+        // Row 6+: 订单数据
+        var totalAllUsage = 0, totalAllBillable = 0, totalAllAmount = 0;
+        for (var i = 0; i < data.length; i++) {
+            var r = data[i];
+            var billable = Math.round(r.usage * 0.85);
+            var amt = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
+            totalAllUsage += r.usage;
+            totalAllBillable += billable;
+            totalAllAmount += amt;
+            aoa.push(['', r.billingCode, r.mode, r.usage.toLocaleString(), billable.toLocaleString(), amt.toFixed(2)]);
+        }
+        // 订单合计
+        aoa.push(['', '合计', '', totalAllUsage.toLocaleString(), totalAllBillable.toLocaleString(), totalAllAmount.toFixed(2)]);
+        // 空行
+        aoa.push([]);
+        // 账单信息标题
+        aoa.push(['', '账单明细']);
+        // 账单表头
+        aoa.push(['', '接口名称', '接口ID', '总查询量', '计费次数', '应付金额（元）']);
+        // 账单数据
+        var detailTotalCalls = 0, detailTotalBillable = 0, detailTotalAmt = 0;
+        for (var j = 0; j < apiDetails.length; j++) {
+            var d = apiDetails[j];
+            detailTotalCalls += d.totalCalls;
+            detailTotalBillable += d.billableCalls;
+            detailTotalAmt += d.amount;
+            aoa.push(['', d.name, d.apiId, d.totalCalls.toLocaleString(), d.billableCalls.toLocaleString(), d.amount.toFixed(2)]);
+        }
+        // 账单合计
+        aoa.push(['', '合计', '', detailTotalCalls.toLocaleString(), detailTotalBillable.toLocaleString(), detailTotalAmt.toFixed(2)]);
+
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+        // 合并单元格
+        ws['!merges'] = [
+            { s:{r:0,c:1}, e:{r:0,c:7} }   // 标题 B1:H1
+        ];
+        // 列宽（A 列窄占位，B-G 数据列）
+        ws['!cols'] = [
+            {wch:3}, {wch:28}, {wch:14}, {wch:14}, {wch:14}, {wch:16}
+        ];
+
+        // 应用样式
+        // 标题行 (row 0): 加粗居中
+        applyCellStyle(ws, 'B1', { font:{bold:true, sz:12, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
+        // 客户信息行 (row 2)
+        applyCellStyle(ws, 'B3', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+        // 订单信息标题 (row 3)
+        applyCellStyle(ws, 'B4', { font:{bold:true, sz:10, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{vertical:'center'} });
+        // 订单表头 (row 4): B5-F5
+        styleRange(ws, 4, 1, 5, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 订单数据行 + 合计行: row 5 到 row 5+data.length
+        var orderDataRowCount = data.length + 1; // +1 for 合计
+        for (var oi = 0; oi < orderDataRowCount; oi++) {
+            var rIdx = 5 + oi;
+            var isTotalRow = (oi === data.length);
+            var rowStyle = isTotalRow
+                ? { font:{bold:true, sz:9, name:'Arial', color:{rgb:'FFf89d34'}}, alignment:cellAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} }
+                : { font:dataFont, alignment:cellAlign, border:allBorders };
+            styleRange(ws, rIdx, 1, 5, rowStyle);
+        }
+        // 账单信息标题 (row 3+data.length+3 = row index for '账单明细')
+        var billTitleRow = 4 + data.length + 3;
+        applyCellStyle(ws, XLSX.utils.encode_cell({r:billTitleRow, c:1}), { font:{bold:true, sz:10, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{vertical:'center'} });
+        // 账单表头 (billTitleRow + 1)
+        var billHeaderRow = billTitleRow + 1;
+        styleRange(ws, billHeaderRow, 1, 5, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 账单数据行
+        var billDataRowCount = apiDetails.length + 1; // +1 for 合计
+        for (var bi = 0; bi < billDataRowCount; bi++) {
+            var brIdx = billHeaderRow + 1 + bi;
+            var isBillTotal = (bi === apiDetails.length);
+            var bStyle = isBillTotal
+                ? { font:{bold:true, sz:9, name:'Arial', color:{rgb:'FFf89d34'}}, alignment:cellAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} }
+                : { font:dataFont, alignment:cellAlign, border:allBorders };
+            styleRange(ws, brIdx, 1, 5, bStyle);
+        }
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '对账单');
+        var fname = '标准账单_' + new Date().toISOString().slice(0,10) + '.xlsx';
+        downloadWorkbook(wb, fname);
+        closeExportModal();
+    }
+
+    // ---------- 非标准账单导出 ----------
+    function exportNonStandard() {
+        var eDateStart = document.getElementById('exportDateStart').value || defaultRange.start;
+        var eDateEnd = document.getElementById('exportDateEnd').value || defaultRange.end;
+        var eSupplier = document.getElementById('exportSupplier').value;
+
+        var data = allData.filter(function(r) {
+            if (r.type !== 'non-standard') return false;
+            if (eSupplier && r.supplier !== eSupplier) return false;
+            return true;
+        });
+
+        var aoa = [];
+        // Row 1: 标题
+        aoa.push(['外数平台 - 非标准账单导出']);
+        // Row 2: 周期
+        aoa.push(['账单周期：' + eDateStart + ' ~ ' + eDateEnd]);
+        // Row 3: 空行
+        aoa.push([]);
+        // Row 4: 表头
+        aoa.push(['账单编号', '计费编号', '供应商', '计费模式', '单价', '账单周期', '应付金额']);
+        // Row 5+: 数据
+        for (var i = 0; i < data.length; i++) {
+            var r = data[i];
+            var priceText = r.price.replace(/<br>/g, ' ');
+            aoa.push([r.id, r.billingCode, r.supplier, r.mode, priceText, eDateStart + ' ~ ' + eDateEnd, r.amount]);
+        }
+        // 空数据提示
+        if (data.length === 0) {
+            aoa.push(['暂无符合条件的非标准账单记录']);
+        }
+
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!merges'] = [
+            { s:{r:0,c:0}, e:{r:0,c:6} },   // 标题 A1:G1
+            { s:{r:1,c:0}, e:{r:1,c:6} }    // 周期 A2:G2
+        ];
+        ws['!cols'] = [
+            {wch:20}, {wch:32}, {wch:10}, {wch:10}, {wch:22}, {wch:26}, {wch:14}
+        ];
+        // 样式
+        applyCellStyle(ws, 'A1', { font:{bold:true, sz:13, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{horizontal:'center', vertical:'center'} });
+        applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+        // 表头行 (row 3)
+        styleRange(ws, 3, 0, 6, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 数据行 (row 4+)
+        for (var di = 0; di < data.length; di++) {
+            styleRange(ws, 4 + di, 0, 6, { font:dataFont, alignment:cellAlign, border:allBorders });
+        }
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '非标准账单');
+        var fname = '非标准账单_' + eDateStart + '-' + eDateEnd + '.xlsx';
+        downloadWorkbook(wb, fname);
+        closeExportModal();
+    }
 </script>
 <script>
 document.addEventListener('click', function(e) {

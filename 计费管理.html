@@ -173,6 +173,53 @@
         .confirm-box .confirm-title { font-size: 16px; font-weight: 600; color: #1f2f3d; margin-bottom: 12px; display: flex; align-items: center; }
         .confirm-box .confirm-msg { font-size: 14px; color: #666; margin-bottom: 24px; padding-left: 34px; }
         .confirm-box .confirm-actions { display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* 自定义多选下拉 */
+        .multi-select-wrap { position: relative; }
+        .multi-select-display {
+            width: 100%; min-height: 36px; padding: 4px 30px 4px 8px; border: 1px solid #dcdfe6; border-radius: 4px;
+            font-size: 14px; color: #333; cursor: pointer; background: #fff;
+            display: flex; align-items: center; flex-wrap: nowrap; overflow: hidden; gap: 4px;
+        }
+        .multi-select-display:focus { border-color: #f89d34; outline: none; }
+        .multi-select-display.disabled { background: #f5f7fa; color: #8c8f99; cursor: not-allowed; }
+        .multi-select-placeholder { color: #c0c4cc; font-size: 14px; }
+        .multi-select-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #c0c4cc; font-size: 12px; pointer-events: none; }
+        .multi-select-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #dcdfe6;
+            border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 260px; overflow-y: auto; display: none;
+        }
+        .multi-select-dropdown.show { display: block; }
+        .multi-select-option { display: flex; align-items: center; gap: 8px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: #333; transition: background 0.15s; }
+        .multi-select-option:hover { background: #f5f7fa; }
+        .multi-select-option input[type="checkbox"] {
+            position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+        }
+        .multi-select-option .cb-box {
+            width: 14px; height: 14px; border: 1px solid #dcdfe6; border-radius: 2px; background: #fff;
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; cursor: pointer;
+        }
+        .multi-select-option .cb-box::after {
+            content: ''; width: 4px; height: 8px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) scale(0); transition: transform 0.12s; display: block; margin-top: -1px;
+        }
+        .multi-select-option input[type="checkbox"]:checked + .cb-box {
+            background: #f89d34; border-color: #f89d34;
+        }
+        .multi-select-option input[type="checkbox"]:checked + .cb-box::after {
+            transform: rotate(45deg) scale(1);
+        }
+        .multi-select-option label { flex: 1; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 20px; text-align: left; width: auto; padding: 0; margin: 0; font-weight: normal; font-size: 13px; color: #333; }
+        .multi-select-option.unlimited-option { border-bottom: 1px solid #ebeef5; font-weight: 500; }
+        .api-tag { display: inline-flex; align-items: center; gap: 4px; background: #f0f2f5; border-radius: 3px; padding: 2px 8px; font-size: 12px; color: #333; white-space: nowrap; flex-shrink: 0; }
+        .api-tag .tag-close { cursor: pointer; color: #999; font-size: 14px; line-height: 1; }
+        .api-tag .tag-close:hover { color: #f5222d; }
+        .api-tag-more { display: inline-flex; align-items: center; background: #e8eaed; border-radius: 3px; padding: 2px 8px; font-size: 12px; color: #666; white-space: nowrap; flex-shrink: 0; }
+
+        /* 表格API列省略 */
+        .data-table td.cell-api { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* 编号提示图标 */
+        .code-info-icon { color: #c0c4cc; font-size: 14px; cursor: help; margin-left: 4px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -247,6 +294,7 @@
                             <label>API</label>
                             <select id="filterApi">
                                 <option value="">全部</option>
+                                <option value="不限">不限</option>
                                 <option>企业基本信息</option>
                                 <option>司法风险</option>
                                 <option>企业图谱</option>
@@ -316,6 +364,12 @@
             <i class="el-icon-close modal-close" onclick="closeEditModal()"></i>
         </div>
         <div class="modal-body">
+            <div class="form-row-horizontal" id="billingCodeRow" style="display:none;">
+                <label>编号 <i class="el-icon-info code-info-icon" title="计费编码规则：JF-供应商简称-API简称-计费模式-序号"></i></label>
+                <div class="form-control">
+                    <input type="text" id="editBillingCode" readonly style="background:#f5f7fa;color:#333;font-weight:500;letter-spacing:0.5px;">
+                </div>
+            </div>
             <div class="form-row-horizontal">
                 <label><span class="required">*</span>供应商</label>
                 <div class="form-control">
@@ -332,18 +386,27 @@
             <div class="form-row-horizontal">
                 <label><span class="required">*</span>API</label>
                 <div class="form-control">
-                    <select id="editApi">
-                        <option value="">请选择API</option>
-                        <option>企业基本信息</option>
-                        <option>司法风险</option>
-                        <option>企业图谱</option>
-                        <option>信用评分</option>
-                        <option>个人信用报告</option>
-                        <option>反欺诈评分</option>
-                        <option>经营状况</option>
-                        <option>融资历史</option>
-                        <option>知识产权</option>
-                    </select>
+                    <div class="multi-select-wrap" id="editApiWrap">
+                        <div class="multi-select-display" id="editApiDisplay" tabindex="0">
+                            <span class="multi-select-placeholder" id="editApiPlaceholder">请选择API</span>
+                        </div>
+                        <span class="multi-select-arrow"><i class="el-icon-arrow-down"></i></span>
+                        <div class="multi-select-dropdown" id="editApiDropdown">
+                            <div class="multi-select-option unlimited-option">
+                                <input type="checkbox" value="不限" id="apiOpt_all"><span class="cb-box"></span>
+                                <label for="apiOpt_all">不限</label>
+                            </div>
+                            <div class="multi-select-option"><input type="checkbox" value="企业基本信息" id="apiOpt_1"><span class="cb-box"></span><label for="apiOpt_1">企业基本信息</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="司法风险" id="apiOpt_2"><span class="cb-box"></span><label for="apiOpt_2">司法风险</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="企业图谱" id="apiOpt_3"><span class="cb-box"></span><label for="apiOpt_3">企业图谱</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="信用评分" id="apiOpt_4"><span class="cb-box"></span><label for="apiOpt_4">信用评分</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="个人信用报告" id="apiOpt_5"><span class="cb-box"></span><label for="apiOpt_5">个人信用报告</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="反欺诈评分" id="apiOpt_6"><span class="cb-box"></span><label for="apiOpt_6">反欺诈评分</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="经营状况" id="apiOpt_7"><span class="cb-box"></span><label for="apiOpt_7">经营状况</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="融资历史" id="apiOpt_8"><span class="cb-box"></span><label for="apiOpt_8">融资历史</label></div>
+                            <div class="multi-select-option"><input type="checkbox" value="知识产权" id="apiOpt_9"><span class="cb-box"></span><label for="apiOpt_9">知识产权</label></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="form-row-horizontal">
@@ -351,14 +414,11 @@
                 <div class="form-control">
                     <select id="strategySelect" onchange="onStrategyChange()">
                         <option value="">请选择计费模式</option>
-                        <option value="perCall">按次计费</option>
-                        <option value="volume">包量计费</option>
-                        <option value="tiered">阶梯计费</option>
                     </select>
                 </div>
             </div>
 
-            <!-- 按次计费 -->
+            <!-- API - 按次计费 -->
             <div class="form-row-horizontal" id="fields-perCall" style="display:none;">
                 <label>计费明细</label>
                 <div class="form-control">
@@ -371,11 +431,7 @@
                 </div>
             </div>
 
-            <!-- 按户计费（已删除） -->
-
-            <!-- 包年计费（已删除） -->
-
-            <!-- 包量计费 -->
+            <!-- API - 包量计费 -->
             <div class="form-row-horizontal" id="fields-volume" style="display:none;">
                 <label>计费明细</label>
                 <div class="form-control">
@@ -396,7 +452,7 @@
                 </div>
             </div>
 
-            <!-- 阶梯计费 -->
+            <!-- API - 阶梯计费 -->
             <div class="form-row-horizontal" id="fields-tiered" style="display:none;">
                 <label>计费明细</label>
                 <div class="form-control">
@@ -435,8 +491,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 混合计费（已删除） -->
 
             <div class="form-row-horizontal">
                 <label>周期范围</label>
@@ -483,29 +537,58 @@
 
 <script>
     // ========== 模式名映射 ==========
-    var modeNames = { perCall:'按次计费', volume:'包量计费', tiered:'阶梯计费' };
+    var modeNames = {
+        perCall:'按次计费', volume:'包量计费', tiered:'阶梯计费'
+    };
+
+    // ========== 计费模式配置 ==========
+    var allModes = [
+        { value: 'perCall', label: '按次计费' },
+        { value: 'volume', label: '包量计费' },
+        { value: 'tiered', label: '阶梯计费' }
+    ];
+
+    // ========== 缩写映射（用于生成计费编码） ==========
+    var supplierAbbr = { '天眼查':'TYC', '企查查':'QCC', '中诚信':'ZCX', '百行征信':'BSZX', '前海征信':'QHZX' };
+    var apiAbbr = { '不限':'ALL', '企业基本信息':'QYJBXX', '司法风险':'SFXP', '企业图谱':'QYTP', '信用评分':'XYPF', '个人信用报告':'GRXYBG', '反欺诈评分':'FQZPF', '经营状况':'JYZK', '融资历史':'RZLS', '知识产权':'ZSCQ' };
+    var modeAbbr = { perCall:'AC', volume:'BL', tiered:'JT' };
+    var billingSeq = 1;
+
+    function generateBillingCode(supplier, apis, mode) {
+        var sc = supplierAbbr[supplier] || 'UNK';
+        var mc = modeAbbr[mode] || 'XX';
+        var ac;
+        if (!apis || apis.length === 0 || apis[0] === '不限') {
+            ac = 'ALL';
+        } else {
+            ac = apiAbbr[apis[0]] || 'API';
+        }
+        var seq = String(billingSeq++).padStart(3, '0');
+        return 'JF-' + sc + '-' + ac + '-' + mc + '-' + seq;
+    }
 
     // ========== 数据 ==========
     var allData = [
-        { id:1, supplier:'天眼查', api:'企业基本信息', mode:'perCall', priceText:'¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+        { id:1, billingCode:'JF-API-TYC-QYJBXX-AC-001', sourceType:'api', supplier:'天眼查', api:['企业基本信息'], mode:'perCall', priceText:'¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ price:'1.0' } },
-        { id:2, supplier:'天眼查', api:'司法风险', mode:'volume', priceText:'¥60,000/8万次<br>超额¥0.8/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+        { id:2, billingCode:'JF-API-TYC-SFXP-BL-002', sourceType:'api', supplier:'天眼查', api:['司法风险'], mode:'volume', priceText:'¥60,000/8万次<br>超额¥0.8/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ count:'80000', fee:'60000', overprice:'0.8' } },
-        { id:3, supplier:'企查查', api:'企业基本信息', mode:'tiered', priceText:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', period:'2024-03-01 ~ 2025-02-28', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算',
+        { id:3, billingCode:'JF-API-QCC-QYJBXX-JT-003', sourceType:'api', supplier:'企查查', api:['企业基本信息'], mode:'tiered', priceText:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', period:'2024-03-01 ~ 2025-02-28', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算',
           detail:{ tiers:[{from:'0',to:'30000',price:'1.8'},{from:'30001',to:'80000',price:'1.2'},{from:'80001',to:'',price:'0.8'}] } },
-        { id:4, supplier:'企查查', api:'企业图谱', mode:'volume', priceText:'¥80,000/10万次<br>超额¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
+        { id:4, billingCode:'JF-API-QCC-QYTP-BL-004', sourceType:'api', supplier:'企查查', api:['企业图谱'], mode:'volume', priceText:'¥80,000/10万次<br>超额¥1.0/次', period:'2024-01-01 ~ 2024-12-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ count:'100000', fee:'80000', overprice:'1.0' } },
-        { id:5, supplier:'中诚信', api:'信用评分', mode:'tiered', priceText:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', period:'2024-04-01 ~ 2025-03-31', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算，次月重置档位计数。',
+        { id:5, billingCode:'JF-API-ZCX-XYPF-JT-005', sourceType:'api', supplier:'中诚信', api:['信用评分'], mode:'tiered', priceText:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', period:'2024-04-01 ~ 2025-03-31', status:'启用', creator:'金控-管理员', remark:'阶梯按自然月调用量计算，次月重置档位计数。',
           detail:{ tiers:[{from:'0',to:'50000',price:'2.0'},{from:'50001',to:'100000',price:'1.5'},{from:'100001',to:'',price:'1.0'}] } },
-        { id:6, supplier:'百行征信', api:'个人信用报告', mode:'perCall', priceText:'¥2.5/次', period:'2024-06-01 ~ 2025-05-31', status:'启用', creator:'金控-管理员', remark:'',
+        { id:6, billingCode:'JF-API-BSZX-GRXYBG-AC-006', sourceType:'api', supplier:'百行征信', api:['个人信用报告'], mode:'perCall', priceText:'¥2.5/次', period:'2024-06-01 ~ 2025-05-31', status:'启用', creator:'金控-管理员', remark:'',
           detail:{ price:'2.5' } },
-        { id:7, supplier:'前海征信', api:'反欺诈评分', mode:'perCall', priceText:'¥0.8/次', period:'2023-07-01 ~ 2024-06-30', status:'停用', creator:'金控-管理员', remark:'',
+        { id:7, billingCode:'JF-API-QHZX-FQZPF-AC-007', sourceType:'api', supplier:'前海征信', api:['反欺诈评分'], mode:'perCall', priceText:'¥0.8/次', period:'2023-07-01 ~ 2024-06-30', status:'停用', creator:'金控-管理员', remark:'',
           detail:{ price:'0.8' } },
-        { id:8, supplier:'天眼查', api:'经营状况', mode:'volume', priceText:'¥50,000/5万次<br>超额¥1.2/次', period:'2024-01-01 ~ 2024-12-31', status:'停用', creator:'金控-管理员', remark:'',
+        { id:8, billingCode:'JF-API-TYC-JYZK-BL-008', sourceType:'api', supplier:'天眼查', api:['经营状况'], mode:'volume', priceText:'¥50,000/5万次<br>超额¥1.2/次', period:'2024-01-01 ~ 2024-12-31', status:'停用', creator:'金控-管理员', remark:'',
           detail:{ count:'50000', fee:'50000', overprice:'1.2' } }
     ];
 
     var nextId = 9;
+    billingSeq = 9; // 续接已有编码序号
     var editingId = null;
     var confirmCallback = null;
     var isViewMode = false;
@@ -518,6 +601,171 @@
     // ========== 初始化 ==========
     flatpickr("#editDateStart", { dateFormat:"Y-m-d", locale:"zh", allowInput:true });
     flatpickr("#editDateEnd", { dateFormat:"Y-m-d", locale:"zh", allowInput:true });
+
+    // ========== API多选组件 ==========
+    var editApiSelected = []; // 当前选中的API列表
+
+    function initApiMultiSelect() {
+        var display = document.getElementById('editApiDisplay');
+        var dropdown = document.getElementById('editApiDropdown');
+        var checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+
+        // 点击展示区切换下拉
+        display.addEventListener('click', function(e) {
+            if (this.classList.contains('disabled')) return;
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        // 点击选项行切换 checkbox（因为原生 checkbox 已隐藏）
+        var options = dropdown.querySelectorAll('.multi-select-option');
+        for (var o = 0; o < options.length; o++) {
+            (function(option) {
+                option.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'INPUT') return; // 避免重复
+                    var cb = option.querySelector('input[type="checkbox"]');
+                    if (cb) {
+                        cb.checked = !cb.checked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                });
+            })(options[o]);
+        }
+
+        // checkbox change 事件处理
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].addEventListener('change', function() {
+                var val = this.value;
+                var isUnlimited = (val === '不限');
+
+                if (isUnlimited) {
+                    if (this.checked) {
+                        for (var j = 0; j < checkboxes.length; j++) {
+                            if (checkboxes[j] !== this) checkboxes[j].checked = false;
+                        }
+                        editApiSelected = ['不限'];
+                    } else {
+                        editApiSelected = [];
+                    }
+                } else {
+                    if (this.checked) {
+                        var allCb = document.getElementById('apiOpt_all');
+                        if (allCb) allCb.checked = false;
+                        var idx = editApiSelected.indexOf('不限');
+                        if (idx > -1) editApiSelected.splice(idx, 1);
+                        if (editApiSelected.indexOf(val) === -1) {
+                            editApiSelected.push(val);
+                        }
+                    } else {
+                        var idx = editApiSelected.indexOf(val);
+                        if (idx > -1) editApiSelected.splice(idx, 1);
+                    }
+                }
+                updateApiDisplay();
+            });
+        }
+
+        // 点击外部关闭
+        document.addEventListener('click', function(e) {
+            var wrap = document.getElementById('editApiWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    }
+
+    function updateApiDisplay() {
+        var display = document.getElementById('editApiDisplay');
+        var placeholder = document.getElementById('editApiPlaceholder');
+
+        // 移除旧标签
+        var oldTags = display.querySelectorAll('.api-tag, .api-tag-more');
+        for (var t = 0; t < oldTags.length; t++) oldTags[t].parentNode.removeChild(oldTags[t]);
+
+        if (editApiSelected.length === 0) {
+            placeholder.style.display = '';
+            return;
+        }
+        placeholder.style.display = 'none';
+
+        // 计算可显示的最大标签数
+        var displayWidth = display.offsetWidth - 40; // 留出箭头和间距空间
+        var usedWidth = 0;
+        var shownCount = 0;
+
+        for (var i = 0; i < editApiSelected.length; i++) {
+            var tag = document.createElement('span');
+            tag.className = 'api-tag';
+            var textSpan = document.createElement('span');
+            textSpan.textContent = editApiSelected[i];
+            tag.appendChild(textSpan);
+
+            if (!display.classList.contains('disabled')) {
+                var closeSpan = document.createElement('span');
+                closeSpan.className = 'tag-close';
+                closeSpan.innerHTML = '×';
+                closeSpan.setAttribute('data-val', editApiSelected[i]);
+                closeSpan.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deselectApi(this.getAttribute('data-val'));
+                });
+                tag.appendChild(closeSpan);
+            }
+
+            // 临时添加以测量宽度
+            tag.style.visibility = 'hidden';
+            display.appendChild(tag);
+            var tagWidth = tag.offsetWidth + 4; // 含gap
+            display.removeChild(tag);
+            tag.style.visibility = '';
+
+            if (usedWidth + tagWidth > displayWidth && i > 0) {
+                // 放不下，显示 "+N"
+                var remainCount = editApiSelected.length - i;
+                var moreTag = document.createElement('span');
+                moreTag.className = 'api-tag-more';
+                moreTag.textContent = '+' + remainCount;
+                display.appendChild(moreTag);
+                break;
+            }
+
+            display.appendChild(tag);
+            usedWidth += tagWidth;
+            shownCount++;
+        }
+    }
+
+    function deselectApi(val) {
+        var idx = editApiSelected.indexOf(val);
+        if (idx > -1) editApiSelected.splice(idx, 1);
+        // 取消对应checkbox
+        var checkboxes = document.querySelectorAll('#editApiDropdown input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].value === val) checkboxes[i].checked = false;
+        }
+        updateApiDisplay();
+    }
+
+    function setApiValues(arr) {
+        editApiSelected = arr ? arr.slice() : [];
+        var checkboxes = document.querySelectorAll('#editApiDropdown input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = editApiSelected.indexOf(checkboxes[i].value) > -1;
+        }
+        updateApiDisplay();
+    }
+
+    function resetApiValues() {
+        editApiSelected = [];
+        var checkboxes = document.querySelectorAll('#editApiDropdown input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) checkboxes[i].checked = false;
+        var placeholder = document.getElementById('editApiPlaceholder');
+        if (placeholder) placeholder.style.display = '';
+        var oldTags = document.querySelectorAll('#editApiDisplay .api-tag, #editApiDisplay .api-tag-more');
+        for (var t = 0; t < oldTags.length; t++) oldTags[t].parentNode.removeChild(oldTags[t]);
+    }
+
+    initApiMultiSelect();
 
     doQuery();
 
@@ -540,14 +788,28 @@
             var html = '';
             for (var i = 0; i < pageData.length; i++) {
                 var r = pageData[i];
-                var seq = start + i + 1; // 编号 = 全局序号
                 var statusClass = r.status === '启用' ? 'status-enabled' : 'status-disabled';
                 var toggleText = r.status === '启用' ? '停用' : '启用';
                 var toggleClass = r.status === '启用' ? '' : ' danger';
+
+                // 编号：优先使用计费编码
+                var codeDisplay = r.billingCode || String(start + i + 1);
+
+                // API显示：支持数组
+                var apiText;
+                if (Array.isArray(r.api)) {
+                    if (r.api.length === 0) apiText = '';
+                    else if (r.api[0] === '不限') apiText = '不限';
+                    else if (r.api.length === 1) apiText = r.api[0];
+                    else apiText = r.api[0] + ' 等' + r.api.length + '项';
+                } else {
+                    apiText = r.api || '';
+                }
+
                 html += '<tr>'
-                    + '<td>' + seq + '</td>'
+                    + '<td title="' + codeDisplay + '">' + codeDisplay + '</td>'
                     + '<td>' + r.supplier + '</td>'
-                    + '<td>' + r.api + '</td>'
+                    + '<td class="cell-api" title="' + (Array.isArray(r.api) ? r.api.join('、') : (r.api || '')) + '">' + apiText + '</td>'
                     + '<td>' + modeNames[r.mode] + '</td>'
                     + '<td class="price-cell">' + r.priceText + '</td>'
                     + '<td class="col-period">' + r.period + '</td>'
@@ -620,7 +882,15 @@
         var status = document.getElementById('filterStatus').value;
         var filtered = allData.filter(function(r) {
             if (supplier && r.supplier !== supplier) return false;
-            if (api && r.api !== api) return false;
+            if (api) {
+                if (api === '不限') {
+                    if (!Array.isArray(r.api) || r.api.indexOf('不限') === -1) return false;
+                } else {
+                    if (Array.isArray(r.api)) {
+                        if (r.api.indexOf('不限') === -1 && r.api.indexOf(api) === -1) return false;
+                    } else if (r.api !== api) return false;
+                }
+            }
             if (status && r.status !== status) return false;
             return true;
         });
@@ -647,7 +917,7 @@
     function deleteRecord(id) {
         var r = findRecord(id);
         if (!r) return;
-        showConfirm('确认删除', '确定要删除编号 ' + r.id + ' 的计费规则吗？删除后不可恢复。', function() {
+        showConfirm('确认删除', '确定要删除编号 ' + (r.billingCode || r.id) + ' 的计费规则吗？删除后不可恢复。', function() {
             for (var i = 0; i < allData.length; i++) {
                 if (allData[i].id === id) { allData.splice(i, 1); break; }
             }
@@ -675,8 +945,17 @@
         restoreEditFooter();
         resetEditForm();
 
+        // 显示编号
+        document.getElementById('billingCodeRow').style.display = 'flex';
+        document.getElementById('editBillingCode').value = r.billingCode || '';
+
+        // 填充计费模式下拉
+        initStrategySelect();
+
         document.getElementById('editSupplier').value = r.supplier;
-        document.getElementById('editApi').value = r.api;
+        // 设置API多选
+        var apiArr = Array.isArray(r.api) ? r.api : (r.api ? [r.api] : []);
+        setApiValues(apiArr);
         document.getElementById('strategySelect').value = r.mode;
         document.getElementById('editStatus').value = r.status;
         document.getElementById('editRemark').value = r.remark || '';
@@ -687,7 +966,8 @@
 
         // 回填各模式字段
         if (r.mode === 'perCall' && r.detail) {
-            document.getElementById('edit_perCall_price').value = r.detail.price || '';
+            var priceEl = document.getElementById('edit_perCall_price');
+            if (priceEl) priceEl.value = r.detail.price || '';
         } else if (r.mode === 'volume' && r.detail) {
             document.getElementById('edit_volume_count').value = r.detail.count || '';
             document.getElementById('edit_volume_fee').value = r.detail.fee || '';
@@ -710,19 +990,20 @@
 
         onStrategyChange();
         document.getElementById('editModal').classList.add('active');
+        setTimeout(updateApiDisplay, 50);
     }
 
     // ========== 保存 ==========
     function saveRecord() {
         var supplier = document.getElementById('editSupplier').value;
-        var api = document.getElementById('editApi').value;
+        var api = editApiSelected.length > 0 ? editApiSelected.slice() : [];
         var mode = document.getElementById('strategySelect').value;
         var status = document.getElementById('editStatus').value;
         var remark = document.getElementById('editRemark').value;
         var dateStart = document.getElementById('editDateStart').value;
         var dateEnd = document.getElementById('editDateEnd').value;
 
-        if (!supplier || !api || !mode) {
+        if (!supplier || api.length === 0 || !mode) {
             alert('请填写必填项：供应商、API、计费模式');
             return;
         }
@@ -758,7 +1039,7 @@
         }
 
         if (editingId) {
-            // 编辑
+            // 编辑 - 保留原编号
             var r = findRecord(editingId);
             if (r) {
                 r.supplier = supplier; r.api = api; r.mode = mode;
@@ -766,13 +1047,13 @@
                 r.remark = remark; r.detail = detail;
             }
         } else {
-            // 新增 - 插入到第一个
-            allData.unshift({ id: nextId++, supplier: supplier, api: api, mode: mode, priceText: priceText, period: period, status: status, creator: '金控-管理员', remark: remark, detail: detail });
+            // 新增 - 生成计费编码
+            var billingCode = generateBillingCode(supplier, api, mode);
+            allData.unshift({ id: nextId++, billingCode: billingCode, supplier: supplier, api: api, mode: mode, priceText: priceText, period: period, status: status, creator: '金控-管理员', remark: remark, detail: detail });
         }
 
         closeEditModal();
         if (editingId === null) {
-            // 新增：跳转到第1页，确保看到编号=1的新记录
             currentPage = 1;
         }
         doQuery();
@@ -786,12 +1067,24 @@
     }
 
     function setFormReadOnly(readonly) {
-        var ids = ['editSupplier','editApi','strategySelect','editStatus','editRemark',
+        var ids = ['editSupplier','strategySelect','editStatus','editRemark',
             'edit_perCall_price',
             'edit_volume_count','edit_volume_fee','edit_volume_overprice'];
         for (var i = 0; i < ids.length; i++) {
             var el = document.getElementById(ids[i]);
             if (el) el.disabled = readonly;
+        }
+        // 禁用/启用多选组件
+        var display = document.getElementById('editApiDisplay');
+        if (readonly) {
+            display.classList.add('disabled');
+        } else {
+            display.classList.remove('disabled');
+        }
+        // 只读模式下隐藏标签关闭按钮
+        var closeButtons = display.querySelectorAll('.tag-close');
+        for (var c = 0; c < closeButtons.length; c++) {
+            closeButtons[c].style.display = readonly ? 'none' : '';
         }
         // 禁用日期
         if (document.getElementById('editDateStart')._flatpickr)
@@ -825,8 +1118,17 @@
         document.getElementById('editModalTitle').textContent = '查看计费规则';
         resetEditForm();
 
+        // 显示编号
+        document.getElementById('billingCodeRow').style.display = 'flex';
+        document.getElementById('editBillingCode').value = r.billingCode || '';
+
+        // 填充计费模式下拉
+        initStrategySelect();
+
         document.getElementById('editSupplier').value = r.supplier;
-        document.getElementById('editApi').value = r.api;
+        // 设置API多选
+        var apiArr = Array.isArray(r.api) ? r.api : (r.api ? [r.api] : []);
+        setApiValues(apiArr);
         document.getElementById('strategySelect').value = r.mode;
         document.getElementById('editStatus').value = r.status;
         document.getElementById('editRemark').value = r.remark || '';
@@ -836,7 +1138,8 @@
         document.getElementById('editDateEnd')._flatpickr.setDate(parts[1] || '');
 
         if (r.mode === 'perCall' && r.detail) {
-            document.getElementById('edit_perCall_price').value = r.detail.price || '';
+            var priceEl = document.getElementById('edit_perCall_price');
+            if (priceEl) priceEl.value = r.detail.price || '';
         } else if (r.mode === 'volume' && r.detail) {
             document.getElementById('edit_volume_count').value = r.detail.count || '';
             document.getElementById('edit_volume_fee').value = r.detail.fee || '';
@@ -859,10 +1162,10 @@
 
         onStrategyChange();
         setFormReadOnly(true);
-        // 切换 footer：只读模式只显示关闭按钮（居中）
         document.getElementById('editModalFooter').innerHTML =
             '<button class="btn-default" onclick="closeEditModal()">关闭</button>';
         document.getElementById('editModal').classList.add('active');
+        setTimeout(updateApiDisplay, 50);
     }
 
     // ========== 弹窗控制 ==========
@@ -884,8 +1187,9 @@
     }
 
     function resetEditForm() {
+        initStrategySelect();
         document.getElementById('editSupplier').value = '';
-        document.getElementById('editApi').value = '';
+        resetApiValues();
         document.getElementById('strategySelect').value = '';
         document.getElementById('editStatus').value = '启用';
         document.getElementById('editRemark').value = '';
@@ -895,6 +1199,9 @@
         document.getElementById('edit_volume_count').value = '';
         document.getElementById('edit_volume_fee').value = '';
         document.getElementById('edit_volume_overprice').value = '';
+        // 隐藏编号行（新增时不显示）
+        document.getElementById('billingCodeRow').style.display = 'none';
+        document.getElementById('editBillingCode').value = '';
         // 重置阶梯
         var ttb = document.querySelector('#tierTable tbody');
         ttb.innerHTML = '<tr><td>第1档</td><td><input type="text" value="0"></td><td><input type="text" value="50000"></td><td><input type="text" value="2.0"></td></tr>'
@@ -904,18 +1211,33 @@
         hideAllStrategyFields();
     }
 
+    // ========== 初始化计费模式下拉 ==========
+    function initStrategySelect() {
+        var sel = document.getElementById('strategySelect');
+        sel.innerHTML = '<option value="">请选择计费模式</option>';
+        for (var i = 0; i < allModes.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = allModes[i].value;
+            opt.textContent = allModes[i].label;
+            sel.appendChild(opt);
+        }
+        hideAllStrategyFields();
+    }
+
     // ========== 模式切换 ==========
     function hideAllStrategyFields() {
         var fields = ['perCall', 'volume', 'tiered'];
         for (var i = 0; i < fields.length; i++) {
-            document.getElementById('fields-' + fields[i]).style.display = 'none';
+            var el = document.getElementById('fields-' + fields[i]);
+            if (el) el.style.display = 'none';
         }
     }
     function onStrategyChange() {
         hideAllStrategyFields();
         var val = document.getElementById('strategySelect').value;
         if (val) {
-            document.getElementById('fields-' + val).style.display = 'flex';
+            var el = document.getElementById('fields-' + val);
+            if (el) el.style.display = 'flex';
         }
     }
 
