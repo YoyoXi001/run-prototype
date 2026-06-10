@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 自定义账单</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- flatpickr 时间控件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <!-- SheetJS: Excel 导出 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky; top: 0; z-index: 100;
+            height: 80px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* 左侧菜单 */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容区域 */
+        .main-content { margin-left: 240px; padding: 0; background: #F5F7FA; display: flex; flex-direction: column; height: calc(100vh - 80px); overflow: hidden; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+        /* 顶部操作栏 */
+        .sticky-top-bar {
+            background: #F5F7FA;
+            padding: 4px 16px 0 16px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .action-bar-top {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 32px; padding: 0 16px; border-radius: 4px;
+            font-size: 14px; font-family: inherit;
+            color: #f89d34; background: #fff; border: 1px solid #f89d34;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-back:hover { background: #fef5ec; }
+        .btn-back i { font-size: 14px; }
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 32px; padding: 0 16px; border-radius: 4px;
+            font-size: 14px; font-family: inherit;
+            color: #fff; background: #f89d34; border: none;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-export:hover { background: #e68f2a; }
+        .btn-export i { font-size: 14px; }
+
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb a { color: #666; text-decoration: none; }
+        .breadcrumb a:hover { color: #f89d34; }
+        .breadcrumb .separator { margin: 0 8px; color: #c0c4cc; }
+        .breadcrumb .current { color: #333; font-weight: 500; }
+
+        /* 筛选栏 */
+        .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin: 16px 16px 0 16px; padding: 16px; flex-shrink: 0; }
+        .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-row + .filter-row { margin-top: 12px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666; white-space: nowrap; }
+        .filter-item select { height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333; background: #fff; min-width: 140px; }
+        .filter-item select:focus { border-color: #f89d34; }
+        .filter-item select.narrow { min-width: 100px; }
+        .filter-item input.datepicker-input { width: 130px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333; }
+        .filter-item input.datepicker-input:focus { border-color: #f89d34; }
+        .filter-item .date-sep { color: #999; margin: 0 4px; }
+        .filter-buttons { display: flex; gap: 8px; margin-left: auto; }
+        .btn-primary { background: #f89d34; color: #fff; border: none; padding: 6px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+        .btn-primary:hover { background: #e68f2a; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 6px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; color: #666; }
+        .btn-default:hover { border-color: #f89d34; color: #f89d34; }
+
+        /* 表格区域 */
+        .table-section { flex: 1; padding: 16px; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+        .table-card { background: #fff; border-radius: 6px; padding: 16px; flex: 1; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .table-title { font-size: 14px; font-weight: 600; color: #1f2f3d; }
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; flex: 1; min-height: 0; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th { padding: 0 10px; height: 44px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 13px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+        .data-table td { padding: 0 10px; height: 38px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; white-space: nowrap; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+        .amount-text { font-weight: 600; color: #333; font-size: 12px; }
+        .price-cell { font-size: 11px; line-height: 1.5; color: #333; text-align: center; white-space: normal; }
+        .cell-api { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html?nav=portal" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html?nav=external" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html?nav=service" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
+            <a class="nav-tab active" href="告警管理V1.2.html?nav=operation#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab" href="个人中心V1.3.html?nav=personal#approval" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab" href="用户管理.html?nav=system" style="text-decoration:none;">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper">
+                <i class="el-icon-bell message-icon"></i>
+                <span class="unread-badge-icon">3</span>
+            </div>
+            <div class="tenant-info">
+                <span class="tenant-name">某某金控</span>
+            </div>
+            <div class="avatar">席</div>
+        </div>
+    </nav>
+
+    <!-- 左侧菜单 -->
+    <aside class="side-menu">
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#rule"><i class="el-icon-bell"></i>告警管理</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#forecast"><i class="el-icon-data-line"></i>用量预测</a>
+        <a class="menu-item" href="告警管理V1.2.html?nav=operation#channel"><i class="el-icon-message"></i>告警渠道</a>
+        <a class="menu-item" href="配额管理V1.1.html"><i class="el-icon-s-grid"></i>配额管理</a>
+        <a class="menu-item" href="计费管理.html"><i class="el-icon-s-finance"></i>计费管理</a>
+        <a class="menu-item active" href="账单管理.html"><i class="el-icon-document"></i>账单管理</a>
+        <a class="menu-item" href="对账管理.html"><i class="el-icon-s-check"></i>对账管理</a>
+        <a class="menu-item" href="任务管理.html"><i class="el-icon-s-order"></i>任务管理</a>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="content-card">
+            <!-- 顶部栏：返回 + 导出 -->
+            <div class="sticky-top-bar">
+                <div class="action-bar-top">
+                    <button class="btn-back" onclick="goBack()">
+                        <i class="el-icon-back"></i> 返回
+                    </button>
+                    <button class="btn-export" onclick="doExport()">
+                        <i class="el-icon-download"></i> 导出
+                    </button>
+                </div>
+                <div class="breadcrumb">
+                    <a href="告警管理V1.2.html?nav=operation#rule">运营管理</a>
+                    <span class="separator">/</span>
+                    <a href="账单管理.html">账单管理</a>
+                    <span class="separator">/</span>
+                    <span class="current">自定义账单</span>
+                </div>
+            </div>
+
+            <!-- 筛选栏 -->
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>供应商</label>
+                        <select id="filterSupplier" onchange="onSupplierChange()">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>计费模式</label>
+                        <select id="filterMode" onchange="onModeChange()">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>API</label>
+                        <select id="filterApi">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>租户</label>
+                        <select id="filterTenant">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>租户明细</label>
+                        <select id="filterTenantDetail" class="narrow">
+                            <option value="hide">不展示</option>
+                            <option value="show">展示</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>账单周期</label>
+                        <input type="text" class="datepicker-input" id="filterDateStart" placeholder="开始日期">
+                        <span class="date-sep">~</span>
+                        <input type="text" class="datepicker-input" id="filterDateEnd" placeholder="结束日期">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="btn-primary" onclick="doQuery()">查询</button>
+                        <button class="btn-default" onclick="doReset()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表格区域 -->
+            <div class="table-section">
+                <div class="table-card">
+                    <div class="table-header">
+                        <span class="table-title">账单列表</span>
+                        <span id="totalCount" style="font-size:13px;color:#999;">共 0 条</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr id="tableHead"></tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // ========== 数据源 ==========
+    // 租户组织架构模板（2公司×2部门×2系统×2服务=8行）
+    var tenantProfiles = {
+        '租赁': {
+            companies: [
+                { name:'华润置地', departments: [
+                    { name:'风险管理部', systems: [{ name:'风控决策系统' },{ name:'反欺诈平台' }] },
+                    { name:'信贷审批部', systems: [{ name:'信贷审批系统' },{ name:'贷后管理系统' }] }
+                ]},
+                { name:'万科集团', departments: [
+                    { name:'合规管理部', systems: [{ name:'合规管理平台' },{ name:'审计系统' }] },
+                    { name:'战略投资部', systems: [{ name:'投研分析系统' },{ name:'投资决策系统' }] }
+                ]}
+            ]
+        },
+        '保险': {
+            companies: [
+                { name:'中国平安', departments: [
+                    { name:'核保部', systems: [{ name:'核保系统' },{ name:'风控系统' }] },
+                    { name:'理赔部', systems: [{ name:'理赔系统' },{ name:'反欺诈系统' }] }
+                ]},
+                { name:'太平洋保险', departments: [
+                    { name:'核保部', systems: [{ name:'核保系统' },{ name:'风控系统' }] },
+                    { name:'理赔部', systems: [{ name:'理赔系统' },{ name:'反欺诈系统' }] }
+                ]}
+            ]
+        },
+        '资产': {
+            companies: [
+                { name:'华润信托', departments: [
+                    { name:'投资管理部', systems: [{ name:'投资决策系统' },{ name:'风控系统' }] },
+                    { name:'资产管理部', systems: [{ name:'资管系统' },{ name:'合规系统' }] }
+                ]},
+                { name:'中粮信托', departments: [
+                    { name:'投资管理部', systems: [{ name:'投资决策系统' },{ name:'风控系统' }] },
+                    { name:'资产管理部', systems: [{ name:'资管系统' },{ name:'合规系统' }] }
+                ]}
+            ]
+        },
+        '信贷': {
+            companies: [
+                { name:'招联消费金融', departments: [
+                    { name:'审批部', systems: [{ name:'信贷审批系统' },{ name:'风控引擎' }] },
+                    { name:'市场部', systems: [{ name:'营销系统' },{ name:'客服系统' }] }
+                ]},
+                { name:'中银消费金融', departments: [
+                    { name:'审批部', systems: [{ name:'信贷审批系统' },{ name:'风控引擎' }] },
+                    { name:'市场部', systems: [{ name:'营销系统' },{ name:'客服系统' }] }
+                ]}
+            ]
+        },
+        '风控': {
+            companies: [
+                { name:'华润银行', departments: [
+                    { name:'信贷部', systems: [{ name:'信贷审批系统' },{ name:'风控平台' }] },
+                    { name:'合规部', systems: [{ name:'合规系统' },{ name:'审计系统' }] }
+                ]},
+                { name:'万科金融', departments: [
+                    { name:'信贷部', systems: [{ name:'信贷审批系统' },{ name:'风控平台' }] },
+                    { name:'合规部', systems: [{ name:'合规系统' },{ name:'审计系统' }] }
+                ]}
+            ]
+        }
+    };
+
+    // API对应的服务名称
+    var apiServiceNames = {
+        '企业基本信息': ['企业工商查询服务','企业风险画像','工商异常检测','企业信息核验','工商核验服务','授信主体核验','借款企业查询','企业存续状态查询'],
+        '司法风险': ['涉诉信息查询','被执行人查询','司法风险预警','案件风险评估','借款人司法风险','担保方涉诉查询','贷后司法风险','执行案件监控'],
+        '信用评分': ['企业信用评分','信用评级查询','信用风险评估','违约概率查询','资产信用评估','底层企业评分','合规信用审查','信用资质核验'],
+        '反欺诈评分': ['反欺诈评分查询','欺诈风险评估','实时反欺诈','设备指纹核验','客户欺诈筛查','获客风险评估','身份欺诈核验','异常行为检测'],
+        '个人信用报告': ['征信报告查询','信用评估服务','个人风险评分','逾期风险预测','征信合规查询','授权核验服务','征信使用审计','异常查询监控']
+    };
+
+    // 账单数据（含租户汇总用量）
+    var billRecords = [
+        { billingCode:'JF-API-QCC-QYJBXX-JT-003', supplier:'企查查', mode:'阶梯', price:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8',
+          apis:['企业基本信息'],
+          tenants:[{name:'租赁',usage:5200,amount:260},{name:'保险',usage:3000,amount:150},{name:'资产',usage:1800,amount:90}] },
+        { billingCode:'JF-API-TYC-SFXP-BL-002', supplier:'天眼查', mode:'包量', price:'¥60,000/8万次<br>超额¥0.8/次',
+          apis:['司法风险'],
+          tenants:[{name:'租赁',usage:45000,amount:45000},{name:'风控',usage:25000,amount:25000},{name:'信贷',usage:15000,amount:15000}] },
+        { billingCode:'JF-API-TYC-QYJBXX-AC-001', supplier:'天眼查', mode:'按次', price:'¥1.0/次',
+          apis:['企业基本信息'],
+          tenants:[{name:'保险',usage:32000,amount:32000},{name:'资产',usage:12000,amount:12000},{name:'信贷',usage:8000,amount:8000}] },
+        { billingCode:'JF-API-ZCX-XYPF-JT-005', supplier:'中诚信', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0',
+          apis:['信用评分'],
+          tenants:[{name:'资产',usage:52000,amount:52000},{name:'风控',usage:28000,amount:28000},{name:'信贷',usage:12000,amount:12000}] },
+        { billingCode:'JF-API-QHZX-FQZPF-AC-007', supplier:'前海征信', mode:'按次', price:'¥0.8/次',
+          apis:['反欺诈评分'],
+          tenants:[{name:'信贷',usage:28500,amount:22800},{name:'风控',usage:10000,amount:8000}] },
+        { billingCode:'JF-API-BSZX-GRXYBG-AC-006', supplier:'百行征信', mode:'按次', price:'¥2.5/次',
+          apis:['个人信用报告'],
+          tenants:[{name:'风控',usage:15800,amount:39500},{name:'信贷',usage:6000,amount:15000}] }
+    ];
+
+    // ========== 生成租户服务级明细（8行/租户） ==========
+    function generateTenantDetailRows(tenantName, apiName, totalUsage, totalAmount) {
+        var profile = tenantProfiles[tenantName];
+        if (!profile) return [];
+        var services = apiServiceNames[apiName] || apiServiceNames['企业基本信息'];
+        var rows = [];
+        var svcIdx = 0;
+        var remaining = totalUsage;
+        var remainingAmt = totalAmount;
+        var totalSlots = 8;
+        profile.companies.forEach(function(company) {
+            company.departments.forEach(function(dept) {
+                dept.systems.forEach(function(sys) {
+                    var isLast = (svcIdx === totalSlots - 1);
+                    var usage = isLast ? remaining : Math.round(totalUsage * (0.08 + Math.random() * 0.18));
+                    if (usage > remaining) usage = remaining;
+                    if (usage < 1) usage = 1;
+                    remaining -= usage;
+                    var amt = isLast ? remainingAmt : Math.round(totalAmount * (usage / totalUsage) * 100) / 100;
+                    if (amt > remainingAmt) amt = remainingAmt;
+                    remainingAmt -= amt;
+                    var billable = Math.round(usage * 0.85);
+                    rows.push({
+                        tenant: tenantName,
+                        company: company.name,
+                        department: dept.name,
+                        system: sys.name,
+                        service: services[svcIdx] || (sys.name + '服务'),
+                        totalUsage: usage,
+                        validUsage: billable,
+                        billableCalls: billable,
+                        amount: amt
+                    });
+                    svcIdx++;
+                });
+            });
+        });
+        return rows;
+    }
+
+    // ========== 联动数据 ==========
+    function getSuppliers() {
+        var set = {};
+        billRecords.forEach(function(r) { set[r.supplier] = true; });
+        return Object.keys(set);
+    }
+    function getModes(supplier) {
+        var set = {};
+        billRecords.forEach(function(r) {
+            if (!supplier || r.supplier === supplier) set[r.mode] = true;
+        });
+        return Object.keys(set);
+    }
+    function getApis(supplier, mode) {
+        var set = {};
+        billRecords.forEach(function(r) {
+            if ((!supplier || r.supplier === supplier) && (!mode || r.mode === mode)) {
+                r.apis.forEach(function(a) { set[a] = true; });
+            }
+        });
+        return Object.keys(set);
+    }
+    function getTenants() {
+        var set = {};
+        billRecords.forEach(function(r) {
+            r.tenants.forEach(function(t) { set[t.name] = true; });
+        });
+        return Object.keys(set);
+    }
+
+    // ========== 联动事件 ==========
+    function populateSelect(id, options) {
+        var sel = document.getElementById(id);
+        sel.innerHTML = '<option value="">请选择</option>';
+        options.forEach(function(opt) {
+            var o = document.createElement('option');
+            o.value = opt;
+            o.textContent = opt;
+            sel.appendChild(o);
+        });
+    }
+
+    function onSupplierChange() {
+        var supplier = document.getElementById('filterSupplier').value;
+        populateSelect('filterMode', getModes(supplier));
+        populateSelect('filterApi', getApis(supplier, ''));
+    }
+    function onModeChange() {
+        var supplier = document.getElementById('filterSupplier').value;
+        var mode = document.getElementById('filterMode').value;
+        populateSelect('filterApi', getApis(supplier, mode));
+    }
+
+    // ========== 初始化 ==========
+    function init() {
+        populateSelect('filterSupplier', getSuppliers());
+        populateSelect('filterMode', getModes(''));
+        populateSelect('filterApi', getApis('', ''));
+        populateSelect('filterTenant', getTenants());
+        // 初始化日期选择器
+        flatpickr('#filterDateStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
+        flatpickr('#filterDateEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
+        // 默认不查询，列表为空
+        renderEmpty();
+    }
+
+    function renderEmpty() {
+        var thead = document.getElementById('tableHead');
+        var tbody = document.getElementById('tableBody');
+        var totalEl = document.getElementById('totalCount');
+        var headCols = ['计费编号','计费模式','单价','供应商','API','租户','总查询量','有效查询量','计费次数','应付金额'];
+        thead.innerHTML = headCols.map(function(c) { return '<th>' + c + '</th>'; }).join('');
+        tbody.innerHTML = '<tr><td colspan="10" style="padding:60px 0;color:#999;font-size:14px;">请选择筛选条件后点击查询</td></tr>';
+        totalEl.textContent = '共 0 条';
+    }
+
+    // ========== 查询 ==========
+    function getFilteredRecords() {
+        var supplier = document.getElementById('filterSupplier').value;
+        var mode = document.getElementById('filterMode').value;
+        var api = document.getElementById('filterApi').value;
+        var tenant = document.getElementById('filterTenant').value;
+        return billRecords.filter(function(r) {
+            if (supplier && r.supplier !== supplier) return false;
+            if (mode && r.mode !== mode) return false;
+            if (api) {
+                if (r.apis.indexOf(api) === -1) return false;
+            }
+            if (tenant) {
+                var hasTenant = r.tenants.some(function(t) { return t.name === tenant; });
+                if (!hasTenant) return false;
+            }
+            return true;
+        });
+    }
+
+    function doQuery() {
+        var showDetail = document.getElementById('filterTenantDetail').value === 'show';
+        var tenant = document.getElementById('filterTenant').value;
+        var filtered = getFilteredRecords();
+        renderTable(filtered, showDetail, tenant);
+    }
+
+    function doReset() {
+        document.getElementById('filterSupplier').value = '';
+        document.getElementById('filterMode').value = '';
+        document.getElementById('filterApi').value = '';
+        document.getElementById('filterTenant').value = '';
+        document.getElementById('filterTenantDetail').value = 'hide';
+        populateSelect('filterMode', getModes(''));
+        populateSelect('filterApi', getApis('', ''));
+        // 清空日期
+        document.getElementById('filterDateStart')._flatpickr.clear();
+        document.getElementById('filterDateEnd')._flatpickr.clear();
+        // 列表恢复为空
+        renderEmpty();
+    }
+
+    // ========== 渲染表格 ==========
+    function renderTable(data, showDetail, filterTenant) {
+        var thead = document.getElementById('tableHead');
+        var tbody = document.getElementById('tableBody');
+        var totalEl = document.getElementById('totalCount');
+
+        // 表头
+        var headCols = ['计费编号','计费模式','单价','供应商','API','租户','总查询量','有效查询量','计费次数','应付金额'];
+        if (showDetail) {
+            headCols.splice(6, 0, '公司','部门','系统','服务');
+        }
+        thead.innerHTML = headCols.map(function(c) { return '<th>' + c + '</th>'; }).join('');
+
+        var html = '';
+        var rowCount = 0;
+
+        data.forEach(function(r) {
+            var tenants = r.tenants;
+            if (filterTenant) {
+                tenants = tenants.filter(function(t) { return t.name === filterTenant; });
+            }
+
+            if (showDetail) {
+                // 展示租户服务级明细
+                tenants.forEach(function(t) {
+                    var detailRows = generateTenantDetailRows(t.name, r.apis[0], t.usage, t.amount);
+                    detailRows.forEach(function(d) {
+                        rowCount++;
+                        html += '<tr>'
+                            + '<td style="font-size:11px;">' + r.billingCode + '</td>'
+                            + '<td>' + r.mode + '</td>'
+                            + '<td class="price-cell">' + r.price + '</td>'
+                            + '<td>' + r.supplier + '</td>'
+                            + '<td class="cell-api">' + r.apis[0] + '</td>'
+                            + '<td>' + d.tenant + '</td>'
+                            + '<td>' + d.company + '</td>'
+                            + '<td>' + d.department + '</td>'
+                            + '<td>' + d.system + '</td>'
+                            + '<td>' + d.service + '</td>'
+                            + '<td>' + d.totalUsage.toLocaleString() + '</td>'
+                            + '<td>' + d.validUsage.toLocaleString() + '</td>'
+                            + '<td>' + d.billableCalls.toLocaleString() + '</td>'
+                            + '<td class="amount-text">¥' + d.amount.toFixed(2) + '</td>'
+                            + '</tr>';
+                    });
+                });
+            } else {
+                // 不展示租户明细（租户级汇总）
+                tenants.forEach(function(t) {
+                    rowCount++;
+                    var billable = Math.round(t.usage * 0.85);
+                    var valid = billable;
+                    html += '<tr>'
+                        + '<td style="font-size:11px;">' + r.billingCode + '</td>'
+                        + '<td>' + r.mode + '</td>'
+                        + '<td class="price-cell">' + r.price + '</td>'
+                        + '<td>' + r.supplier + '</td>'
+                        + '<td class="cell-api">' + r.apis[0] + '</td>'
+                        + '<td>' + t.name + '</td>'
+                        + '<td>' + t.usage.toLocaleString() + '</td>'
+                        + '<td>' + valid.toLocaleString() + '</td>'
+                        + '<td>' + billable.toLocaleString() + '</td>'
+                        + '<td class="amount-text">¥' + t.amount.toLocaleString() + '</td>'
+                        + '</tr>';
+                });
+            }
+        });
+
+        if (rowCount === 0) {
+            var colSpan = showDetail ? 14 : 10;
+            html = '<tr><td colspan="' + colSpan + '" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        }
+        tbody.innerHTML = html;
+        totalEl.textContent = '共 ' + rowCount + ' 条';
+    }
+
+    // ========== 导出 Excel ==========
+    function doExport() {
+        var showDetail = document.getElementById('filterTenantDetail').value === 'show';
+        var tenant = document.getElementById('filterTenant').value;
+        var filtered = getFilteredRecords();
+
+        var headCols = ['计费编号','计费模式','单价','供应商','API','租户','总查询量','有效查询量','计费次数','应付金额'];
+        if (showDetail) {
+            headCols.splice(6, 0, '公司','部门','系统','服务');
+        }
+
+        var aoa = [];
+        aoa.push(['外数平台 - 自定义账单导出']);
+        aoa.push(['导出时间：' + new Date().toLocaleString('zh-CN')]);
+        aoa.push([]);
+        aoa.push(headCols);
+
+        filtered.forEach(function(r) {
+            var tenants = r.tenants;
+            if (tenant) {
+                tenants = tenants.filter(function(t) { return t.name === tenant; });
+            }
+            var priceText = r.price.replace(/<br>/g, ' ');
+
+            if (showDetail) {
+                tenants.forEach(function(t) {
+                    var detailRows = generateTenantDetailRows(t.name, r.apis[0], t.usage, t.amount);
+                    detailRows.forEach(function(d) {
+                        aoa.push([r.billingCode, r.mode, priceText, r.supplier, r.apis[0], d.tenant,
+                            d.company, d.department, d.system, d.service,
+                            d.totalUsage, d.validUsage, d.billableCalls, d.amount.toFixed(2)]);
+                    });
+                });
+            } else {
+                tenants.forEach(function(t) {
+                    var billable = Math.round(t.usage * 0.85);
+                    aoa.push([r.billingCode, r.mode, priceText, r.supplier, r.apis[0], t.name,
+                        t.usage, billable, billable, t.amount.toFixed(2)]);
+                });
+            }
+        });
+
+        var colCount = showDetail ? 14 : 10;
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!merges'] = [
+            { s:{r:0,c:0}, e:{r:0,c:colCount - 1} },
+            { s:{r:1,c:0}, e:{r:1,c:colCount - 1} }
+        ];
+        ws['!cols'] = showDetail
+            ? [{wch:26},{wch:8},{wch:20},{wch:10},{wch:14},{wch:8},{wch:12},{wch:10},{wch:12},{wch:16},{wch:10},{wch:10},{wch:10},{wch:12}]
+            : [{wch:26},{wch:8},{wch:20},{wch:10},{wch:14},{wch:8},{wch:10},{wch:10},{wch:10},{wch:12}];
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '自定义账单');
+        var wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+        var blob = new Blob([wbout], { type:'application/octet-stream' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = '自定义账单_' + new Date().toISOString().slice(0,10) + '.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // ========== 导航 ==========
+    function goBack() {
+        window.location.href = '账单管理.html';
+    }
+
+    // ========== 启动 ==========
+    init();
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a.sidebar-item, a.menu-item');
+    if (link && link.getAttribute('href') === 'index.html') {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar-item, .menu-item').forEach(function(m) { m.classList.remove('active'); });
+        link.classList.add('active');
+    }
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var navTab = e.target.closest('a.nav-tab');
+    if (navTab) {
+        var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+        var text = navTab.textContent.trim();
+        if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+    }
+});
+</script>
+</body>
+</html>

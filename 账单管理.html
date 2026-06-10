@@ -350,6 +350,14 @@
                         <option value="show">展示</option>
                     </select>
                 </div>
+                <div class="export-filter-item" style="grid-column:1 / -1;">
+                    <label>账单周期</label>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <input type="text" id="cbDateStart" placeholder="开始日期" style="width:140px;height:32px;padding:0 8px;border:1px solid #dcdfe6;border-radius:4px;font-size:13px;outline:none;color:#333;">
+                        <span style="color:#999;">~</span>
+                        <input type="text" id="cbDateEnd" placeholder="结束日期" style="width:140px;height:32px;padding:0 8px;border:1px solid #dcdfe6;border-radius:4px;font-size:13px;outline:none;color:#333;">
+                    </div>
+                </div>
             </div>
             <div id="cbPreview" style="margin-top:20px;padding:12px 16px;background:#fafbfc;border-radius:6px;font-size:13px;color:#666;line-height:1.8;">
             </div>
@@ -601,6 +609,14 @@
         cbPopulateSelect('cbApi', cbGetApis('', ''), 'both');
         cbPopulateSelect('cbTenant', cbGetTenants(), 'both');
         document.getElementById('cbTenantDetail').value = 'hide';
+        // 初始化账单周期日期选择器（默认上个月）
+        var now = new Date();
+        var lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        var lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        if (!document.getElementById('cbDateStart')._flatpickr) {
+            flatpickr('#cbDateStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: formatDate(lastMonth) });
+            flatpickr('#cbDateEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: formatDate(lastMonthEnd) });
+        }
         cbUpdatePreview();
         document.getElementById('customBillModal').classList.add('show');
     }
@@ -653,11 +669,13 @@
         var filtered = cbGetFilteredData();
         var showDetail = document.getElementById('cbTenantDetail').value === 'show';
         var tenant = document.getElementById('cbTenant').value;
-        var period = getSelectedPeriod();
+        var cbStart = document.getElementById('cbDateStart').value || '';
+        var cbEnd = document.getElementById('cbDateEnd').value || '';
+        var cbPeriod = (cbStart && cbEnd) ? (cbStart + ' ~ ' + cbEnd) : '';
 
         var aoa = [];
         aoa.push(['外数平台 - 自定义账单导出']);
-        aoa.push(['账单周期：' + period + ' 导出时间：' + new Date().toLocaleString('zh-CN')]);
+        aoa.push(['账单周期：' + (cbPeriod || '未选择') + ' 导出时间：' + new Date().toLocaleString('zh-CN')]);
         aoa.push([]);
 
         if (showDetail) {
