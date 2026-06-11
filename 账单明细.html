@@ -119,6 +119,13 @@
         .data-table th:last-child, .data-table td:last-child { border-right: none; }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: #f8fafc; }
+        .tenant-row { cursor: pointer; }
+        .tenant-row:hover td { background: #fef5ec; }
+        .tenant-arrow { display: inline-block; width: 16px; font-size: 10px; color: #999; transition: transform 0.2s; text-align: center; }
+        .tenant-arrow.open { transform: rotate(90deg); }
+        .api-header-row td { background: #eef1f6 !important; font-weight: 600; color: #777777; font-size: 12px; padding: 6px 12px; height: 32px; }
+        .api-row td { background: #fafbfc; }
+        .api-row td.api-name-cell { color: #666; font-size: 12px; }
         .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 13px; margin: 0 3px; display: inline-block; }
         .action-link:hover { text-decoration: underline; }
         .amount-text { font-weight: 600; color: #333; font-size: 13px; }
@@ -224,9 +231,8 @@
                     <table class="data-table" style="font-size:13px;">
                         <thead>
                             <tr>
-                                <th style="height:40px;">编号</th>
+                                <th style="height:40px;width:30px;"></th>
                                 <th style="height:40px;">供应商</th>
-                                <th style="height:40px;">API</th>
                                 <th style="height:40px;">租户</th>
                                 <th style="height:40px;">总查询量</th>
                                 <th style="height:40px;">使用占比</th>
@@ -383,39 +389,96 @@
         var totalUsage = detail ? detail.totalUsage : 0;
         var totalAmount = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
 
-        var html = '';
+        // 按租户汇总
+        var tenantMap = {};
+        var tenantOrder = [];
         if (detail && detail.apis) {
-            var idx = 0;
             for (var a = 0; a < detail.apis.length; a++) {
                 var api = detail.apis[a];
                 for (var t = 0; t < api.tenants.length; t++) {
                     var tn = api.tenants[t];
-                    idx++;
-                    var ratio = totalUsage > 0 ? (tn.usage / totalUsage) : 0;
-                    var shareAmt = totalAmount * ratio;
-                    html += '<tr>';
-                    html += '<td style="font-size:12px;">' + idx + '</td>';
-                    html += '<td>' + r.supplier + '</td>';
-                    html += '<td>' + api.name + '</td>';
-                    html += '<td>' + tn.name + '</td>';
-                    html += '<td>' + tn.usage.toLocaleString() + '</td>';
-                    html += '<td>' + (ratio * 100).toFixed(1) + '%</td>';
-                    html += '<td class="amount-text">¥' + shareAmt.toFixed(2) + '</td>';
-                    html += '<td><a class="action-link" onclick="openUsageDetailModal(\'' + billingId + '\',\'' + api.name + '\',\'' + tn.name + '\')">已用明细</a></td>';
+                    if (!tenantMap[tn.name]) {
+                        tenantMap[tn.name] = { usage: 0, apis: [] };
+                        tenantOrder.push(tn.name);
+                    }
+                    tenantMap[tn.name].usage += tn.usage;
+                    tenantMap[tn.name].apis.push({ name: api.name, usage: tn.usage });
+                }
+            }
+        }
+
+        var html = '';
+        if (tenantOrder.length > 0) {
+            for (var i = 0; i < tenantOrder.length; i++) {
+                var tenantName = tenantOrder[i];
+                var tData = tenantMap[tenantName];
+                var tRatio = totalUsage > 0 ? (tData.usage / totalUsage) : 0;
+                var tAmt = totalAmount * tRatio;
+
+                // 租户汇总行（可折叠）
+                html += '<tr class="tenant-row" data-tenant-key="' + tenantName + '" onclick="toggleTenant(this)">';
+                html += '<td><span class="tenant-arrow">▶</span></td>';
+                html += '<td>' + r.supplier + '</td>';
+                html += '<td>' + tenantName + '</td>';
+                html += '<td>' + tData.usage.toLocaleString() + '</td>';
+                html += '<td>' + (tRatio * 100).toFixed(1) + '%</td>';
+                html += '<td class="amount-text">¥' + tAmt.toFixed(2) + '</td>';
+                html += '<td></td>';
+                html += '</tr>';
+
+                // API 明细子表头（展开时显示）
+                html += '<tr class="api-header-row" data-tenant-key="' + tenantName + '" style="display:none;">';
+                html += '<td></td>';
+                html += '<td></td>';
+                html += '<td>API名称</td>';
+                html += '<td>查询量</td>';
+                html += '<td>使用占比</td>';
+                html += '<td>分摊金额</td>';
+                html += '<td>操作</td>';
+                html += '</tr>';
+
+                // API 明细行（默认隐藏）
+                for (var j = 0; j < tData.apis.length; j++) {
+                    var apiData = tData.apis[j];
+                    var aRatio = totalUsage > 0 ? (apiData.usage / totalUsage) : 0;
+                    var aAmt = totalAmount * aRatio;
+                    html += '<tr class="api-row" data-tenant-key="' + tenantName + '" style="display:none;">';
+                    html += '<td></td>';
+                    html += '<td></td>';
+                    html += '<td class="api-name-cell">' + apiData.name + '</td>';
+                    html += '<td>' + apiData.usage.toLocaleString() + '</td>';
+                    html += '<td>' + (aRatio * 100).toFixed(1) + '%</td>';
+                    html += '<td class="amount-text">¥' + aAmt.toFixed(2) + '</td>';
+                    html += '<td><a class="action-link" onclick="event.stopPropagation();openUsageDetailModal(\'' + billingId + '\',\'' + apiData.name + '\',\'' + tenantName + '\')">已用明细</a></td>';
                     html += '</tr>';
                 }
             }
+            // 合计行
             html += '<tr style="background:#fafbfc;font-weight:600;">';
-            html += '<td colspan="4" style="color:#333;text-align:center;">合计</td>';
+            html += '<td></td>';
+            html += '<td style="color:#333;text-align:center;">合计</td>';
+            html += '<td></td>';
             html += '<td style="color:#f89d34;">' + totalUsage.toLocaleString() + '</td>';
             html += '<td style="color:#f89d34;">100.0%</td>';
             html += '<td class="amount-text" style="color:#f89d34;">' + r.amount + '</td>';
             html += '<td></td>';
             html += '</tr>';
         } else {
-            html += '<tr><td colspan="8" style="padding:32px 0;color:#999;">暂无数据</td></tr>';
+            html += '<tr><td colspan="7" style="padding:32px 0;color:#999;">暂无数据</td></tr>';
         }
         document.getElementById('usageDetailBody').innerHTML = html;
+    }
+
+    // 折叠/展开租户下的API明细
+    function toggleTenant(row) {
+        var arrow = row.querySelector('.tenant-arrow');
+        var isOpen = arrow.classList.contains('open');
+        arrow.classList.toggle('open');
+        var tenantKey = row.getAttribute('data-tenant-key');
+        var apiRows = document.querySelectorAll('.api-row[data-tenant-key="' + tenantKey + '"], .api-header-row[data-tenant-key="' + tenantKey + '"]');
+        for (var i = 0; i < apiRows.length; i++) {
+            apiRows[i].style.display = isOpen ? 'none' : '';
+        }
     }
 
     // ========== 计算公式 ==========
@@ -707,7 +770,7 @@
         // Row 8: 账单信息标题
         aoa.push(['', '账单信息']);
         // Row 9: 账单表头
-        aoa.push(['', '调用接口', '', '接口ID', '计费次数', '应付金额（元）']);
+        aoa.push(['', '调用接口', '', '计费编号', '总查询量', '计费次数', '应付金额（元）']);
         // Row 10+: 账单数据
         var detailTotalCalls = 0, detailTotalBillable = 0, detailTotalAmt = 0;
         for (var j = 0; j < apiRows.length; j++) {
@@ -715,26 +778,27 @@
             detailTotalCalls += d.totalCalls;
             detailTotalBillable += d.billableCalls;
             detailTotalAmt += d.amount;
-            aoa.push(['', d.name, '', d.apiId, d.billableCalls.toLocaleString(), d.amount.toFixed(2)]);
+            aoa.push(['', d.name, '', r.billingCode, d.totalCalls.toLocaleString(), d.billableCalls.toLocaleString(), d.amount.toFixed(2)]);
         }
+        // 账单合计行
+        aoa.push(['', '合计', '', '', detailTotalCalls.toLocaleString(), detailTotalBillable.toLocaleString(), detailTotalAmt.toFixed(2)]);
 
         var ws = XLSX.utils.aoa_to_sheet(aoa);
 
         // 合并单元格
         ws['!merges'] = [
             { s:{r:0,c:1}, e:{r:0,c:7} },   // 标题 B1:H1
-            { s:{r:2,c:5}, e:{r:2,c:9} },   // 账单周期 F3:J3
-            { s:{r:4,c:5}, e:{r:4,c:6} },   // 订单表头 有效查询量合并
-            { s:{r:5,c:5}, e:{r:5,c:6} }    // 订单数据 有效查询量合并
+            { s:{r:2,c:5}, e:{r:2,c:9} }    // 账单周期 F3:J3
         ];
-        // API明细行的应付金额列合并
-        for (var k = 0; k < apiRows.length; k++) {
-            ws['!merges'].push({ s:{r:9+k,c:5}, e:{r:9+k,c:6} });
+        // 账单数据行的应付金额列合并（F-G合并）
+        var billDataRowCount = apiRows.length + 1; // +1 for 合计
+        for (var k = 0; k < billDataRowCount; k++) {
+            ws['!merges'].push({ s:{r:9+k,c:6}, e:{r:9+k,c:7} });
         }
 
         // 列宽
         ws['!cols'] = [
-            {wch:3}, {wch:24}, {wch:4}, {wch:10}, {wch:14}, {wch:14}, {wch:14}
+            {wch:3}, {wch:24}, {wch:4}, {wch:28}, {wch:14}, {wch:14}, {wch:14}, {wch:14}
         ];
 
         // 样式
@@ -745,17 +809,22 @@
         applyCellStyle(ws, 'F3', { font:{sz:9, name:'Arial'}, alignment:{vertical:'center'} });
         // 订单信息标题 (row 3)
         applyCellStyle(ws, 'B4', { font:{bold:true, sz:10, name:'Arial'}, alignment:{vertical:'center'} });
-        // 订单表头 (row 4): B5-G5
-        styleRange(ws, 4, 1, 6, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 订单表头 (row 4): B5-H5
+        styleRange(ws, 4, 1, 7, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
         // 订单数据行 (row 5)
-        styleRange(ws, 5, 1, 6, { font:dataFont, alignment:cellAlign, border:allBorders });
+        styleRange(ws, 5, 1, 7, { font:dataFont, alignment:cellAlign, border:allBorders });
         // 账单信息标题 (row 7)
         applyCellStyle(ws, 'B8', { font:{bold:true, sz:10, name:'Arial'}, alignment:{vertical:'center'} });
-        // 账单表头 (row 8): B9-F9
-        styleRange(ws, 8, 1, 5, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 账单数据行
-        for (var bi = 0; bi < apiRows.length; bi++) {
-            styleRange(ws, 9 + bi, 1, 5, { font:dataFont, alignment:cellAlign, border:allBorders });
+        // 账单表头 (row 8): B9-I9
+        styleRange(ws, 8, 1, 8, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+        // 账单数据行 + 合计行
+        for (var bi = 0; bi < billDataRowCount; bi++) {
+            var rIdx = 9 + bi;
+            var isTotalRow = (bi === apiRows.length);
+            var rowStyle = isTotalRow
+                ? { font:{bold:true, sz:9, name:'Arial', color:{rgb:'FFf89d34'}}, alignment:cellAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} }
+                : { font:dataFont, alignment:cellAlign, border:allBorders };
+            styleRange(ws, rIdx, 1, 8, rowStyle);
         }
 
         var wb = XLSX.utils.book_new();
