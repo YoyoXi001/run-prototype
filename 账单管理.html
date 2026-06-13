@@ -37,7 +37,7 @@
         .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
         .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
         .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
-        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
         .nav-tab:hover { color: #1152c5; }
         .nav-tab.active { color: #1152c5; font-weight: 700; }
         .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
@@ -58,19 +58,35 @@
         .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
         .menu-item i { font-size: 18px; width: 22px; }
 
-        /* 右侧内容区域 - flex布局 */
+        /* 右侧内容区域 */
         .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
         .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
-        /* 布局容器 */
         .forecast-layout { flex: 1; display: flex; flex-direction: column; }
-        /* 白色卡片 - 填满剩余高度 */
         .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 24px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
-        /* flex表格容器 */
         .flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
+
         /* 面包屑 */
         .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
         .breadcrumb .separator { margin: 0 8px; color: #666; }
         .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* ===== Tab 页签 ===== */
+        .page-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #e4e7ed; }
+        .page-tab {
+            padding: 10px 32px; cursor: pointer; font-size: 16px; font-weight: 500;
+            color: #666; background: transparent; border: none; position: relative;
+            transition: color 0.25s; font-family: 'Source Han Sans SC', sans-serif;
+        }
+        .page-tab:hover { color: #f89d34; }
+        .page-tab.active { color: #f89d34; font-weight: 700; }
+        .page-tab.active::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+            height: 2px; background: #f89d34; border-radius: 2px 2px 0 0;
+        }
+
+        /* Tab 面板 */
+        .tab-panel { display: none; flex: 1; flex-direction: column; }
+        .tab-panel.active { display: flex; }
 
         /* 筛选栏 */
         .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
@@ -78,36 +94,37 @@
         .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
         .filter-item { display: flex; align-items: center; gap: 8px; }
         .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
-        .filter-item input, .filter-item select { width: 222px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
-        .filter-item input.datepicker-input { width: 142px; }
+        .filter-item input, .filter-item select { width: 180px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
         .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
         .filter-right { display: flex; gap: 12px; }
         .btn-primary { background: #f89d34; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; }
         .btn-primary:hover { background: #e68f2a; }
         .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; color: #666666; }
         .btn-default:hover { background: #f5f7fa; }
-        .btn-add { background: #fff; color: #f89d34; border: 1px solid #f89d34; padding: 0 16px; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; height: 32px; line-height: 32px; }
-        .btn-add:hover { background: #fef5ec; }
 
-        /* 内容区域 */
-        .action-bar { padding: 0 0 10px 0; display: flex; justify-content: flex-start; }
+        /* 操作栏（导出按钮） */
+        .action-bar { padding: 0 0 10px 0; display: flex; justify-content: flex-end; }
+        .btn-export {
+            background: #fff; color: #f89d34; border: 1px solid #f89d34;
+            padding: 0 20px; border-radius: 4px; font-size: 14px; cursor: pointer;
+            transition: all 0.2s; height: 34px; line-height: 34px;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-export:hover { background: #fef5ec; }
+        .btn-export i { font-size: 15px; }
+
+        /* 表格 */
         .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; padding: 0; }
         .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
-        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; white-space: nowrap; }
         .data-table th:last-child, .data-table td:last-child { border-right: none; }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: #f8fafc; }
 
-        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 13px; margin: 0 3px; display: inline-block; }
-        .action-link:hover { text-decoration: underline; }
-        .action-link.danger { color: #f5222d; }
-
-        /* 金额样式 */
+        /* 金额 */
         .amount-text { font-weight: 600; color: #333; font-size: 13px; }
-
-        /* 价格单元格 */
-        .price-cell { font-size: 12px; line-height: 1.6; color: #333; text-align: center; }
+        .ratio-text { color: #0d6cff; font-weight: 500; }
 
         /* 分页 */
         .pagination { padding: 16px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
@@ -118,57 +135,30 @@
         .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
         .pagination .page-number.active { color: #f89d34; font-weight: 600; }
         .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination button.page-btn:disabled { cursor: not-allowed; opacity: 0.4; }
         .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
         .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
         .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
 
-        /* 弹窗 */
-        .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .modal-mask.show { display: flex; }
-        .modal { background: #fff; border-radius: 8px; width: 920px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
-        .modal-header { padding: 20px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ebeef5; }
-        .modal-title { font-size: 18px; font-weight: 700; color: #1f2f3d; }
-        .modal-close { font-size: 20px; color: #999; cursor: pointer; background: none; border: none; line-height: 1; }
-        .modal-close:hover { color: #f5222d; }
-        .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-        .modal-footer { padding: 16px 24px; display: flex; justify-content: center; gap: 12px; border-top: 1px solid #ebeef5; }
-        .btn-save { background: #f89d34; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
-        .btn-save:hover { background: #e68f2a; }
-        .btn-cancel { background: #fff; color: #666; border: 1px solid #dcdfe6; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
-        .btn-cancel:hover { background: #f5f7fa; }
+        /* 合计行 */
+        .data-table .total-row td { font-weight: 700; color: #333; background: #fafbfc; border-top: 2px solid #dcdfe6; }
+        .data-table .total-row:hover td { background: #f5f6f8; }
 
-        /* 明细弹窗样式 */
-        .detail-section-title { font-size: 14px; font-weight: 600; color: #1f2f3d; margin: 20px 0 10px 0; }
-        .detail-section-title:first-child { margin-top: 0; }
+        /* 日期范围 */
+        .date-sep { color: #999; margin: 0 4px; font-size: 14px; }
+        .filter-item input.datepicker-input { width: 142px; }
+        .filter-row { display: flex; align-items: center; gap: 16px; }
+        .filter-row-right { margin-left: auto; display: flex; gap: 12px; }
+        .period-label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
 
-        .detail-kv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid #ebeef5; border-radius: 6px; overflow: hidden; }
-        .detail-kv-item { display: flex; padding: 12px 16px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; }
-        .detail-kv-item:nth-child(3n) { border-right: none; }
-        .detail-kv-item:last-child, .detail-kv-item:nth-last-child(2), .detail-kv-item:nth-last-child(3) { border-bottom: none; }
-        .detail-kv-label { font-size: 13px; color: #999; width: 80px; flex-shrink: 0; }
-        .detail-kv-value { font-size: 13px; color: #333; font-weight: 500; }
+        /* 明细筛选布局（参考合同管理） */
+        .detail-filter-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; width: 100%; }
+        .detail-filter-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .detail-filter-date-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 12px; }
+        .detail-filter-buttons { display: flex; gap: 12px; align-items: center; }
 
-        .detail-highlight { color: #f89d34; font-weight: 700; font-size: 15px; }
-
-        /* 导出弹窗 */
-        .export-mode-tabs { display: flex; gap: 0; border: 1px solid #dcdfe6; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
-        .export-mode-tab { flex: 1; padding: 10px 20px; text-align: center; cursor: pointer; font-size: 13px; color: #666; background: #fafbfc; transition: 0.2s; border-right: 1px solid #dcdfe6; }
-        .export-mode-tab:last-child { border-right: none; }
-        .export-mode-tab.active { background: #f89d34; color: #fff; font-weight: 600; }
-        .export-template-card { background: #fafbfc; border: 1px solid #ebeef5; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
-        .export-template-title { font-size: 14px; font-weight: 600; color: #1f2f3d; margin-bottom: 12px; }
-        .export-template-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 13px; }
-        .export-template-label { color: #999; width: 80px; flex-shrink: 0; }
-        .export-template-value { color: #333; font-weight: 500; }
-        .export-section-block { background: #f5f7fa; border-radius: 4px; padding: 10px 14px; margin-bottom: 8px; font-size: 12px; color: #666; line-height: 1.8; }
-        .export-section-block strong { color: #1f2f3d; font-size: 13px; }
-        .export-filter-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-        .export-filter-item { display: flex; align-items: center; gap: 8px; }
-        .export-filter-item label { font-size: 13px; color: #666; width: 70px; flex-shrink: 0; text-align: right; }
-        .export-filter-item input, .export-filter-item select { flex: 1; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; outline: none; color: #333; }
-        .export-filter-item input:focus, .export-filter-item select:focus { border-color: #f89d34; }
-        .export-hint { font-size: 12px; color: #999; margin-top: 8px; line-height: 1.6; }
-        .export-hint i { color: #f89d34; margin-right: 4px; }
+        /* 空数据 */
+        .empty-row td { padding: 48px 0 !important; color: #bbb; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -224,509 +214,660 @@
         <div class="content-card">
         <div class="forecast-layout">
 
-            <!-- 筛选栏 -->
-            <div class="filter-section">
-                <div class="filter-bar">
-                    <div class="filter-left">
-                        <div class="filter-item">
-                            <label>供应商</label>
-                            <select id="filterSupplier">
-                                <option value="">全部</option>
-                                <option>企查查</option>
-                                <option>天眼查</option>
-                                <option>安硕</option>
-                                <option>中诚信</option>
-                                <option>百行征信</option>
-                                <option>前海征信</option>
-                            </select>
+            <!-- ====== Tab 页签 ====== -->
+            <div class="page-tabs">
+                <button class="page-tab active" data-tab="summary" onclick="switchTab('summary')">汇总</button>
+                <button class="page-tab" data-tab="detail" onclick="switchTab('detail')">明细</button>
+            </div>
+
+            <!-- ============================================================ -->
+            <!--                      汇总 Tab                                -->
+            <!-- ============================================================ -->
+            <div class="tab-panel active" id="panel-summary">
+                <!-- 筛选栏 -->
+                <div class="filter-section">
+                    <div class="filter-bar">
+                        <div class="filter-left">
+                            <div class="filter-item">
+                                <label>供应商</label>
+                                <select id="sFilterSupplier">
+                                    <option value="">全部</option>
+                                    <option>企查查</option>
+                                    <option>天眼查</option>
+                                    <option>安硕</option>
+                                    <option>中诚信</option>
+                                    <option>百行征信</option>
+                                    <option>前海征信</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>租户</label>
+                                <select id="sFilterTenant">
+                                    <option value="">全部</option>
+                                    <option>租赁</option>
+                                    <option>保险</option>
+                                    <option>资产</option>
+                                    <option>风控</option>
+                                    <option>信贷</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>周期</label>
+                                <input type="text" id="sFilterDateStart" class="datepicker-input" placeholder="开始日期" readonly>
+                                <span class="date-sep">~</span>
+                                <input type="text" id="sFilterDateEnd" class="datepicker-input" placeholder="结束日期" readonly>
+                            </div>
                         </div>
-                        <div class="filter-item">
-                            <label>账单周期</label>
-                            <select id="filterPeriodType" onchange="onPeriodTypeChange()">
-                                <option value="month">按月</option>
-                                <option value="quarter">按季</option>
-                                <option value="year">按年</option>
-                            </select>
-                            <select id="filterPeriodValue">
-                            </select>
+                        <div class="filter-right">
+                            <button class="btn-primary" onclick="doSummaryQuery()">查询</button>
+                            <button class="btn-default" onclick="doSummaryReset()">重置</button>
                         </div>
                     </div>
-                    <div class="filter-right">
-                        <button class="btn-primary" onclick="doQuery()">查询</button>
-                        <button class="btn-default" onclick="doReset()">重置</button>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="forecast-white-card">
+                    <div class="action-bar">
+                        <button class="btn-export" onclick="exportSummary()"><i class="el-icon-download"></i>导出</button>
+                    </div>
+                    <div class="flex-table-container">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>供应商</th>
+                                        <th>租户</th>
+                                        <th>总查询量</th>
+                                        <th>命中缓存数</th>
+                                        <th>计费次数</th>
+                                        <th>分摊比例</th>
+                                        <th>费用</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="summaryTableBody"></tbody>
+                            </table>
+                        </div>
+                        <!-- 分页 -->
+                        <div class="pagination">
+                            <span class="total-text" id="summaryTotalText">共 0 条</span>
+                            <button class="page-btn" disabled>&lt;</button>
+                            <span class="page-number active">1</span>
+                            <button class="page-btn" disabled>&gt;</button>
+                            <select class="page-size-select">
+                                <option>10条/页</option>
+                                <option>20条/页</option>
+                                <option>50条/页</option>
+                            </select>
+                            <div class="jump-section">
+                                <span>前往</span>
+                                <input type="text" placeholder="1">
+                                <span>页</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 数据表格 -->
-            <div class="forecast-white-card">
-                <div class="action-bar">
-                    <button class="btn-add" onclick="openCustomBillModal()">自定义账单</button>
-                </div>
-                <div class="flex-table-container">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>编号</th>
-                                <th>计费编号</th>
-                                <th>供应商</th>
-                                <th>计费模式</th>
-                                <th>单价</th>
-                                <th>使用次数</th>
-                                <th>账单周期</th>
-                                <th>应付金额</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 分页 -->
-                <div class="pagination">
-                    <span class="total-text" id="totalText">共 6 条</span>
-                    <button class="page-btn" disabled>&lt;</button>
-                    <span class="page-number active">1</span>
-                    <button class="page-btn" disabled>&gt;</button>
-                    <select class="page-size-select">
-                        <option>10条/页</option>
-                        <option>20条/页</option>
-                        <option>50条/页</option>
-                    </select>
-                    <div class="jump-section">
-                        <span>前往</span>
-                        <input type="text" placeholder="1">
-                        <span>页</span>
+            <!-- ============================================================ -->
+            <!--                      明细 Tab                                -->
+            <!-- ============================================================ -->
+            <div class="tab-panel" id="panel-detail">
+                <!-- 筛选栏 -->
+                <div class="filter-section">
+                    <div class="filter-bar" style="flex-direction: column; align-items: stretch;">
+                        <div class="detail-filter-row">
+                            <div class="detail-filter-fields">
+                                <div class="filter-item">
+                                    <label>供应商</label>
+                                    <select id="dFilterSupplier">
+                                        <option value="">全部</option>
+                                        <option>企查查</option>
+                                        <option>天眼查</option>
+                                        <option>安硕</option>
+                                        <option>中诚信</option>
+                                        <option>百行征信</option>
+                                        <option>前海征信</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label>租户</label>
+                                    <select id="dFilterTenant">
+                                        <option value="">全部</option>
+                                        <option>租赁</option>
+                                        <option>保险</option>
+                                        <option>资产</option>
+                                        <option>风控</option>
+                                        <option>信贷</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label>部门</label>
+                                    <select id="dFilterDept">
+                                        <option value="">全部</option>
+                                        <option>风控部</option>
+                                        <option>信贷部</option>
+                                        <option>合规部</option>
+                                        <option>市场部</option>
+                                        <option>运营部</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label>系统</label>
+                                    <select id="dFilterSystem">
+                                        <option value="">全部</option>
+                                        <option>信贷审批系统</option>
+                                        <option>风控决策引擎</option>
+                                        <option>客户管理平台</option>
+                                        <option>反欺诈系统</option>
+                                        <option>贷后管理系统</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label>API</label>
+                                    <select id="dFilterApi">
+                                        <option value="">全部</option>
+                                        <option>企业基本信息</option>
+                                        <option>司法风险</option>
+                                        <option>信用评分</option>
+                                        <option>反欺诈评分</option>
+                                        <option>个人信用报告</option>
+                                        <option>工商信息</option>
+                                        <option>股权穿透</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="detail-filter-buttons">
+                                <button class="btn-primary" onclick="doDetailQuery()">查询</button>
+                                <button class="btn-default" onclick="doDetailReset()">重置</button>
+                            </div>
+                        </div>
+                        <div class="detail-filter-date-row">
+                            <div class="filter-item">
+                                <label>周期</label>
+                                <input type="text" id="dFilterDateStart" class="datepicker-input" placeholder="开始日期" readonly>
+                                <span class="date-sep">~</span>
+                                <input type="text" id="dFilterDateEnd" class="datepicker-input" placeholder="结束日期" readonly>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- 数据表格 -->
+                <div class="forecast-white-card">
+                    <div class="action-bar">
+                        <button class="btn-export" onclick="exportDetail()"><i class="el-icon-download"></i>导出</button>
+                    </div>
+                    <div class="flex-table-container">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>供应商</th>
+                                        <th>租户</th>
+                                        <th>调用公司</th>
+                                        <th>调用部门</th>
+                                        <th>调用系统</th>
+                                        <th>供应商的API</th>
+                                        <th>日期</th>
+                                        <th>总查询量</th>
+                                        <th>命中缓存数</th>
+                                        <th>计费次数</th>
+                                        <th>费用</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailTableBody"></tbody>
+                            </table>
+                        </div>
+                        <!-- 分页 -->
+                        <div class="pagination" id="detailPagination"></div>
+                    </div>
                 </div>
             </div>
+
         </div>
         </div>
     </main>
 </div>
 
-<!-- 自定义账单弹窗 -->
-<div class="modal-mask" id="customBillModal">
-    <div class="modal" style="width:640px;">
-        <div class="modal-header">
-            <div class="modal-title">自定义账单</div>
-            <button class="modal-close" onclick="closeCustomBillModal()"><i class="el-icon-close"></i></button>
-        </div>
-        <div class="modal-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;">
-                <div class="export-filter-item">
-                    <label>供应商</label>
-                    <select id="cbSupplier" onchange="cbOnSupplierChange()">
-                        <option value="">全部</option>
-                    </select>
-                </div>
-                <div class="export-filter-item">
-                    <label>计费模式</label>
-                    <select id="cbMode" onchange="cbOnModeChange()">
-                        <option value="">全部</option>
-                    </select>
-                </div>
-                <div class="export-filter-item">
-                    <label>API</label>
-                    <select id="cbApi">
-                        <option value="">不限</option>
-                        <option value="__all__">全部</option>
-                    </select>
-                </div>
-                <div class="export-filter-item">
-                    <label>租户</label>
-                    <select id="cbTenant">
-                        <option value="">不限</option>
-                        <option value="__all__">全部</option>
-                    </select>
-                </div>
-                <div class="export-filter-item">
-                    <label>租户明细</label>
-                    <select id="cbTenantDetail">
-                        <option value="hide">不展示</option>
-                        <option value="show">展示</option>
-                    </select>
-                </div>
-                <div class="export-filter-item" style="grid-column:1 / -1;">
-                    <label>账单周期</label>
-                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                        <input type="text" id="cbDateStart" placeholder="开始日期" style="width:140px;height:32px;padding:0 8px;border:1px solid #dcdfe6;border-radius:4px;font-size:13px;outline:none;color:#333;">
-                        <span style="color:#999;">~</span>
-                        <input type="text" id="cbDateEnd" placeholder="结束日期" style="width:140px;height:32px;padding:0 8px;border:1px solid #dcdfe6;border-radius:4px;font-size:13px;outline:none;color:#333;">
-                    </div>
-                </div>
-            </div>
-            <div id="cbPreview" style="margin-top:20px;padding:12px 16px;background:#fafbfc;border-radius:6px;font-size:13px;color:#666;line-height:1.8;">
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-save" onclick="cbDoExport()">导出 Excel</button>
-            <button class="btn-cancel" onclick="closeCustomBillModal()">取消</button>
-        </div>
-    </div>
-</div>
-
 <script>
-    function formatDate(d) {
-        var y = d.getFullYear();
-        var m = ('0' + (d.getMonth() + 1)).slice(-2);
-        var day = ('0' + d.getDate()).slice(-2);
-        return y + '-' + m + '-' + day;
-    }
+// ==================== 工具函数 ====================
+function formatDate(d) {
+    var y = d.getFullYear();
+    var m = ('0' + (d.getMonth() + 1)).slice(-2);
+    var day = ('0' + d.getDate()).slice(-2);
+    return y + '-' + m + '-' + day;
+}
+function formatNum(n) { return (n || 0).toLocaleString(); }
+function formatMoney(n) { return '¥' + (n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
-    // ========== 账单周期选择 ==========
-    function onPeriodTypeChange() {
-        var type = document.getElementById('filterPeriodType').value;
-        var sel = document.getElementById('filterPeriodValue');
-        sel.innerHTML = '';
-        var now = new Date();
-        var y = now.getFullYear();
-        var m = now.getMonth(); // 0-indexed
+// ==================== 供应商单价（费用/计费次数） ====================
+var supplierUnitCost = {
+    '企查查': 1.8, '天眼查': 0.8, '中诚信': 1.5, '前海征信': 0.8, '百行征信': 2.5
+};
 
-        if (type === 'month') {
-            // 最近12个月，默认上个月
-            for (var i = 1; i <= 12; i++) {
-                var d = new Date(y, m - i, 1);
-                var startY = d.getFullYear();
-                var startM = d.getMonth();
-                var start = formatDate(new Date(startY, startM, 1));
-                var end = formatDate(new Date(startY, startM + 1, 0));
-                var label = startY + '年' + (startM + 1) + '月';
-                var opt = document.createElement('option');
-                opt.value = start + '|' + end;
-                opt.textContent = label;
-                sel.appendChild(opt);
-            }
-        } else if (type === 'quarter') {
-            // 最近8个季度，默认上季度
-            var currentQ = Math.floor(m / 3); // 0-3
-            for (var i = 1; i <= 8; i++) {
-                var qOffset = currentQ - i;
-                var qYear = y + Math.floor(qOffset / 4);
-                var q = ((qOffset % 4) + 4) % 4; // 0-3
-                var start = formatDate(new Date(qYear, q * 3, 1));
-                var end = formatDate(new Date(qYear, q * 3 + 3, 0));
-                var label = qYear + '年Q' + (q + 1);
-                var opt = document.createElement('option');
-                opt.value = start + '|' + end;
-                opt.textContent = label;
-                sel.appendChild(opt);
-            }
-        } else if (type === 'year') {
-            // 最近5年，默认去年
-            for (var i = 1; i <= 5; i++) {
-                var yr = y - i;
-                var start = yr + '-01-01';
-                var end = yr + '-12-31';
-                var label = yr + '年';
-                var opt = document.createElement('option');
-                opt.value = start + '|' + end;
-                opt.textContent = label;
-                sel.appendChild(opt);
-            }
-        }
-    }
-
-    // 初始化周期选择器（默认按月-上个月）
-    onPeriodTypeChange();
-
-    // 列表数据：计费模式仅保留 按次、包量、阶梯，与计费管理一致
-    // price 字段支持 HTML（<br>换行），参考计费管理的 price-cell 样式
-    // billingCode 引用计费管理中对应的计费编码
-    var allData = [
-        { id:'BILL-202606-001', billingCode:'JF-API-QCC-QYJBXX-JT-003', supplier:'企查查', mode:'阶梯', price:'≤3万次¥1.8<br>3-8万¥1.2<br>&gt;8万¥0.8', usage:10000, amount:'¥500.00', apis:['企业基本信息'], tenants:[{name:'租赁',usage:5200},{name:'保险',usage:3000},{name:'资产',usage:1800}] },
-        { id:'BILL-202606-002', billingCode:'JF-API-TYC-SFXP-BL-002', supplier:'天眼查', mode:'包量', price:'¥60,000/8万次<br>超额¥0.8/次', usage:85000, amount:'¥85,000.00', apis:['司法风险'], tenants:[{name:'租赁',usage:45000},{name:'风控',usage:25000},{name:'信贷',usage:15000}] },
-        { id:'BILL-202606-003', billingCode:'JF-API-TYC-QYJBXX-AC-001', supplier:'天眼查', mode:'按次', price:'¥1.0/次', usage:52000, amount:'¥52,000.00', apis:['企业基本信息'], tenants:[{name:'保险',usage:32000},{name:'资产',usage:12000},{name:'信贷',usage:8000}] },
-        { id:'BILL-202606-004', billingCode:'JF-API-ZCX-XYPF-JT-005', supplier:'中诚信', mode:'阶梯', price:'≤5万次¥2.0<br>5-10万¥1.5<br>&gt;10万¥1.0', usage:92000, amount:'¥80,000.00', apis:['信用评分'], tenants:[{name:'资产',usage:52000},{name:'风控',usage:28000},{name:'信贷',usage:12000}] },
-        { id:'BILL-202606-005', billingCode:'JF-API-QHZX-FQZPF-AC-007', supplier:'前海征信', mode:'按次', price:'¥0.8/次', usage:38500, amount:'¥30,800.00', apis:['反欺诈评分'], tenants:[{name:'信贷',usage:28500},{name:'风控',usage:10000}] },
-        { id:'BILL-202606-006', billingCode:'JF-API-BSZX-GRXYBG-AC-006', supplier:'百行征信', mode:'按次', price:'¥2.5/次', usage:21800, amount:'¥54,500.00', apis:['个人信用报告'], tenants:[{name:'风控',usage:15800},{name:'信贷',usage:6000}] }
-    ];
-
-    function getSelectedPeriod() {
-        var val = document.getElementById('filterPeriodValue').value;
-        if (val) {
-            return val.replace('|', ' ~ ');
-        }
-        return '';
-    }
-
-    function renderTable(data) {
-        var tbody = document.getElementById('tableBody');
-        var period = getSelectedPeriod();
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
-            document.getElementById('totalText').textContent = '共 0 条';
-            return;
-        }
-        var html = '';
-        for (var i = 0; i < data.length; i++) {
-            var r = data[i];
-            html += '<tr>'
-                + '<td style="font-size:12px;">' + r.id + '</td>'
-                + '<td style="font-size:12px;letter-spacing:0.3px;" title="' + r.billingCode + '">' + r.billingCode + '</td>'
-                + '<td>' + r.supplier + '</td>'
-                + '<td>' + r.mode + '</td>'
-                + '<td class="price-cell">' + r.price + '</td>'
-                + '<td>' + (r.usage || 0).toLocaleString() + '</td>'
-                + '<td style="white-space:nowrap;font-size:12px;">' + period + '</td>'
-                + '<td class="amount-text">' + r.amount + '</td>'
-                + '<td><a class="action-link" href="账单明细.html?id=' + r.id + '">查看明细</a></td>'
-                + '</tr>';
-        }
-        tbody.innerHTML = html;
-        document.getElementById('totalText').textContent = '共 ' + data.length + ' 条';
-    }
-
-    function doQuery() {
-        var supplier = document.getElementById('filterSupplier').value;
-
-        var filtered = allData.filter(function(r) {
-            if (supplier && r.supplier !== supplier) return false;
-            return true;
-        });
-        renderTable(filtered);
-    }
-
-    function doReset() {
-        document.getElementById('filterSupplier').value = '';
-        // 重置为按月-上个月
-        document.getElementById('filterPeriodType').value = 'month';
-        onPeriodTypeChange();
-        renderTable(allData);
-    }
-
-    // 初始渲染
-    renderTable(allData);
-
-    // ========== 自定义账单弹窗 ==========
-    // 联动辅助函数
-    function cbGetSuppliers() {
-        var set = {};
-        allData.forEach(function(r) { set[r.supplier] = true; });
-        return Object.keys(set);
-    }
-    function cbGetModes(supplier) {
-        var set = {};
-        allData.forEach(function(r) {
-            if (!supplier || r.supplier === supplier) set[r.mode] = true;
-        });
-        return Object.keys(set);
-    }
-    function cbGetApis(supplier, mode) {
-        var set = {};
-        allData.forEach(function(r) {
-            if ((!supplier || r.supplier === supplier) && (!mode || r.mode === mode)) {
-                r.apis.forEach(function(a) { set[a] = true; });
-            }
-        });
-        return Object.keys(set);
-    }
-    function cbGetTenants() {
-        var set = {};
-        allData.forEach(function(r) {
-            r.tenants.forEach(function(t) { set[t.name] = true; });
-        });
-        return Object.keys(set);
-    }
-    function cbPopulateSelect(id, options, includeAll) {
-        var sel = document.getElementById(id);
-        sel.innerHTML = '';
-        if (includeAll === 'unlimited' || includeAll === 'both') {
-            var o = document.createElement('option');
-            o.value = '';
-            o.textContent = '不限';
-            sel.appendChild(o);
-        }
-        if (includeAll === 'all' || includeAll === 'both') {
-            var o = document.createElement('option');
-            o.value = '__all__';
-            o.textContent = '全部';
-            sel.appendChild(o);
-        }
-        options.forEach(function(opt) {
-            var o = document.createElement('option');
-            o.value = opt;
-            o.textContent = opt;
-            sel.appendChild(o);
-        });
-    }
-
-    function cbOnSupplierChange() {
-        var supplier = document.getElementById('cbSupplier').value;
-        cbPopulateSelect('cbMode', cbGetModes(supplier), 'all');
-        cbOnModeChange();
-    }
-    function cbOnModeChange() {
-        var supplier = document.getElementById('cbSupplier').value;
-        var mode = document.getElementById('cbMode').value;
-        cbPopulateSelect('cbApi', cbGetApis(supplier, mode), 'both');
-    }
-    function cbUpdatePreview() {
-        var filtered = cbGetFilteredData();
-        var showDetail = document.getElementById('cbTenantDetail').value === 'show';
-        var count = showDetail ? 0 : filtered.length;
-        if (showDetail) {
-            var tenant = document.getElementById('cbTenant').value;
-            filtered.forEach(function(r) {
-                var ts = r.tenants;
-                if (tenant && tenant !== '__all__') {
-                    ts = ts.filter(function(t) { return t.name === tenant; });
-                }
-                count += ts.length;
-            });
-        }
-        document.getElementById('cbPreview').innerHTML =
-            '<i class="el-icon-document" style="color:#f89d34;margin-right:4px;"></i>' +
-            '当前筛选条件匹配 <strong style="color:#f89d34;">' + count + '</strong> 条' +
-            (showDetail ? '租户明细' : '账单记录') + '，点击"导出 Excel"下载。';
-    }
-
-    function cbGetFilteredData() {
-        var supplier = document.getElementById('cbSupplier').value;
-        var mode = document.getElementById('cbMode').value;
-        var api = document.getElementById('cbApi').value;
-        var tenant = document.getElementById('cbTenant').value;
-        return allData.filter(function(r) {
-            if (supplier && r.supplier !== supplier) return false;
-            if (mode && r.mode !== mode) return false;
-            if (api && api !== '__all__') {
-                if (r.apis.indexOf(api) === -1) return false;
-            }
-            if (tenant && tenant !== '__all__') {
-                var hasTenant = r.tenants.some(function(t) { return t.name === tenant; });
-                if (!hasTenant) return false;
-            }
-            return true;
-        });
-    }
-
-    function openCustomBillModal() {
-        cbPopulateSelect('cbSupplier', cbGetSuppliers(), 'all');
-        cbPopulateSelect('cbMode', cbGetModes(''), 'all');
-        cbPopulateSelect('cbApi', cbGetApis('', ''), 'both');
-        cbPopulateSelect('cbTenant', cbGetTenants(), 'both');
-        document.getElementById('cbTenantDetail').value = 'hide';
-        // 初始化账单周期日期选择器（默认上个月）
-        var now = new Date();
-        var lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        var lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-        if (!document.getElementById('cbDateStart')._flatpickr) {
-            flatpickr('#cbDateStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: formatDate(lastMonth) });
-            flatpickr('#cbDateEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, defaultDate: formatDate(lastMonthEnd) });
-        }
-        cbUpdatePreview();
-        document.getElementById('customBillModal').classList.add('show');
-    }
-
-    function closeCustomBillModal() {
-        document.getElementById('customBillModal').classList.remove('show');
-    }
-
-    document.getElementById('customBillModal').addEventListener('click', function(e) {
-        if (e.target === this) closeCustomBillModal();
+// ==================== Tab 切换 ====================
+function switchTab(tab) {
+    document.querySelectorAll('.page-tab').forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('data-tab') === tab);
     });
+    document.querySelectorAll('.tab-panel').forEach(function(p) {
+        p.classList.toggle('active', p.id === 'panel-' + tab);
+    });
+}
 
-    // 联动事件绑定（HTML onchange 已设置）
-    document.getElementById('cbTenantDetail').addEventListener('change', cbUpdatePreview);
-    document.getElementById('cbTenant').addEventListener('change', cbUpdatePreview);
-    document.getElementById('cbApi').addEventListener('change', cbUpdatePreview);
+// ==================== 汇总数据 ====================
+var summaryData = [
+    { supplier:'企查查', tenant:'租赁', totalQuery:5200, cacheHit:1820, billCount:3380, ratio:0.325, cost:6084.00 },
+    { supplier:'企查查', tenant:'保险', totalQuery:3000, cacheHit:900, billCount:2100, ratio:0.202, cost:3780.00 },
+    { supplier:'企查查', tenant:'资产', totalQuery:1800, cacheHit:540, billCount:1260, ratio:0.121, cost:2268.00 },
+    { supplier:'天眼查', tenant:'租赁', totalQuery:4500, cacheHit:1575, billCount:2925, ratio:0.281, cost:2340.00 },
+    { supplier:'天眼查', tenant:'风控', totalQuery:2500, cacheHit:750, billCount:1750, ratio:0.168, cost:1400.00 },
+    { supplier:'天眼查', tenant:'信贷', totalQuery:1500, cacheHit:450, billCount:1050, ratio:0.101, cost:840.00 },
+    { supplier:'中诚信', tenant:'资产', totalQuery:5200, cacheHit:1560, billCount:3640, ratio:0.350, cost:5460.00 },
+    { supplier:'中诚信', tenant:'风控', totalQuery:2800, cacheHit:840, billCount:1960, ratio:0.188, cost:2940.00 },
+    { supplier:'中诚信', tenant:'信贷', totalQuery:1200, cacheHit:360, billCount:840, ratio:0.081, cost:1260.00 },
+    { supplier:'前海征信', tenant:'信贷', totalQuery:2850, cacheHit:855, billCount:1995, ratio:0.427, cost:1596.00 },
+    { supplier:'前海征信', tenant:'风控', totalQuery:1000, cacheHit:300, billCount:700, ratio:0.150, cost:560.00 },
+    { supplier:'百行征信', tenant:'风控', totalQuery:1580, cacheHit:474, billCount:1106, ratio:0.385, cost:2765.00 },
+    { supplier:'百行征信', tenant:'信贷', totalQuery:600, cacheHit:180, billCount:420, ratio:0.146, cost:1050.00 }
+];
 
-    // Excel 样式常量
-    var thinBorder = { style:'thin', color:{rgb:'FFB2B2B2'} };
-    var allBorders = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
-    var headerFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'} };
-    var headerFill = { fgColor:{rgb:'FFF2F2F2'} };
-    var headerAlign = { horizontal:'center', vertical:'center', wrapText:true };
-    var cellAlign = { horizontal:'center', vertical:'center' };
-    var dataFont = { sz:9, name:'Arial', color:{rgb:'FF333333'} };
+// ==================== 明细数据 ====================
+var detailData = [
+    { supplier:'企查查', tenant:'租赁', company:'某某金控', dept:'风控部', system:'信贷审批系统', api:'企业基本信息', date:'2026-06-01', totalQuery:320, cacheHit:112, billCount:208, cost:374.40 },
+    { supplier:'企查查', tenant:'租赁', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'企业基本信息', date:'2026-06-02', totalQuery:280, cacheHit:98, billCount:182, cost:327.60 },
+    { supplier:'企查查', tenant:'租赁', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'工商信息', date:'2026-06-03', totalQuery:450, cacheHit:158, billCount:292, cost:525.60 },
+    { supplier:'企查查', tenant:'保险', company:'某某金控', dept:'合规部', system:'客户管理平台', api:'企业基本信息', date:'2026-06-01', totalQuery:210, cacheHit:63, billCount:147, cost:264.60 },
+    { supplier:'企查查', tenant:'保险', company:'某某金控', dept:'市场部', system:'客户管理平台', api:'工商信息', date:'2026-06-04', totalQuery:380, cacheHit:133, billCount:247, cost:444.60 },
+    { supplier:'企查查', tenant:'资产', company:'某某金控', dept:'运营部', system:'贷后管理系统', api:'企业基本信息', date:'2026-06-02', totalQuery:190, cacheHit:57, billCount:133, cost:239.40 },
+    { supplier:'企查查', tenant:'资产', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'股权穿透', date:'2026-06-05', totalQuery:260, cacheHit:78, billCount:182, cost:327.60 },
+    { supplier:'天眼查', tenant:'租赁', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'司法风险', date:'2026-06-01', totalQuery:520, cacheHit:182, billCount:338, cost:270.40 },
+    { supplier:'天眼查', tenant:'租赁', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'司法风险', date:'2026-06-03', totalQuery:390, cacheHit:137, billCount:253, cost:202.40 },
+    { supplier:'天眼查', tenant:'风控', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'司法风险', date:'2026-06-02', totalQuery:310, cacheHit:93, billCount:217, cost:173.60 },
+    { supplier:'天眼查', tenant:'风控', company:'某某金控', dept:'合规部', system:'反欺诈系统', api:'企业基本信息', date:'2026-06-04', totalQuery:280, cacheHit:84, billCount:196, cost:156.80 },
+    { supplier:'天眼查', tenant:'信贷', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'企业基本信息', date:'2026-06-05', totalQuery:220, cacheHit:66, billCount:154, cost:123.20 },
+    { supplier:'中诚信', tenant:'资产', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'信用评分', date:'2026-06-01', totalQuery:480, cacheHit:144, billCount:336, cost:504.00 },
+    { supplier:'中诚信', tenant:'资产', company:'某某金控', dept:'运营部', system:'贷后管理系统', api:'信用评分', date:'2026-06-03', totalQuery:360, cacheHit:108, billCount:252, cost:378.00 },
+    { supplier:'中诚信', tenant:'风控', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'信用评分', date:'2026-06-02', totalQuery:420, cacheHit:126, billCount:294, cost:441.00 },
+    { supplier:'中诚信', tenant:'信贷', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'信用评分', date:'2026-06-04', totalQuery:180, cacheHit:54, billCount:126, cost:189.00 },
+    { supplier:'前海征信', tenant:'信贷', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'反欺诈评分', date:'2026-06-01', totalQuery:350, cacheHit:105, billCount:245, cost:196.00 },
+    { supplier:'前海征信', tenant:'信贷', company:'某某金控', dept:'风控部', system:'反欺诈系统', api:'反欺诈评分', date:'2026-06-03', totalQuery:290, cacheHit:87, billCount:203, cost:162.40 },
+    { supplier:'前海征信', tenant:'风控', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'反欺诈评分', date:'2026-06-05', totalQuery:200, cacheHit:60, billCount:140, cost:112.00 },
+    { supplier:'百行征信', tenant:'风控', company:'某某金控', dept:'风控部', system:'风控决策引擎', api:'个人信用报告', date:'2026-06-01', totalQuery:280, cacheHit:84, billCount:196, cost:490.00 },
+    { supplier:'百行征信', tenant:'风控', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'个人信用报告', date:'2026-06-04', totalQuery:220, cacheHit:66, billCount:154, cost:385.00 },
+    { supplier:'百行征信', tenant:'信贷', company:'某某金控', dept:'信贷部', system:'信贷审批系统', api:'个人信用报告', date:'2026-06-02', totalQuery:160, cacheHit:48, billCount:112, cost:280.00 }
+];
 
-    function applyCellStyle(ws, ref, style) {
-        if (!ws[ref]) return;
-        ws[ref].s = style;
+// ==================== 汇总 Tab 逻辑 ====================
+var filteredSummary = summaryData.slice();
+
+function getFilteredSummary() {
+    var supplier = document.getElementById('sFilterSupplier').value;
+    var tenant = document.getElementById('sFilterTenant').value;
+    return summaryData.filter(function(r) {
+        if (supplier && r.supplier !== supplier) return false;
+        if (tenant && r.tenant !== tenant) return false;
+        return true;
+    });
+}
+
+function renderSummaryTable(data) {
+    var tbody = document.getElementById('summaryTableBody');
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">暂无数据</td></tr>';
+        document.getElementById('summaryTotalText').textContent = '共 0 条';
+        return;
     }
-    function styleRange(ws, rowIdx, colStart, colEnd, style) {
-        for (var c = colStart; c <= colEnd; c++) {
-            applyCellStyle(ws, XLSX.utils.encode_cell({r:rowIdx, c:c}), style);
-        }
+    // 按供应商分组，计算每个供应商的总计费次数（用于分摊比例）
+    var supplierTotals = {};
+    for (var i = 0; i < data.length; i++) {
+        var s = data[i].supplier;
+        if (!supplierTotals[s]) supplierTotals[s] = 0;
+        supplierTotals[s] += data[i].billCount;
     }
-    function downloadWorkbook(wb, filename) {
-        var wbout = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
-        var blob = new Blob([wbout], { type:'application/octet-stream' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    var html = '';
+    var totQuery = 0, totCache = 0, totBill = 0, totCost = 0;
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        var ratio = supplierTotals[r.supplier] > 0 ? r.billCount / supplierTotals[r.supplier] : 0;
+        var unitCost = supplierUnitCost[r.supplier] || 0;
+        var cost = r.billCount * unitCost;
+        totQuery += r.totalQuery;
+        totCache += r.cacheHit;
+        totBill += r.billCount;
+        totCost += cost;
+        html += '<tr>'
+            + '<td>' + r.supplier + '</td>'
+            + '<td>' + r.tenant + '</td>'
+            + '<td>' + formatNum(r.totalQuery) + '</td>'
+            + '<td>' + formatNum(r.cacheHit) + '</td>'
+            + '<td>' + formatNum(r.billCount) + '</td>'
+            + '<td class="ratio-text">' + (ratio * 100).toFixed(1) + '%</td>'
+            + '<td class="amount-text">' + formatMoney(cost) + '</td>'
+            + '</tr>';
+    }
+    // 合计行
+    html += '<tr class="total-row">'
+        + '<td>合计</td><td></td>'
+        + '<td>' + formatNum(totQuery) + '</td>'
+        + '<td>' + formatNum(totCache) + '</td>'
+        + '<td>' + formatNum(totBill) + '</td>'
+        + '<td></td>'
+        + '<td class="amount-text">' + formatMoney(totCost) + '</td>'
+        + '</tr>';
+    tbody.innerHTML = html;
+    document.getElementById('summaryTotalText').textContent = '共 ' + data.length + ' 条';
+}
+
+function doSummaryQuery() {
+    filteredSummary = getFilteredSummary();
+    renderSummaryTable(filteredSummary);
+}
+
+function doSummaryReset() {
+    document.getElementById('sFilterSupplier').value = '';
+    document.getElementById('sFilterTenant').value = '';
+    var now = new Date();
+    var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    var monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    sDateStartPicker.setDate(monthStart, true);
+    sDateEndPicker.setDate(monthEnd, true);
+    filteredSummary = summaryData.slice();
+    renderSummaryTable(filteredSummary);
+}
+
+// ==================== 明细 Tab 逻辑 ====================
+var filteredDetail = detailData.slice();
+var detailPage = 1, detailPageSize = 10;
+
+function getFilteredDetail() {
+    var supplier = document.getElementById('dFilterSupplier').value;
+    var tenant = document.getElementById('dFilterTenant').value;
+    var dept = document.getElementById('dFilterDept').value;
+    var system = document.getElementById('dFilterSystem').value;
+    var api = document.getElementById('dFilterApi').value;
+    return detailData.filter(function(r) {
+        if (supplier && r.supplier !== supplier) return false;
+        if (tenant && r.tenant !== tenant) return false;
+        if (dept && r.dept !== dept) return false;
+        if (system && r.system !== system) return false;
+        if (api && r.api !== api) return false;
+        return true;
+    });
+}
+
+function renderDetailTable(data) {
+    var tbody = document.getElementById('detailTableBody');
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="11">暂无数据</td></tr>';
+        updateDetailPagination(1, 0);
+        return;
+    }
+    var totalPages = Math.ceil(data.length / detailPageSize) || 1;
+    if (detailPage > totalPages) detailPage = totalPages;
+    var pageData = data.slice((detailPage - 1) * detailPageSize, detailPage * detailPageSize);
+
+    var html = '';
+    var totQuery = 0, totCache = 0, totBill = 0, totCost = 0;
+    // 合计基于全部筛选后数据
+    for (var i = 0; i < data.length; i++) {
+        totQuery += data[i].totalQuery;
+        totCache += data[i].cacheHit;
+        totBill += data[i].billCount;
+        totCost += data[i].cost;
+    }
+    // 当前页数据渲染
+    for (var i = 0; i < pageData.length; i++) {
+        var r = pageData[i];
+        html += '<tr>'
+            + '<td>' + r.supplier + '</td>'
+            + '<td>' + r.tenant + '</td>'
+            + '<td>' + r.company + '</td>'
+            + '<td>' + r.dept + '</td>'
+            + '<td>' + r.system + '</td>'
+            + '<td>' + r.api + '</td>'
+            + '<td style="font-size:12px;">' + r.date + '</td>'
+            + '<td>' + formatNum(r.totalQuery) + '</td>'
+            + '<td>' + formatNum(r.cacheHit) + '</td>'
+            + '<td>' + formatNum(r.billCount) + '</td>'
+            + '<td class="amount-text">' + formatMoney(r.cost) + '</td>'
+            + '</tr>';
+    }
+    // 合计行
+    html += '<tr class="total-row">'
+        + '<td>合计</td><td></td><td></td><td></td><td></td><td></td><td></td>'
+        + '<td>' + formatNum(totQuery) + '</td>'
+        + '<td>' + formatNum(totCache) + '</td>'
+        + '<td>' + formatNum(totBill) + '</td>'
+        + '<td class="amount-text">' + formatMoney(totCost) + '</td>'
+        + '</tr>';
+    tbody.innerHTML = html;
+    updateDetailPagination(totalPages, data.length);
+}
+
+function updateDetailPagination(totalPages, totalCount) {
+    var container = document.getElementById('detailPagination');
+    if (!container) return;
+    var cp = detailPage;
+    var html = '<span class="total-text">共 ' + totalCount + ' 条</span>';
+    html += '<button class="page-btn" ' + (cp === 1 ? 'disabled' : '') + ' onclick="changeDetailPage(' + (cp - 1) + ')">&lt;</button>';
+    var start = Math.max(1, cp - 2), end = Math.min(totalPages, cp + 2);
+    for (var i = start; i <= end; i++) {
+        html += '<span class="page-number ' + (i === cp ? 'active' : '') + '" onclick="changeDetailPage(' + i + ')">' + i + '</span>';
+    }
+    html += '<button class="page-btn" ' + (cp === totalPages ? 'disabled' : '') + ' onclick="changeDetailPage(' + (cp + 1) + ')">&gt;</button>';
+    html += '<select class="page-size-select" onchange="changeDetailPageSize(this.value)">';
+    html += '<option value="10" ' + (detailPageSize === 10 ? 'selected' : '') + '>10条/页</option>';
+    html += '<option value="20" ' + (detailPageSize === 20 ? 'selected' : '') + '>20条/页</option>';
+    html += '<option value="50" ' + (detailPageSize === 50 ? 'selected' : '') + '>50条/页</option>';
+    html += '</select>';
+    html += '<div class="jump-section"><span>前往</span><input type="number" id="detailJumpPage" min="1" max="' + totalPages + '" value="' + cp + '" onkeydown="if(event.keyCode===13) jumpDetailPage()"><span>页</span></div>';
+    container.innerHTML = html;
+}
+
+function changeDetailPage(page) {
+    detailPage = page;
+    renderDetailTable(filteredDetail);
+}
+
+function changeDetailPageSize(size) {
+    detailPageSize = parseInt(size);
+    detailPage = 1;
+    renderDetailTable(filteredDetail);
+}
+
+function jumpDetailPage() {
+    var totalPages = Math.ceil(filteredDetail.length / detailPageSize) || 1;
+    var p = parseInt(document.getElementById('detailJumpPage').value);
+    if (p >= 1 && p <= totalPages) {
+        detailPage = p;
+        renderDetailTable(filteredDetail);
+    }
+}
+
+function doDetailQuery() {
+    detailPage = 1;
+    filteredDetail = getFilteredDetail();
+    renderDetailTable(filteredDetail);
+}
+
+function doDetailReset() {
+    document.getElementById('dFilterSupplier').value = '';
+    document.getElementById('dFilterTenant').value = '';
+    document.getElementById('dFilterDept').value = '';
+    document.getElementById('dFilterSystem').value = '';
+    document.getElementById('dFilterApi').value = '';
+    var now = new Date();
+    var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    var monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    dDateStartPicker.setDate(monthStart, true);
+    dDateEndPicker.setDate(monthEnd, true);
+    detailPage = 1;
+    filteredDetail = detailData.slice();
+    renderDetailTable(filteredDetail);
+}
+
+// ==================== Excel 导出公共 ====================
+var thinBorder = { style:'thin', color:{rgb:'FFB2B2B2'} };
+var allBorders = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
+var headerFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'} };
+var headerFill = { fgColor:{rgb:'FFF2F2F2'} };
+var headerAlign = { horizontal:'center', vertical:'center', wrapText:true };
+var cellAlign = { horizontal:'center', vertical:'center' };
+var dataFont = { sz:9, name:'Arial', color:{rgb:'FF333333'} };
+
+function applyCellStyle(ws, ref, style) {
+    if (!ws[ref]) return;
+    ws[ref].s = style;
+}
+function styleRange(ws, rowIdx, colStart, colEnd, style) {
+    for (var c = colStart; c <= colEnd; c++) {
+        applyCellStyle(ws, XLSX.utils.encode_cell({r:rowIdx, c:c}), style);
+    }
+}
+function downloadWorkbook(wb, filename) {
+    var wbout = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
+    var blob = new Blob([wbout], { type:'application/octet-stream' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ==================== 汇总导出 ====================
+function exportSummary() {
+    var data = filteredSummary;
+    var startVal = document.getElementById('sFilterDateStart').value || '';
+    var endVal = document.getElementById('sFilterDateEnd').value || '';
+    var periodLabel = startVal + ' ~ ' + endVal;
+
+    // 按供应商分组计算分摊比例
+    var supplierTotals = {};
+    for (var i = 0; i < data.length; i++) {
+        var s = data[i].supplier;
+        if (!supplierTotals[s]) supplierTotals[s] = 0;
+        supplierTotals[s] += data[i].billCount;
     }
 
-    function cbDoExport() {
-        var filtered = cbGetFilteredData();
-        var showDetail = document.getElementById('cbTenantDetail').value === 'show';
-        var tenant = document.getElementById('cbTenant').value;
-        var cbStart = document.getElementById('cbDateStart').value || '';
-        var cbEnd = document.getElementById('cbDateEnd').value || '';
-        var cbPeriod = (cbStart && cbEnd) ? (cbStart + ' ~ ' + cbEnd) : '';
+    var aoa = [];
+    aoa.push(['外数平台 - 账单汇总']);
+    aoa.push(['周期：' + periodLabel + '  导出时间：' + new Date().toLocaleString('zh-CN')]);
+    aoa.push([]);
+    aoa.push(['供应商', '租户', '总查询量', '命中缓存数', '计费次数', '分摊比例', '费用']);
 
-        var aoa = [];
-        aoa.push(['外数平台 - 自定义账单导出']);
-        aoa.push(['账单周期：' + (cbPeriod || '未选择') + ' 导出时间：' + new Date().toLocaleString('zh-CN')]);
-        aoa.push([]);
-
-        if (showDetail) {
-            aoa.push(['计费编号', '供应商', '计费模式', 'API', '租户', '使用次数', '使用占比', '分摊金额']);
-            filtered.forEach(function(r) {
-                var tenants = r.tenants;
-                if (tenant && tenant !== '__all__') {
-                    tenants = tenants.filter(function(t) { return t.name === tenant; });
-                }
-                var totalUsage = r.usage;
-                var totalAmount = parseFloat(r.amount.replace(/[¥,]/g, '')) || 0;
-                tenants.forEach(function(t) {
-                    var ratio = totalUsage > 0 ? (t.usage / totalUsage) : 0;
-                    var shareAmt = totalAmount * ratio;
-                    aoa.push([r.billingCode, r.supplier, r.mode, r.apis.join('、'), t.name, t.usage, (ratio * 100).toFixed(1) + '%', shareAmt.toFixed(2)]);
-                });
-            });
-        } else {
-            aoa.push(['计费编号', '供应商', '计费模式', '单价', 'API', '使用次数', '应付金额']);
-            filtered.forEach(function(r) {
-                var priceText = r.price.replace(/<br>/g, ' ');
-                aoa.push([r.billingCode, r.supplier, r.mode, priceText, r.apis.join('、'), r.usage, r.amount.replace(/[¥,]/g, '')]);
-            });
-        }
-
-        var colCount = showDetail ? 8 : 7;
-        var ws = XLSX.utils.aoa_to_sheet(aoa);
-        ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:colCount - 1} },
-            { s:{r:1,c:0}, e:{r:1,c:colCount - 1} }
-        ];
-        ws['!cols'] = showDetail
-            ? [{wch:28},{wch:10},{wch:10},{wch:16},{wch:8},{wch:12},{wch:10},{wch:14}]
-            : [{wch:28},{wch:10},{wch:10},{wch:22},{wch:16},{wch:12},{wch:14}];
-
-        // 样式
-        applyCellStyle(ws, 'A1', { font:{bold:true, sz:13, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{horizontal:'center', vertical:'center'} });
-        applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
-        styleRange(ws, 3, 0, colCount - 1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        var dataRowCount = aoa.length - 4;
-        for (var di = 0; di < dataRowCount; di++) {
-            styleRange(ws, 4 + di, 0, colCount - 1, { font:dataFont, alignment:cellAlign, border:allBorders });
-        }
-
-        var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, '自定义账单');
-        var fname = '自定义账单_' + new Date().toISOString().slice(0, 10) + '.xlsx';
-        downloadWorkbook(wb, fname);
-        closeCustomBillModal();
+    var totQuery = 0, totCache = 0, totBill = 0, totCost = 0;
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        var ratio = supplierTotals[r.supplier] > 0 ? r.billCount / supplierTotals[r.supplier] : 0;
+        var unitCost = supplierUnitCost[r.supplier] || 0;
+        var cost = r.billCount * unitCost;
+        totQuery += r.totalQuery;
+        totCache += r.cacheHit;
+        totBill += r.billCount;
+        totCost += cost;
+        aoa.push([r.supplier, r.tenant, r.totalQuery, r.cacheHit, r.billCount, (ratio * 100).toFixed(1) + '%', cost]);
     }
+    // 合计行
+    aoa.push(['合计', '', totQuery, totCache, totBill, '', totCost]);
+
+    var colCount = 7;
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!merges'] = [
+        { s:{r:0,c:0}, e:{r:0,c:colCount - 1} },
+        { s:{r:1,c:0}, e:{r:1,c:colCount - 1} }
+    ];
+    ws['!cols'] = [{wch:12},{wch:8},{wch:12},{wch:14},{wch:12},{wch:12},{wch:14}];
+
+    // 样式
+    applyCellStyle(ws, 'A1', { font:{bold:true, sz:13, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{horizontal:'center', vertical:'center'} });
+    applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+    styleRange(ws, 3, 0, colCount - 1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+    var totalRowStyle = { font:{bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'}}, fill:{fgColor:{rgb:'FFFAFBFC'}}, alignment:cellAlign, border:allBorders };
+    for (var di = 0; di < data.length; di++) {
+        styleRange(ws, 4 + di, 0, colCount - 1, { font:dataFont, alignment:cellAlign, border:allBorders });
+    }
+    styleRange(ws, 4 + data.length, 0, colCount - 1, totalRowStyle);
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '账单汇总');
+    downloadWorkbook(wb, '账单汇总_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+}
+
+// ==================== 明细导出 ====================
+function exportDetail() {
+    var data = filteredDetail;
+    var startVal = document.getElementById('dFilterDateStart').value || '';
+    var endVal = document.getElementById('dFilterDateEnd').value || '';
+    var periodLabel = startVal + ' ~ ' + endVal;
+
+    var aoa = [];
+    aoa.push(['外数平台 - 账单明细']);
+    aoa.push(['周期：' + periodLabel + '  导出时间：' + new Date().toLocaleString('zh-CN')]);
+    aoa.push([]);
+    aoa.push(['供应商', '租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询量', '命中缓存数', '计费次数', '费用']);
+
+    var totQuery = 0, totCache = 0, totBill = 0, totCost = 0;
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        totQuery += r.totalQuery;
+        totCache += r.cacheHit;
+        totBill += r.billCount;
+        totCost += r.cost;
+        aoa.push([r.supplier, r.tenant, r.company, r.dept, r.system, r.api, r.date, r.totalQuery, r.cacheHit, r.billCount, r.cost]);
+    }
+    // 合计行
+    aoa.push(['合计', '', '', '', '', '', '', totQuery, totCache, totBill, totCost]);
+
+    var colCount = 11;
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!merges'] = [
+        { s:{r:0,c:0}, e:{r:0,c:colCount - 1} },
+        { s:{r:1,c:0}, e:{r:1,c:colCount - 1} }
+    ];
+    ws['!cols'] = [{wch:12},{wch:8},{wch:14},{wch:10},{wch:16},{wch:16},{wch:12},{wch:12},{wch:14},{wch:12},{wch:14}];
+
+    // 样式
+    applyCellStyle(ws, 'A1', { font:{bold:true, sz:13, name:'Arial', color:{rgb:'FF1f2f3d'}}, alignment:{horizontal:'center', vertical:'center'} });
+    applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+    styleRange(ws, 3, 0, colCount - 1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
+    var totalRowStyle = { font:{bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'}}, fill:{fgColor:{rgb:'FFFAFBFC'}}, alignment:cellAlign, border:allBorders };
+    for (var di = 0; di < data.length; di++) {
+        styleRange(ws, 4 + di, 0, colCount - 1, { font:dataFont, alignment:cellAlign, border:allBorders });
+    }
+    styleRange(ws, 4 + data.length, 0, colCount - 1, totalRowStyle);
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '账单明细');
+    downloadWorkbook(wb, '账单明细_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+}
+
+// ==================== 初始化 ====================
+var now = new Date();
+var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+var monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+var sDateStartPicker = flatpickr('#sFilterDateStart', {
+    locale: 'zh', dateFormat: 'Y-m-d', defaultDate: monthStart
+});
+var sDateEndPicker = flatpickr('#sFilterDateEnd', {
+    locale: 'zh', dateFormat: 'Y-m-d', defaultDate: monthEnd
+});
+var dDateStartPicker = flatpickr('#dFilterDateStart', {
+    locale: 'zh', dateFormat: 'Y-m-d', defaultDate: monthStart
+});
+var dDateEndPicker = flatpickr('#dFilterDateEnd', {
+    locale: 'zh', dateFormat: 'Y-m-d', defaultDate: monthEnd
+});
+
+renderSummaryTable(summaryData);
+renderDetailTable(detailData);
 </script>
+
+<!-- 侧栏/顶栏交互 -->
 <script>
 document.addEventListener('click', function(e) {
     var link = e.target.closest('a.sidebar-item, a.menu-item');
@@ -736,8 +877,6 @@ document.addEventListener('click', function(e) {
         link.classList.add('active');
     }
 });
-</script>
-<script>
 document.addEventListener('click', function(e) {
     var navTab = e.target.closest('a.nav-tab');
     if (navTab) {
