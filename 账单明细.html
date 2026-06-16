@@ -121,16 +121,6 @@
         .btn-cancel { background: #fff; color: #666; border: 1px solid #dcdfe6; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; }
         .btn-cancel:hover { background: #f5f7fa; }
 
-        /* 角色标识 */
-        .role-tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; margin-left: 8px; vertical-align: middle; }
-        .role-publisher { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
-        .role-consumer { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
-        .role-switcher { display: flex; align-items: center; gap: 8px; }
-        .role-switcher label { font-size: 13px; color: #666; white-space: nowrap; font-weight: 500; }
-        .role-switcher select { padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333; background: #fff; cursor: pointer; outline: none; min-width: 140px; }
-        .role-switcher select:focus { border-color: #f89d34; }
-        .role-desc { font-size: 12px; color: #999; margin-left: 4px; }
-
         /* Toast */
         .toast-container { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
         .toast { padding: 10px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 8px; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards; pointer-events: auto; max-width: 420px; }
@@ -168,7 +158,7 @@
                 <i class="el-icon-bell message-icon"></i>
                 <span class="unread-badge-icon">3</span>
             </div>
-            <div class="tenant-info"><span class="tenant-name">某某金控</span><span class="role-tag role-publisher" id="navRoleTag">服务发布者</span></div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
             <div class="avatar">席</div>
         </div>
     </nav>
@@ -370,16 +360,6 @@
     function getDisplayTenant(originalTenant) {
         if (displayTenantName) return displayTenantName;
         return originalTenant;
-    }
-
-    // 根据角色更新导航标识
-    var navRoleTag = document.getElementById('navRoleTag');
-    if (currentRole === 'consumer') {
-        navRoleTag.className = 'role-tag role-consumer';
-        navRoleTag.textContent = '服务使用者';
-    } else {
-        navRoleTag.className = 'role-tag role-publisher';
-        navRoleTag.textContent = '服务发布者';
     }
 
     // 过滤当前供应商的数据（根据角色过滤）
@@ -603,7 +583,7 @@
         aoa.push(['周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: 周期+时间
         aoa.push([]);                                                                        // Row 2: 空行
         aoa.push(['基本信息']);                                                              // Row 3: 基本信息标题
-        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + summary.totalFee.toFixed(2)]); // Row 4
+        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 4
         aoa.push(['总查询次数', summary.totalQueries, '计费次数', summary.billableQueries, '命中缓存次数', summary.cacheHits]); // Row 5
         aoa.push([]);                                                                        // Row 6: 空行
         aoa.push(['供应商', '租户', '调用公司', '总查询次数', '计费次数', '缓存命中次数', '总费用', '分摊比例']); // Row 7: 表头
@@ -613,18 +593,15 @@
             aoa.push([r.supplier, getDisplayTenant(r.tenant), r.company, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2), (r.ratio * 100).toFixed(2) + '%']);
         }
 
+        var infoColCount = 6;
         var colCount = 8;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:colCount-1} },  // 标题行合并
-            { s:{r:1,c:0}, e:{r:1,c:colCount-1} },  // 周期行合并
-            { s:{r:3,c:0}, e:{r:3,c:colCount-1} },  // 基本信息标题合并
-            // Row 4: 标签+值 对合并 (3对)
-            { s:{r:4,c:0}, e:{r:4,c:1} }, { s:{r:4,c:2}, e:{r:4,c:3} }, { s:{r:4,c:4}, e:{r:4,c:5} },
-            // Row 5: 标签+值 对合并 (3对)
-            { s:{r:5,c:0}, e:{r:5,c:1} }, { s:{r:5,c:2}, e:{r:5,c:3} }, { s:{r:5,c:4}, e:{r:5,c:5} }
+            { s:{r:0,c:0}, e:{r:0,c:infoColCount-1} },  // 标题行合并
+            { s:{r:1,c:0}, e:{r:1,c:infoColCount-1} },  // 周期行合并
+            { s:{r:3,c:0}, e:{r:3,c:infoColCount-1} }   // 基本信息标题合并
         ];
-        ws['!cols'] = [{wch:12},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14},{wch:10}];
+        ws['!cols'] = [{wch:14},{wch:16},{wch:12},{wch:16},{wch:14},{wch:16},{wch:14},{wch:10}];
 
         // 标题 + 周期行样式
         applyCellStyle(ws, 'A1', { font:{bold:true, sz:14, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
@@ -633,16 +610,15 @@
         // 基本信息区域样式
         var infoSectionFont = { bold:true, sz:11, name:'Arial', color:{rgb:'FF1f2f3d'} };
         var infoSectionFill = { fgColor:{rgb:'FFF5F7FA'} };
-        var infoSectionAlign = { horizontal:'left', vertical:'center' };
         var infoLabelFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF666666'} };
         var infoValueFont = { sz:10, name:'Arial', color:{rgb:'FF333333'} };
         var infoLabelAlign = { horizontal:'right', vertical:'center' };
         var infoValueAlign = { horizontal:'left', vertical:'center' };
 
-        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:infoSectionAlign, border:allBorders });
-        for (var c = 1; c < colCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
+        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:{horizontal:'left', vertical:'center'}, border:allBorders });
+        for (var c = 1; c < infoColCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
 
-        // Row 4 & 5: 标签和值
+        // Row 4 & 5: 标签和值（6列，3对标签-值，无合并，与页面基本信息一致）
         for (var ri = 4; ri <= 5; ri++) {
             for (var pi = 0; pi < 3; pi++) {
                 var lc = pi * 2, vc = pi * 2 + 1;
@@ -672,8 +648,8 @@
         aoa.push(['周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: 周期+时间
         aoa.push([]);                                                                             // Row 2: 空行
         aoa.push(['基本信息']);                                                                   // Row 3: 基本信息标题
-        aoa.push(['供应商', supplierName, '', '周期', periodText, '', '', '', '', '', '']);       // Row 4
-        aoa.push(['总费用', '¥' + summary.totalFee.toFixed(2), '', '总查询次数', summary.totalQueries, '', '计费次数', summary.billableQueries, '', '命中缓存次数', summary.cacheHits]); // Row 5
+        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 4
+        aoa.push(['总查询次数', summary.totalQueries, '计费次数', summary.billableQueries, '命中缓存次数', summary.cacheHits]); // Row 5
         aoa.push([]);                                                                             // Row 6: 空行
         aoa.push(['供应商', '租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询次数', '计费次数', '缓存命中次数', '总费用']); // Row 7: 表头
 
@@ -682,21 +658,15 @@
             aoa.push([r.supplier, getDisplayTenant(r.tenant), r.company, r.department, r.system, r.api, r.date, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2)]);
         }
 
+        var infoColCount = 6;
         var colCount = 11;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:colCount-1} },   // 标题行合并
-            { s:{r:1,c:0}, e:{r:1,c:colCount-1} },   // 周期行合并
-            { s:{r:3,c:0}, e:{r:3,c:colCount-1} },   // 基本信息标题合并
-            // Row 4: 供应商(label+value) + 周期(label+value)
-            { s:{r:4,c:0}, e:{r:4,c:1} }, { s:{r:4,c:2}, e:{r:4,c:3} },
-            { s:{r:4,c:4}, e:{r:4,c:5} }, { s:{r:4,c:6}, e:{r:4,c:10} },
-            // Row 5: 总费用(label+value) + 总查询次数(label+value) + 计费次数(label+value) + 命中缓存次数(label+value)
-            { s:{r:5,c:0}, e:{r:5,c:1} }, { s:{r:5,c:2}, e:{r:5,c:3} },
-            { s:{r:5,c:4}, e:{r:5,c:5} }, { s:{r:5,c:6}, e:{r:5,c:7} },
-            { s:{r:5,c:8}, e:{r:5,c:8} }, { s:{r:5,c:9}, e:{r:5,c:10} }
+            { s:{r:0,c:0}, e:{r:0,c:infoColCount-1} },   // 标题行合并
+            { s:{r:1,c:0}, e:{r:1,c:infoColCount-1} },   // 周期行合并
+            { s:{r:3,c:0}, e:{r:3,c:infoColCount-1} }    // 基本信息标题合并
         ];
-        ws['!cols'] = [{wch:12},{wch:14},{wch:16},{wch:14},{wch:14},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14}];
+        ws['!cols'] = [{wch:14},{wch:16},{wch:12},{wch:16},{wch:14},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14}];
 
         // 标题 + 周期行样式
         applyCellStyle(ws, 'A1', { font:{bold:true, sz:14, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
@@ -705,28 +675,22 @@
         // 基本信息区域样式
         var infoSectionFont = { bold:true, sz:11, name:'Arial', color:{rgb:'FF1f2f3d'} };
         var infoSectionFill = { fgColor:{rgb:'FFF5F7FA'} };
-        var infoSectionAlign = { horizontal:'left', vertical:'center' };
         var infoLabelFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF666666'} };
         var infoValueFont = { sz:10, name:'Arial', color:{rgb:'FF333333'} };
         var infoLabelAlign = { horizontal:'right', vertical:'center' };
         var infoValueAlign = { horizontal:'left', vertical:'center' };
-        var infoLabelFill = { fgColor:{rgb:'FFFAFBFC'} };
 
-        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:infoSectionAlign, border:allBorders });
-        for (var c = 1; c < colCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
+        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:{horizontal:'left', vertical:'center'}, border:allBorders });
+        for (var c = 1; c < infoColCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
 
-        // Row 4: 供应商 + 周期
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:4,c:0}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:infoLabelFill });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:4,c:2}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:4,c:4}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:infoLabelFill });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:4,c:6}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-        // Row 5: 总费用 + 总查询次数 + 计费次数 + 命中缓存次数
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:5,c:0}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:infoLabelFill });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:5,c:2}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:5,c:4}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:infoLabelFill });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:5,c:6}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:5,c:8}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:infoLabelFill });
-        applyCellStyle(ws, XLSX.utils.encode_cell({r:5,c:9}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
+        // Row 4 & 5: 标签和值（6列，3对标签-值，无合并，与页面基本信息一致）
+        for (var ri = 4; ri <= 5; ri++) {
+            for (var pi = 0; pi < 3; pi++) {
+                var lc = pi * 2, vc = pi * 2 + 1;
+                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:lc}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} });
+                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:vc}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
+            }
+        }
 
         // 表头 (Row 7)
         styleRange(ws, 7, 0, colCount-1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
@@ -758,7 +722,7 @@
         aoa.push(['周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);                          // Row 1: 周期+时间
         aoa.push([]);                                                                                                       // Row 2: 空行
         aoa.push(['基本信息']);                                                                                              // Row 3: 基本信息标题
-        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + modalSummary.totalFee.toFixed(2)]);           // Row 4
+        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + modalSummary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 4
         aoa.push(['总查询次数', modalSummary.totalQueries, '计费次数', modalSummary.billableQueries, '命中缓存次数', modalSummary.cacheHits]); // Row 5
         aoa.push([]);                                                                                                       // Row 6: 空行
         aoa.push(['供应商', '租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询次数', '计费次数', '缓存命中次数', '总费用']); // Row 7: 表头
@@ -768,18 +732,15 @@
             aoa.push([r.supplier, getDisplayTenant(r.tenant), r.company, r.department, r.system, r.api, r.date, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2)]);
         }
 
+        var infoColCount = 6;
         var colCount = 11;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:colCount-1} },   // 标题行合并
-            { s:{r:1,c:0}, e:{r:1,c:colCount-1} },   // 周期行合并
-            { s:{r:3,c:0}, e:{r:3,c:colCount-1} },   // 基本信息标题合并
-            // Row 4: 标签+值 对合并 (3对)
-            { s:{r:4,c:0}, e:{r:4,c:1} }, { s:{r:4,c:2}, e:{r:4,c:3} }, { s:{r:4,c:4}, e:{r:4,c:5} },
-            // Row 5: 标签+值 对合并 (3对)
-            { s:{r:5,c:0}, e:{r:5,c:1} }, { s:{r:5,c:2}, e:{r:5,c:3} }, { s:{r:5,c:4}, e:{r:5,c:5} }
+            { s:{r:0,c:0}, e:{r:0,c:infoColCount-1} },   // 标题行合并
+            { s:{r:1,c:0}, e:{r:1,c:infoColCount-1} },   // 周期行合并
+            { s:{r:3,c:0}, e:{r:3,c:infoColCount-1} }    // 基本信息标题合并
         ];
-        ws['!cols'] = [{wch:10},{wch:8},{wch:16},{wch:14},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14},{wch:14}];
+        ws['!cols'] = [{wch:14},{wch:16},{wch:12},{wch:16},{wch:14},{wch:16},{wch:14},{wch:14},{wch:12},{wch:14},{wch:14}];
 
         // 标题 + 周期行样式
         applyCellStyle(ws, 'A1', { font:{bold:true, sz:14, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
@@ -788,16 +749,15 @@
         // 基本信息区域样式
         var infoSectionFont = { bold:true, sz:11, name:'Arial', color:{rgb:'FF1f2f3d'} };
         var infoSectionFill = { fgColor:{rgb:'FFF5F7FA'} };
-        var infoSectionAlign = { horizontal:'left', vertical:'center' };
         var infoLabelFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF666666'} };
         var infoValueFont = { sz:10, name:'Arial', color:{rgb:'FF333333'} };
         var infoLabelAlign = { horizontal:'right', vertical:'center' };
         var infoValueAlign = { horizontal:'left', vertical:'center' };
 
-        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:infoSectionAlign, border:allBorders });
-        for (var c = 1; c < colCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
+        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:{horizontal:'left', vertical:'center'}, border:allBorders });
+        for (var c = 1; c < infoColCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
 
-        // Row 4 & 5: 标签和值
+        // Row 4 & 5: 标签和值（6列，3对标签-值，无合并，与页面基本信息一致）
         for (var ri = 4; ri <= 5; ri++) {
             for (var pi = 0; pi < 3; pi++) {
                 var lc = pi * 2, vc = pi * 2 + 1;
