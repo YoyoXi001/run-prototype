@@ -397,7 +397,7 @@
     // ========== 渲染基本信息 ==========
     function renderBasicInfo() {
         var html = '';
-        html += '<tr><td class="detail-kv-label">供应商</td><td class="detail-kv-value">' + supplierName + '</td><td class="detail-kv-label">周期</td><td class="detail-kv-value" style="white-space:normal;">' + periodText + '</td><td class="detail-kv-label">总费用</td><td class="detail-kv-value amount-text">¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td></tr>';
+        html += '<tr><td class="detail-kv-label">供应商</td><td class="detail-kv-value">' + supplierName + '</td><td class="detail-kv-label">账单周期</td><td class="detail-kv-value" style="white-space:normal;">' + periodText + '</td><td class="detail-kv-label">总费用</td><td class="detail-kv-value amount-text">¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td></tr>';
         html += '<tr><td class="detail-kv-label">总查询次数</td><td class="detail-kv-value">' + summary.totalQueries.toLocaleString() + '</td><td class="detail-kv-label">计费次数</td><td class="detail-kv-value">' + summary.billableQueries.toLocaleString() + '</td><td class="detail-kv-label">命中缓存次数</td><td class="detail-kv-value">' + summary.cacheHits.toLocaleString() + '</td></tr>';
         document.getElementById('basicInfoGrid').innerHTML = html;
     }
@@ -682,7 +682,7 @@
         showToast('导出成功: ' + filename, 'success');
     }
 
-    // 通用：填充留白列A样式 + 标题/周期/小标题样式
+    // 通用：填充留白列A样式 + 标题/账单周期/小标题样式
     function applyCommonStyles(ws, aoaRowCount, dataColCount) {
         // Column A: 留白列样式
         for (var ri = 0; ri < aoaRowCount; ri++) {
@@ -690,7 +690,7 @@
         }
         // Row 0: 大标题（居中、加粗）
         styleRange(ws, 0, 1, dataColCount, { font:boldFont, alignment:centerAlign });
-        // Row 1: 周期+导出时间（居中）
+        // Row 1: 账单周期+导出时间（居中）
         styleRange(ws, 1, 1, dataColCount, { font:baseFont, alignment:centerAlign });
         // Row 3: 小标题"账单基本信息"（左对齐、加粗）
         applyCellStyle(ws, XLSX.utils.encode_cell({r:3, c:1}), { font:boldFont, alignment:leftAlign });
@@ -714,10 +714,10 @@
 
         var aoa = [];
         aoa.push([null, supplierName + ' - 账单明细']);                                          // Row 0: A空, B标题
-        aoa.push([null, '周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: A空, B周期
+        aoa.push([null, '账单周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: A空, B账单周期
         aoa.push([]);                                                                              // Row 2: 空行
         aoa.push([null, '账单基本信息']);                                                           // Row 3: A空, B小标题
-        aoa.push([null, '供应商', '周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);      // Row 4: 标签行（横向）
+        aoa.push([null, '供应商', '账单周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);      // Row 4: 标签行（横向）
         aoa.push([null, supplierName, periodText, summary.totalQueries, summary.cacheHits, summary.billableQueries, '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 5: 值行
         aoa.push([]);                                                                              // Row 6: 空行
         aoa.push([null, '账单信息']);                                                               // Row 7: A空, B小标题
@@ -731,7 +731,7 @@
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
             { s:{r:0,c:1}, e:{r:0,c:dataEndCol} },   // 标题行合并 B1:I1
-            { s:{r:1,c:1}, e:{r:1,c:dataEndCol} },   // 周期行合并 B2:I2
+            { s:{r:1,c:1}, e:{r:1,c:dataEndCol} },   // 账单周期行合并 B2:I2
             { s:{r:3,c:1}, e:{r:3,c:infoColCount} }   // 账单基本信息标题合并 B4:G4
         ];
         ws['!cols'] = [{wch:3},{wch:14},{wch:20},{wch:14},{wch:14},{wch:14},{wch:16},{wch:14},{wch:12}];
@@ -763,10 +763,10 @@
 
         var aoa = [];
         aoa.push([null, supplierName + ' - 全量调用明细']);
-        aoa.push([null, '周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);
+        aoa.push([null, '账单周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);
         aoa.push([]);
         aoa.push([null, '账单基本信息']);
-        aoa.push([null, '供应商', '周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);
+        aoa.push([null, '供应商', '账单周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);
         aoa.push([null, supplierName, periodText, summary.totalQueries, summary.cacheHits, summary.billableQueries, '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]);
         aoa.push([]);
         aoa.push([null, '账单信息']);
@@ -820,10 +820,10 @@
 
         var aoa = [];
         aoa.push([null, supplierName + ' - ' + _modalCompany + '（' + getDisplayTenant(_modalTenant) + '）调用明细']);
-        aoa.push([null, '周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);
+        aoa.push([null, '账单周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);
         aoa.push([]);
         aoa.push([null, '账单基本信息']);
-        aoa.push([null, '供应商', '周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);
+        aoa.push([null, '供应商', '账单周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);
         aoa.push([null, supplierName, periodText, modalSummary.totalQueries, modalSummary.cacheHits, modalSummary.billableQueries, '¥' + modalSummary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]);
         aoa.push([]);
         aoa.push([null, '账单信息']);
