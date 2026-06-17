@@ -71,12 +71,12 @@
 
         /* 基本信息 */
         .detail-section-title { font-size: 14px; font-weight: 600; color: #1f2f3d; margin: 0 0 12px 0; }
-        .detail-kv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid #ebeef5; border-radius: 6px; overflow: hidden; }
-        .detail-kv-item { display: flex; padding: 12px 16px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; }
-        .detail-kv-item:nth-child(3n) { border-right: none; }
-        .detail-kv-item:last-child, .detail-kv-item:nth-last-child(2), .detail-kv-item:nth-last-child(3) { border-bottom: none; }
-        .detail-kv-label { font-size: 13px; color: #999; width: 90px; flex-shrink: 0; }
-        .detail-kv-value { font-size: 13px; color: #333; font-weight: 500; }
+        .detail-kv-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .detail-kv-table td { padding: 12px 16px; border-bottom: 1px solid #dcdfe6; border-right: 1px solid #dcdfe6; vertical-align: middle; }
+        .detail-kv-table td:last-child { border-right: none; }
+        .detail-kv-table tr:last-child td { border-bottom: none; }
+        .detail-kv-label { font-size: 13px; color: #777; background: #F5F7FA; font-weight: 600; width: 120px; white-space: nowrap; text-align: center; }
+        .detail-kv-value { font-size: 13px; color: #333; font-weight: 500; white-space: nowrap; }
 
         /* 表格 */
         .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -87,6 +87,12 @@
         .data-table th:last-child, .data-table td:last-child { border-right: none; }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: #f8fafc; }
+        .expand-row { cursor: pointer; }
+        .expand-row:hover td { background: #fef5ec; }
+        .expand-arrow { display: inline-block; width: 16px; font-size: 10px; color: #999; transition: transform 0.2s; text-align: center; }
+        .expand-arrow.open { transform: rotate(90deg); }
+        .sub-header-row td { background: #eef1f6 !important; font-weight: 600; color: #777; font-size: 12px; padding: 6px 12px; height: 32px; }
+        .sub-data-row td { background: #fafbfc; font-size: 12px; }
         .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 13px; margin: 0 3px; display: inline-block; }
         .action-link:hover { text-decoration: underline; }
         .amount-text { font-weight: 600; color: #333; font-size: 13px; }
@@ -209,7 +215,11 @@
                 <!-- 基本信息 -->
                 <div class="forecast-white-card">
                     <div class="detail-section-title">基本信息</div>
-                    <div class="detail-kv-grid" id="basicInfoGrid"></div>
+                    <div class="table-container">
+                        <table class="detail-kv-table">
+                            <tbody id="basicInfoGrid"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- 用量明细 -->
@@ -221,8 +231,9 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th style="width:30px;"></th>
                                     <th>供应商</th>
-                                    <th>租户</th>
+                                    <th>调用租户</th>
                                     <th>调用公司</th>
                                     <th>总查询次数</th>
                                     <th>计费次数</th>
@@ -252,14 +263,14 @@
         <div class="modal-body">
             <div class="table-toolbar">
                 <div style="font-size:14px;font-weight:600;color:#1f2f3d;">调用明细</div>
-                <button class="btn-export" onclick="exportModalDetail()"><i class="el-icon-download"></i> 导出明细</button>
+                <button class="btn-export" id="modalExportBtn" onclick="exportModalDetail()"><i class="el-icon-download"></i> 导出明细</button>
             </div>
             <div class="table-container" style="max-height:420px;overflow-y:auto;">
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>供应商</th>
-                            <th>租户</th>
+                            <th>调用租户</th>
                             <th>调用公司</th>
                             <th>调用部门</th>
                             <th>调用系统</th>
@@ -386,12 +397,8 @@
     // ========== 渲染基本信息 ==========
     function renderBasicInfo() {
         var html = '';
-        html += '<div class="detail-kv-item"><div class="detail-kv-label">供应商</div><div class="detail-kv-value">' + supplierName + '</div></div>';
-        html += '<div class="detail-kv-item"><div class="detail-kv-label">周期</div><div class="detail-kv-value">' + periodText + '</div></div>';
-        html += '<div class="detail-kv-item"><div class="detail-kv-label">总费用</div><div class="detail-kv-value amount-text">¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</div></div>';
-        html += '<div class="detail-kv-item"><div class="detail-kv-label">总查询次数</div><div class="detail-kv-value" style="color:#f89d34;font-weight:700;">' + summary.totalQueries.toLocaleString() + '</div></div>';
-        html += '<div class="detail-kv-item"><div class="detail-kv-label">计费次数</div><div class="detail-kv-value">' + summary.billableQueries.toLocaleString() + '</div></div>';
-        html += '<div class="detail-kv-item"><div class="detail-kv-label">命中缓存次数</div><div class="detail-kv-value">' + summary.cacheHits.toLocaleString() + '</div></div>';
+        html += '<tr><td class="detail-kv-label">供应商</td><td class="detail-kv-value">' + supplierName + '</td><td class="detail-kv-label">周期</td><td class="detail-kv-value" style="white-space:normal;">' + periodText + '</td><td class="detail-kv-label">总费用</td><td class="detail-kv-value amount-text">¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td></tr>';
+        html += '<tr><td class="detail-kv-label">总查询次数</td><td class="detail-kv-value">' + summary.totalQueries.toLocaleString() + '</td><td class="detail-kv-label">计费次数</td><td class="detail-kv-value">' + summary.billableQueries.toLocaleString() + '</td><td class="detail-kv-label">命中缓存次数</td><td class="detail-kv-value">' + summary.cacheHits.toLocaleString() + '</td></tr>';
         document.getElementById('basicInfoGrid').innerHTML = html;
     }
 
@@ -418,9 +425,32 @@
         return result;
     }
 
-    // ========== 渲染用量明细表 ==========
+    // ========== 渲染用量明细表（可展开行） ==========
     var usageList = [];
     var usagePage = 1, usagePageSize = 10;
+    var _expandedKeys = {};
+
+    // 按 API 聚合
+    function aggregateByApi(records) {
+        var map = {};
+        var order = [];
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            if (!map[r.api]) {
+                map[r.api] = { api: r.api, tenant: r.tenant, company: r.company, totalQueries: 0, billableQueries: 0, cacheHits: 0, fee: 0 };
+                order.push(r.api);
+            }
+            map[r.api].totalQueries += r.totalQueries;
+            map[r.api].billableQueries += r.billableQueries;
+            map[r.api].cacheHits += r.cacheHits;
+            map[r.api].fee += r.fee;
+        }
+        var result = [];
+        for (var j = 0; j < order.length; j++) {
+            result.push(map[order[j]]);
+        }
+        return result;
+    }
 
     function renderUsageTable() {
         usageList = aggregateTenantCompany(currentRecords);
@@ -439,7 +469,7 @@
 
         var tbody = document.getElementById('usageTableBody');
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
             updateUsagePagination(0, 1);
             return;
         }
@@ -447,8 +477,15 @@
         var html = '';
         for (var i = 0; i < pageData.length; i++) {
             var r = pageData[i];
+            var key = r.tenant + '|' + r.company;
+            var isOpen = !!_expandedKeys[key];
             var displayTenant = getDisplayTenant(r.tenant);
-            html += '<tr>'
+            var escTenant = r.tenant.replace(/'/g, "\\'");
+            var escCompany = r.company.replace(/'/g, "\\'");
+
+            // 父行（点击展开）
+            html += '<tr class="expand-row" onclick="toggleExpand(\'' + key.replace(/'/g, "\\'") + '\')">'
+                + '<td><span class="expand-arrow' + (isOpen ? ' open' : '') + '">▶</span></td>'
                 + '<td>' + r.supplier + '</td>'
                 + '<td>' + displayTenant + '</td>'
                 + '<td>' + r.company + '</td>'
@@ -457,12 +494,70 @@
                 + '<td>' + r.cacheHits.toLocaleString() + '</td>'
                 + '<td class="amount-text">¥' + r.fee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>'
                 + '<td>' + (r.ratio * 100).toFixed(2) + '%</td>'
-                + '<td><a class="action-link" onclick="openDetailModal(\'' + r.tenant.replace(/'/g,"\\'") + '\',\'' + r.company.replace(/'/g,"\\'") + '\')">查看明细</a></td>'
+                + '<td><a class="action-link" onclick="event.stopPropagation();openDetailModal(\'' + escTenant + '\',\'' + escCompany + '\',\'\')">查看明细</a></td>'
                 + '</tr>';
+
+            // 子表头行
+            html += '<tr class="sub-header-row" data-expand-key="' + key + '" style="display:' + (isOpen ? '' : 'none') + ';">'
+                + '<td></td>'
+                + '<td>API名称</td>'
+                + '<td>调用租户</td>'
+                + '<td>调用公司</td>'
+                + '<td>总查询次数</td>'
+                + '<td>计费次数</td>'
+                + '<td>缓存命中次数</td>'
+                + '<td>总费用</td>'
+                + '<td>分摊比例</td>'
+                + '<td>操作</td>'
+                + '</tr>';
+
+            // 子数据行（按API聚合）
+            var apiList = aggregateByApi(currentRecords.filter(function(rec) {
+                return rec.tenant === r.tenant && rec.company === r.company;
+            }));
+            for (var j = 0; j < apiList.length; j++) {
+                var a = apiList[j];
+                var aRatio = totalBillable > 0 ? (a.billableQueries / totalBillable) : 0;
+                var escApi = a.api.replace(/'/g, "\\'");
+                html += '<tr class="sub-data-row" data-expand-key="' + key + '" style="display:' + (isOpen ? '' : 'none') + ';">'
+                    + '<td></td>'
+                    + '<td>' + a.api + '</td>'
+                    + '<td>' + displayTenant + '</td>'
+                    + '<td>' + a.company + '</td>'
+                    + '<td>' + a.totalQueries.toLocaleString() + '</td>'
+                    + '<td>' + a.billableQueries.toLocaleString() + '</td>'
+                    + '<td>' + a.cacheHits.toLocaleString() + '</td>'
+                    + '<td class="amount-text">¥' + a.fee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>'
+                    + '<td>' + (aRatio * 100).toFixed(2) + '%</td>'
+                    + '<td><a class="action-link" onclick="event.stopPropagation();openDetailModal(\'' + escTenant + '\',\'' + escCompany + '\',\'' + escApi + '\')">查看明细</a></td>'
+                    + '</tr>';
+            }
         }
 
         tbody.innerHTML = html;
         updateUsagePagination(usageList.length, total);
+    }
+
+    function toggleExpand(key) {
+        _expandedKeys[key] = !_expandedKeys[key];
+        var arrow = null;
+        var rows = document.querySelectorAll('[data-expand-key="' + key + '"]');
+        var isOpen = _expandedKeys[key];
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].style.display = isOpen ? '' : 'none';
+        }
+        // 更新箭头
+        var allExpandRows = document.querySelectorAll('.expand-row');
+        for (var k = 0; k < allExpandRows.length; k++) {
+            var arrowEl = allExpandRows[k].querySelector('.expand-arrow');
+            if (arrowEl) {
+                // 查找该父行对应的key
+                var nextSubHeader = allExpandRows[k].nextElementSibling;
+                if (nextSubHeader && nextSubHeader.getAttribute('data-expand-key') === key) {
+                    arrowEl.classList.toggle('open', isOpen);
+                }
+            }
+        }
     }
 
     function updateUsagePagination(totalCount, totalPages) {
@@ -484,27 +579,43 @@
         container.innerHTML = html;
     }
 
-    function changeUsagePage(page) { usagePage = page; renderUsageTable(); }
-    function changeUsagePageSize(size) { usagePageSize = parseInt(size); usagePage = 1; renderUsageTable(); }
+    function changeUsagePage(page) { usagePage = page; _expandedKeys = {}; renderUsageTable(); }
+    function changeUsagePageSize(size) { usagePageSize = parseInt(size); usagePage = 1; _expandedKeys = {}; renderUsageTable(); }
     function jumpUsagePage() {
         var p = parseInt(document.getElementById('usageJumpInput').value);
         var total = Math.ceil(usageList.length / usagePageSize) || 1;
-        if (p >= 1 && p <= total) { usagePage = p; renderUsageTable(); }
+        if (p >= 1 && p <= total) { usagePage = p; _expandedKeys = {}; renderUsageTable(); }
     }
 
     // ========== 查看明细弹窗 ==========
     var _modalTenant = '';
     var _modalCompany = '';
+    var _modalApiFilter = '';
     var _modalRecords = [];
 
-    function openDetailModal(tenant, company) {
+    function openDetailModal(tenant, company, apiFilter) {
         _modalTenant = tenant;
         _modalCompany = company;
+        _modalApiFilter = apiFilter || '';
         _modalRecords = currentRecords.filter(function(r) {
             return r.tenant === tenant && r.company === company;
         });
+        if (_modalApiFilter) {
+            _modalRecords = _modalRecords.filter(function(r) {
+                return r.api === _modalApiFilter;
+            });
+        }
 
-        document.getElementById('detailModalTitle').textContent = '查看明细 - ' + company + '（' + getDisplayTenant(tenant) + '）';
+        // 标题
+        if (_modalApiFilter) {
+            document.getElementById('detailModalTitle').textContent = '查看明细 - ' + _modalApiFilter + '（' + company + ' · ' + getDisplayTenant(tenant) + '）';
+        } else {
+            document.getElementById('detailModalTitle').textContent = '查看明细 - ' + company + '（' + getDisplayTenant(tenant) + '）';
+        }
+
+        // 导出按钮显隐
+        var exportBtn = document.getElementById('modalExportBtn');
+        if (exportBtn) exportBtn.style.display = _modalApiFilter ? 'none' : '';
 
         var html = '';
         for (var i = 0; i < _modalRecords.length; i++) {
@@ -544,15 +655,12 @@
     }
 
     // ========== Excel 导出工具 ==========
-    var thinBorder = { style:'thin', color:{rgb:'FFB2B2B2'} };
+    var thinBorder = { style:'thin', color:{rgb:'FF000000'} };
     var allBorders = { top:thinBorder, bottom:thinBorder, left:thinBorder, right:thinBorder };
-    var headerFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF333333'} };
-    var headerFill = { fgColor:{rgb:'FFF2F2F2'} };
-    var headerAlign = { horizontal:'center', vertical:'center', wrapText:true };
-    var cellAlign = { horizontal:'center', vertical:'center' };
-    var dataFont = { sz:9, name:'Arial', color:{rgb:'FF333333'} };
-    var totalFont = { bold:true, sz:9, name:'Arial', color:{rgb:'FFf89d34'} };
-    var totalFill = { fgColor:{rgb:'FFFAFBFC'} };
+    var baseFont = { sz:12, name:'宋体' };
+    var boldFont = { bold:true, sz:12, name:'宋体' };
+    var centerAlign = { horizontal:'center', vertical:'center' };
+    var leftAlign = { horizontal:'left', vertical:'center' };
 
     function applyCellStyle(ws, ref, style) { if (ws[ref]) ws[ref].s = style; }
     function styleRange(ws, rowIdx, colStart, colEnd, style) {
@@ -574,68 +682,74 @@
         showToast('导出成功: ' + filename, 'success');
     }
 
+    // 通用：填充留白列A样式 + 标题/周期/小标题样式
+    function applyCommonStyles(ws, aoaRowCount, dataColCount) {
+        // Column A: 留白列样式
+        for (var ri = 0; ri < aoaRowCount; ri++) {
+            applyCellStyle(ws, XLSX.utils.encode_cell({r:ri, c:0}), { font:baseFont });
+        }
+        // Row 0: 大标题（居中、加粗）
+        styleRange(ws, 0, 1, dataColCount, { font:boldFont, alignment:centerAlign });
+        // Row 1: 周期+导出时间（居中）
+        styleRange(ws, 1, 1, dataColCount, { font:baseFont, alignment:centerAlign });
+        // Row 3: 小标题"账单基本信息"（左对齐、加粗）
+        applyCellStyle(ws, XLSX.utils.encode_cell({r:3, c:1}), { font:boldFont, alignment:leftAlign });
+    }
+
+    // 通用：基本信息区域样式（Row 4 标签行 + Row 5 值行，横向排列，居中，带边框）
+    function applyBasicInfoStyles(ws, infoColCount) {
+        for (var c = 1; c <= infoColCount; c++) {
+            applyCellStyle(ws, XLSX.utils.encode_cell({r:4, c:c-1}), { font:boldFont, alignment:centerAlign, border:allBorders });
+            applyCellStyle(ws, XLSX.utils.encode_cell({r:5, c:c-1}), { font:baseFont, alignment:centerAlign, border:allBorders });
+        }
+    }
+
     // ========== 导出1：导出账单（基本信息 + 用量明细表内容） ==========
     function exportBill() {
         if (usageList.length === 0) { showToast('暂无数据可导出', 'warning'); return; }
 
+        var infoColCount = 6; // 基本信息列数（B~G）
+        var colCount = 8;     // 表头列数（B~I）
+        var dataEndCol = colCount; // 数据最后一列索引（0-based, col 8 = I列）
+
         var aoa = [];
-        aoa.push([supplierName + ' - 账单明细']);                                          // Row 0: 标题
-        aoa.push(['周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: 周期+时间
-        aoa.push([]);                                                                        // Row 2: 空行
-        aoa.push(['基本信息']);                                                              // Row 3: 基本信息标题
-        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 4
-        aoa.push(['总查询次数', summary.totalQueries, '计费次数', summary.billableQueries, '命中缓存次数', summary.cacheHits]); // Row 5
-        aoa.push([]);                                                                        // Row 6: 空行
-        aoa.push(['供应商', '租户', '调用公司', '总查询次数', '计费次数', '缓存命中次数', '总费用', '分摊比例']); // Row 7: 表头
+        aoa.push([null, supplierName + ' - 账单明细']);                                          // Row 0: A空, B标题
+        aoa.push([null, '周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: A空, B周期
+        aoa.push([]);                                                                              // Row 2: 空行
+        aoa.push([null, '账单基本信息']);                                                           // Row 3: A空, B小标题
+        aoa.push([null, '供应商', '周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);      // Row 4: 标签行（横向）
+        aoa.push([null, supplierName, periodText, summary.totalQueries, summary.cacheHits, summary.billableQueries, '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 5: 值行
+        aoa.push([]);                                                                              // Row 6: 空行
+        aoa.push([null, '账单信息']);                                                               // Row 7: A空, B小标题
+        aoa.push([null, '供应商', '调用租户', '调用公司', '总查询次数', '计费次数', '缓存命中次数', '总费用', '分摊比例']); // Row 8: 表头
 
         for (var i = 0; i < usageList.length; i++) {
             var r = usageList[i];
-            aoa.push([r.supplier, getDisplayTenant(r.tenant), r.company, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2), (r.ratio * 100).toFixed(2) + '%']);
+            aoa.push([null, r.supplier, getDisplayTenant(r.tenant), r.company, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2), (r.ratio * 100).toFixed(2) + '%']);
         }
 
-        var infoColCount = 6;
-        var colCount = 8;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:infoColCount-1} },  // 标题行合并
-            { s:{r:1,c:0}, e:{r:1,c:infoColCount-1} },  // 周期行合并
-            { s:{r:3,c:0}, e:{r:3,c:infoColCount-1} }   // 基本信息标题合并
+            { s:{r:0,c:1}, e:{r:0,c:dataEndCol} },   // 标题行合并 B1:I1
+            { s:{r:1,c:1}, e:{r:1,c:dataEndCol} },   // 周期行合并 B2:I2
+            { s:{r:3,c:1}, e:{r:3,c:infoColCount} }   // 账单基本信息标题合并 B4:G4
         ];
-        ws['!cols'] = [{wch:14},{wch:16},{wch:12},{wch:16},{wch:14},{wch:16},{wch:14},{wch:10}];
+        ws['!cols'] = [{wch:3},{wch:14},{wch:20},{wch:14},{wch:14},{wch:14},{wch:16},{wch:14},{wch:12}];
 
-        // 标题 + 周期行样式
-        applyCellStyle(ws, 'A1', { font:{bold:true, sz:14, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
-        applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+        applyCommonStyles(ws, aoa.length, dataEndCol);
+        applyBasicInfoStyles(ws, infoColCount);
 
-        // 基本信息区域样式
-        var infoSectionFont = { bold:true, sz:11, name:'Arial', color:{rgb:'FF1f2f3d'} };
-        var infoSectionFill = { fgColor:{rgb:'FFF5F7FA'} };
-        var infoLabelFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF666666'} };
-        var infoValueFont = { sz:10, name:'Arial', color:{rgb:'FF333333'} };
-        var infoLabelAlign = { horizontal:'right', vertical:'center' };
-        var infoValueAlign = { horizontal:'left', vertical:'center' };
-
-        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:{horizontal:'left', vertical:'center'}, border:allBorders });
-        for (var c = 1; c < infoColCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
-
-        // Row 4 & 5: 标签和值（6列，3对标签-值，无合并，与页面基本信息一致）
-        for (var ri = 4; ri <= 5; ri++) {
-            for (var pi = 0; pi < 3; pi++) {
-                var lc = pi * 2, vc = pi * 2 + 1;
-                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:lc}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} });
-                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:vc}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-            }
-        }
-
-        // 表头 (Row 7)
-        styleRange(ws, 7, 0, colCount-1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 数据行 (Row 8+)
+        // Row 7: "账单信息" 小标题
+        applyCellStyle(ws, XLSX.utils.encode_cell({r:7, c:1}), { font:boldFont, alignment:leftAlign });
+        // Row 8: 表头（加粗、居中、边框）
+        styleRange(ws, 8, 1, dataEndCol, { font:boldFont, alignment:centerAlign, border:allBorders });
+        // Row 9+: 数据行（普通字体、居中、边框）
         for (var di = 0; di < usageList.length; di++) {
-            styleRange(ws, 8 + di, 0, colCount-1, { font:dataFont, alignment:cellAlign, border:allBorders });
+            styleRange(ws, 9 + di, 1, dataEndCol, { font:baseFont, alignment:centerAlign, border:allBorders });
         }
 
         var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, '账单明细');
+        XLSX.utils.book_append_sheet(wb, ws, '账单信息');
         downloadWorkbook(wb, supplierName + '_账单明细_' + new Date().toISOString().slice(0,10) + '.xlsx');
     }
 
@@ -643,60 +757,44 @@
     function exportFullDetail() {
         if (currentRecords.length === 0) { showToast('暂无数据可导出', 'warning'); return; }
 
+        var infoColCount = 6;
+        var colCount = 11;
+        var dataEndCol = colCount;
+
         var aoa = [];
-        aoa.push([supplierName + ' - 全量调用明细']);                                          // Row 0: 标题
-        aoa.push(['周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]); // Row 1: 周期+时间
-        aoa.push([]);                                                                             // Row 2: 空行
-        aoa.push(['基本信息']);                                                                   // Row 3: 基本信息标题
-        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 4
-        aoa.push(['总查询次数', summary.totalQueries, '计费次数', summary.billableQueries, '命中缓存次数', summary.cacheHits]); // Row 5
-        aoa.push([]);                                                                             // Row 6: 空行
-        aoa.push(['供应商', '租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询次数', '计费次数', '缓存命中次数', '总费用']); // Row 7: 表头
+        aoa.push([null, supplierName + ' - 全量调用明细']);
+        aoa.push([null, '周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);
+        aoa.push([]);
+        aoa.push([null, '账单基本信息']);
+        aoa.push([null, '供应商', '周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);
+        aoa.push([null, supplierName, periodText, summary.totalQueries, summary.cacheHits, summary.billableQueries, '¥' + summary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]);
+        aoa.push([]);
+        aoa.push([null, '账单信息']);
+        aoa.push([null, '供应商', '调用租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询次数', '计费次数', '缓存命中次数', '总费用']);
 
         for (var i = 0; i < currentRecords.length; i++) {
             var r = currentRecords[i];
-            aoa.push([r.supplier, getDisplayTenant(r.tenant), r.company, r.department, r.system, r.api, r.date, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2)]);
+            aoa.push([null, r.supplier, getDisplayTenant(r.tenant), r.company, r.department, r.system, r.api, r.date, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2)]);
         }
 
-        var infoColCount = 6;
-        var colCount = 11;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:infoColCount-1} },   // 标题行合并
-            { s:{r:1,c:0}, e:{r:1,c:infoColCount-1} },   // 周期行合并
-            { s:{r:3,c:0}, e:{r:3,c:infoColCount-1} }    // 基本信息标题合并
+            { s:{r:0,c:1}, e:{r:0,c:dataEndCol} },
+            { s:{r:1,c:1}, e:{r:1,c:dataEndCol} },
+            { s:{r:3,c:1}, e:{r:3,c:infoColCount} }
         ];
-        ws['!cols'] = [{wch:14},{wch:16},{wch:12},{wch:16},{wch:14},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14}];
+        ws['!cols'] = [{wch:3},{wch:14},{wch:16},{wch:14},{wch:14},{wch:14},{wch:16},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14}];
 
-        // 标题 + 周期行样式
-        applyCellStyle(ws, 'A1', { font:{bold:true, sz:14, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
-        applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+        applyCommonStyles(ws, aoa.length, dataEndCol);
+        applyBasicInfoStyles(ws, infoColCount);
 
-        // 基本信息区域样式
-        var infoSectionFont = { bold:true, sz:11, name:'Arial', color:{rgb:'FF1f2f3d'} };
-        var infoSectionFill = { fgColor:{rgb:'FFF5F7FA'} };
-        var infoLabelFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF666666'} };
-        var infoValueFont = { sz:10, name:'Arial', color:{rgb:'FF333333'} };
-        var infoLabelAlign = { horizontal:'right', vertical:'center' };
-        var infoValueAlign = { horizontal:'left', vertical:'center' };
-
-        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:{horizontal:'left', vertical:'center'}, border:allBorders });
-        for (var c = 1; c < infoColCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
-
-        // Row 4 & 5: 标签和值（6列，3对标签-值，无合并，与页面基本信息一致）
-        for (var ri = 4; ri <= 5; ri++) {
-            for (var pi = 0; pi < 3; pi++) {
-                var lc = pi * 2, vc = pi * 2 + 1;
-                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:lc}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} });
-                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:vc}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-            }
-        }
-
-        // 表头 (Row 7)
-        styleRange(ws, 7, 0, colCount-1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 数据行 (Row 8+)
+        // Row 7: "账单信息" 小标题
+        applyCellStyle(ws, XLSX.utils.encode_cell({r:7, c:1}), { font:boldFont, alignment:leftAlign });
+        // Row 8: 表头
+        styleRange(ws, 8, 1, dataEndCol, { font:boldFont, alignment:centerAlign, border:allBorders });
+        // Row 9+: 数据行
         for (var di = 0; di < currentRecords.length; di++) {
-            styleRange(ws, 8 + di, 0, colCount-1, { font:dataFont, alignment:cellAlign, border:allBorders });
+            styleRange(ws, 9 + di, 1, dataEndCol, { font:baseFont, alignment:centerAlign, border:allBorders });
         }
 
         var wb = XLSX.utils.book_new();
@@ -708,7 +806,6 @@
     function exportModalDetail() {
         if (_modalRecords.length === 0) { showToast('暂无数据可导出', 'warning'); return; }
 
-        // 计算弹窗数据的汇总
         var modalSummary = { totalFee: 0, totalQueries: 0, billableQueries: 0, cacheHits: 0 };
         for (var si = 0; si < _modalRecords.length; si++) {
             modalSummary.totalFee += _modalRecords[si].fee;
@@ -717,60 +814,44 @@
             modalSummary.cacheHits += _modalRecords[si].cacheHits;
         }
 
+        var infoColCount = 6;
+        var colCount = 11;
+        var dataEndCol = colCount;
+
         var aoa = [];
-        aoa.push([supplierName + ' - ' + _modalCompany + '（' + getDisplayTenant(_modalTenant) + '）调用明细']);           // Row 0: 标题
-        aoa.push(['周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);                          // Row 1: 周期+时间
-        aoa.push([]);                                                                                                       // Row 2: 空行
-        aoa.push(['基本信息']);                                                                                              // Row 3: 基本信息标题
-        aoa.push(['供应商', supplierName, '周期', periodText, '总费用', '¥' + modalSummary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]); // Row 4
-        aoa.push(['总查询次数', modalSummary.totalQueries, '计费次数', modalSummary.billableQueries, '命中缓存次数', modalSummary.cacheHits]); // Row 5
-        aoa.push([]);                                                                                                       // Row 6: 空行
-        aoa.push(['供应商', '租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询次数', '计费次数', '缓存命中次数', '总费用']); // Row 7: 表头
+        aoa.push([null, supplierName + ' - ' + _modalCompany + '（' + getDisplayTenant(_modalTenant) + '）调用明细']);
+        aoa.push([null, '周期：' + periodText + '    导出时间：' + new Date().toLocaleString('zh-CN')]);
+        aoa.push([]);
+        aoa.push([null, '账单基本信息']);
+        aoa.push([null, '供应商', '周期', '总查询次数', '命中缓存次数', '计费次数', '总费用']);
+        aoa.push([null, supplierName, periodText, modalSummary.totalQueries, modalSummary.cacheHits, modalSummary.billableQueries, '¥' + modalSummary.totalFee.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})]);
+        aoa.push([]);
+        aoa.push([null, '账单信息']);
+        aoa.push([null, '供应商', '调用租户', '调用公司', '调用部门', '调用系统', '供应商的API', '日期', '总查询次数', '计费次数', '缓存命中次数', '总费用']);
 
         for (var i = 0; i < _modalRecords.length; i++) {
             var r = _modalRecords[i];
-            aoa.push([r.supplier, getDisplayTenant(r.tenant), r.company, r.department, r.system, r.api, r.date, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2)]);
+            aoa.push([null, r.supplier, getDisplayTenant(r.tenant), r.company, r.department, r.system, r.api, r.date, r.totalQueries, r.billableQueries, r.cacheHits, r.fee.toFixed(2)]);
         }
 
-        var infoColCount = 6;
-        var colCount = 11;
         var ws = XLSX.utils.aoa_to_sheet(aoa);
         ws['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:infoColCount-1} },   // 标题行合并
-            { s:{r:1,c:0}, e:{r:1,c:infoColCount-1} },   // 周期行合并
-            { s:{r:3,c:0}, e:{r:3,c:infoColCount-1} }    // 基本信息标题合并
+            { s:{r:0,c:1}, e:{r:0,c:dataEndCol} },
+            { s:{r:1,c:1}, e:{r:1,c:dataEndCol} },
+            { s:{r:3,c:1}, e:{r:3,c:infoColCount} }
         ];
-        ws['!cols'] = [{wch:14},{wch:16},{wch:12},{wch:16},{wch:14},{wch:16},{wch:14},{wch:14},{wch:12},{wch:14},{wch:14}];
+        ws['!cols'] = [{wch:3},{wch:14},{wch:16},{wch:14},{wch:14},{wch:14},{wch:16},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14}];
 
-        // 标题 + 周期行样式
-        applyCellStyle(ws, 'A1', { font:{bold:true, sz:14, name:'Arial'}, alignment:{horizontal:'center', vertical:'center'} });
-        applyCellStyle(ws, 'A2', { font:{sz:9, name:'Arial', color:{rgb:'FF666666'}}, alignment:{vertical:'center'} });
+        applyCommonStyles(ws, aoa.length, dataEndCol);
+        applyBasicInfoStyles(ws, infoColCount);
 
-        // 基本信息区域样式
-        var infoSectionFont = { bold:true, sz:11, name:'Arial', color:{rgb:'FF1f2f3d'} };
-        var infoSectionFill = { fgColor:{rgb:'FFF5F7FA'} };
-        var infoLabelFont = { bold:true, sz:10, name:'Arial', color:{rgb:'FF666666'} };
-        var infoValueFont = { sz:10, name:'Arial', color:{rgb:'FF333333'} };
-        var infoLabelAlign = { horizontal:'right', vertical:'center' };
-        var infoValueAlign = { horizontal:'left', vertical:'center' };
-
-        applyCellStyle(ws, 'A4', { font:infoSectionFont, fill:infoSectionFill, alignment:{horizontal:'left', vertical:'center'}, border:allBorders });
-        for (var c = 1; c < infoColCount; c++) { applyCellStyle(ws, XLSX.utils.encode_cell({r:3,c:c}), { fill:infoSectionFill, border:allBorders }); }
-
-        // Row 4 & 5: 标签和值（6列，3对标签-值，无合并，与页面基本信息一致）
-        for (var ri = 4; ri <= 5; ri++) {
-            for (var pi = 0; pi < 3; pi++) {
-                var lc = pi * 2, vc = pi * 2 + 1;
-                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:lc}), { font:infoLabelFont, alignment:infoLabelAlign, border:allBorders, fill:{fgColor:{rgb:'FFFAFBFC'}} });
-                applyCellStyle(ws, XLSX.utils.encode_cell({r:ri,c:vc}), { font:infoValueFont, alignment:infoValueAlign, border:allBorders });
-            }
-        }
-
-        // 表头 (Row 7)
-        styleRange(ws, 7, 0, colCount-1, { font:headerFont, fill:headerFill, alignment:headerAlign, border:allBorders });
-        // 数据行 (Row 8+)
+        // Row 7: "账单信息" 小标题
+        applyCellStyle(ws, XLSX.utils.encode_cell({r:7, c:1}), { font:boldFont, alignment:leftAlign });
+        // Row 8: 表头
+        styleRange(ws, 8, 1, dataEndCol, { font:boldFont, alignment:centerAlign, border:allBorders });
+        // Row 9+: 数据行
         for (var di = 0; di < _modalRecords.length; di++) {
-            styleRange(ws, 8 + di, 0, colCount-1, { font:dataFont, alignment:cellAlign, border:allBorders });
+            styleRange(ws, 9 + di, 1, dataEndCol, { font:baseFont, alignment:centerAlign, border:allBorders });
         }
 
         var wb = XLSX.utils.book_new();

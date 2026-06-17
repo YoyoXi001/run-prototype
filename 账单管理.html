@@ -215,6 +215,7 @@
                     <table class="data-table" id="mainTable">
                         <thead>
                             <tr>
+                                <th>序号</th>
                                 <th>供应商</th>
                                 <th>总查询次数</th>
                                 <th>计费次数</th>
@@ -445,7 +446,7 @@
 
         var tbody = document.getElementById('tableBody');
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
             updatePagination(0, 1);
             return;
         }
@@ -464,6 +465,7 @@
                 + '&role=' + role
                 + '&displayTenant=' + encodeURIComponent('资产');
             html += '<tr>'
+                + '<td>' + (startIdx + i + 1) + '</td>'
                 + '<td>' + r.supplier + '</td>'
                 + '<td>' + r.totalQueries.toLocaleString() + '</td>'
                 + '<td>' + r.billableQueries.toLocaleString() + '</td>'
