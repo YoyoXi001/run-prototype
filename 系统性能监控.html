@@ -68,7 +68,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 /* ===== Metric Cards ===== */
-.metric-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 0; }
+.metric-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 0; }
 .metric-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: box-shadow 0.3s, transform 0.2s; cursor: default; }
 .metric-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
 .metric-card .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -157,7 +157,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 
 /* ===== Responsive ===== */
 @media (max-width: 1600px) {
-  .metric-cards { grid-template-columns: repeat(5, 1fr); }
+  .metric-cards { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 1400px) {
   .metric-cards { grid-template-columns: repeat(3, 1fr); }
@@ -264,16 +264,6 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <div class="card-sub" id="sub-mem">--</div>
             <div class="sparkline" id="spark-mem"></div>
           </div>
-          <!-- JVM -->
-          <div class="metric-card" id="card-jvm">
-            <div class="card-header">
-              <span class="card-title">JVM堆内存</span>
-              <span class="card-status status-normal" id="status-jvm">正常</span>
-            </div>
-            <div class="card-value color-green" id="value-jvm">--</div>
-            <div class="card-sub" id="sub-jvm">--</div>
-            <div class="sparkline" id="spark-jvm"></div>
-          </div>
           <!-- Disk -->
           <div class="metric-card" id="card-disk">
             <div class="card-header">
@@ -284,17 +274,6 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <div class="card-sub" id="sub-disk">--</div>
             <div class="sparkline" id="spark-disk"></div>
           </div>
-          <!-- Network I/O -->
-          <div class="metric-card" id="card-net">
-            <div class="card-header">
-              <span class="card-title">网络吞吐</span>
-              <span class="card-status status-normal" id="status-net">正常</span>
-            </div>
-            <div class="card-value color-blue" id="value-net">--</div>
-            <div class="card-sub" id="sub-net">--</div>
-            <div class="sparkline" id="spark-net"></div>
-          </div>
-        </div>
       </div>
 
       <!-- ===== Charts Row: QPS + Response Time ===== -->
@@ -338,9 +317,6 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
                     <th>IP地址</th>
                     <th>CPU</th>
                     <th>内存</th>
-                    <th>JVM</th>
-                    <th>线程池</th>
-                    <th>GC频率</th>
                     <th>运行时间</th>
                     <th>状态</th>
                   </tr>
@@ -400,17 +376,6 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
           <ul class="threshold-list" id="thresholdListRight">
             <li class="threshold-item">
               <div class="threshold-info">
-                <div class="threshold-metric">JVM堆内存 &gt; 85%</div>
-                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
-              </div>
-              <span class="threshold-level level-critical">严重</span>
-              <div class="threshold-actions">
-                <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-                <i class="el-icon-edit edit-icon"></i>
-              </div>
-            </li>
-            <li class="threshold-item">
-              <div class="threshold-info">
                 <div class="threshold-metric">HTTP P95延迟 &gt; 3000ms</div>
                 <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
               </div>
@@ -450,12 +415,8 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
       <div class="detail-grid" id="nodeDetailGrid">
         <!-- Dynamic -->
       </div>
-      <div class="detail-section-title">JVM内存趋势 (近30分钟)</div>
+      <div class="detail-section-title">CPU & 内存趋势 (近30分钟)</div>
       <div class="detail-chart" id="nodeDetailChart"></div>
-      <div class="detail-section-title">线程状态</div>
-      <div class="detail-grid" id="threadDetailGrid">
-        <!-- Dynamic -->
-      </div>
     </div>
   </div>
 </div>
@@ -478,7 +439,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 
   // Rolling data buffers
   var sparkBuffers = {
-    cpu: [], mem: [], jvm: [], disk: [], net: []
+    cpu: [], mem: [], disk: []
   };
   var qpsBuffer = { inbound: [], outbound: [] };
   var rtBuffer = { p50: [], p95: [], p99: [] };
@@ -486,12 +447,12 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 
   // Node data
   var nodes = [
-    { name: 'app-gateway-01', ip: '10.0.1.101', layer: 'gateway', cpu: 35, mem: 62, jvm: 68, threadPool: 72, gcRate: 2, uptime: '15天3小时', status: '正常' },
-    { name: 'app-gateway-02', ip: '10.0.1.102', layer: 'gateway', cpu: 42, mem: 65, jvm: 71, threadPool: 68, gcRate: 3, uptime: '15天3小时', status: '正常' },
-    { name: 'app-core-01', ip: '10.0.2.101', layer: 'core', cpu: 55, mem: 72, jvm: 78, threadPool: 85, gcRate: 5, uptime: '10天8小时', status: '正常' },
-    { name: 'app-core-02', ip: '10.0.2.102', layer: 'core', cpu: 48, mem: 68, jvm: 74, threadPool: 78, gcRate: 4, uptime: '10天8小时', status: '正常' },
-    { name: 'app-consumer-01', ip: '10.0.3.101', layer: 'consumer', cpu: 38, mem: 58, jvm: 62, threadPool: 45, gcRate: 1, uptime: '7天12小时', status: '正常' },
-    { name: 'app-consumer-02', ip: '10.0.3.102', layer: 'consumer', cpu: 41, mem: 61, jvm: 65, threadPool: 52, gcRate: 2, uptime: '7天12小时', status: '正常' }
+    { name: 'app-gateway-01', ip: '10.0.1.101', layer: 'gateway', cpu: 35, mem: 62, uptime: '15天3小时', status: '正常' },
+    { name: 'app-gateway-02', ip: '10.0.1.102', layer: 'gateway', cpu: 42, mem: 65, uptime: '15天3小时', status: '正常' },
+    { name: 'app-core-01', ip: '10.0.2.101', layer: 'core', cpu: 55, mem: 72, uptime: '10天8小时', status: '正常' },
+    { name: 'app-core-02', ip: '10.0.2.102', layer: 'core', cpu: 48, mem: 68, uptime: '10天8小时', status: '正常' },
+    { name: 'app-consumer-01', ip: '10.0.3.101', layer: 'consumer', cpu: 38, mem: 58, uptime: '7天12小时', status: '正常' },
+    { name: 'app-consumer-02', ip: '10.0.3.102', layer: 'consumer', cpu: 41, mem: 61, uptime: '7天12小时', status: '正常' }
   ];
 
   // Alert events removed (告警事件板块已移除)
@@ -527,9 +488,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     for (var i = 0; i < DATA_POINTS; i++) {
       sparkBuffers.cpu.push(randAround(45, 15));
       sparkBuffers.mem.push(randAround(68, 10));
-      sparkBuffers.jvm.push(randAround(72, 8));
       sparkBuffers.disk.push(randAround(52, 4));
-      sparkBuffers.net.push(randAround(120, 60));
     }
     var now = new Date();
     for (var i = CHART_POINTS - 1; i >= 0; i--) {
@@ -554,12 +513,8 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     sparkBuffers.cpu.shift();
     sparkBuffers.mem.push(clamp(randAround(sparkBuffers.mem[sparkBuffers.mem.length - 1], 5), 20, 95));
     sparkBuffers.mem.shift();
-    sparkBuffers.jvm.push(clamp(randAround(sparkBuffers.jvm[sparkBuffers.jvm.length - 1], 4), 30, 95));
-    sparkBuffers.jvm.shift();
     sparkBuffers.disk.push(clamp(randAround(sparkBuffers.disk[sparkBuffers.disk.length - 1], 1), 30, 90));
     sparkBuffers.disk.shift();
-    sparkBuffers.net.push(clamp(randAround(sparkBuffers.net[sparkBuffers.net.length - 1], 30), 20, 500));
-    sparkBuffers.net.shift();
 
     // Update QPS/RT charts
     var now = new Date();
@@ -581,12 +536,9 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     nodes.forEach(function(n) {
       n.cpu = clamp(randAround(n.cpu, 6), 5, 98);
       n.mem = clamp(randAround(n.mem, 3), 20, 95);
-      n.jvm = clamp(randAround(n.jvm, 3), 30, 95);
-      n.threadPool = clamp(randAround(n.threadPool, 5), 10, 98);
-      n.gcRate = clamp(randInt(n.gcRate, 2), 0, 20);
       // Determine status
-      if (n.cpu > 90 || n.mem > 90 || n.jvm > 90) n.status = '告警';
-      else if (n.cpu > 75 || n.mem > 80 || n.jvm > 80) n.status = '偏高';
+      if (n.cpu > 90 || n.mem > 90) n.status = '告警';
+      else if (n.cpu > 75 || n.mem > 80) n.status = '偏高';
       else n.status = '正常';
     });
   }
@@ -633,26 +585,17 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
   function renderMetricCards() {
     var cpuVal = sparkBuffers.cpu[sparkBuffers.cpu.length - 1];
     var memVal = sparkBuffers.mem[sparkBuffers.mem.length - 1];
-    var jvmVal = sparkBuffers.jvm[sparkBuffers.jvm.length - 1];
     var diskVal = sparkBuffers.disk[sparkBuffers.disk.length - 1];
-    var netVal = sparkBuffers.net[sparkBuffers.net.length - 1];
 
     setCardMetric('cpu', cpuVal.toFixed(1) + '%', getStatusInfo(cpuVal, 70, 85),
       '当前使用率');
     setCardMetric('mem', memVal.toFixed(1) + '%', getStatusInfo(memVal, 75, 85),
       'Used: ' + (memVal / 100 * 8).toFixed(2) + ' GB / Total: 8 GB');
-    setCardMetric('jvm', jvmVal.toFixed(1) + '%', getStatusInfo(jvmVal, 75, 85),
-      'Used: ' + (jvmVal / 100 * 4).toFixed(2) + ' GB / Max: 4 GB');
     setCardMetric('disk', diskVal.toFixed(1) + '%', getStatusInfo(diskVal, 75, 85),
       'Used: ' + (diskVal / 100 * 500).toFixed(0) + ' GB / Total: 500 GB');
 
-    var netMBps = (netVal / 8).toFixed(1);
-    var netInfo = netVal > 300 ? getStatusInfo(netVal, 250, 400) : { status: 'normal', label: '正常', colorClass: 'color-blue', statusClass: 'status-normal' };
-    setCardMetric('net', netMBps + ' MB/s', netInfo,
-      '↑ ' + (netVal * 0.6 / 8).toFixed(1) + ' MB/s  ↓ ' + (netVal * 0.4 / 8).toFixed(1) + ' MB/s');
-
     // Update system health badge
-    updateSystemHealth(cpuVal, memVal, jvmVal);
+    updateSystemHealth(cpuVal, memVal);
   }
 
   function setCardMetric(key, value, info, sub) {
@@ -664,14 +607,14 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     if (subEl) subEl.textContent = sub;
   }
 
-  function updateSystemHealth(cpu, mem, jvm) {
+  function updateSystemHealth(cpu, mem) {
     var badge = document.getElementById('systemHealthBadge');
     var dot = document.getElementById('systemHealthDot');
     var text = document.getElementById('systemHealthText');
     var alertCount = 0;
     nodes.forEach(function(n) { if (n.status === '告警') alertCount++; });
 
-    if (alertCount > 0 || cpu > 85 || mem > 85 || jvm > 85) {
+    if (alertCount > 0 || cpu > 85 || mem > 85) {
       badge.className = 'system-health-badge health-warn';
       dot.className = 'health-dot orange';
       text.textContent = '存在告警 (' + alertCount + ')';
@@ -794,17 +737,13 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
   function initSparklines() {
     sparkCharts.cpu = createSparkline('spark-cpu', sparkBuffers.cpu, 'rgb(82,196,26)');
     sparkCharts.mem = createSparkline('spark-mem', sparkBuffers.mem, 'rgb(250,140,22)');
-    sparkCharts.jvm = createSparkline('spark-jvm', sparkBuffers.jvm, 'rgb(250,140,22)');
     sparkCharts.disk = createSparkline('spark-disk', sparkBuffers.disk, 'rgb(82,196,26)');
-    sparkCharts.net = createSparkline('spark-net', sparkBuffers.net, 'rgb(17,82,197)');
   }
 
   function updateSparklines() {
     updateSparkline(sparkCharts.cpu, sparkBuffers.cpu, 'rgb(82,196,26)');
     updateSparkline(sparkCharts.mem, sparkBuffers.mem, 'rgb(250,140,22)');
-    updateSparkline(sparkCharts.jvm, sparkBuffers.jvm, 'rgb(250,140,22)');
     updateSparkline(sparkCharts.disk, sparkBuffers.disk, 'rgb(82,196,26)');
-    updateSparkline(sparkCharts.net, sparkBuffers.net, 'rgb(17,82,197)');
 
     // Update sparkline colors based on thresholds
     var cpuVal = sparkBuffers.cpu[sparkBuffers.cpu.length - 1];
@@ -825,18 +764,12 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     filtered.forEach(function(n) {
       var cpuColor = getProgressColor(n.cpu);
       var memColor = getProgressColor(n.mem);
-      var jvmColor = getProgressColor(n.jvm);
-      var threadColor = getProgressColor(n.threadPool);
-      var gcColor = n.gcRate > 8 ? '#f5222d' : (n.gcRate > 4 ? '#fa8c16' : '#52c41a');
       var statusBadge = n.status === '正常' ? 'badge-success' : (n.status === '告警' ? 'badge-danger' : 'badge-warning');
       html += '<tr>' +
         '<td><a class="node-link" onclick="openNodeDetail(\'' + n.name + '\')">' + n.name + '</a></td>' +
         '<td>' + n.ip + '</td>' +
         '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.cpu + '%;background:' + cpuColor + '"></span></span>' + n.cpu.toFixed(1) + '%</td>' +
         '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.mem + '%;background:' + memColor + '"></span></span>' + n.mem.toFixed(1) + '%</td>' +
-        '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.jvm + '%;background:' + jvmColor + '"></span></span>' + n.jvm.toFixed(1) + '%</td>' +
-        '<td><span class="progress-bar"><span class="progress-fill" style="width:' + n.threadPool + '%;background:' + threadColor + '"></span></span>' + n.threadPool.toFixed(0) + '%</td>' +
-        '<td style="color:' + gcColor + ';font-weight:600">' + n.gcRate + '/min</td>' +
         '<td>' + n.uptime + '</td>' +
         '<td><span class="badge-status ' + statusBadge + '">' + n.status + '</span></td>' +
       '</tr>';
@@ -861,42 +794,36 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
       '<div class="detail-item"><span class="detail-label">服务层</span><span class="detail-value">' + (node.layer === 'gateway' ? 'crds-gateway' : (node.layer === 'core' ? 'crds-core' : 'consumer')) + '</span></div>' +
       '<div class="detail-item"><span class="detail-label">运行时间</span><span class="detail-value">' + node.uptime + '</span></div>' +
       '<div class="detail-item"><span class="detail-label">CPU使用率</span><span class="detail-value" style="color:' + getProgressColor(node.cpu) + '">' + node.cpu.toFixed(1) + '%</span></div>' +
-      '<div class="detail-item"><span class="detail-label">内存使用率</span><span class="detail-value" style="color:' + getProgressColor(node.mem) + '">' + node.mem.toFixed(1) + '%</span></div>' +
-      '<div class="detail-item"><span class="detail-label">JVM堆内存</span><span class="detail-value" style="color:' + getProgressColor(node.jvm) + '">' + node.jvm.toFixed(1) + '%</span></div>' +
-      '<div class="detail-item"><span class="detail-label">GC频率</span><span class="detail-value" style="color:' + (node.gcRate > 8 ? '#f5222d' : '#333') + '">' + node.gcRate + ' 次/分钟</span></div>';
+      '<div class="detail-item"><span class="detail-label">内存使用率</span><span class="detail-value" style="color:' + getProgressColor(node.mem) + '">' + node.mem.toFixed(1) + '%</span></div>';
 
     // Thread detail
     var threadGrid = document.getElementById('threadDetailGrid');
-    var activeThreads = Math.round(node.threadPool / 100 * 200);
     threadGrid.innerHTML = '' +
-      '<div class="detail-item"><span class="detail-label">线程池使用率</span><span class="detail-value" style="color:' + getProgressColor(node.threadPool) + '">' + node.threadPool.toFixed(1) + '%</span></div>' +
-      '<div class="detail-item"><span class="detail-label">活跃线程/最大线程</span><span class="detail-value">' + activeThreads + ' / 200</span></div>' +
-      '<div class="detail-item"><span class="detail-label">队列等待数</span><span class="detail-value">' + randInt(5, 10) + '</span></div>' +
-      '<div class="detail-item"><span class="detail-label">拒绝任务数</span><span class="detail-value" style="color:' + (node.threadPool > 90 ? '#f5222d' : '#52c41a') + '">' + (node.threadPool > 90 ? randInt(3, 5) : 0) + '</span></div>';
+      '<div class="detail-item"><span class="detail-label">系统负载</span><span class="detail-value">' + (randInt(10, 20)) + '%</span></div>' +
+      '<div class="detail-item"><span class="detail-label">磁盘IO</span><span class="detail-value">' + randInt(30, 80) + ' MB/s</span></div>';
 
-    // JVM chart
+    // CPU & Memory trend chart
     if (nodeDetailChart) nodeDetailChart.dispose();
     nodeDetailChart = echarts.init(document.getElementById('nodeDetailChart'));
-    var jvmHistory = [];
-    var gcHistory = [];
+    var cpuHistory = [];
+    var memHistory = [];
     var labels = [];
     for (var i = 0; i < 30; i++) {
       labels.push(i + 'min');
-      jvmHistory.push(clamp(randAround(node.jvm, 10), 30, 95));
-      gcHistory.push(clamp(randInt(node.gcRate, 3), 0, 20));
+      cpuHistory.push(clamp(randAround(node.cpu, 10), 5, 98));
+      memHistory.push(clamp(randAround(node.mem, 8), 20, 95));
     }
     nodeDetailChart.setOption({
       tooltip: { trigger: 'axis' },
-      legend: { data: ['JVM堆使用率(%)', 'GC次数/分钟'], top: 0, textStyle: { fontSize: 11 } },
+      legend: { data: ['CPU使用率(%)', '内存使用率(%)'], top: 0, textStyle: { fontSize: 11 } },
       grid: { top: 30, right: 50, bottom: 25, left: 50 },
       xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 10, color: '#999' } },
       yAxis: [
-        { type: 'value', name: 'JVM%', axisLabel: { fontSize: 10 }, max: 100 },
-        { type: 'value', name: 'GC', axisLabel: { fontSize: 10 } }
+        { type: 'value', name: '%', axisLabel: { fontSize: 10 }, max: 100 }
       ],
       series: [
-        { name: 'JVM堆使用率(%)', type: 'line', smooth: true, data: jvmHistory, lineStyle: { color: '#1152c5', width: 2 }, itemStyle: { color: '#1152c5' }, symbol: 'none', areaStyle: { color: 'rgba(17,82,197,0.08)' } },
-        { name: 'GC次数/分钟', type: 'bar', yAxisIndex: 1, data: gcHistory, barWidth: 8, itemStyle: { color: 'rgba(248,157,52,0.5)', borderRadius: [2,2,0,0] } }
+        { name: 'CPU使用率(%)', type: 'line', smooth: true, data: cpuHistory, lineStyle: { color: '#1152c5', width: 2 }, itemStyle: { color: '#1152c5' }, symbol: 'none', areaStyle: { color: 'rgba(17,82,197,0.08)' } },
+        { name: '内存使用率(%)', type: 'line', smooth: true, data: memHistory, lineStyle: { color: '#f89d34', width: 2 }, itemStyle: { color: '#f89d34' }, symbol: 'none', areaStyle: { color: 'rgba(248,157,52,0.08)' } }
       ]
     });
 
