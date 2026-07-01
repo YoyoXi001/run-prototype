@@ -49,9 +49,10 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .dashboard-banner .banner-title { font-size: 28px; color: #4fc3f7; letter-spacing: 4px; font-weight: 600; text-align: center; }
 .dashboard-banner .banner-time { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #8899aa; }
 
-.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto auto; gap: 16px; padding: 16px; }
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 16px; }
 .dark-card { background: rgba(13,27,42,0.8); border: 1px solid rgba(79,195,247,0.2); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; }
-.dark-card .card-title { font-size: 14px; color: #4fc3f7; border-left: 3px solid #4fc3f7; padding-left: 8px; margin-bottom: 12px; line-height: 1; }
+.dark-card.span-2 { grid-column: span 2; }
+.dark-card .card-title { font-size: 14px; color: #4fc3f7; border-left: 3px solid #4fc3f7; padding-left: 8px; margin-bottom: 12px; line-height: 1; position: relative; overflow: visible; }
 .dark-card .card-body { flex: 1; position: relative; }
 
 /* Big Number */
@@ -67,17 +68,101 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 .sub-stat-change.up { color: #52c41a; }
 .sub-stat-change.down { color: #f5222d; }
 
-/* Alert stat cards */
-.alert-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; height: 100%; align-items: center; }
-.alert-stat-card { text-align: center; padding: 20px 8px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(79,195,247,0.1); }
-.alert-stat-number { font-size: 32px; font-weight: bold; font-family: 'Source Sans Pro', sans-serif; margin-bottom: 6px; }
-.alert-stat-number.orange { color: #fa8c16; }
-.alert-stat-number.green { color: #52c41a; }
-.alert-stat-number.yellow { color: #fadb14; }
-.alert-stat-number.red { color: #f5222d; }
-.alert-stat-label { font-size: 12px; color: #8899aa; }
-
 .chart-container { width: 100%; height: 230px; }
+.chart-container-tall { width: 100%; height: 280px; }
+.chart-container-xl { width: 100%; height: 320px; }
+
+/* Full-width card in grid */
+.dark-card.full-width { grid-column: 1 / -1; }
+
+/* Trend period tabs */
+.trend-tabs { display: flex; gap: 0; position: absolute; top: 0; right: 0; z-index: 2; }
+.trend-tab { padding: 4px 14px; font-size: 11px; color: #8899aa; background: rgba(79,195,247,0.06); border: 1px solid rgba(79,195,247,0.15); cursor: pointer; transition: 0.2s; white-space: nowrap; }
+.trend-tab:first-child { border-radius: 4px 0 0 4px; }
+.trend-tab:last-child { border-radius: 0 4px 4px 0; }
+.trend-tab + .trend-tab { border-left: none; }
+.trend-tab:hover { color: #4fc3f7; }
+.trend-tab.active { background: rgba(79,195,247,0.18); color: #4fc3f7; font-weight: 600; border-color: rgba(79,195,247,0.35); }
+
+/* === Multi-Dimension Section === */
+.dim-section { background: #0d1b2a; border-top: 1px solid rgba(79,195,247,0.15); padding: 16px; }
+.dim-section-title { font-size: 16px; color: #4fc3f7; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.dim-section-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #4fc3f7; border-radius: 2px; }
+
+/* Filter Bar */
+.dim-filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; padding: 14px 16px; background: rgba(79,195,247,0.04); border: 1px solid rgba(79,195,247,0.12); border-radius: 8px; }
+.dim-filter-item { display: flex; flex-direction: column; gap: 4px; }
+.dim-filter-item label { font-size: 11px; color: #6b8299; letter-spacing: 0.5px; }
+.dim-filter-item select { background: rgba(13,27,42,0.9); border: 1px solid rgba(79,195,247,0.25); color: #c8d6e5; font-size: 12px; padding: 6px 28px 6px 10px; border-radius: 4px; outline: none; cursor: pointer; min-width: 120px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234fc3f7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; transition: border-color 0.2s; }
+.dim-filter-item select:hover { border-color: #4fc3f7; }
+.dim-filter-item select:focus { border-color: #4fc3f7; box-shadow: 0 0 0 2px rgba(79,195,247,0.15); }
+.dim-filter-item select option { background: #0d1b2a; color: #c8d6e5; }
+.dim-filter-btn { align-self: flex-end; background: linear-gradient(135deg, #1890ff, #4fc3f7); color: #fff; border: none; padding: 7px 20px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 500; transition: opacity 0.2s; }
+.dim-filter-btn:hover { opacity: 0.85; }
+.dim-filter-reset { align-self: flex-end; background: transparent; color: #8899aa; border: 1px solid rgba(79,195,247,0.2); padding: 7px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+.dim-filter-reset:hover { color: #4fc3f7; border-color: #4fc3f7; }
+
+/* Dim Charts Grid */
+.dim-charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.dim-charts-row:last-child { margin-bottom: 0; }
+
+/* Drill-down Modal */
+.dim-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; }
+.dim-modal-overlay.active { display: flex; }
+.dim-modal { background: #0f2137; border: 1px solid rgba(79,195,247,0.3); border-radius: 10px; width: 820px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+.dim-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(79,195,247,0.15); }
+.dim-modal-header h3 { font-size: 15px; color: #4fc3f7; font-weight: 600; }
+.dim-modal-close { background: none; border: none; color: #8899aa; font-size: 22px; cursor: pointer; padding: 0 4px; transition: color 0.2s; }
+.dim-modal-close:hover { color: #f5222d; }
+.dim-modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.dim-modal-body .drill-path { font-size: 12px; color: #8899aa; margin-bottom: 12px; }
+.dim-modal-body .drill-path span { color: #4fc3f7; }
+.drill-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.drill-table thead th { background: rgba(79,195,247,0.08); color: #4fc3f7; padding: 10px 12px; text-align: left; font-weight: 500; border-bottom: 1px solid rgba(79,195,247,0.15); white-space: nowrap; position: sticky; top: 0; }
+.drill-table tbody td { color: #c8d6e5; padding: 9px 12px; border-bottom: 1px solid rgba(79,195,247,0.06); }
+.drill-table tbody tr:hover td { background: rgba(79,195,247,0.04); }
+.drill-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; }
+.drill-tag.success { background: rgba(82,196,26,0.15); color: #52c41a; }
+.drill-tag.fail { background: rgba(245,34,45,0.15); color: #f5222d; }
+.drill-tag.cache { background: rgba(248,157,52,0.15); color: #f89d34; }
+
+/* === Frequency Ranking Section === */
+.freq-rank-section { background: #0d1b2a; border-top: 1px solid rgba(79,195,247,0.15); padding: 16px; }
+.freq-rank-title { font-size: 16px; color: #4fc3f7; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.freq-rank-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #4fc3f7; border-radius: 2px; }
+.freq-rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rank-period-tabs { display: flex; gap: 0; position: absolute; top: 0; right: 0; z-index: 2; }
+.rank-period-tab { padding: 3px 12px; font-size: 10px; color: #8899aa; background: rgba(79,195,247,0.06); border: 1px solid rgba(79,195,247,0.15); cursor: pointer; transition: 0.2s; white-space: nowrap; user-select: none; }
+.rank-period-tab:first-child { border-radius: 4px 0 0 4px; }
+.rank-period-tab:last-child { border-radius: 0 4px 4px 0; }
+.rank-period-tab + .rank-period-tab { border-left: none; }
+.rank-period-tab:hover { color: #4fc3f7; }
+.rank-period-tab.active { background: rgba(79,195,247,0.18); color: #4fc3f7; font-weight: 600; border-color: rgba(79,195,247,0.35); }
+
+.rank-list { list-style: none; padding: 0; margin: 0; }
+.rank-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid rgba(79,195,247,0.06); transition: background 0.2s; cursor: default; }
+.rank-item:last-child { border-bottom: none; }
+.rank-item:hover { background: rgba(79,195,247,0.04); }
+.rank-num { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; font-family: 'Source Sans Pro', sans-serif; }
+.rank-num.top1 { background: linear-gradient(135deg, #fadb14, #fa8c16); }
+.rank-num.top2 { background: linear-gradient(135deg, #c0c0c0, #8899aa); }
+.rank-num.top3 { background: linear-gradient(135deg, #cd7f32, #b8860b); }
+.rank-num.normal { background: rgba(79,195,247,0.12); color: #8899aa; }
+.rank-name { flex: 1; font-size: 13px; color: #c8d6e5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-count { font-size: 12px; color: #4fc3f7; font-weight: 600; font-family: 'Source Sans Pro', sans-serif; min-width: 60px; text-align: right; }
+.rank-change { display: flex; align-items: center; font-size: 11px; min-width: 48px; justify-content: flex-end; font-family: 'Source Sans Pro', sans-serif; }
+.rank-change.up { color: #f5222d; }
+.rank-change.down { color: #52c41a; }
+.rank-change.same { color: #556677; }
+.rank-change.new-item { color: #fa8c16; }
+.rank-change .arrow { font-size: 10px; margin-right: 2px; }
+.rank-new-tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; background: rgba(250,140,22,0.18); color: #fa8c16; border: 1px solid rgba(250,140,22,0.35); margin-left: 6px; animation: newPulse 2s infinite; letter-spacing: 0.5px; }
+@keyframes newPulse { 0%,100%{ opacity:1; } 50%{ opacity:0.6; } }
+.rank-item.highlight { background: rgba(250,140,22,0.06); border-left: 2px solid #fa8c16; }
+
+/* Ranking trend mini chart */
+.rank-trend-section { margin-top: 16px; }
+.rank-trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 </style>
 </head>
 <body>
@@ -135,50 +220,35 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 
     <!-- Grid -->
     <div class="dashboard-grid">
-      <!-- Row 1 -->
+      <!-- Row 1: 总调用量 + API调用TOP10 + 服务调用Top10 -->
       <div class="dark-card">
-        <div class="card-title">今日调用总量</div>
+        <div class="card-title">总调用量</div>
         <div class="card-body">
-          <div class="big-number-main">1,285,432</div>
+          <div class="big-number-main">38,542,186</div>
           <div class="sub-stats">
             <div class="sub-stat-item">
-              <div class="sub-stat-label">查得次数</div>
-              <div class="sub-stat-value green">898,234</div>
-              <div class="sub-stat-change up">↑ 3.2%</div>
+              <div class="sub-stat-label">计费次数</div>
+              <div class="sub-stat-value green">26,891,530</div>
+              <div class="sub-stat-change up">&uarr; 4.2%</div>
+            </div>
+            <div class="sub-stat-item">
+              <div class="sub-stat-label">缓存命中数</div>
+              <div class="sub-stat-value orange">8,245,678</div>
+              <div class="sub-stat-change up">&uarr; 5.8%</div>
             </div>
             <div class="sub-stat-item">
               <div class="sub-stat-label">失败次数</div>
-              <div class="sub-stat-value red">12,543</div>
-              <div class="sub-stat-change down">↑ 1.5%</div>
-            </div>
-            <div class="sub-stat-item">
-              <div class="sub-stat-label">缓存命中</div>
-              <div class="sub-stat-value orange">245,678</div>
-              <div class="sub-stat-change up">↑ 5.8%</div>
+              <div class="sub-stat-value red">3,404,978</div>
+              <div class="sub-stat-change down">&uarr; 1.5%</div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="dark-card">
-        <div class="card-title">调用趋势（近7天）</div>
+        <div class="card-title">API调用TOP10</div>
         <div class="card-body">
-          <div id="chartTrend" class="chart-container"></div>
-        </div>
-      </div>
-
-      <div class="dark-card">
-        <div class="card-title">供应商调用占比</div>
-        <div class="card-body">
-          <div id="chartVendor" class="chart-container"></div>
-        </div>
-      </div>
-
-      <!-- Row 2 -->
-      <div class="dark-card">
-        <div class="card-title">租户调用排行</div>
-        <div class="card-body">
-          <div id="chartTenant" class="chart-container"></div>
+          <div id="chartApiTop10" class="chart-container"></div>
         </div>
       </div>
 
@@ -189,56 +259,206 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
         </div>
       </div>
 
-      <div class="dark-card">
-        <div class="card-title">实时调用流量</div>
+      <!-- Full-width: 调用趋势 with day/week/month tabs -->
+      <div class="dark-card full-width">
+        <div class="card-title">
+          调用趋势（服务 & API）
+          <div class="trend-tabs" id="trendPeriodTabs">
+            <div class="trend-tab active" onclick="switchTrendPeriod('day',this)">日</div>
+            <div class="trend-tab" onclick="switchTrendPeriod('week',this)">周</div>
+            <div class="trend-tab" onclick="switchTrendPeriod('month',this)">月</div>
+          </div>
+        </div>
         <div class="card-body">
-          <div id="chartRealtime" class="chart-container"></div>
+          <div id="chartTrend" class="chart-container-xl"></div>
         </div>
       </div>
 
-      <!-- Row 3 -->
+      <!-- Row: 租户调用排行 + 服务TOP10趋势 + API TOP10趋势 -->
       <div class="dark-card">
-        <div class="card-title">数据质量评分</div>
+        <div class="card-title">租户调用排行</div>
         <div class="card-body">
-          <div id="chartGauge" class="chart-container"></div>
+          <div id="chartTenant" class="chart-container"></div>
         </div>
       </div>
 
       <div class="dark-card">
-        <div class="card-title">响应时间分布</div>
+        <div class="card-title">服务调用TOP10 · 近半年趋势</div>
         <div class="card-body">
-          <div id="chartResponse" class="chart-container"></div>
+          <div id="chartSvcTrend" class="chart-container-tall"></div>
         </div>
       </div>
 
       <div class="dark-card">
-        <div class="card-title">告警统计</div>
+        <div class="card-title">API调用TOP10 · 近半年趋势</div>
         <div class="card-body">
-          <div class="alert-stats-row">
-            <div class="alert-stat-card">
-              <div class="alert-stat-number orange">23</div>
-              <div class="alert-stat-label">今日告警</div>
+          <div id="chartApiTrend" class="chart-container-tall"></div>
+        </div>
+      </div>
+
+      <!-- Full-width: 响应时间TOP10 (two side-by-side) -->
+      <div class="dark-card full-width">
+        <div class="card-title">平均响应时间 TOP10（服务 & 供应商API）</div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;height:100%">
+            <div>
+              <div style="font-size:12px;color:#4fc3f7;text-align:center;margin-bottom:6px;font-weight:500">服务平均响应时间 TOP10</div>
+              <div id="chartResponseSvc" class="chart-container-xl"></div>
             </div>
-            <div class="alert-stat-card">
-              <div class="alert-stat-number green">18</div>
-              <div class="alert-stat-label">已处理</div>
-            </div>
-            <div class="alert-stat-card">
-              <div class="alert-stat-number yellow">3</div>
-              <div class="alert-stat-label">待处理</div>
-            </div>
-            <div class="alert-stat-card">
-              <div class="alert-stat-number red">2</div>
-              <div class="alert-stat-label">严重告警</div>
+            <div>
+              <div style="font-size:12px;color:#fa8c16;text-align:center;margin-bottom:6px;font-weight:500">供应商API平均响应时间 TOP10</div>
+              <div id="chartResponseApi" class="chart-container-xl"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- ===== Frequency Ranking Section ===== -->
+    <div class="freq-rank-section">
+      <div class="freq-rank-title">使用排名变化</div>
+
+      <!-- Ranking Trend Charts -->
+      <div class="rank-trend-section">
+        <div class="rank-trend-grid">
+          <div class="dark-card">
+            <div class="card-title" style="position:relative">
+              服务排名变化趋势
+              <div class="rank-period-tabs" id="svcRankTrendTabs">
+                <div class="rank-period-tab active" onclick="switchSvcRankTrend('day',this)">日</div>
+                <div class="rank-period-tab" onclick="switchSvcRankTrend('week',this)">周</div>
+                <div class="rank-period-tab" onclick="switchSvcRankTrend('month',this)">月</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="chartSvcRankTrend" class="chart-container-xl"></div>
+            </div>
+          </div>
+          <div class="dark-card">
+            <div class="card-title" style="position:relative">
+              API排名变化趋势
+              <div class="rank-period-tabs" id="apiRankTrendTabs">
+                <div class="rank-period-tab active" onclick="switchApiRankTrend('day',this)">日</div>
+                <div class="rank-period-tab" onclick="switchApiRankTrend('week',this)">周</div>
+                <div class="rank-period-tab" onclick="switchApiRankTrend('month',this)">月</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="chartApiRankTrend" class="chart-container-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Multi-Dimension Usage Comparison Section ===== -->
+    <div class="dim-section">
+      <div class="dim-section-title">多维度用量对比</div>
+
+      <!-- Filter Bar -->
+      <div class="dim-filter-bar">
+        <div class="dim-filter-item">
+          <label>租户</label>
+          <select id="dimTenant"><option value="all">全部</option><option value="某某金控">某某金控</option><option value="某某银行">某某银行</option><option value="某某保险">某某保险</option><option value="某某租赁">某某租赁</option><option value="某某信托">某某信托</option></select>
+        </div>
+        <div class="dim-filter-item">
+          <label>公司</label>
+          <select id="dimCompany"><option value="all">全部</option><option value="总部">总部</option><option value="华东分公司">华东分公司</option><option value="华南分公司">华南分公司</option><option value="华北分公司">华北分公司</option><option value="西南分公司">西南分公司</option></select>
+        </div>
+        <div class="dim-filter-item">
+          <label>部门</label>
+          <select id="dimDept"><option value="all">全部</option><option value="风控部">风控部</option><option value="信贷部">信贷部</option><option value="合规部">合规部</option><option value="市场部">市场部</option><option value="运营部">运营部</option></select>
+        </div>
+        <div class="dim-filter-item">
+          <label>系统</label>
+          <select id="dimSystem"><option value="all">全部</option><option value="信贷审批系统">信贷审批系统</option><option value="反欺诈系统">反欺诈系统</option><option value="客户管理平台">客户管理平台</option><option value="数据中台">数据中台</option></select>
+        </div>
+        <div class="dim-filter-item">
+          <label>服务</label>
+          <select id="dimService"><option value="all">全部</option><option value="企业基本信息">企业基本信息</option><option value="信用评分">信用评分</option><option value="司法风险">司法风险</option><option value="融资历史">融资历史</option><option value="经营状况">经营状况</option></select>
+        </div>
+        <div class="dim-filter-item">
+          <label>API</label>
+          <select id="dimApi"><option value="all">全部</option><option value="企业基本信息查询">企业基本信息查询</option><option value="反欺诈风险评分">反欺诈风险评分</option><option value="知识产权检索">知识产权检索</option><option value="税务评级查询">税务评级查询</option><option value="股权穿透查询">股权穿透查询</option></select>
+        </div>
+        <div class="dim-filter-item">
+          <label>时间段</label>
+          <select id="dimTimeRange"><option value="half_year">近半年</option><option value="3_months">近3个月</option><option value="1_month">近1个月</option><option value="7_days">近7天</option></select>
+        </div>
+        <button class="dim-filter-btn" onclick="applyDimFilters()">查询</button>
+        <button class="dim-filter-reset" onclick="resetDimFilters()">重置</button>
+      </div>
+
+      <!-- Row 1: 租户 + 公司 -->
+      <div class="dim-charts-row">
+        <div class="dark-card">
+          <div class="card-title">各租户用量占比</div>
+          <div class="card-body">
+            <div id="chartDimTenant" class="chart-container"></div>
+          </div>
+        </div>
+        <div class="dark-card">
+          <div class="card-title">各成员公司用量占比</div>
+          <div class="card-body">
+            <div id="chartDimCompany" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: 部门 + 系统 -->
+      <div class="dim-charts-row">
+        <div class="dark-card">
+          <div class="card-title">各部门用量排行</div>
+          <div class="card-body">
+            <div id="chartDimDept" class="chart-container"></div>
+          </div>
+        </div>
+        <div class="dark-card">
+          <div class="card-title">各系统调用量分布</div>
+          <div class="card-body">
+            <div id="chartDimSys" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: 服务 + API -->
+      <div class="dim-charts-row">
+        <div class="dark-card">
+          <div class="card-title">各服务调用量排行</div>
+          <div class="card-body">
+            <div id="chartDimSvc" class="chart-container"></div>
+          </div>
+        </div>
+        <div class="dark-card">
+          <div class="card-title">各API调用量排行</div>
+          <div class="card-body">
+            <div id="chartDimApi" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     </div>
     </div>
   </div>
 </main>
+
+<!-- Drill-down Modal -->
+<div class="dim-modal-overlay" id="drillModal">
+  <div class="dim-modal">
+    <div class="dim-modal-header">
+      <h3 id="drillTitle">明细数据</h3>
+      <button class="dim-modal-close" onclick="closeDrillModal()">&times;</button>
+    </div>
+    <div class="dim-modal-body">
+      <div class="drill-path" id="drillPath"></div>
+      <table class="drill-table">
+        <thead><tr><th>操作时间</th><th>操作人</th><th>部门</th><th>系统</th><th>服务/API</th><th>操作内容</th><th>耗时</th><th>状态</th></tr></thead>
+        <tbody id="drillTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script>
@@ -269,35 +489,85 @@ function baseDarkOption() {
   };
 }
 
-// === Chart 1: 调用趋势 (Line) ===
-var chartTrend = echarts.init(document.getElementById('chartTrend'));
-chartTrend.setOption(Object.assign(baseDarkOption(), {
-  tooltip: { trigger: 'axis' },
-  legend: { data: ['调用总量', '查得量'], textStyle: { color: darkText }, top: 0, right: 0 },
-  grid: { left: 55, right: 16, top: 36, bottom: 28 },
-  xAxis: { type: 'category', data: ['05-25','05-26','05-27','05-28','05-29','05-30','05-31'], axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 11 } },
-  yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: function(v){ return (v/10000)+'万'; } } },
-  series: [
-    { name: '调用总量', type: 'line', smooth: true, data: [1150000,1200000,1180000,1250000,1300000,1280000,1285432], lineStyle: { color: '#4fc3f7', width: 2 }, itemStyle: { color: '#4fc3f7' }, symbol: 'circle', symbolSize: 6 },
-    { name: '查得量', type: 'line', smooth: true, data: [800000,840000,825000,875000,910000,895000,898234], lineStyle: { color: '#52c41a', width: 2 }, itemStyle: { color: '#52c41a' }, symbol: 'circle', symbolSize: 6 }
-  ]
-}));
+// Color palette for multi-line charts
+var palette = ['#4fc3f7','#52c41a','#fa8c16','#ff6384','#9966ff','#36a2eb','#fadb14','#13c2c2','#e86bdf','#607d8b'];
 
-// === Chart 2: 供应商调用占比 (Pie/Donut) ===
-var chartVendor = echarts.init(document.getElementById('chartVendor'));
-chartVendor.setOption(Object.assign(baseDarkOption(), {
-  tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
-  legend: { orient: 'vertical', right: 8, top: 'center', textStyle: { color: darkText, fontSize: 11 } },
-  series: [{
-    type: 'pie', radius: ['40%', '65%'], center: ['40%', '50%'],
-    label: { show: false },
-    data: [
-      { value: 35, name: '天眼查', itemStyle: { color: '#4fc3f7' } },
-      { value: 25, name: '企查查', itemStyle: { color: '#36a2eb' } },
-      { value: 20, name: '中诚信', itemStyle: { color: '#ff6384' } },
-      { value: 12, name: '百行征信', itemStyle: { color: '#ff9f40' } },
-      { value: 8, name: '前海征信', itemStyle: { color: '#9966ff' } }
+// === Chart 1: 调用趋势 (Service + API curves) with day/week/month tabs ===
+var chartTrend = echarts.init(document.getElementById('chartTrend'));
+
+var trendDatasets = {
+  day: {
+    xData: ['06-25','06-26','06-27','06-28','06-29','06-30','07-01'],
+    svc: [680000, 710000, 695000, 738000, 768000, 752000, 758000],
+    api: [470000, 490000, 485000, 512000, 532000, 528000, 527432]
+  },
+  week: {
+    xData: ['05/25-05/31','06/01-06/07','06/08-06/14','06/15-06/21','06/22-06/28','06/29-07/05'],
+    svc: [4280000, 4520000, 4380000, 4750000, 4680000, 4850000],
+    api: [3120000, 3350000, 3250000, 3480000, 3420000, 3560000]
+  },
+  month: {
+    xData: ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'],
+    svc: [19500000, 17800000, 20500000, 22100000, 23200000, 23800000],
+    api: [13000000, 12000000, 13700000, 14700000, 15300000, 15400000]
+  }
+};
+
+function buildTrendOption(period) {
+  var d = trendDatasets[period];
+  return Object.assign(baseDarkOption(), {
+    tooltip: { trigger: 'axis', formatter: function(params) {
+      var tip = params[0].axisValue + '<br/>';
+      params.forEach(function(p) { tip += p.marker + ' ' + p.seriesName + ': ' + p.value.toLocaleString() + '<br/>'; });
+      return tip;
+    }},
+    legend: { data: ['服务调用次数', 'API调用次数'], textStyle: { color: darkText }, top: 0, right: 80 },
+    grid: { left: 65, right: 20, top: 40, bottom: 30 },
+    xAxis: { type: 'category', data: d.xData, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 11 } },
+    yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: function(v){ return v >= 10000000 ? (v/10000000).toFixed(1)+'千万' : v >= 10000 ? (v/10000).toFixed(0)+'万' : v; } } },
+    series: [
+      { name: '服务调用次数', type: 'line', smooth: true, data: d.svc, lineStyle: { color: '#4fc3f7', width: 2.5 }, itemStyle: { color: '#4fc3f7' }, symbol: 'circle', symbolSize: 7,
+        areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(79,195,247,0.22)'},{offset:1,color:'rgba(79,195,247,0.01)'}]) } },
+      { name: 'API调用次数', type: 'line', smooth: true, data: d.api, lineStyle: { color: '#52c41a', width: 2.5 }, itemStyle: { color: '#52c41a' }, symbol: 'circle', symbolSize: 7,
+        areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(82,196,26,0.18)'},{offset:1,color:'rgba(82,196,26,0.01)'}]) } }
     ]
+  });
+}
+chartTrend.setOption(buildTrendOption('day'));
+
+function switchTrendPeriod(period, el) {
+  document.querySelectorAll('#trendPeriodTabs .trend-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  chartTrend.setOption(buildTrendOption(period), true);
+}
+
+// === Chart 2: API调用TOP10 (Horizontal Bar) — NEW ===
+var chartApiTop10 = echarts.init(document.getElementById('chartApiTop10'));
+var apiNames = [
+  '企业工商信息查询',
+  '股权穿透查询',
+  '司法风险明细',
+  '失信被执行人',
+  '税务评级查询',
+  '知识产权检索',
+  '舆情文本分析',
+  '反欺诈风险评分',
+  '企业年报查询',
+  '企业基本信息'
+];
+var apiValues = [32000, 41000, 53000, 62000, 78000, 95000, 112000, 145000, 186000, 253000];
+chartApiTop10.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+  grid: { left: 110, right: 55, top: 6, bottom: 10 },
+  xAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { show: false } },
+  yAxis: { type: 'category', data: apiNames, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
+  series: [{
+    type: 'bar', barWidth: 14,
+    data: apiValues,
+    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      { offset: 0, color: '#36a2eb' }, { offset: 1, color: '#9966ff' }
+    ]), borderRadius: [0, 3, 3, 0] },
+    label: { show: true, position: 'right', color: darkText, fontSize: 10, formatter: function(p){ return (p.value/10000).toFixed(1)+'万'; } }
   }]
 }));
 
@@ -339,75 +609,511 @@ chartService.setOption(Object.assign(baseDarkOption(), {
   }]
 }));
 
-// === Chart 5: 实时调用流量 (Area) ===
-var chartRealtime = echarts.init(document.getElementById('chartRealtime'));
-var hours = [];
-for (var i = 0; i < 24; i++) hours.push(String(i).padStart(2,'0') + ':00');
-var trafficData = [5200,3100,2000,1500,1800,4500,15000,38000,62000,78000,85000,82000,68000,72000,80000,83000,76000,65000,48000,35000,22000,15000,10000,7500];
-chartRealtime.setOption(Object.assign(baseDarkOption(), {
+// === Chart 5: 服务调用TOP10近半年趋势 (Multi-line) ===
+var chartSvcTrend = echarts.init(document.getElementById('chartSvcTrend'));
+var months = ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'];
+var svcTop10 = ['企业基本信息','信用评分','司法风险','融资历史','经营状况','知识产权','企业图谱','反欺诈评分','舆情分析','严重违法'];
+var svcTrendData = [
+  [210000, 195000, 230000, 248000, 265000, 285000],
+  [178000, 182000, 205000, 218000, 232000, 245000],
+  [145000, 150000, 162000, 175000, 188000, 198000],
+  [120000, 128000, 138000, 150000, 158000, 167000],
+  [98000,  105000, 115000, 122000, 128000, 134000],
+  [75000,  80000,  88000,  95000,  100000, 105000],
+  [62000,  65000,  72000,  78000,  82000,  89000],
+  [48000,  52000,  58000,  62000,  68000,  72000],
+  [35000,  38000,  42000,  48000,  52000,  58000],
+  [22000,  25000,  30000,  35000,  40000,  45000]
+];
+var svcSeries = svcTop10.map(function(name, i) {
+  return {
+    name: name, type: 'line', smooth: true,
+    data: svcTrendData[i],
+    lineStyle: { color: palette[i], width: 2 },
+    itemStyle: { color: palette[i] },
+    symbol: 'circle', symbolSize: 5
+  };
+});
+chartSvcTrend.setOption(Object.assign(baseDarkOption(), {
   tooltip: { trigger: 'axis' },
-  grid: { left: 55, right: 16, top: 16, bottom: 28 },
-  xAxis: { type: 'category', data: hours, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10, interval: 3 } },
-  yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: function(v){ return (v/10000)+'万'; } } },
+  legend: { data: svcTop10, textStyle: { color: darkText, fontSize: 10 }, top: 0, type: 'scroll' },
+  grid: { left: 50, right: 16, top: 36, bottom: 28 },
+  xAxis: { type: 'category', data: months, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
+  yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 10, formatter: function(v){ return (v/10000)+'万'; } } },
+  series: svcSeries
+}));
+
+// === Chart 6: API调用TOP10近半年趋势 (Multi-line) ===
+var chartApiTrend = echarts.init(document.getElementById('chartApiTrend'));
+var apiTop10 = ['企业基本信息查询','反欺诈风险评分','知识产权检索','税务评级查询','股权穿透查询','司法风险明细','失信被执行人','企业年报查询','舆情文本分析','关联企业查询'];
+var apiTrendData = [
+  [180000, 192000, 210000, 228000, 242000, 253000],
+  [105000, 112000, 125000, 132000, 140000, 145000],
+  [68000,  75000,  82000,  88000,  92000,  95000],
+  [55000,  60000,  65000,  70000,  75000,  78000],
+  [30000,  33000,  36000,  38000,  40000,  41000],
+  [28000,  32000,  38000,  42000,  48000,  53000],
+  [22000,  25000,  30000,  35000,  40000,  45000],
+  [18000,  22000,  28000,  32000,  38000,  42000],
+  [12000,  15000,  18000,  22000,  25000,  28000],
+  [8000,   10000,  12000,  15000,  18000,  22000]
+];
+var apiSeries = apiTop10.map(function(name, i) {
+  return {
+    name: name, type: 'line', smooth: true,
+    data: apiTrendData[i],
+    lineStyle: { color: palette[i], width: 2 },
+    itemStyle: { color: palette[i] },
+    symbol: 'circle', symbolSize: 5
+  };
+});
+chartApiTrend.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis' },
+  legend: { data: apiTop10, textStyle: { color: darkText, fontSize: 10 }, top: 0, type: 'scroll' },
+  grid: { left: 50, right: 16, top: 36, bottom: 28 },
+  xAxis: { type: 'category', data: months, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
+  yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 10, formatter: function(v){ return (v/10000)+'万'; } } },
+  series: apiSeries
+}));
+
+// === Chart 7a: 服务平均响应时间TOP10 ===
+var chartResponseSvc = echarts.init(document.getElementById('chartResponseSvc'));
+var respSvcNames = ['企业基本信息','信用评分','司法风险','企业图谱','融资历史','知识产权','经营状况','反欺诈评分','舆情分析','严重违法'];
+var respSvcTime  = [128, 145, 162, 178, 195, 210, 225, 248, 265, 312];
+chartResponseSvc.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params) {
+    var p = params[0];
+    return '<b>' + p.name + '</b><br/>' + p.marker + ' 服务平均响应时间: <b>' + p.value + 'ms</b><br/><span style="color:#8899aa;font-size:11px">含内部处理 + 外部API调用全链路耗时</span>';
+  }},
+  grid: { left: 100, right: 55, top: 6, bottom: 10 },
+  xAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 10, formatter: '{value}ms' } },
+  yAxis: { type: 'category', data: respSvcNames, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
   series: [{
-    type: 'line', smooth: true, data: trafficData, symbol: 'none',
-    lineStyle: { color: '#4fc3f7', width: 2 },
-    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-      { offset: 0, color: 'rgba(79,195,247,0.4)' },
-      { offset: 1, color: 'rgba(79,195,247,0.02)' }
-    ]) }
+    type: 'bar', barWidth: 14,
+    data: respSvcTime,
+    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      { offset: 0, color: '#1890ff' }, { offset: 1, color: '#4fc3f7' }
+    ]), borderRadius: [0, 3, 3, 0] },
+    label: { show: true, position: 'right', color: '#4fc3f7', fontSize: 10, formatter: '{c}ms' }
   }]
 }));
 
-// === Chart 6: 数据质量评分 (Gauge) ===
-var chartGauge = echarts.init(document.getElementById('chartGauge'));
-chartGauge.setOption(Object.assign(baseDarkOption(), {
+// === Chart 7b: 供应商API平均响应时间TOP10 ===
+var chartResponseApi = echarts.init(document.getElementById('chartResponseApi'));
+var respApiNames = ['企业工商信息查询','股权穿透查询','司法风险明细','失信被执行人','税务评级查询','知识产权检索','舆情文本分析','反欺诈风险评分','企业年报查询','企业基本信息'];
+var respApiTime  = [85, 98, 112, 125, 138, 152, 168, 185, 210, 256];
+chartResponseApi.setOption(Object.assign(baseDarkOption(), {
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params) {
+    var p = params[0];
+    return '<b>' + p.name + '</b><br/>' + p.marker + ' API平均响应时间: <b>' + p.value + 'ms</b><br/><span style="color:#8899aa;font-size:11px">外部供应商API接口网络响应耗时</span>';
+  }},
+  grid: { left: 110, right: 55, top: 6, bottom: 10 },
+  xAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 10, formatter: '{value}ms' } },
+  yAxis: { type: 'category', data: respApiNames, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
   series: [{
-    type: 'gauge', radius: '85%', center: ['50%', '55%'],
-    min: 0, max: 100,
-    axisLine: { lineStyle: { width: 14, color: [[0.6, '#f5222d'], [0.8, '#fa8c16'], [1, '#52c41a']] } },
-    axisTick: { show: false },
-    splitLine: { length: 10, lineStyle: { color: '#334155' } },
-    axisLabel: { color: darkText, fontSize: 10, distance: 18 },
-    pointer: { width: 5, length: '60%', itemStyle: { color: '#4fc3f7' } },
-    anchor: { show: true, size: 10, itemStyle: { color: '#4fc3f7', borderColor: '#0d1b2a', borderWidth: 2 } },
-    title: { show: true, offsetCenter: [0, '75%'], fontSize: 14, color: darkText },
-    detail: { valueAnimation: true, fontSize: 28, fontWeight: 'bold', color: '#52c41a', offsetCenter: [0, '50%'], formatter: '{value}分' },
-    data: [{ value: 92.5, name: '优秀' }]
+    type: 'bar', barWidth: 14,
+    data: respApiTime,
+    itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      { offset: 0, color: '#fa8c16' }, { offset: 1, color: '#fadb14' }
+    ]), borderRadius: [0, 3, 3, 0] },
+    label: { show: true, position: 'right', color: '#fa8c16', fontSize: 10, formatter: '{c}ms' }
   }]
 }));
 
-// === Chart 7: 响应时间分布 (Histogram) ===
-var chartResponse = echarts.init(document.getElementById('chartResponse'));
-chartResponse.setOption(Object.assign(baseDarkOption(), {
-  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}%' },
-  grid: { left: 45, right: 16, top: 16, bottom: 36 },
-  xAxis: { type: 'category', data: ['<100ms','100-200ms','200-500ms','500-1000ms','1-3s','>3s'], axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10, rotate: 20 } },
-  yAxis: { type: 'value', max: 50, axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 11, formatter: '{value}%' } },
-  series: [{
-    type: 'bar', barWidth: 30,
-    data: [
-      { value: 45, itemStyle: { color: '#52c41a' } },
-      { value: 25, itemStyle: { color: '#52c41a' } },
-      { value: 15, itemStyle: { color: '#4fc3f7' } },
-      { value: 8, itemStyle: { color: '#fa8c16' } },
-      { value: 5, itemStyle: { color: '#fa8c16' } },
-      { value: 2, itemStyle: { color: '#f5222d' } }
-    ],
-    label: { show: true, position: 'top', color: darkText, fontSize: 11, formatter: '{c}%' },
-    itemStyle: { borderRadius: [4, 4, 0, 0] }
-  }]
-}));
+// =====================================================
+// === Multi-Dimension Usage Comparison Charts & Logic ===
+// =====================================================
+
+// --- Hierarchical data ---
+var dimTree = { '某某金控': { 'value': 456789, 'companies': { '总部': { 'value': 185000, 'depts': { '风控部': { 'value': 95000, 'systems': { '信贷审批系统': { 'value': 55000, 'svcs': { '企业基本信息': { 'value': 25000, 'apis': { '企业基本信息查询': 15000, '股权穿透查询': 10000 } }, '信用评分': { 'value': 18000, 'apis': { '反欺诈风险评分': 10000, '税务评级查询': 8000 } } } }, '反欺诈系统': { 'value': 40000, 'svcs': { '司法风险': { 'value': 22000, 'apis': { '司法风险明细': 12000, '失信被执行人': 10000 } }, '经营状况': { 'value': 18000, 'apis': { '知识产权检索': 10000, '舆情文本分析': 8000 } } } } } }, '信贷部': { 'value': 65000, 'systems': { '客户管理平台': { 'value': 40000, 'svcs': { '融资历史': { 'value': 22000, 'apis': { '企业年报查询': 12000, '关联企业查询': 10000 } } } }, '数据中台': { 'value': 25000, 'svcs': { '知识产权': { 'value': 15000, 'apis': { '知识产权检索': 8000, '企业基本信息查询': 7000 } } } } } }, '合规部': { 'value': 25000, 'systems': { '信贷审批系统': { 'value': 15000, 'svcs': { '企业基本信息': { 'value': 15000, 'apis': { '企业基本信息查询': 8000, '税务评级查询': 7000 } } } }, '反欺诈系统': { 'value': 10000, 'svcs': { '信用评分': { 'value': 10000, 'apis': { '反欺诈风险评分': 6000, '税务评级查询': 4000 } } } } } } } }, '华东分公司': { 'value': 125000, 'depts': { '风控部': { 'value': 55000, 'systems': { '信贷审批系统': { 'value': 30000, 'svcs': { '企业基本信息': { 'value': 18000, 'apis': { '企业基本信息查询': 10000, '股权穿透查询': 8000 } } } }, '反欺诈系统': { 'value': 25000, 'svcs': { '司法风险': { 'value': 15000, 'apis': { '司法风险明细': 8000, '失信被执行人': 7000 } } } } } }, '市场部': { 'value': 40000, 'systems': { '客户管理平台': { 'value': 25000, 'svcs': { '经营状况': { 'value': 15000, 'apis': { '知识产权检索': 8000, '舆情文本分析': 7000 } } } }, '数据中台': { 'value': 15000, 'svcs': { '融资历史': { 'value': 15000, 'apis': { '企业年报查询': 8000, '关联企业查询': 7000 } } } } } }, '运营部': { 'value': 30000, 'systems': { '数据中台': { 'value': 18000, 'svcs': { '知识产权': { 'value': 10000, 'apis': { '知识产权检索': 6000, '企业基本信息查询': 4000 } } } }, '信贷审批系统': { 'value': 12000, 'svcs': { '信用评分': { 'value': 12000, 'apis': { '反欺诈风险评分': 7000, '税务评级查询': 5000 } } } } } } } }, '华南分公司': { 'value': 95000, 'depts': { '风控部': { 'value': 45000, 'systems': { '信贷审批系统': { 'value': 25000, 'svcs': { '企业基本信息': { 'value': 15000, 'apis': { '企业基本信息查询': 8000, '股权穿透查询': 7000 } } } }, '反欺诈系统': { 'value': 20000, 'svcs': { '司法风险': { 'value': 12000, 'apis': { '司法风险明细': 7000, '失信被执行人': 5000 } } } } } }, '信贷部': { 'value': 30000, 'systems': { '客户管理平台': { 'value': 18000, 'svcs': { '融资历史': { 'value': 10000, 'apis': { '企业年报查询': 5000, '关联企业查询': 5000 } } } }, '数据中台': { 'value': 12000, 'svcs': { '知识产权': { 'value': 12000, 'apis': { '知识产权检索': 7000, '企业基本信息查询': 5000 } } } } } }, '运营部': { 'value': 20000, 'systems': { '数据中台': { 'value': 12000, 'svcs': { '经营状况': { 'value': 7000, 'apis': { '知识产权检索': 4000, '舆情文本分析': 3000 } } } }, '信贷审批系统': { 'value': 8000, 'svcs': { '信用评分': { 'value': 8000, 'apis': { '反欺诈风险评分': 5000, '税务评级查询': 3000 } } } } } } } }, '华北分公司': { 'value': 51789, 'depts': { '风控部': { 'value': 25000, 'systems': { '信贷审批系统': { 'value': 15000, 'svcs': { '企业基本信息': { 'value': 8000, 'apis': { '企业基本信息查询': 5000, '股权穿透查询': 3000 } } } }, '反欺诈系统': { 'value': 10000, 'svcs': { '司法风险': { 'value': 10000, 'apis': { '司法风险明细': 6000, '失信被执行人': 4000 } } } } } }, '市场部': { 'value': 26789, 'systems': { '客户管理平台': { 'value': 15000, 'svcs': { '融资历史': { 'value': 8000, 'apis': { '企业年报查询': 4000, '关联企业查询': 4000 } } } }, '数据中台': { 'value': 11789, 'svcs': { '经营状况': { 'value': 7000, 'apis': { '知识产权检索': 4000, '舆情文本分析': 3000 } } } } } } } } } }, '某某银行': { 'value': 385000, 'companies': { '总部': { 'value': 180000, 'depts': { '风控部': { 'value': 100000, 'systems': { '信贷审批系统': { 'value': 60000, 'svcs': { '企业基本信息': { 'value': 35000, 'apis': { '企业基本信息查询': 20000, '税务评级查询': 15000 } } } }, '反欺诈系统': { 'value': 40000, 'svcs': { '信用评分': { 'value': 22000, 'apis': { '反欺诈风险评分': 12000, '税务评级查询': 10000 } } } } } }, '信贷部': { 'value': 80000, 'systems': { '客户管理平台': { 'value': 50000, 'svcs': { '融资历史': { 'value': 28000, 'apis': { '企业年报查询': 15000, '关联企业查询': 13000 } } } }, '数据中台': { 'value': 30000, 'svcs': { '知识产权': { 'value': 18000, 'apis': { '知识产权检索': 10000, '企业基本信息查询': 8000 } } } } } } } }, '华东分公司': { 'value': 120000, 'depts': { '风控部': { 'value': 65000, 'systems': { '信贷审批系统': { 'value': 35000, 'svcs': { '企业基本信息': { 'value': 20000, 'apis': { '企业基本信息查询': 12000, '股权穿透查询': 8000 } } } }, '反欺诈系统': { 'value': 30000, 'svcs': { '司法风险': { 'value': 18000, 'apis': { '司法风险明细': 10000, '失信被执行人': 8000 } } } } } }, '运营部': { 'value': 55000, 'systems': { '数据中台': { 'value': 30000, 'svcs': { '经营状况': { 'value': 18000, 'apis': { '知识产权检索': 10000, '舆情文本分析': 8000 } } } }, '信贷审批系统': { 'value': 25000, 'svcs': { '信用评分': { 'value': 25000, 'apis': { '反欺诈风险评分': 15000, '税务评级查询': 10000 } } } } } } } }, '华南分公司': { 'value': 85000, 'depts': { '风控部': { 'value': 45000, 'systems': { '信贷审批系统': { 'value': 25000, 'svcs': { '企业基本信息': { 'value': 15000, 'apis': { '企业基本信息查询': 8000, '股权穿透查询': 7000 } } } }, '反欺诈系统': { 'value': 20000, 'svcs': { '司法风险': { 'value': 12000, 'apis': { '司法风险明细': 7000, '失信被执行人': 5000 } } } } } }, '信贷部': { 'value': 40000, 'systems': { '客户管理平台': { 'value': 22000, 'svcs': { '融资历史': { 'value': 12000, 'apis': { '企业年报查询': 7000, '关联企业查询': 5000 } } } }, '数据中台': { 'value': 18000, 'svcs': { '经营状况': { 'value': 10000, 'apis': { '知识产权检索': 6000, '舆情文本分析': 4000 } } } } } } } } } }, '某某保险': { 'value': 268000, 'companies': { '总部': { 'value': 130000, 'depts': { '风控部': { 'value': 70000, 'systems': { '信贷审批系统': { 'value': 40000, 'svcs': { '企业基本信息': { 'value': 22000, 'apis': { '企业基本信息查询': 12000, '税务评级查询': 10000 } } } }, '反欺诈系统': { 'value': 30000, 'svcs': { '信用评分': { 'value': 18000, 'apis': { '反欺诈风险评分': 10000, '税务评级查询': 8000 } } } } } }, '合规部': { 'value': 60000, 'systems': { '客户管理平台': { 'value': 35000, 'svcs': { '融资历史': { 'value': 20000, 'apis': { '企业年报查询': 12000, '关联企业查询': 8000 } } } }, '数据中台': { 'value': 25000, 'svcs': { '知识产权': { 'value': 15000, 'apis': { '知识产权检索': 8000, '企业基本信息查询': 7000 } } } } } } } }, '华东分公司': { 'value': 80000, 'depts': { '风控部': { 'value': 45000, 'systems': { '信贷审批系统': { 'value': 25000, 'svcs': { '企业基本信息': { 'value': 15000, 'apis': { '企业基本信息查询': 8000, '股权穿透查询': 7000 } } } }, '反欺诈系统': { 'value': 20000, 'svcs': { '司法风险': { 'value': 12000, 'apis': { '司法风险明细': 7000, '失信被执行人': 5000 } } } } } }, '市场部': { 'value': 35000, 'systems': { '客户管理平台': { 'value': 20000, 'svcs': { '经营状况': { 'value': 12000, 'apis': { '知识产权检索': 7000, '舆情文本分析': 5000 } } } }, '数据中台': { 'value': 15000, 'svcs': { '融资历史': { 'value': 15000, 'apis': { '企业年报查询': 8000, '关联企业查询': 7000 } } } } } } } } } }, '某某租赁': { 'value': 178000, 'companies': { '总部': { 'value': 90000, 'depts': { '风控部': { 'value': 50000, 'systems': { '信贷审批系统': { 'value': 30000, 'svcs': { '企业基本信息': { 'value': 18000, 'apis': { '企业基本信息查询': 10000, '税务评级查询': 8000 } } } }, '反欺诈系统': { 'value': 20000, 'svcs': { '信用评分': { 'value': 12000, 'apis': { '反欺诈风险评分': 7000, '税务评级查询': 5000 } } } } } }, '信贷部': { 'value': 40000, 'systems': { '客户管理平台': { 'value': 25000, 'svcs': { '融资历史': { 'value': 15000, 'apis': { '企业年报查询': 8000, '关联企业查询': 7000 } } } }, '数据中台': { 'value': 15000, 'svcs': { '知识产权': { 'value': 15000, 'apis': { '知识产权检索': 8000, '企业基本信息查询': 7000 } } } } } } } }, '华东分公司': { 'value': 55000, 'depts': { '风控部': { 'value': 30000, 'systems': { '信贷审批系统': { 'value': 18000, 'svcs': { '企业基本信息': { 'value': 10000, 'apis': { '企业基本信息查询': 6000, '股权穿透图': 4000 } } } }, '反欺诈系统': { 'value': 12000, 'svcs': { '司法风险': { 'value': 8000, 'apis': { '司法风险明细': 5000, '失信被执行人': 3000 } } } } } }, '市场部': { 'value': 25000, 'systems': { '数据中台': { 'value': 15000, 'svcs': { '经营状况': { 'value': 8000, 'apis': { '知识产权检索': 5000, '舆情文本分析': 3000 } } } }, '信贷审批系统': { 'value': 10000, 'svcs': { '信用评分': { 'value': 10000, 'apis': { '反欺诈风险评分': 6000, '税务评级查询': 4000 } } } } } } } } } }, '某某信托': { 'value': 139000, 'companies': { '总部': { 'value': 75000, 'depts': { '风控部': { 'value': 40000, 'systems': { '信贷审批系统': { 'value': 22000, 'svcs': { '企业基本信息': { 'value': 12000, 'apis': { '企业基本信息查询': 7000, '税务评级查询': 5000 } } } }, '反欺诈系统': { 'value': 18000, 'svcs': { '信用评分': { 'value': 10000, 'apis': { '反欺诈风险评分': 6000, '税务评级查询': 4000 } } } } } }, '合规部': { 'value': 35000, 'systems': { '客户管理平台': { 'value': 20000, 'svcs': { '融资历史': { 'value': 12000, 'apis': { '企业年报查询': 7000, '关联企业查询': 5000 } } } }, '数据中台': { 'value': 15000, 'svcs': { '知识产权': { 'value': 15000, 'apis': { '知识产权检索': 8000, '企业基本信息查询': 7000 } } } } } } } }, '华东分公司': { 'value': 40000, 'depts': { '风控部': { 'value': 22000, 'systems': { '信贷审批系统': { 'value': 12000, 'svcs': { '企业基本信息': { 'value': 7000, 'apis': { '企业基本信息查询': 4000, '股权穿透图': 3000 } } } }, '反欺诈系统': { 'value': 10000, 'svcs': { '司法风险': { 'value': 6000, 'apis': { '司法风险明细': 3000, '失信被执行人': 3000 } } } } } }, '运营部': { 'value': 18000, 'systems': { '数据中台': { 'value': 10000, 'svcs': { '经营状况': { 'value': 6000, 'apis': { '知识产权检索': 4000, '舆情文本分析': 2000 } } } }, '信贷审批系统': { 'value': 8000, 'svcs': { '信用评分': { 'value': 8000, 'apis': { '反欺诈风险评分': 5000, '税务评级查询': 3000 } } } } } } } } } } };
+
+var pieColors = ['#4fc3f7','#52c41a','#fa8c16','#ff6384','#9966ff','#36a2eb','#fadb14','#13c2c2'];
+
+function getFilterMultiplier() {
+  var m = 1, t = document.getElementById('dimTimeRange').value;
+  if (t === '3_months') m = 0.5; else if (t === '1_month') m = 0.18; else if (t === '7_days') m = 0.04;
+  return m;
+}
+
+// --- Tree navigation helpers ---
+function getTenants() { return Object.keys(dimTree).map(function(k){ return {name:k,value:dimTree[k].value}; }); }
+function getCompanies(tenant) {
+  if (!tenant || tenant === 'all') {
+    var all = {};
+    getTenants().forEach(function(t){ var c = dimTree[t.name].companies; Object.keys(c).forEach(function(k){ all[k] = (all[k]||0) + c[k].value; }); });
+    return Object.keys(all).map(function(k){ return {name:k,value:all[k]}; });
+  }
+  var t = dimTree[tenant];
+  return t ? Object.keys(t.companies).map(function(k){ return {name:k,value:t.companies[k].value}; }) : [];
+}
+function getDepts(tenant, company) {
+  var all = {};
+  var tenants = tenant === 'all' ? getTenants().map(function(t){return t.name;}) : [tenant];
+  tenants.forEach(function(tn){
+    var t = dimTree[tn]; if (!t) return;
+    var comps = company === 'all' ? Object.keys(t.companies) : [company];
+    comps.forEach(function(cn){
+      var c = t.companies[cn]; if (!c) return;
+      Object.keys(c.depts).forEach(function(dn){ all[dn] = (all[dn]||0) + c.depts[dn].value; });
+    });
+  });
+  return Object.keys(all).map(function(k){ return {name:k,value:all[k]}; });
+}
+function getSystems(tenant, company, dept) {
+  var all = {};
+  var tenants = tenant === 'all' ? getTenants().map(function(t){return t.name;}) : [tenant];
+  tenants.forEach(function(tn){
+    var t = dimTree[tn]; if (!t) return;
+    var comps = company === 'all' ? Object.keys(t.companies) : [company];
+    comps.forEach(function(cn){
+      var c = t.companies[cn]; if (!c) return;
+      var depts = dept === 'all' ? Object.keys(c.depts) : [dept];
+      depts.forEach(function(dn){
+        var d = c.depts[dn]; if (!d) return;
+        Object.keys(d.systems).forEach(function(sn){ all[sn] = (all[sn]||0) + d.systems[sn].value; });
+      });
+    });
+  });
+  return Object.keys(all).map(function(k){ return {name:k,value:all[k]}; });
+}
+function getSvcs(tenant, company, dept, sys) {
+  var all = {};
+  var tenants = tenant === 'all' ? getTenants().map(function(t){return t.name;}) : [tenant];
+  tenants.forEach(function(tn){
+    var t = dimTree[tn]; if (!t) return;
+    var comps = company === 'all' ? Object.keys(t.companies) : [company];
+    comps.forEach(function(cn){
+      var c = t.companies[cn]; if (!c) return;
+      var depts = dept === 'all' ? Object.keys(c.depts) : [dept];
+      depts.forEach(function(dn){
+        var d = c.depts[dn]; if (!d) return;
+        var syss = sys === 'all' ? Object.keys(d.systems) : [sys];
+        syss.forEach(function(sn){
+          var s = d.systems[sn]; if (!s) return;
+          Object.keys(s.svcs).forEach(function(vn){ all[vn] = (all[vn]||0) + s.svcs[vn].value; });
+        });
+      });
+    });
+  });
+  return Object.keys(all).map(function(k){ return {name:k,value:all[k]}; });
+}
+function getApis(tenant, company, dept, sys, svc) {
+  var all = {};
+  var tenants = tenant === 'all' ? getTenants().map(function(t){return t.name;}) : [tenant];
+  tenants.forEach(function(tn){
+    var t = dimTree[tn]; if (!t) return;
+    var comps = company === 'all' ? Object.keys(t.companies) : [company];
+    comps.forEach(function(cn){
+      var c = t.companies[cn]; if (!c) return;
+      var depts = dept === 'all' ? Object.keys(c.depts) : [dept];
+      depts.forEach(function(dn){
+        var d = c.depts[dn]; if (!d) return;
+        var syss = sys === 'all' ? Object.keys(d.systems) : [sys];
+        syss.forEach(function(sn){
+          var s = d.systems[sn]; if (!s) return;
+          var svcs = svc === 'all' ? Object.keys(s.svcs) : [svc];
+          svcs.forEach(function(vn){
+            var v = s.svcs[vn]; if (!v) return;
+            Object.keys(v.apis).forEach(function(an){ all[an] = (all[an]||0) + v.apis[an]; });
+          });
+        });
+      });
+    });
+  });
+  return Object.keys(all).map(function(k){ return {name:k,value:all[k]}; });
+}
+
+function createPieChart(elId, data) {
+  var c = echarts.init(document.getElementById(elId));
+  c.setOption(Object.assign(baseDarkOption(), {
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    legend: { orient: 'vertical', right: 4, top: 'center', textStyle: { color: darkText, fontSize: 10 } },
+    series: [{ type: 'pie', radius: ['32%','60%'], center: ['36%','50%'],
+      label: { show: true, color: darkText, fontSize: 10, formatter: '{b}\n{d}%' },
+      labelLine: { lineStyle: { color: 'rgba(79,195,247,0.3)' } },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } },
+      data: data.map(function(d,i){ return {value:d.value,name:d.name,itemStyle:{color:pieColors[i%pieColors.length]}}; })
+    }]
+  }), true);
+  return c;
+}
+
+function createBarChart(elId, data, clr) {
+  var c = echarts.init(document.getElementById(elId));
+  c.setOption(Object.assign(baseDarkOption(), {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: 100, right: 50, top: 6, bottom: 10 },
+    xAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { show: false } },
+    yAxis: { type: 'category', data: data.map(function(d){return d.name;}), axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
+    series: [{ type: 'bar', barWidth: 14, data: data.map(function(d){return d.value;}),
+      itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:clr[0]},{offset:1,color:clr[1]}]), borderRadius: [0,3,3,0] },
+      label: { show: true, position: 'right', color: darkText, fontSize: 10, formatter: function(p){return (p.value/10000).toFixed(1)+'万';} }
+    }]
+  }), true);
+  return c;
+}
+
+var chartDimTenant  = createPieChart('chartDimTenant', getTenants());
+var chartDimCompany = createPieChart('chartDimCompany', getCompanies('all'));
+var chartDimDept    = createBarChart('chartDimDept', getDepts('all','all'), ['#1890ff','#4fc3f7']);
+var chartDimSys     = createBarChart('chartDimSys', getSystems('all','all','all'), ['#fa8c16','#fadb14']);
+var chartDimSvc     = createBarChart('chartDimSvc', getSvcs('all','all','all','all'), ['#52c41a','#95de64']);
+var chartDimApi     = createBarChart('chartDimApi', getApis('all','all','all','all','all'), ['#9966ff','#b37feb']);
+
+function updateChart(el, data, isPie) {
+  if (isPie) {
+    el.setOption({series:[{data:data.map(function(d,i){return{value:d.value,name:d.name,itemStyle:{color:pieColors[i%pieColors.length]}};})}]});
+  } else {
+    el.setOption({yAxis:{data:data.map(function(d){return d.name;})},series:[{data:data.map(function(d){return d.value;})}]});
+  }
+}
+
+function applyDimFilters() {
+  var mult = getFilterMultiplier();
+  var tv = document.getElementById('dimTenant').value;
+  var cv = document.getElementById('dimCompany').value;
+  var dv = document.getElementById('dimDept').value;
+  var sv = document.getElementById('dimSystem').value;
+  var svcv = document.getElementById('dimService').value;
+  var av = document.getElementById('dimApi').value;
+
+  var scale = function(arr){ return arr.map(function(d){ return {name:d.name, value:Math.round(d.value*mult)}; }); };
+
+  // Tenant card: always shows all tenants (scaled by time)
+  updateChart(chartDimTenant, scale(getTenants()), true);
+  // Company card: filtered by tenant
+  updateChart(chartDimCompany, scale(getCompanies(tv)), true);
+  // Dept card: filtered by tenant + company
+  updateChart(chartDimDept, scale(getDepts(tv, cv)), false);
+  // System card: filtered by tenant + company + dept
+  updateChart(chartDimSys, scale(getSystems(tv, cv, dv)), false);
+  // Service card: filtered by tenant + company + dept + system
+  updateChart(chartDimSvc, scale(getSvcs(tv, cv, dv, sv)), false);
+  // API card: filtered by tenant + company + dept + system + service
+  updateChart(chartDimApi, scale(getApis(tv, cv, dv, sv, svcv)), false);
+}
+
+function resetDimFilters() {
+  ['dimTenant','dimCompany','dimDept','dimSystem','dimService','dimApi'].forEach(function(id){document.getElementById(id).value='all';});
+  document.getElementById('dimTimeRange').value='half_year';
+  applyDimFilters();
+}
+
+// --- Drill-down Modal ---
+var drillOperators = ['张伟','李娜','王磊','赵敏','陈强','刘洋','周芳','吴鹏','孙悦','黄俊'];
+
+function openDrillModal(dimLabel, dimValue) {
+  var tv = document.getElementById('dimTenant').value;
+  var cv = document.getElementById('dimCompany').value;
+  var dv = document.getElementById('dimDept').value;
+  var sv = document.getElementById('dimSystem').value;
+  var svcv = document.getElementById('dimService').value;
+  var mult = getFilterMultiplier();
+  var children = [], title = '';
+
+  if (dimLabel === '租户') {
+    children = getCompanies(dimValue); title = dimValue + ' 下属公司用量明细';
+  } else if (dimLabel === '公司') {
+    children = getDepts(tv === 'all' ? 'all' : tv, dimValue); title = dimValue + ' 下属部门用量明细';
+  } else if (dimLabel === '部门') {
+    children = getSystems(tv, cv, dimValue); title = dimValue + ' 下属系统用量明细';
+  } else if (dimLabel === '系统') {
+    children = getSvcs(tv, cv, dv, dimValue); title = dimValue + ' 调用的服务用量明细';
+  } else if (dimLabel === '服务') {
+    children = getApis(tv, cv, dv, sv, dimValue); title = dimValue + ' 包含的API用量明细';
+  } else if (dimLabel === 'API') {
+    title = dimValue + ' 时间段内使用明细';
+    var rows = [];
+    for (var i = 0; i < 10; i++) {
+      var day = String(25 + Math.floor(i/3)).padStart(2,'0');
+      var h = String(8+Math.floor(Math.random()*10)).padStart(2,'0');
+      var m = String(Math.floor(Math.random()*60)).padStart(2,'0');
+      var st = Math.random() < 0.7 ? 'success' : (Math.random() < 0.5 ? 'cache' : 'fail');
+      rows.push({ time:'2026-06-'+day+' '+h+':'+m+':00', operator:drillOperators[i%drillOperators.length], dept:['风控部','信贷部','合规部','市场部'][i%4], system:['信贷审批系统','反欺诈系统','客户管理平台','数据中台'][i%4], service:dimValue, action:'调用'+dimValue, duration:(Math.floor(Math.random()*300)+30)+'ms', status:st, statusText:st==='success'?'成功':(st==='cache'?'缓存命中':'失败') });
+    }
+    document.getElementById('drillTitle').textContent = title;
+    document.getElementById('drillPath').innerHTML = '下钻路径: <span>API</span> &gt; <span>' + dimValue + '</span>';
+    var html = '';
+    rows.forEach(function(r){
+      html += '<tr><td>'+r.time+'</td><td>'+r.operator+'</td><td>'+r.dept+'</td><td>'+r.system+'</td><td>'+r.service+'</td><td>'+r.action+'</td><td>'+r.duration+'</td><td><span class="drill-tag '+r.status+'">'+r.statusText+'</span></td></tr>';
+    });
+    document.getElementById('drillTableBody').innerHTML = html;
+    document.getElementById('drillModal').classList.add('active');
+    return;
+  }
+
+  // Sort children by value descending
+  children.sort(function(a,b){ return b.value - a.value; });
+  document.getElementById('drillTitle').textContent = title;
+  document.getElementById('drillPath').innerHTML = '下钻路径: <span>' + dimLabel + '</span> &gt; <span>' + dimValue + '</span>';
+  var html = '<tr><th>名称</th><th>调用量</th><th>占比</th></tr>';
+  var total = children.reduce(function(s,d){ return s+d.value; }, 0);
+  children.forEach(function(d){
+    var pct = total > 0 ? (d.value/total*100).toFixed(1) : 0;
+    var vStr = d.value >= 10000 ? (d.value/10000).toFixed(1)+'万' : d.value.toLocaleString();
+    html += '<tr><td>'+d.name+'</td><td>'+vStr+'</td><td>'+pct+'%</td></tr>';
+  });
+  document.getElementById('drillTableBody').innerHTML = html;
+  document.getElementById('drillModal').classList.add('active');
+}
+
+function closeDrillModal() { document.getElementById('drillModal').classList.remove('active'); }
+document.getElementById('drillModal').addEventListener('click', function(e){ if(e.target===this) closeDrillModal(); });
+
+// Drill-down clicks (all 6 dimensions)
+chartDimTenant.on('click', function(p){ openDrillModal('租户', p.name); });
+chartDimCompany.on('click', function(p){ openDrillModal('公司', p.name); });
+chartDimDept.on('click', function(p){ openDrillModal('部门', p.name); });
+chartDimSys.on('click', function(p){ openDrillModal('系统', p.name); });
+chartDimSvc.on('click', function(p){ openDrillModal('服务', p.name); });
+chartDimApi.on('click', function(p){ openDrillModal('API', p.name); });
+
+// =====================================================
+// === Frequency Ranking — Rank Trend Bump Charts ===
+// =====================================================
+
+// Multi-period rank trend data
+var rankTrendData = {
+  service: {
+    day: {
+      labels: ['06-25','06-26','06-27','06-28','06-29','06-30','07-01'],
+      items: [
+        { name: '企业基本信息', ranks: [1, 1, 1, 1, 1, 1, 1] },
+        { name: '信用评分',     ranks: [3, 2, 2, 3, 3, 2, 2] },
+        { name: '司法风险',     ranks: [2, 3, 3, 2, 2, 3, 3] },
+        { name: '融资历史',     ranks: [5, 5, 4, 4, 5, 5, 5] },
+        { name: '经营状况',     ranks: [4, 4, 5, 5, 4, 4, 4] }
+      ]
+    },
+    week: {
+      labels: ['06/01-06/07','06/08-06/14','06/15-06/21','06/22-06/28','06/29-07/05'],
+      items: [
+        { name: '企业基本信息', ranks: [1, 1, 1, 1, 1] },
+        { name: '信用评分',     ranks: [3, 2, 3, 3, 2] },
+        { name: '司法风险',     ranks: [2, 3, 2, 2, 3] },
+        { name: '融资历史',     ranks: [4, 4, 5, 5, 4] },
+        { name: '经营状况',     ranks: [5, 5, 4, 4, 5] }
+      ]
+    },
+    month: {
+      labels: ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'],
+      items: [
+        { name: '企业基本信息', ranks: [1, 1, 1, 1, 1, 1] },
+        { name: '信用评分',     ranks: [2, 2, 3, 2, 2, 2] },
+        { name: '司法风险',     ranks: [3, 3, 2, 3, 3, 3] },
+        { name: '融资历史',     ranks: [4, 5, 4, 4, 4, 4] },
+        { name: '经营状况',     ranks: [5, 4, 5, 5, 5, 5] }
+      ]
+    }
+  },
+  api: {
+    day: {
+      labels: ['06-25','06-26','06-27','06-28','06-29','06-30','07-01'],
+      items: [
+        { name: '企业基本信息查询', ranks: [1, 1, 1, 1, 1, 1, 1] },
+        { name: '反欺诈风险评分', ranks: [3, 2, 2, 3, 2, 3, 3] },
+        { name: '股权穿透查询',     ranks: [2, 3, 3, 2, 3, 2, 2] },
+        { name: '知识产权检索',     ranks: [5, 4, 4, 4, 5, 4, 4] },
+        { name: '税务评级查询',     ranks: [4, 5, 5, 5, 4, 5, 5] }
+      ]
+    },
+    week: {
+      labels: ['06/01-06/07','06/08-06/14','06/15-06/21','06/22-06/28','06/29-07/05'],
+      items: [
+        { name: '企业基本信息查询', ranks: [1, 1, 1, 1, 1] },
+        { name: '反欺诈风险评分', ranks: [2, 2, 2, 3, 3] },
+        { name: '股权穿透查询',     ranks: [3, 3, 3, 2, 2] },
+        { name: '知识产权检索',     ranks: [4, 4, 5, 4, 4] },
+        { name: '税务评级查询',     ranks: [5, 5, 4, 5, 5] }
+      ]
+    },
+    month: {
+      labels: ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'],
+      items: [
+        { name: '企业基本信息查询', ranks: [1, 1, 1, 1, 1, 1] },
+        { name: '反欺诈风险评分', ranks: [2, 3, 2, 2, 3, 2] },
+        { name: '股权穿透查询',     ranks: [3, 2, 3, 3, 2, 3] },
+        { name: '知识产权检索',     ranks: [4, 4, 4, 5, 4, 4] },
+        { name: '税务评级查询',     ranks: [5, 5, 5, 4, 5, 5] }
+      ]
+    }
+  }
+};
+
+var chartSvcRankTrend = echarts.init(document.getElementById('chartSvcRankTrend'));
+var chartApiRankTrend = echarts.init(document.getElementById('chartApiRankTrend'));
+
+var svcRankTrendPeriod = 'day';
+var apiRankTrendPeriod = 'day';
+
+function buildRankTrendOption(trendData) {
+  var series = trendData.items.map(function(item, i) {
+    return {
+      name: item.name, type: 'line', data: item.ranks,
+      lineStyle: { color: palette[i], width: 2.5 },
+      itemStyle: { color: palette[i] },
+      symbol: 'circle', symbolSize: 8,
+      emphasis: { focus: 'series', lineStyle: { width: 4 } },
+      endLabel: {
+        show: true,
+        formatter: function(params) { return params.seriesName; },
+        color: palette[i], fontSize: 10
+      }
+    };
+  });
+  return Object.assign(baseDarkOption(), {
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        var tip = params[0].axisValue + '<br/>';
+        var sorted = params.slice().sort(function(a, b) { return a.value - b.value; });
+        sorted.forEach(function(p) { tip += p.marker + ' 第' + p.value + '名: ' + p.seriesName + '<br/>'; });
+        return tip;
+      }
+    },
+    legend: { show: false },
+    grid: { left: 50, right: 110, top: 16, bottom: 30 },
+    xAxis: { type: 'category', data: trendData.labels, axisLine: { lineStyle: { color: darkAxis } }, axisLabel: { color: darkText, fontSize: 10 } },
+    yAxis: { type: 'value', inverse: true, min: 1, max: 8, interval: 1, axisLine: { show: false }, splitLine: { lineStyle: { color: darkGrid } }, axisLabel: { color: darkText, fontSize: 10, formatter: function(v) { return '第' + v + '名'; } } },
+    series: series
+  });
+}
+
+chartSvcRankTrend.setOption(buildRankTrendOption(rankTrendData.service['day']));
+chartApiRankTrend.setOption(buildRankTrendOption(rankTrendData.api['day']));
+
+function switchSvcRankTrend(period, el) {
+  svcRankTrendPeriod = period;
+  document.querySelectorAll('#svcRankTrendTabs .rank-period-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  chartSvcRankTrend.setOption(buildRankTrendOption(rankTrendData.service[period]), true);
+}
+
+function switchApiRankTrend(period, el) {
+  apiRankTrendPeriod = period;
+  document.querySelectorAll('#apiRankTrendTabs .rank-period-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  chartApiRankTrend.setOption(buildRankTrendOption(rankTrendData.api[period]), true);
+}
 
 // === Resize handling ===
 window.addEventListener('resize', function() {
   chartTrend.resize();
-  chartVendor.resize();
+  chartApiTop10.resize();
   chartTenant.resize();
   chartService.resize();
-  chartRealtime.resize();
-  chartGauge.resize();
-  chartResponse.resize();
+  chartSvcTrend.resize();
+  chartApiTrend.resize();
+  chartResponseSvc.resize();
+  chartResponseApi.resize();
+  chartSvcRankTrend.resize();
+  chartApiRankTrend.resize();
+  chartDimTenant.resize();
+  chartDimCompany.resize();
+  chartDimDept.resize();
+  chartDimSys.resize();
+  chartDimSvc.resize();
+  chartDimApi.resize();
 });
 </script>
 <script>
