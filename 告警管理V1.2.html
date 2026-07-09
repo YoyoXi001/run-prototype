@@ -268,10 +268,10 @@
         .form-row { margin-bottom: 16px; display: flex; align-items: center; justify-content: flex-start; }
         .form-row label { display: inline-block; width: 90px; font-size: 13px; font-weight: 500; color: #666; flex-shrink: 0; text-align: right; padding-right: 12px; }
         .form-row input, .form-row select { flex: 1; max-width: 320px; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; }
-        .condition-group { background: #fff; border: 1px solid #e8eaed; border-radius: 12px; padding: 16px; margin-bottom: 16px; margin-left: 0px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.04); width: 560px; }
+        .condition-group { background: #fff; border: 1px solid #e8eaed; border-radius: 12px; padding: 16px; margin-bottom: 16px; margin-left: 0px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.04); width: 100%; min-width: 0; }
         .condition-header { font-weight: 600; margin-bottom: 14px; color: #f89d34; font-size: 14px; padding-bottom: 10px; border-bottom: 1px dashed #f0f0f0; display: flex; align-items: center; gap: 6px; }
         .condition-header::before { content: ''; width: 4px; height: 14px; background: linear-gradient(180deg, #f89d34 0%, #f5a623 100%); border-radius: 2px; }
-        .condition-item { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; padding: 10px 12px; background: #fafafa; border-radius: 6px; }
+        .condition-item { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; padding: 10px 12px; background: #fafafa; border-radius: 6px; box-sizing: border-box; width: 100%; min-width: 0; }
         /* 多选下拉框样式 */
         .multi-select-container { position: relative; width: 320px; }
         .multi-select-trigger {
@@ -430,6 +430,7 @@
     }
     .form-modal .modal-body {
         padding: 20px;
+        overflow-x: hidden;
     }
     .form-modal .form-row {
         display: flex;
@@ -612,7 +613,7 @@
     </div>
 
     <!-- 规则弹窗 -->
-    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="服务用量预警">服务用量预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="服务用量预警">服务用量预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
                         <div class="multi-select-container">
                             <div class="multi-select-trigger" onclick="toggleMultiSelect()">
                                 <span class="multi-select-placeholder">请选择时间点</span>
@@ -687,9 +688,9 @@ let ruleList = [
     { id: 1, tenant: "某某金控", type: "合同账单提醒", name: "合同到期提醒", conditions: ["距离合同到期日 <= 30 天"], service: "全局", level: "P3提醒", receiver: ["服务管理人员"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" },
     { id: 2, tenant: "某某金控", type: "服务用量预警", name: "配额用量预警", conditions: ["已用量 >= 80%", "已用量 >= 90%", "已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 3, tenant: "某某金控", type: "服务用量预警", name: "配额用量预测", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
-    { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务失败异常", conditions: ["服务连接状态 = 失败", "服务连接状态 = 超时"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 5, tenant: "某某金控", type: "服务异常告警", name: "服务超时异常", conditions: ["服务P95时间 >= 3000ms"], service: "天眼查", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 6, tenant: "某某金控", type: "服务异常告警", name: "系统性能异常", conditions: ["CPU使用率 >= 90%", "内存使用率 >= 85%"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" }
+    { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务失败异常", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 5, tenant: "某某金控", type: "服务异常告警", name: "服务超时异常", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "天眼查", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 6, tenant: "某某金控", type: "服务异常告警", name: "系统性能异常", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
 ];
 
 // ======================== 渠道数据 ========================
@@ -1033,7 +1034,7 @@ function renderRuleTable() {
         <td>${escapeHtml(i.tenant)}</td>
         <td>${escapeHtml(i.type)}</td>
         <td>${escapeHtml(i.name)}</td>
-        <td>${i.conditions.map(c => `<span class="condition-badge">${escapeHtml(c)}</span>`).join('')}</td>
+        <td>${i.conditions.map(c => { var parts = c.split(', 持续 '); return parts.length > 1 ? `<span class="condition-badge">${escapeHtml(parts[0])}, <span style="color:#fa8c16;font-weight:500;">持续 ${escapeHtml(parts[1])}</span></span>` : `<span class="condition-badge">${escapeHtml(c)}</span>`; }).join('')}</td>
         <td>${serviceDisplay}</td>
         <td>${escapeHtml(i.level)}</td>
         <td>${i.receiver.join(',')}</td>
@@ -1077,25 +1078,25 @@ function renderConditions(ruleName) {
     if (!ruleName || ruleName === '') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">触发条件</div><div style="color:#999;">请先选择规则名称</div></div>`;
     } else if (ruleName === '配额用量预警') {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderQuotaConditions();
     } else if (ruleName === '配额用量预测') {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">预测用完日</div><div id="predictConditionList"></div><button type="button" class="btn-default" onclick="addPredictCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">预测用完日</div><div id="predictConditionList"></div><button type="button" class="btn-default" onclick="addPredictCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderPredictConditions();
     } else if (ruleName === '合同到期提醒') {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">距离合同到期日</div><div id="contractDueConditionList"></div><button type="button" class="btn-default" onclick="addContractDueCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">距离合同到期日</div><div id="contractDueConditionList"></div><button type="button" class="btn-default" onclick="addContractDueCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderContractDueConditions();
     } else if (ruleName === '服务失败异常') {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">服务连接状态</div><div id="serviceFailConditionList"></div></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">服务连接状态</div><div id="serviceFailConditionList"></div></div>`;
         renderServiceFailConditions();
     } else if (ruleName === '服务超时异常') {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">服务P95时间</div><div id="serviceTimeoutConditionList"></div></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">服务P95时间</div><div id="serviceTimeoutConditionList"></div></div>`;
         renderServiceTimeoutConditions();
     } else if (ruleName === '系统性能异常') {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">系统性能指标</div><div id="systemPerfConditionList"></div><button type="button" class="btn-default" onclick="addSystemPerfCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">系统性能指标</div><div id="systemPerfConditionList"></div><button type="button" class="btn-default" onclick="addSystemPerfCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderSystemPerfConditions();
     } else {
-        container.innerHTML = `<div class="condition-group" style="margin-left: 0; margin-top: 8px;"><div class="condition-header">触发条件</div><div>固定条件</div></div>`;
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">触发条件</div><div>固定条件</div></div>`;
     }
 }
 
@@ -1121,49 +1122,52 @@ function updatePredictOp(idx, val) { predictConditions[idx].operator = val; }
 function updatePredictDays(idx, val) { predictConditions[idx].days = parseInt(val); }
 
 // ======================== 服务失败异常条件 ========================
-let serviceFailConditions = [{ operator: "=", value: "失败" }];
+let serviceFailConditions = [{ operator: "=", value: "失败", durMin: 5 }];
 function renderServiceFailConditions() {
     const c = document.getElementById('serviceFailConditionList');
     if(!c) return;
-    c.innerHTML = serviceFailConditions.map((cond, idx) => `<div class="condition-item"><span style="color:#333;font-weight:500;">服务连接状态</span><select onchange="updateServiceFailOp(${idx}, this.value)"><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="!="?"selected":""}>!=</option></select><input type="text" value="${cond.value}" onchange="updateServiceFailVal(${idx}, this.value)" placeholder="如：失败、超时、断开" style="width:150px;"><span class="action-link danger" onclick="removeServiceFailCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join('');
+    c.innerHTML = serviceFailConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;"><span style="color:#333;font-weight:500;white-space:nowrap;">服务连接状态</span><select onchange="updateServiceFailOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="!="?"selected":""}>!=</option></select><input type="text" value="${cond.value}" onchange="updateServiceFailVal(${idx}, this.value)" placeholder="失败" style="width:70px;"><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateServiceFailDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeServiceFailCondition(${idx})">删除</span></div>`).join('');
 }
-function addServiceFailCondition() { serviceFailConditions.push({ operator: "=", value: "失败" }); renderServiceFailConditions(); }
+function addServiceFailCondition() { serviceFailConditions.push({ operator: "=", value: "失败", durMin: 5 }); renderServiceFailConditions(); }
 function removeServiceFailCondition(idx) { serviceFailConditions.splice(idx,1); renderServiceFailConditions(); }
 function updateServiceFailOp(idx, val) { serviceFailConditions[idx].operator = val; }
 function updateServiceFailVal(idx, val) { serviceFailConditions[idx].value = val; }
+function updateServiceFailDurMin(idx, val) { serviceFailConditions[idx].durMin = parseInt(val); }
 
 // ======================== 服务超时异常条件 ========================
-let serviceTimeoutConditions = [{ operator: ">=", value: 3000 }];
+let serviceTimeoutConditions = [{ operator: ">=", value: 3000, durMin: 10 }];
 function renderServiceTimeoutConditions() {
     const c = document.getElementById('serviceTimeoutConditionList');
     if(!c) return;
-    c.innerHTML = serviceTimeoutConditions.map((cond, idx) => `<div class="condition-item"><span style="color:#333;font-weight:500;">服务P95时间</span><select onchange="updateServiceTimeoutOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateServiceTimeoutVal(${idx}, this.value)" style="width:100px;"> <span style="color:#999;">ms</span><span class="action-link danger" onclick="removeServiceTimeoutCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join('');
+    c.innerHTML = serviceTimeoutConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;"><span style="color:#333;font-weight:500;white-space:nowrap;">服务P95时间</span><select onchange="updateServiceTimeoutOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateServiceTimeoutVal(${idx}, this.value)" style="width:70px;"><span style="color:#999;white-space:nowrap;">ms</span><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateServiceTimeoutDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeServiceTimeoutCondition(${idx})">删除</span></div>`).join('');
 }
-function addServiceTimeoutCondition() { serviceTimeoutConditions.push({ operator: ">=", value: 3000 }); renderServiceTimeoutConditions(); }
+function addServiceTimeoutCondition() { serviceTimeoutConditions.push({ operator: ">=", value: 3000, durMin: 10 }); renderServiceTimeoutConditions(); }
 function removeServiceTimeoutCondition(idx) { serviceTimeoutConditions.splice(idx,1); renderServiceTimeoutConditions(); }
 function updateServiceTimeoutOp(idx, val) { serviceTimeoutConditions[idx].operator = val; }
 function updateServiceTimeoutVal(idx, val) { serviceTimeoutConditions[idx].value = parseInt(val); }
+function updateServiceTimeoutDurMin(idx, val) { serviceTimeoutConditions[idx].durMin = parseInt(val); }
 
 // ======================== 系统性能异常条件 ========================
-let systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90 }];
+let systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }];
 function renderSystemPerfConditions() {
     const c = document.getElementById('systemPerfConditionList');
     if(!c) return;
-    c.innerHTML = systemPerfConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateSystemPerfMetric(${idx}, this.value)"><option ${cond.metric==="CPU使用率"?"selected":""}>CPU使用率</option><option ${cond.metric==="内存使用率"?"selected":""}>内存使用率</option><option ${cond.metric==="磁盘使用率"?"selected":""}>磁盘使用率</option></select><select onchange="updateSystemPerfOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateSystemPerfVal(${idx}, this.value)" style="width:80px;"> <span style="color:#999;">%</span><span class="action-link danger" onclick="removeSystemPerfCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join('');
+    c.innerHTML = systemPerfConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;"><select onchange="updateSystemPerfMetric(${idx}, this.value)" style="width:100px;"><option ${cond.metric==="CPU使用率"?"selected":""}>CPU使用率</option><option ${cond.metric==="内存使用率"?"selected":""}>内存使用率</option><option ${cond.metric==="磁盘使用率"?"selected":""}>磁盘使用率</option></select><select onchange="updateSystemPerfOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateSystemPerfVal(${idx}, this.value)" style="width:70px;"><span style="color:#999;white-space:nowrap;">%</span><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateSystemPerfDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeSystemPerfCondition(${idx})">删除</span></div>`).join('');
 }
-function addSystemPerfCondition() { systemPerfConditions.push({ metric: "CPU使用率", operator: ">=", value: 90 }); renderSystemPerfConditions(); }
+function addSystemPerfCondition() { systemPerfConditions.push({ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }); renderSystemPerfConditions(); }
 function removeSystemPerfCondition(idx) { systemPerfConditions.splice(idx,1); renderSystemPerfConditions(); }
 function updateSystemPerfMetric(idx, val) { systemPerfConditions[idx].metric = val; }
 function updateSystemPerfOp(idx, val) { systemPerfConditions[idx].operator = val; }
 function updateSystemPerfVal(idx, val) { systemPerfConditions[idx].value = parseInt(val); }
+function updateSystemPerfDurMin(idx, val) { systemPerfConditions[idx].durMin = parseInt(val); }
 
 function getConditionsText(ruleName) {
     if (ruleName === '配额用量预警') return quotaConditions.map(c => `已用量 ${c.operator} ${c.value}%`);
     if (ruleName === '配额用量预测') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
     if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
-    if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}`);
-    if (ruleName === '服务超时异常') return serviceTimeoutConditions.map(c => `服务P95时间 ${c.operator} ${c.value}ms`);
-    if (ruleName === '系统性能异常') return systemPerfConditions.map(c => `${c.metric} ${c.operator} ${c.value}%`);
+    if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}, 持续 >= ${c.durMin}分钟`);
+    if (ruleName === '服务超时异常') return serviceTimeoutConditions.map(c => `服务P95时间 ${c.operator} ${c.value}ms, 持续 >= ${c.durMin}分钟`);
+    if (ruleName === '系统性能异常') return systemPerfConditions.map(c => `${c.metric} ${c.operator} ${c.value}%, 持续 >= ${c.durMin}分钟`);
     return ["服务异常"];
 }
 
@@ -1171,6 +1175,13 @@ function getSelectValue(id) {
     const select = document.getElementById(id);
     if (!select) return '';
     return select.value;
+}
+
+function disableConditionInputs(listId) {
+    var el = document.getElementById(listId);
+    if (!el) return;
+    el.querySelectorAll('select, input').forEach(function(e) { e.disabled = true; });
+    el.querySelectorAll('.action-link').forEach(function(e) { e.style.display = 'none'; });
 }
 
 function toggleTimePoints() {
@@ -1267,7 +1278,7 @@ function editRule(id) {
         document.getElementById('ruleType').value=item.type; 
         document.getElementById('ruleType').disabled = false;
         updateRuleFormByType(); 
-        setTimeout(() => { 
+        setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = false;
             if(item.name==='配额用量预警'){
@@ -1277,19 +1288,31 @@ function editRule(id) {
                 predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
-                serviceFailConditions = item.conditions.map(c => { let m=c.match(/服务连接状态\s*([=!]+)\s*(.+)/); return { operator: m?.[1]||"=", value: m?.[2]||"失败" }; });
+                serviceFailConditions = item.conditions.map(c => {
+                    let m = c.match(/服务连接状态\s*([=!]+)\s*([^,]+)(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { operator: m?.[1]||"=", value: (m?.[2]||"失败").trim(), durMin: parseInt(m?.[3])||5 };
+                });
+                renderConditions(item.name);
                 renderServiceFailConditions();
             } else if(item.name==='服务超时异常'){
-                serviceTimeoutConditions = item.conditions.map(c => { let m=c.match(/服务P95时间\s*([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||3000) }; });
+                serviceTimeoutConditions = item.conditions.map(c => {
+                    let m = c.match(/服务P95时间\s*([><=]+)\s*(\d+)ms(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { operator: m?.[1]||">=", value: parseInt(m?.[2]||3000), durMin: parseInt(m?.[3])||10 };
+                });
+                renderConditions(item.name);
                 renderServiceTimeoutConditions();
             } else if(item.name==='系统性能异常'){
-                systemPerfConditions = item.conditions.map(c => { let m=c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)/); return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90) }; });
+                systemPerfConditions = item.conditions.map(c => {
+                    let m = c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15 };
+                });
+                renderConditions(item.name);
                 renderSystemPerfConditions();
             }
         }, 50);
         document.getElementById('ruleLevel').value = item.level;
         document.getElementById('ruleLevel').disabled = false;
-        setSelectValue('ruleService', item.service); 
+        setSelectValue('ruleService', item.service);
         document.getElementById('ruleService').disabled = false;
         setTimeout(() => {
             updateRuleApiOptions(item.service);
@@ -1298,11 +1321,11 @@ function editRule(id) {
             }
         }, 0);
         document.getElementById('ruleApi').disabled = false;
-        setSelectValue('ruleReceiver', item.receiver[0] || ''); 
+        setSelectValue('ruleReceiver', item.receiver[0] || '');
         document.getElementById('ruleReceiver').disabled = false;
-        document.getElementById('ruleStatus').value = item.status || '启用'; 
+        document.getElementById('ruleStatus').value = item.status || '启用';
         document.getElementById('ruleStatus').disabled = false;
-        document.getElementById('ruleFreq').value = item.freq; 
+        document.getElementById('ruleFreq').value = item.freq;
         document.getElementById('ruleFreq').disabled = false;
         setTimeout(() => {
             toggleTimePoints();
@@ -1321,7 +1344,7 @@ function viewRule(id) {
         document.getElementById('ruleType').value=item.type; 
         document.getElementById('ruleType').disabled = true;
         updateRuleFormByType(); 
-        setTimeout(() => { 
+        setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = true;
             if(item.name==='配额用量预警'){
@@ -1331,19 +1354,34 @@ function viewRule(id) {
                 predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
-                serviceFailConditions = item.conditions.map(c => { let m=c.match(/服务连接状态\s*([=!]+)\s*(.+)/); return { operator: m?.[1]||"=", value: m?.[2]||"失败" }; });
+                serviceFailConditions = item.conditions.map(c => {
+                    let m = c.match(/服务连接状态\s*([=!]+)\s*([^,]+)(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { operator: m?.[1]||"=", value: (m?.[2]||"失败").trim(), durMin: parseInt(m?.[3])||5 };
+                });
+                renderConditions(item.name);
                 renderServiceFailConditions();
+                disableConditionInputs('serviceFailConditionList');
             } else if(item.name==='服务超时异常'){
-                serviceTimeoutConditions = item.conditions.map(c => { let m=c.match(/服务P95时间\s*([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||3000) }; });
+                serviceTimeoutConditions = item.conditions.map(c => {
+                    let m = c.match(/服务P95时间\s*([><=]+)\s*(\d+)ms(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { operator: m?.[1]||">=", value: parseInt(m?.[2]||3000), durMin: parseInt(m?.[3])||10 };
+                });
+                renderConditions(item.name);
                 renderServiceTimeoutConditions();
+                disableConditionInputs('serviceTimeoutConditionList');
             } else if(item.name==='系统性能异常'){
-                systemPerfConditions = item.conditions.map(c => { let m=c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)/); return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90) }; });
+                systemPerfConditions = item.conditions.map(c => {
+                    let m = c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15 };
+                });
+                renderConditions(item.name);
                 renderSystemPerfConditions();
+                disableConditionInputs('systemPerfConditionList');
             }
         }, 50);
         document.getElementById('ruleLevel').value = item.level;
         document.getElementById('ruleLevel').disabled = true;
-        setSelectValue('ruleService', item.service); 
+        setSelectValue('ruleService', item.service);
         document.getElementById('ruleService').disabled = true;
         setTimeout(() => {
             updateRuleApiOptions(item.service);
@@ -1352,14 +1390,14 @@ function viewRule(id) {
             }
         }, 0);
         document.getElementById('ruleApi').disabled = true;
-        setSelectValue('ruleReceiver', item.receiver[0] || ''); 
+        setSelectValue('ruleReceiver', item.receiver[0] || '');
         document.getElementById('ruleReceiver').disabled = true;
-        document.getElementById('ruleStatus').value = item.status || '启用'; 
+        document.getElementById('ruleStatus').value = item.status || '启用';
         document.getElementById('ruleStatus').disabled = true;
-        document.getElementById('ruleFreq').value = item.freq; 
+        document.getElementById('ruleFreq').value = item.freq;
         document.getElementById('ruleFreq').disabled = true;
         document.getElementById('saveRuleBtn').style.display = 'none';
-        document.getElementById('ruleModal').classList.add('active'); 
+        document.getElementById('ruleModal').classList.add('active');
     } 
 }
 
@@ -1382,9 +1420,9 @@ function addRule() {
     updateRuleFormByType(); 
     quotaConditions = [{ operator: ">=", value: 80 }]; 
     predictConditions = [{ operator: "<=", days: 3 }];
-    serviceFailConditions = [{ operator: "=", value: "失败" }];
-    serviceTimeoutConditions = [{ operator: ">=", value: 3000 }];
-    systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90 }];
+    serviceFailConditions = [{ operator: "=", value: "失败", durMin: 5 }];
+    serviceTimeoutConditions = [{ operator: ">=", value: 3000, durMin: 10 }];
+    systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }];
     renderConditions(''); 
     document.getElementById('ruleLevel').value = 'P2警告'; 
     document.getElementById('ruleLevel').disabled = false;
@@ -1401,19 +1439,19 @@ function addRule() {
     document.getElementById('ruleModal').classList.add('active'); 
 }
 
-function saveRule() { 
-    const type = document.getElementById('ruleType').value; 
-    const name = document.getElementById('ruleNameSelect').value; 
-    if(!name){ alert('请选择规则名称'); return; } 
-    const conditions = getConditionsText(name); 
-    const level = document.getElementById('ruleLevel').value; 
-    const service = getSelectValue('ruleService') || '全局'; 
-    const api = getRuleApiValue(); 
-    const receiver = getSelectValue('ruleReceiver'); 
-    const status = document.getElementById('ruleStatus').value; 
-    const freq = document.getElementById('ruleFreq').value; 
-    const timePoints = getTimePoints(); 
-    if(!receiver){ alert('请选择发送对象'); return; } 
+function saveRule() {
+    const type = document.getElementById('ruleType').value;
+    const name = document.getElementById('ruleNameSelect').value;
+    if(!name){ alert('请选择规则名称'); return; }
+    const conditions = getConditionsText(name);
+    const level = document.getElementById('ruleLevel').value;
+    const service = getSelectValue('ruleService') || '全局';
+    const api = getRuleApiValue();
+    const receiver = getSelectValue('ruleReceiver');
+    const status = document.getElementById('ruleStatus').value;
+    const freq = document.getElementById('ruleFreq').value;
+    const timePoints = getTimePoints();
+    if(!receiver){ alert('请选择发送对象'); return; }
     const data = { tenant: '某某金控', type, name, conditions, service, api, level, receiver: [receiver], status, freq, timePoints }; 
     if(currentRuleId){ 
         const idx=ruleList.findIndex(i=>i.id===currentRuleId); 

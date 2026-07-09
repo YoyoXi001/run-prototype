@@ -342,7 +342,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <li class="threshold-item">
               <div class="threshold-info">
                 <div class="threshold-metric">CPU使用率 &gt; 80%</div>
-                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+                <div class="threshold-condition">告警规则: 持续5分钟</div>
               </div>
               <span class="threshold-level level-warn">警告</span>
               <div class="threshold-actions">
@@ -353,7 +353,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <li class="threshold-item">
               <div class="threshold-info">
                 <div class="threshold-metric">CPU使用率 &gt; 95%</div>
-                <div class="threshold-condition">Prometheus规则: 持续30秒</div>
+                <div class="threshold-condition">告警规则: 持续30秒</div>
               </div>
               <span class="threshold-level level-critical">严重</span>
               <div class="threshold-actions">
@@ -364,7 +364,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <li class="threshold-item">
               <div class="threshold-info">
                 <div class="threshold-metric">内存使用率 &gt; 85%</div>
-                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+                <div class="threshold-condition">告警规则: 持续5分钟</div>
               </div>
               <span class="threshold-level level-warn">警告</span>
               <div class="threshold-actions">
@@ -377,7 +377,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <li class="threshold-item">
               <div class="threshold-info">
                 <div class="threshold-metric">HTTP P95延迟 &gt; 3000ms</div>
-                <div class="threshold-condition">Prometheus规则: 持续5分钟</div>
+                <div class="threshold-condition">告警规则: 持续5分钟</div>
               </div>
               <span class="threshold-level level-warn">警告</span>
               <div class="threshold-actions">
@@ -388,7 +388,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             <li class="threshold-item">
               <div class="threshold-info">
                 <div class="threshold-metric">HTTP 5xx错误率 &gt; 5%</div>
-                <div class="threshold-condition">Prometheus规则: 持续3分钟</div>
+                <div class="threshold-condition">告警规则: 持续3分钟</div>
               </div>
               <span class="threshold-level level-critical">严重</span>
               <div class="threshold-actions">
@@ -436,6 +436,7 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
   var autoRefresh = true;
   var refreshTimer = null;
   var allCharts = [];
+  var _lastWindow = 0; // tracks current 5-minute window for QPS/RT trend charts
 
   // Rolling data buffers
   var sparkBuffers = {
@@ -490,9 +491,13 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
       sparkBuffers.mem.push(randAround(68, 10));
       sparkBuffers.disk.push(randAround(52, 4));
     }
+    // Align to 5-minute window boundary for clean, equal-interval X-axis labels
     var now = new Date();
+    _lastWindow = Math.floor((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
+    var windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+      Math.floor(_lastWindow / 60), _lastWindow % 60);
     for (var i = CHART_POINTS - 1; i >= 0; i--) {
-      var t = new Date(now.getTime() - i * 5 * 60000);
+      var t = new Date(windowStart.getTime() - i * 5 * 60000);
       timeLabelsBuffer.push(pad(t.getHours()) + ':' + pad(t.getMinutes()));
       // Simulate daily traffic pattern
       var hourFactor = 0.6 + 0.4 * Math.sin((t.getHours() - 6) * Math.PI / 12);
@@ -516,21 +521,41 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
     sparkBuffers.disk.push(clamp(randAround(sparkBuffers.disk[sparkBuffers.disk.length - 1], 1), 30, 90));
     sparkBuffers.disk.shift();
 
-    // Update QPS/RT charts
+    // Update QPS/RT trend charts — 5-minute bucket aggregation (方案A: 纯趋势视图)
+    // Time labels are fixed at 5-minute intervals; data shifts only on window boundary crossing.
+    // Within the same 5-min window, the latest bucket is smoothed via exponential moving average.
     var now = new Date();
-    var hourFactor = 0.6 + 0.4 * Math.sin((now.getHours() - 6) * Math.PI / 12);
-    timeLabelsBuffer.push(pad(now.getHours()) + ':' + pad(now.getMinutes()));
-    timeLabelsBuffer.shift();
-    qpsBuffer.inbound.push(randInt(1200 * hourFactor, 400));
-    qpsBuffer.inbound.shift();
-    qpsBuffer.outbound.push(randInt(900 * hourFactor, 350));
-    qpsBuffer.outbound.shift();
-    rtBuffer.p50.push(randInt(90 * (2 - hourFactor), 30));
-    rtBuffer.p50.shift();
-    rtBuffer.p95.push(randInt(250 * (2 - hourFactor), 80));
-    rtBuffer.p95.shift();
-    rtBuffer.p99.push(randInt(600 * (2 - hourFactor), 200));
-    rtBuffer.p99.shift();
+    var currentWindow = Math.floor((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
+
+    if (currentWindow !== _lastWindow) {
+      // Crossed into a new 5-minute window → shift all buffers, add new slot
+      _lastWindow = currentWindow;
+      var t = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+        Math.floor(currentWindow / 60), currentWindow % 60);
+      timeLabelsBuffer.push(pad(t.getHours()) + ':' + pad(t.getMinutes()));
+      timeLabelsBuffer.shift();
+
+      var hourFactor = 0.6 + 0.4 * Math.sin((now.getHours() - 6) * Math.PI / 12);
+      qpsBuffer.inbound.push(randInt(1200 * hourFactor, 400));
+      qpsBuffer.inbound.shift();
+      qpsBuffer.outbound.push(randInt(900 * hourFactor, 350));
+      qpsBuffer.outbound.shift();
+      rtBuffer.p50.push(randInt(90 * (2 - hourFactor), 30));
+      rtBuffer.p50.shift();
+      rtBuffer.p95.push(randInt(250 * (2 - hourFactor), 80));
+      rtBuffer.p95.shift();
+      rtBuffer.p99.push(randInt(600 * (2 - hourFactor), 200));
+      rtBuffer.p99.shift();
+    } else {
+      // Same 5-min window → smooth the latest bucket via exponential moving average (α=0.3)
+      var hourFactor = 0.6 + 0.4 * Math.sin((now.getHours() - 6) * Math.PI / 12);
+      var last = qpsBuffer.inbound.length - 1;
+      qpsBuffer.inbound[last] = Math.round(0.3 * randInt(1200 * hourFactor, 400) + 0.7 * qpsBuffer.inbound[last]);
+      qpsBuffer.outbound[last] = Math.round(0.3 * randInt(900 * hourFactor, 350) + 0.7 * qpsBuffer.outbound[last]);
+      rtBuffer.p50[last] = Math.round(0.3 * randInt(90 * (2 - hourFactor), 30) + 0.7 * rtBuffer.p50[last]);
+      rtBuffer.p95[last] = Math.round(0.3 * randInt(250 * (2 - hourFactor), 80) + 0.7 * rtBuffer.p95[last]);
+      rtBuffer.p99[last] = Math.round(0.3 * randInt(600 * (2 - hourFactor), 200) + 0.7 * rtBuffer.p99[last]);
+    }
 
     // Update node data with small fluctuations
     nodes.forEach(function(n) {

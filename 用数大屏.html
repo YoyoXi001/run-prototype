@@ -163,6 +163,20 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
 /* Ranking trend mini chart */
 .rank-trend-section { margin-top: 16px; }
 .rank-trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* === Sankey Section === */
+.sankey-section { background: #0d1b2a; border-top: 1px solid rgba(79,195,247,0.15); padding: 16px; }
+.sankey-title { font-size: 16px; color: #4fc3f7; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.sankey-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #4fc3f7; border-radius: 2px; }
+.sankey-card { background: rgba(13,27,42,0.8); border: 1px solid rgba(79,195,247,0.2); border-radius: 8px; padding: 16px; }
+.sankey-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.sankey-toolbar label { font-size: 12px; color: #8899aa; }
+.sankey-toolbar select { background: rgba(13,27,42,0.9); border: 1px solid rgba(79,195,247,0.25); color: #c8d6e5; font-size: 12px; padding: 5px 24px 5px 8px; border-radius: 4px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234fc3f7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+.sankey-toolbar select:hover { border-color: #4fc3f7; }
+.sankey-legend { display: flex; gap: 16px; margin-left: auto; }
+.sankey-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #8899aa; }
+.sankey-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.sankey-chart-wrap { width: 100%; height: 520px; }
 </style>
 </head>
 <body>
@@ -348,6 +362,37 @@ body { font-family: 'Noto Sans SC', 'Source Sans Pro', sans-serif; background: #
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== Sankey Diagram: 调用链路全景 ===== -->
+    <div class="sankey-section">
+      <div class="sankey-title">调用链路全景（租户 → 公司 → 部门 → 系统 → 服务 → API → 供应商）</div>
+      <div class="sankey-card">
+        <div class="sankey-toolbar">
+          <label>时间段：</label>
+          <select id="sankeyPeriod" onchange="switchSankeyPeriod(this.value)">
+            <option value="month">近半年</option>
+            <option value="week">近5周</option>
+            <option value="day">近7天</option>
+          </select>
+          <label style="margin-left:16px;">层级：</label>
+          <select id="sankeyLevel" onchange="switchSankeyLevel(this.value)">
+            <option value="full">全链路</option>
+            <option value="caller">调用方（租户→系统）</option>
+            <option value="service">服务侧（服务→供应商）</option>
+          </select>
+          <div class="sankey-legend">
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#4fc3f7;"></div>租户</div>
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#36cfc9;"></div>公司</div>
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#95de64;"></div>部门</div>
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#ffc53d;"></div>系统</div>
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#ff85c0;"></div>服务</div>
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#b37feb;"></div>API</div>
+            <div class="sankey-legend-item"><div class="sankey-legend-dot" style="background:#ff7a45;"></div>供应商</div>
+          </div>
+        </div>
+        <div id="chartSankey" class="sankey-chart-wrap"></div>
       </div>
     </div>
 
@@ -1096,6 +1141,170 @@ function switchApiRankTrend(period, el) {
   chartApiRankTrend.setOption(buildRankTrendOption(rankTrendData.api[period]), true);
 }
 
+// =====================================================
+// === Sankey Diagram: 调用链路全景 ===
+// =====================================================
+var chartSankey = echarts.init(document.getElementById('chartSankey'));
+
+var sankeyLevelColors = {
+  0: '#4fc3f7', 1: '#36cfc9', 2: '#95de64', 3: '#ffc53d',
+  4: '#ff85c0', 5: '#b37feb', 6: '#ff7a45'
+};
+var sankeyLevelNames = ['租户','公司','部门','系统','服务','API','供应商'];
+
+function buildSankeyData(period, level) {
+  var pm = period === 'day' ? 1 : period === 'week' ? 7 : 30;
+
+  // Flat list: tenant > company > dept > system > [services with base call counts]
+  var rows = [
+    ['某某金控','总部','风控部','风控系统',[{s:'企业基本信息',v:120},{s:'信用评估',v:100},{s:'反欺诈',v:95}]],
+    ['某某金控','总部','信用审批部','审批系统',[{s:'企业基本信息',v:85},{s:'股权穿透',v:60}]],
+    ['某某金控','华东分公司','市场部','营销系统',[{s:'企业搜索',v:110},{s:'舆情分析',v:75}]],
+    ['某某银行','总行','信贷部','信贷系统',[{s:'企业基本信息',v:200},{s:'信用评估',v:165},{s:'反欺诈',v:130}]],
+    ['某某银行','总行','授信审批部','审批系统',[{s:'信用评估',v:145},{s:'税务评级',v:90}]],
+    ['某某银行','上海分行','风控部','风控系统',[{s:'企业基本信息',v:80},{s:'司法风险',v:105}]],
+    ['某某保险','总部','理赔部','理赔系统',[{s:'企业基本信息',v:90},{s:'知识产权',v:55}]],
+    ['某某保险','总部','精算部','精算系统',[{s:'反欺诈',v:70},{s:'企业基本信息',v:45}]],
+    ['某某保险','广东分公司','核保部','核保系统',[{s:'企业基本信息',v:65},{s:'信用评估',v:50}]],
+    ['某某租赁','总部','风控部','决策引擎',[{s:'企业基本信息',v:130},{s:'司法风险',v:95},{s:'股权穿透',v:75}]],
+    ['某某租赁','华东分部','运营部','报表平台',[{s:'企业基本信息',v:40},{s:'舆情分析',v:35}]],
+    ['某某信托','总部','资管部','资管系统',[{s:'企业基本信息',v:110},{s:'信用评估',v:85},{s:'反欺诈',v:70}]],
+    ['某某信托','总部','投资部','交易系统',[{s:'股权穿透',v:65},{s:'知识产权',v:50}]],
+    ['某某信托','北京分部','交易部','交易系统',[{s:'企业搜索',v:45},{s:'税务评级',v:38}]]
+  ];
+
+  var svcApis = {
+    '企业基本信息': [{n:'企业基本信息查询',s:'天眼查',v:180},{n:'企业工商信息查询',s:'企查查',v:120}],
+    '信用评估': [{n:'信用评分查询',s:'百融',v:150},{n:'企业信用报告',s:'中诚信',v:80}],
+    '反欺诈': [{n:'反欺诈风险评分',s:'同盾',v:130},{n:'反欺诈规则引擎',s:'百融',v:65}],
+    '司法风险': [{n:'司法风险明细',s:'法海风控',v:100},{n:'失信被执行人',s:'法海风控',v:75}],
+    '企业搜索': [{n:'企业搜索',s:'企查查',v:110},{n:'企业模糊搜索',s:'天眼查',v:60}],
+    '舆情分析': [{n:'舆情文本分析',s:'新华智云',v:75},{n:'舆情热度评分',s:'新华智云',v:50}],
+    '股权穿透': [{n:'股权穿透图',s:'天眼查',v:90},{n:'股权穿透查询',s:'企查查',v:60}],
+    '知识产权': [{n:'知识产权检索',s:'智慧芽',v:65},{n:'知识产权评分',s:'智慧芽',v:40}],
+    '税务评级': [{n:'税务评级查询',s:'百融',v:70},{n:'税务评级明细',s:'天眼查',v:45}]
+  };
+
+  var nodes = [];
+  var links = [];
+  var nodeMap = {};
+
+  function addNode(id, label, depth) {
+    if (!nodeMap[id]) {
+      nodeMap[id] = true;
+      nodes.push({ name: id, _label: label, depth: depth,
+        label: { show: true, color: '#e0e6ed', fontSize: 11, formatter: function(p) { return p.data._label; } },
+        itemStyle: { color: sankeyLevelColors[depth], borderColor: 'rgba(255,255,255,0.12)' }
+      });
+    }
+  }
+
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    var tenant = r[0], company = r[1], dept = r[2], sys = r[3], svcs = r[4];
+
+    // Node IDs (path-based for uniqueness)
+    var tId = '~' + tenant;
+    var cId = tId + '>' + company;
+    var dId = cId + '>' + dept;
+    var sId = dId + '>' + sys;
+
+    // Add caller-side nodes
+    addNode(tId, tenant, 0);
+    addNode(cId, company, 1);
+    addNode(dId, dept, 2);
+    addNode(sId, sys, 3);
+
+    // Compute total system value
+    var totalSysVal = 0;
+    for (var si = 0; si < svcs.length; si++) totalSysVal += svcs[si].v;
+
+    // Caller-side links (for 'full' and 'caller' levels)
+    if (level === 'full' || level === 'caller') {
+      links.push({ source: tId, target: cId, value: totalSysVal * pm });
+      links.push({ source: cId, target: dId, value: totalSysVal * pm });
+      links.push({ source: dId, target: sId, value: totalSysVal * pm });
+    }
+
+    // Service-side links (for 'full' and 'service' levels)
+    if (level === 'full' || level === 'service') {
+      for (var si = 0; si < svcs.length; si++) {
+        var svcName = svcs[si].s;
+        var svcVal = svcs[si].v * pm;
+        var svcId = sId + '>' + svcName;
+        addNode(svcId, svcName, 4);
+        links.push({ source: sId, target: svcId, value: svcVal });
+
+        // API links
+        var apis = svcApis[svcName] || [];
+        for (var ai = 0; ai < apis.length; ai++) {
+          var api = apis[ai];
+          var apiVal = Math.round(api.v * pm * svcs[si].v / 100);
+          var apiId = svcName + '>' + api.n;
+          addNode(apiId, api.n, 5);
+          links.push({ source: svcId, target: apiId, value: apiVal });
+
+          // Supplier links
+          var supId = '~' + api.s;
+          addNode(supId, api.s, 6);
+          links.push({ source: apiId, target: supId, value: apiVal });
+        }
+      }
+    }
+  }
+
+  return { nodes: nodes, links: links };
+}
+
+function renderSankey(period, level) {
+  var data = buildSankeyData(period, level);
+  chartSankey.setOption({
+    tooltip: {
+      trigger: 'item',
+      triggerOn: 'mousemove',
+      backgroundColor: 'rgba(15,33,55,0.95)',
+      borderColor: 'rgba(79,195,247,0.3)',
+      textStyle: { color: '#e0e6ed', fontSize: 12 },
+      formatter: function(p) {
+        if (p.dataType === 'node') {
+          var depth = p.data.depth;
+          var lvlName = sankeyLevelNames[depth] || '';
+          return '<b>[' + lvlName + '] ' + (p.data._label || p.name) + '</b><br/>调用总量: ' + (p.value || 0).toLocaleString();
+        }
+        var sLabel = p.data.source.split('>').pop().trim();
+        var tLabel = p.data.target.split('>').pop().trim();
+        return sLabel + ' → ' + tLabel + '<br/>调用量: ' + p.value.toLocaleString();
+      }
+    },
+    series: [{
+      type: 'sankey',
+      layout: 'none',
+      emphasis: { focus: 'adjacency' },
+      nodeAlign: 'left',
+      nodeGap: 8,
+      nodeWidth: 20,
+      layoutIterations: 32,
+      label: { fontSize: 11, color: '#e0e6ed' },
+      lineStyle: { color: 'gradient', opacity: 0.35, curveness: 0.5 },
+      data: data.nodes,
+      links: data.links
+    }]
+  }, true);
+}
+
+var currentSankeyPeriod = 'month';
+var currentSankeyLevel = 'full';
+renderSankey(currentSankeyPeriod, currentSankeyLevel);
+
+function switchSankeyPeriod(val) {
+  currentSankeyPeriod = val;
+  renderSankey(val, currentSankeyLevel);
+}
+function switchSankeyLevel(val) {
+  currentSankeyLevel = val;
+  renderSankey(currentSankeyPeriod, val);
+}
+
 // === Resize handling ===
 window.addEventListener('resize', function() {
   chartTrend.resize();
@@ -1114,6 +1323,7 @@ window.addEventListener('resize', function() {
   chartDimSys.resize();
   chartDimSvc.resize();
   chartDimApi.resize();
+  chartSankey.resize();
 });
 </script>
 <script>
