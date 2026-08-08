@@ -613,7 +613,7 @@
     </div>
 
     <!-- 规则弹窗 -->
-    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
                         <div class="multi-select-container">
                             <div class="multi-select-trigger" onclick="toggleMultiSelect()">
                                 <span class="multi-select-placeholder">请选择时间点</span>
@@ -688,7 +688,7 @@ let ruleList = [
     { id: 1, tenant: "某某金控", type: "合同账单提醒", name: "合同到期提醒", conditions: ["距离合同到期日 <= 30 天"], service: "全局", level: "P3提醒", receiver: ["服务管理人员"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" },
     { id: 2, tenant: "某某金控", type: "API用量预警", name: "额度用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%", "API已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 3, tenant: "某某金控", type: "API用量预警", name: "用量预测预警", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
-    { id: 7, tenant: "某某金控", type: "服务使用预警", name: "服务用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "每日检查", timePoints: ["09:00"], status: "启用" },
+    { id: 7, tenant: "某某金控", type: "服务使用预警", name: "服务用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%"], service: "企业画像查询服务", level: "P2警告", receiver: ["服务应用人员"], freq: "每日检查", timePoints: ["09:00"], status: "启用" },
     { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务失败异常", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 5, tenant: "某某金控", type: "服务异常告警", name: "服务超时异常", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "天眼查", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 6, tenant: "某某金控", type: "服务异常告警", name: "系统性能异常", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
@@ -1073,6 +1073,7 @@ function updateRuleFormByType() {
     else if (type === '服务异常告警') ruleNames = ["服务失败异常", "服务超时异常", "系统性能异常"];
     const nameSelect = document.getElementById('ruleNameSelect');
     nameSelect.innerHTML = '<option value="">请选择规则名称</option>' + ruleNames.map(n => `<option value="${n}">${n}</option>`).join('');
+    updateScopeUI();
     // 服务使用预警默认：发送对象=服务应用人员、发送频率=每日检查（编辑/查看时由既有逻辑覆盖）
     if (type === '服务使用预警') {
         setSelectValue('ruleReceiver', '服务应用人员');
@@ -1318,17 +1319,27 @@ function editRule(id) {
                 renderConditions(item.name);
                 renderSystemPerfConditions();
             }
+            // 适用范围/服务/API 还原
+            updateScopeUI();
+            document.getElementById('ruleSvcSelect').disabled = false;
+            if (isServiceUsageRule()) {
+                if (item.service && item.service !== '全局') {
+                    setSelectValue('ruleService', '指定服务');
+                    setSelectValue('ruleSvcSelect', item.service);
+                } else {
+                    setSelectValue('ruleService', '全局');
+                    setSelectValue('ruleSvcSelect', '');
+                }
+                applyScopeVisibility();
+            } else {
+                setSelectValue('ruleService', item.service);
+                updateRuleApiOptions(item.service);
+                if (item.api) setRuleApiValue(item.api);
+            }
         }, 50);
         document.getElementById('ruleLevel').value = item.level;
         document.getElementById('ruleLevel').disabled = false;
-        setSelectValue('ruleService', item.service);
         document.getElementById('ruleService').disabled = false;
-        setTimeout(() => {
-            updateRuleApiOptions(item.service);
-            if (item.api) {
-                setRuleApiValue(item.api);
-            }
-        }, 0);
         document.getElementById('ruleApi').disabled = false;
         setSelectValue('ruleReceiver', item.receiver[0] || '');
         document.getElementById('ruleReceiver').disabled = false;
@@ -1388,18 +1399,28 @@ function viewRule(id) {
                 renderSystemPerfConditions();
                 disableConditionInputs('systemPerfConditionList');
             }
+            // 适用范围/服务/API 还原（只读）
+            updateScopeUI();
+            if (isServiceUsageRule()) {
+                if (item.service && item.service !== '全局') {
+                    setSelectValue('ruleService', '指定服务');
+                    setSelectValue('ruleSvcSelect', item.service);
+                } else {
+                    setSelectValue('ruleService', '全局');
+                    setSelectValue('ruleSvcSelect', '');
+                }
+                applyScopeVisibility();
+            } else {
+                setSelectValue('ruleService', item.service);
+                updateRuleApiOptions(item.service);
+                if (item.api) setRuleApiValue(item.api);
+            }
+            document.getElementById('ruleService').disabled = true;
+            document.getElementById('ruleApi').disabled = true;
+            document.getElementById('ruleSvcSelect').disabled = true;
         }, 50);
         document.getElementById('ruleLevel').value = item.level;
         document.getElementById('ruleLevel').disabled = true;
-        setSelectValue('ruleService', item.service);
-        document.getElementById('ruleService').disabled = true;
-        setTimeout(() => {
-            updateRuleApiOptions(item.service);
-            if (item.api) {
-                setRuleApiValue(item.api);
-            }
-        }, 0);
-        document.getElementById('ruleApi').disabled = true;
         setSelectValue('ruleReceiver', item.receiver[0] || '');
         document.getElementById('ruleReceiver').disabled = true;
         document.getElementById('ruleStatus').value = item.status || '启用';
@@ -1436,11 +1457,14 @@ function addRule() {
     renderConditions(''); 
     document.getElementById('ruleLevel').value = 'P2警告'; 
     document.getElementById('ruleLevel').disabled = false;
-    setSelectValue('ruleService', '全局'); 
+    setSelectValue('ruleService', '全局');
     document.getElementById('ruleService').disabled = false;
-    setRuleApiValue(''); 
+    setRuleApiValue('');
     document.getElementById('ruleApi').disabled = false;
     document.getElementById('ruleApiRow').style.display = 'none';
+    setSelectValue('ruleSvcSelect', '');
+    document.getElementById('ruleSvcSelect').disabled = false;
+    document.getElementById('ruleSvcRow').style.display = 'none';
     setSelectValue('ruleReceiver', ''); 
     document.getElementById('ruleReceiver').disabled = false;
     document.getElementById('ruleFreq').value = '触发时发送一次'; 
@@ -1455,7 +1479,13 @@ function saveRule() {
     if(!name){ alert('请选择规则名称'); return; }
     const conditions = getConditionsText(name);
     const level = document.getElementById('ruleLevel').value;
-    const service = getSelectValue('ruleService') || '全局';
+    let service;
+    if (isServiceUsageRule()) {
+        const scope = getSelectValue('ruleService');
+        service = (scope === '指定服务') ? (getSelectValue('ruleSvcSelect') || '全局') : '全局';
+    } else {
+        service = getSelectValue('ruleService') || '全局';
+    }
     const api = getRuleApiValue();
     const receiver = getSelectValue('ruleReceiver');
     const status = document.getElementById('ruleStatus').value;
@@ -1509,6 +1539,51 @@ function getRuleApiValue() {
 
 function setRuleApiValue(api) {
     document.getElementById('ruleApi').value = api;
+}
+
+// 当前调用方下的服务名称（用于「服务使用预警/服务用量预警」指定服务）
+const callerServices = ["企业画像查询服务", "金融风控服务", "身份核验服务", "信用报告查询服务", "舆情监控服务"];
+
+// 是否为「服务使用预警 + 服务用量预警」特殊规则
+function isServiceUsageRule() {
+    const t = document.getElementById('ruleType');
+    const n = document.getElementById('ruleNameSelect');
+    return !!t && !!n && t.value === '服务使用预警' && n.value === '服务用量预警';
+}
+
+// 根据规则类型/名称切换「适用范围」可选项；并初始化「服务」下拉
+function updateScopeUI() {
+    const scopeSelect = document.getElementById('ruleService');
+    const svcSelect = document.getElementById('ruleSvcSelect');
+    if (!scopeSelect) return;
+    if (svcSelect && svcSelect.options.length <= 1) {
+        callerServices.forEach(s => {
+            const o = document.createElement('option');
+            o.value = s; o.textContent = s;
+            svcSelect.appendChild(o);
+        });
+    }
+    const special = isServiceUsageRule();
+    const current = scopeSelect.value;
+    const opts = special ? ['全局', '指定服务'] : ['全局', '企查查', '天眼查'];
+    scopeSelect.innerHTML = opts.map(o => '<option value="' + o + '">' + o + '</option>').join('');
+    scopeSelect.value = (opts.indexOf(current) !== -1) ? current : '全局';
+    applyScopeVisibility();
+}
+
+// 根据适用范围值显示/隐藏「服务」与「API」行
+function applyScopeVisibility() {
+    const scopeEl = document.getElementById('ruleService');
+    const scope = scopeEl ? scopeEl.value : '';
+    const svcRow = document.getElementById('ruleSvcRow');
+    const apiRow = document.getElementById('ruleApiRow');
+    if (isServiceUsageRule()) {
+        if (apiRow) apiRow.style.display = 'none';
+        if (svcRow) svcRow.style.display = (scope === '指定服务') ? 'flex' : 'none';
+    } else {
+        if (svcRow) svcRow.style.display = 'none';
+        updateRuleApiOptions(scope);
+    }
 }
 
 // ======================== 渠道表格及配置 ========================
@@ -1611,7 +1686,7 @@ document.getElementById('closeTrendModalBtn')?.addEventListener('click',closeTre
 
 // 规则弹窗事件
 document.getElementById('ruleType')?.addEventListener('change', updateRuleFormByType);
-document.getElementById('ruleNameSelect')?.addEventListener('change', function() { if(this.value) renderConditions(this.value); });
+document.getElementById('ruleNameSelect')?.addEventListener('change', function() { if(this.value) renderConditions(this.value); updateScopeUI(); });
 document.getElementById('ruleFreq')?.addEventListener('change', toggleTimePoints);
 
 // 点击其他地方关闭下拉框
@@ -1797,7 +1872,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (target.id === 'ruleService') {
-            updateRuleApiOptions(target.value);
+            applyScopeVisibility();
         }
     });
     
