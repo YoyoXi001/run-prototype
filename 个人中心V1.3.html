@@ -534,13 +534,14 @@
         }
         .modal-container {
             background: #fff;
-            width: 520px;
-            max-width: 90%;
+            width: 600px;
+            max-width: 92%;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            max-height: 85vh;
         }
         .modal-header {
             padding: 20px 24px 12px 24px;
@@ -554,6 +555,8 @@
         .modal-body {
             padding: 0 24px 20px 24px;
             background: #fff;
+            overflow-y: auto;
+            max-height: 60vh;
         }
         .message-detail-content {
             text-align: left;
@@ -606,11 +609,157 @@
             text-indent: 2em;
             margin-bottom: 16px;
         }
+        .detail-greeting {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .detail-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+        /* 详情横向表格 */
+        .detail-table-wrap {
+            overflow-x: auto;
+            margin: 12px 0;
+            border: 1px solid #ebeef5;
+            border-radius: 6px;
+        }
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 400px;
+        }
+        .detail-table th {
+            background: #f8f9fb;
+            padding: 10px 14px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            text-align: center;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+        .detail-table th:last-child { border-right: none; }
+        .detail-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f2f5;
+            border-right: 1px solid #ebeef5;
+            text-align: center;
+            color: #333;
+            white-space: nowrap;
+        }
+        .detail-table td:last-child { border-right: none; }
+        .detail-table tr:last-child td { border-bottom: none; }
+        .detail-table tr:hover td { background: #fafcff; }
+        .detail-table .val-highlight { color: #f5222d; font-weight: 700; }
+        .detail-table .val-warning { color: #fa8c16; font-weight: 600; }
+        .detail-table .val-normal { color: #52c41a; }
         .detail-time {
             text-align: right;
             font-size: 12px;
             color: #999999;
             margin-top: 8px;
+        }
+
+        /* 消息详情 - 信息卡片 */
+        .detail-info-card {
+            background: #f8f9fb;
+            border: 1px solid #ebeef5;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .detail-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 13px;
+        }
+        .detail-info-row:last-child {
+            border-bottom: none;
+        }
+        .detail-info-label {
+            color: #909399;
+            flex-shrink: 0;
+            width: 100px;
+        }
+        .detail-info-value {
+            color: #303133;
+            font-weight: 500;
+            text-align: right;
+        }
+        .detail-info-value.highlight {
+            color: #f5222d;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .detail-info-value.warning-text {
+            color: #fa8c16;
+            font-weight: 600;
+        }
+        .detail-alert {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #ad6800;
+            margin: 12px 0;
+            line-height: 1.5;
+        }
+        .detail-alert.danger {
+            background: #fff1f0;
+            border-color: #ffa39e;
+            color: #cf1322;
+        }
+        .detail-actions {
+            margin-top: 16px;
+            text-align: center;
+        }
+        .detail-actions a {
+            color: #0d6cff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .detail-actions a:hover {
+            text-decoration: underline;
+        }
+        .detail-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin: 12px 0 6px 0;
+            padding-left: 8px;
+            border-left: 3px solid #f89d34;
+        }
+        .detail-steps {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.8;
+        }
+        .detail-steps li {
+            margin-bottom: 2px;
+        }
+        .detail-meta-bar {
+            display: flex;
+            gap: 16px;
+            margin: 8px 0 4px 0;
+            font-size: 12px;
+            color: #909399;
+        }
+        .detail-meta-bar span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         .modal-footer {
             padding: 0 24px 24px 24px;
@@ -631,6 +780,143 @@
         }
         .btn-confirm:hover {
             background: #e8891a;
+        }
+
+        /* 批量告警摘要样式 */
+        .batch-summary-header {
+            background: linear-gradient(135deg, #fff7e6, #fff1f0);
+            border: 1px solid #ffd591;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .batch-summary-header .batch-icon {
+            font-size: 24px;
+        }
+        .batch-summary-header .batch-info {
+            flex: 1;
+        }
+        .batch-summary-header .batch-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        .batch-summary-header .batch-time-range {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .batch-summary-header .batch-count {
+            background: #f5222d;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .batch-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #fafafa;
+            transition: background 0.2s;
+        }
+        .batch-item:hover {
+            background: #f5f5f5;
+        }
+        .batch-item .batch-level-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 70px;
+            text-align: center;
+        }
+        /* 表格内独立使用的标签样式 */
+        .batch-level-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 70px;
+            text-align: center;
+        }
+        .batch-level-tag.level-high { background: #fff1f0; color: #cf1322; }
+        .batch-level-tag.level-medium { background: #fff7e6; color: #d48806; }
+        .batch-level-tag.level-low { background: #f6ffed; color: #389e0d; }
+        .batch-item .batch-level-tag.level-high { background: #fff1f0; color: #cf1322; }
+        .batch-item .batch-level-tag.level-medium { background: #fff7e6; color: #d48806; }
+        .batch-item .batch-level-tag.level-low { background: #f6ffed; color: #389e0d; }
+        .batch-item .batch-text {
+            flex: 1;
+            font-size: 13px;
+            color: #333;
+        }
+        .batch-item .batch-time {
+            font-size: 12px;
+            color: #999;
+            white-space: nowrap;
+        }
+        .batch-footer {
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e4e7ed;
+        }
+        .batch-footer a {
+            color: #0d6cff;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .batch-footer a:hover {
+            text-decoration: underline;
+        }
+        /* 性能指标表格 */
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 13px;
+        }
+        .metrics-table th {
+            background: #f8f9fb;
+            padding: 8px 12px;
+            border: 1px solid #ebeef5;
+            text-align: center;
+            font-weight: 600;
+            color: #555;
+        }
+        .metrics-table td {
+            padding: 8px 12px;
+            border: 1px solid #ebeef5;
+            text-align: center;
+            color: #333;
+        }
+        .metrics-table tr.alert-row td {
+            background: #fff7e6;
+        }
+        .metrics-table .val-alert {
+            color: #f5222d;
+            font-weight: 700;
+        }
+        .metrics-table .val-normal {
+            color: #52c41a;
         }
 
         /* 模块切换 */
@@ -677,6 +963,9 @@
         <div class="menu-item" data-module="favorites">
             <div class="menu-left"><i class="el-icon-star-on"></i>我的收藏</div>
         </div>
+        <div class="menu-item" onclick="navigateTo('我的服务.html')">
+            <div class="menu-left"><i class="el-icon-s-grid"></i>我的服务</div>
+        </div>
         <div class="menu-item active" data-module="message" id="messageMenuItem">
             <div class="menu-left"><i class="el-icon-message"></i>我的消息</div>
         </div>
@@ -697,7 +986,7 @@
                 <div class="filter-bar">
                     <div class="filter-left">
                         <div class="filter-item"><label>租户</label><input type="text" id="msgFilterTenant" placeholder="请输入租户名称"></div>
-                        <div class="filter-item"><label>消息类型</label><select id="msgFilterType"><option value="全部">全部</option><option value="服务用量预警">服务用量预警</option><option value="服务审批通知">服务审批通知</option><option value="服务异常告警">服务异常告警</option><option value="合同账单提醒">合同账单提醒</option></select></div>
+                        <div class="filter-item"><label>消息类型</label><select id="msgFilterType"><option value="全部">全部</option><option value="额度用量预警">额度用量预警</option><option value="用量预测预警">用量预测预警</option><option value="服务用量预警">服务用量预警</option><option value="服务失败异常">服务失败异常</option><option value="服务超时异常">服务超时异常</option><option value="系统性能异常">系统性能异常</option><option value="告警摘要">告警摘要</option><option value="合同到期提醒">合同到期提醒</option><option value="服务审批通知">服务审批通知</option></select></div>
                         <div class="filter-item"><label>状态</label><select id="msgFilterReadStatus"><option value="全部">全部</option><option value="已读">已读</option><option value="未读">未读</option></select></div>
                     </div>
                     <div class="filter-right"><button class="btn-primary" id="msgSearchBtn">查询</button><button class="btn-default" id="msgResetBtn">重置</button></div>
@@ -778,10 +1067,30 @@ const currentUser = "席某";
 
 // ======================== 我的消息数据 ========================
 let messageList = [
-    { id: 1, tenant: "某某金控", type: "服务用量预警", summary: "企业画像查询服务配额即将用尽，当前使用率92%", time: "2026-04-15 10:23:15", level: "medium", levelText: "警告", read: false },
-    { id: 2, tenant: "某某金控", type: "服务审批通知", summary: "您有一条新的服务申请待审批：金融风控API", time: "2026-04-15 09:15:42", level: "low", levelText: "提示", read: false },
-    { id: 3, tenant: "某某金控", type: "服务异常告警", summary: "数据源连接异常：MySQL数据源「某某主库」连接池耗尽", time: "2026-04-14 08:30:22", level: "high", levelText: "严重", read: true },
-    { id: 4, tenant: "某某金控", type: "合同账单提醒", summary: "服务合同即将到期：企业画像查询服务2026-05-31到期", time: "2026-04-14 11:05:47", level: "medium", levelText: "警告", read: false }
+    { id: 1, tenant: "某某金控", type: "额度用量预警", summary: "企业规模API配额使用率达80%", time: "2026-07-02 14:00:00", level: "medium", levelText: "警告", read: false, detail: { supplier: "企查查", api: "企业规模", quota: 1000000, used: 800000, percent: 80 } },
+    { id: 2, tenant: "某某金控", type: "额度用量预警", summary: "企业基本信息API配额使用率达90%", time: "2026-07-01 16:30:00", level: "high", levelText: "严重", read: false, detail: { supplier: "企查查", api: "企业基本信息", quota: 2000000, used: 1800000, percent: 90 } },
+    { id: 3, tenant: "某某金控", type: "额度用量预警", summary: "融资历史API配额即将耗尽，使用率99%", time: "2026-07-01 09:15:00", level: "high", levelText: "紧急", read: false, detail: { supplier: "天眼查", api: "融资历史", quota: 1500000, used: 1485000, percent: 99 } },
+    { id: 4, tenant: "某某金控", type: "用量预测预警", summary: "企业规模API预计30天后配额耗尽", time: "2026-07-02 10:00:00", level: "medium", levelText: "警告", read: false, detail: { supplier: "企查查", api: "企业规模", quota: 1000000, used: 800000, predictDate: "2026-08-01", daysLeft: 30, gap: 100000 } },
+    { id: 5, tenant: "某某金控", type: "用量预测预警", summary: "严重违法记录API预计10天后配额耗尽", time: "2026-07-02 14:00:00", level: "high", levelText: "严重", read: false, detail: { supplier: "企查查", api: "严重违法记录", quota: 800000, used: 720000, predictDate: "2026-07-12", daysLeft: 10, gap: 150000 } },
+    { id: 6, tenant: "某某金控", type: "用量预测预警", summary: "舆情API预计3天后配额耗尽", time: "2026-07-02 18:00:00", level: "high", levelText: "紧急", read: false, detail: { supplier: "天眼查", api: "舆情", quota: 500000, used: 480000, predictDate: "2026-07-05", daysLeft: 3, gap: 80000 } },
+    { id: 7, tenant: "某某金控", type: "服务失败异常", summary: "企查查-企业基本信息API连接状态异常：连接失败", time: "2026-07-02 11:20:00", level: "high", levelText: "严重", read: false, detail: { subType: "服务失败异常", supplier: "企查查", api: "企业基本信息", metricName: "服务连接状态", operator: "=", expectedValue: "正常", currentValue: "失败", detectTime: "2026-07-02 11:15:00", duration: "45分钟", impact: "该API当前不可用，影响业务调用", node: "10.0.1.12", errorRate: "15.3" } },
+    { id: 8, tenant: "某某金控", type: "服务超时异常", summary: "天眼查-融资历史API服务P95响应时间超标：5200ms", time: "2026-07-02 08:05:00", level: "high", levelText: "严重", read: true, detail: { subType: "服务超时异常", supplier: "天眼查", api: "融资历史", metricName: "服务P95时间", operator: ">=", threshold: 3000, currentValue: 5200, detectTime: "2026-07-02 07:50:00", duration: "2小时", avgResponse: 2800, p50: 3200, p99: 8500, successRate: "92.5", timeoutRate: "7.5" } },
+    { id: 9, tenant: "某某金控", type: "告警摘要", summary: "【告警摘要】最近30分钟内共5条告警已合并发送（1紧急/2严重/2警告）", time: "2026-07-02 10:35:00", level: "high", levelText: "紧急", read: false, detail: { subType: "batchSummary", batchTitle: "告警摘要（同时间窗口合并发送）", batchTimeRange: "10:05 ~ 10:35", batchTotal: 5, batchRule: "以下告警在同时间窗口内触发，按设计规则合并为一条通知发送", batchItems: [ { batchLevel: "服务失败异常", batchLevelClass: "level-high", batchText: "天眼查-融资历史 服务连接状态异常：连接失败（同时间可批量）", batchTime: "10:05" }, { batchLevel: "服务超时异常", batchLevelClass: "level-high", batchText: "企查查-企业基本信息 服务P95响应时间超标 5200ms（同时间可批量）", batchTime: "09:50" }, { batchLevel: "系统性能异常", batchLevelClass: "level-high", batchText: "服务节点10.0.1.1 CPU使用率 95%（同时间可批量）", batchTime: "09:45" }, { batchLevel: "额度用量预警", batchLevelClass: "level-medium", batchText: "企查查-企业规模 配额使用率 85%（可批量）", batchTime: "09:40" }, { batchLevel: "用量预测预警", batchLevelClass: "level-medium", batchText: "天眼查-融资历史 预测15天后耗尽（可批量）", batchTime: "09:35" } ] } },
+    { id: 10, tenant: "某某金控", type: "系统性能异常", summary: "服务节点CPU使用率95%、内存使用率88%，超过告警阈值", time: "2026-07-02 14:30:00", level: "high", levelText: "严重", read: false, detail: { subType: "系统性能异常", serverName: "服务节点10.0.1.1", detectTime: "2026-07-02 14:25:00", duration: "35分钟", metrics: [{ name: "CPU使用率", operator: ">=", threshold: 90, currentValue: 95 }, { name: "内存使用率", operator: ">=", threshold: 85, currentValue: 88 }, { name: "磁盘使用率", operator: ">=", threshold: 90, currentValue: 72 }] } },
+    { id: 11, tenant: "某某金控", type: "合同到期提醒", summary: "企查查数据服务合同将于30天后到期", time: "2026-07-02 09:00:00", level: "medium", levelText: "提醒", read: false, detail: { contractName: "企查查数据服务合同", contractNo: "CT-2026-001", supplier: "企查查", expireDate: "2026-08-01", daysLeft: 30 } },
+    { id: 12, tenant: "某某金控", type: "合同到期提醒", summary: "天眼查API服务合同将于7天后到期", time: "2026-07-02 09:00:00", level: "high", levelText: "严重", read: false, detail: { contractName: "天眼查API服务合同", contractNo: "CT-2026-002", supplier: "天眼查", expireDate: "2026-07-09", daysLeft: 7 } },
+    { id: 13, tenant: "某某金控", type: "服务审批通知", summary: "张三提交金融风控API服务申请", time: "2026-07-02 10:23:15", level: "low", levelText: "提示", read: false, detail: { applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "金融风控业务需要调用企业画像数据", status: "待审批", subType: "pending" } },
+    { id: 14, tenant: "某某金控", type: "服务审批通知", summary: "李四的数据清洗服务申请已通过", time: "2026-07-01 15:30:00", level: "low", levelText: "提示", read: true, detail: { applyNo: "APcSU7Dn", applicant: "李四", serviceName: "数据清洗服务", approver: "王经理", approveTime: "2026-07-01 15:30:00", validFrom: "2026-07-01", validTo: "2027-07-01", status: "approved", subType: "approved" } },
+    { id: 15, tenant: "某某金控", type: "服务审批通知", summary: "王五的身份核验服务申请被驳回", time: "2026-06-30 14:20:00", level: "low", levelText: "提示", read: true, detail: { applyNo: "APxK9Lm3P", applicant: "王五", serviceName: "身份核验服务", approver: "李总监", approveTime: "2026-06-30 14:20:00", reason: "申请用途描述不清晰，请补充详细业务场景说明后重新提交", status: "rejected", subType: "rejected" } },
+    { id: 16, tenant: "华润金控", type: "额度用量预警", summary: "企业画像API配额使用率达85%", time: "2026-07-02 12:00:00", level: "medium", levelText: "警告", read: false, detail: { supplier: "企查查", api: "企业画像", quota: 1200000, used: 1020000, percent: 85 } },
+    { id: 17, tenant: "华润金控", type: "服务失败异常", summary: "企业基本信息API返回502错误比例达12%", time: "2026-07-02 13:45:00", level: "high", levelText: "严重", read: false, detail: { subType: "服务失败异常", supplier: "天眼查", api: "企业基本信息", metricName: "服务连接状态", operator: "!=", expectedValue: "正常", currentValue: "502错误", detectTime: "2026-07-02 13:40:00", duration: "30分钟", impact: "返回502错误比例达12%，正常应低于1%", node: "10.0.2.5", errorRate: "12" } },
+    { id: 18, tenant: "招商金控", type: "用量预测预警", summary: "融资历史API预计15天后配额耗尽", time: "2026-07-02 10:00:00", level: "medium", levelText: "警告", read: false, detail: { supplier: "天眼查", api: "融资历史", quota: 900000, used: 750000, predictDate: "2026-07-17", daysLeft: 15, gap: 120000 } },
+    { id: 19, tenant: "招商金控", type: "合同到期提醒", summary: "天眼查数据服务合同将于15天后到期", time: "2026-07-02 09:00:00", level: "medium", levelText: "提醒", read: false, detail: { contractName: "天眼查数据服务合同", contractNo: "CT-2026-003", supplier: "天眼查", expireDate: "2026-07-17", daysLeft: 15 } },
+    { id: 20, tenant: "某某金控", type: "服务审批通知", summary: "席某提交企业画像查询服务申请", time: "2026-06-28 09:53:11", level: "low", levelText: "提示", read: true, detail: { applyNo: "APsmL5FTk", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "企业画像查询", status: "待审批", subType: "pending" } },
+    { id: 21, tenant: "某某金控", type: "服务用量预警", summary: "【服务用量预警】2项服务额度提醒通知", time: "2026-07-02 09:00:00", level: "medium", levelText: "警告", read: false, detail: { count: 2, services: [
+        { service: "企业画像查询服务", supplier: "企查查", api: "企业基本信息", quota: 2000000, used: 1800000, remain: 200000, percent: 10 },
+        { service: "金融风控服务", supplier: "天眼查", api: "融资历史", quota: 1500000, used: 1485000, remain: 15000, percent: 1 }
+    ] } }
 ];
 
 // ======================== 我的审批数据 ========================
@@ -839,14 +1148,14 @@ function renderMessageTable() {
     const pageData = filteredMessage.slice((currentPage.message-1)*pageSize, currentPage.message*pageSize);
     const tbody = document.getElementById('messageTableBody');
     if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</div></div></div></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</td></tr>';
     } else {
         tbody.innerHTML = pageData.map(i => `<tr>
             <td>${i.id}</td>
-            <td>${escapeHtml(i.tenant)}</div></td>
-            <td>${escapeHtml(i.type)}</div></td>
-            <td>${escapeHtml(i.summary)}</div></td>
-            <td>${escapeHtml(i.time)}</div></td>
+            <td>${escapeHtml(i.tenant)}</td>
+            <td>${escapeHtml(i.type)}</td>
+            <td style="text-align:left;max-width:260px;">${escapeHtml(i.summary)}</td>
+            <td>${escapeHtml(i.time)}</td>
             <td><span class="status-badge ${i.level==='high'?'level-high':(i.level==='medium'?'level-medium':'level-low')}">${i.levelText}</span></td>
             <td><span class="status-badge ${i.read?'status-read':'status-unread'}">${i.read?'已读':'未读'}</span></td>
             <td><a class="action-link" onclick="viewMessageDetail(${i.id})">查看详情</a></td>
@@ -867,23 +1176,244 @@ function viewMessageDetail(id) {
     if (item.level === 'high') levelClass = 'detail-level-high';
     else if (item.level === 'medium') levelClass = 'detail-level-medium';
     else levelClass = 'detail-level-low';
-    
+
+    let detailHTML = '';
+    const d = item.detail || {};
+
+    if (item.type === '额度用量预警') {
+        const remain = (d.quota - d.used) || 0;
+        const remainPercent = d.quota ? Math.round((remain / d.quota) * 100) : 0;
+        detailHTML = `
+            <div class="detail-greeting">您好：</div>
+            <div class="detail-desc">您的以下服务配额用量即将用尽，请合理规划后续调用量，如需扩容请提前申请。</div>
+            <div class="detail-table-wrap"><table class="detail-table">
+                <thead><tr><th>供应商名称</th><th>API服务</th><th>配额总量</th><th>已用配额</th><th>剩余配额</th><th>剩余百分比</th></tr></thead>
+                <tbody><tr>
+                    <td>${escapeHtml(d.supplier)}</td>
+                    <td>${escapeHtml(d.api)}</td>
+                    <td>${formatNum(d.quota)} 次</td>
+                    <td class="val-highlight">${formatNum(d.used)} 次（${d.percent}%）</td>
+                    <td>${formatNum(remain)} 次</td>
+                    <td class="${remainPercent <= 10 ? 'val-highlight' : 'val-warning'}">${remainPercent}%</td>
+                </tr></tbody>
+            </table></div>`;
+
+    } else if (item.type === '用量预测预警') {
+        detailHTML = `
+            <div class="detail-greeting">您好：</div>
+            <div class="detail-desc">根据历史用量趋势预测，您的以下服务配额预计即将用尽，请尽快制定扩容或续购计划，避免服务中断。</div>
+            <div class="detail-table-wrap"><table class="detail-table">
+                <thead><tr><th>供应商名称</th><th>API</th><th>配额总量</th><th>已用配额</th><th>预测耗尽日</th><th>服务到期日</th><th>预测缺口数量</th></tr></thead>
+                <tbody><tr>
+                    <td>${escapeHtml(d.supplier)}</td>
+                    <td>${escapeHtml(d.api)}</td>
+                    <td>${formatNum(d.quota)} 次</td>
+                    <td>${formatNum(d.used)} 次</td>
+                    <td class="val-highlight">${escapeHtml(d.predictDate)}</td>
+                    <td>${escapeHtml(d.expireDate || '-')}</td>
+                    <td class="val-warning">${formatNum(d.gap)} 次</td>
+                </tr></tbody>
+            </table></div>`;
+
+    } else if (item.type === '服务用量预警') {
+        const count = d.count || (d.services ? d.services.length : 0);
+        let svcRows = '';
+        if (d.services && d.services.length) {
+            svcRows = d.services.map(s => {
+                const pctClass = (s.percent !== undefined && s.percent <= 10) ? 'val-highlight' : (s.percent !== undefined && s.percent <= 20 ? 'val-warning' : 'val-normal');
+                return `<tr>
+                    <td style="text-align:left;">${escapeHtml(s.service)}</td>
+                    <td>${escapeHtml(s.supplier)}</td>
+                    <td>${escapeHtml(s.api)}</td>
+                    <td>${formatNum(s.quota)} 次</td>
+                    <td>${formatNum(s.used)} 次</td>
+                    <td>${formatNum(s.remain)} 次</td>
+                    <td class="${pctClass}">${(s.percent !== undefined ? s.percent : '-')}%</td>
+                </tr>`;
+            }).join('');
+        }
+        detailHTML = `
+            <div class="detail-greeting">您好：</div>
+            <div class="detail-desc">您有${count}个服务剩余额度不足，请合理规划后续调用量，如需增加额度请提前申请。</div>
+            <div class="detail-table-wrap"><table class="detail-table">
+                <thead><tr><th>服务</th><th>供应商</th><th>API接口</th><th>额度总量</th><th>已用额度</th><th>剩余额度</th><th>剩余%</th></tr></thead>
+                <tbody>${svcRows}</tbody>
+            </table></div>
+            <div class="detail-actions"><a href="我的服务.html" onclick="closeModal()">查看详情&gt;&gt;</a><span style="color:#999;font-size:12px;margin-left:8px;">（跳转至外数平台【我的服务】页面）</span></div>`;
+
+    } else if (item.type === '服务失败异常' || item.type === '服务超时异常' || item.type === '系统性能异常' || item.type === '告警摘要') {
+        if (item.type === '服务失败异常') {
+            detailHTML = `
+                <div class="detail-greeting">您好：</div>
+                <div class="detail-desc">您的以下服务连接状态异常，请立即排查服务状况。</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>供应商名称</th><th>API</th><th>连接状态</th><th>检测时间</th><th>持续时长</th></tr></thead>
+                    <tbody><tr>
+                        <td>${escapeHtml(d.supplier)}</td>
+                        <td>${escapeHtml(d.api)}</td>
+                        <td class="val-highlight">${escapeHtml(d.currentValue)}</td>
+                        <td>${escapeHtml(d.detectTime)}</td>
+                        <td class="val-warning">${escapeHtml(d.duration)}</td>
+                    </tr></tbody>
+                </table></div>`;
+
+        } else if (item.type === '服务超时异常') {
+            detailHTML = `
+                <div class="detail-greeting">您好：</div>
+                <div class="detail-desc">您的以下服务响应时间超标，建议立即排查服务状况。</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>供应商名称</th><th>API</th><th>当前P95耗时</th><th>检测时间</th><th>持续时长</th></tr></thead>
+                    <tbody><tr>
+                        <td>${escapeHtml(d.supplier)}</td>
+                        <td>${escapeHtml(d.api)}</td>
+                        <td class="val-highlight">${d.currentValue} ms</td>
+                        <td>${escapeHtml(d.detectTime)}</td>
+                        <td class="val-warning">${escapeHtml(d.duration)}</td>
+                    </tr></tbody>
+                </table></div>`;
+
+        } else if (item.type === '系统性能异常') {
+            let metricsRows = '';
+            if (d.metrics) {
+                d.metrics.forEach(m => {
+                    const isAlert = (m.operator === '>=' || m.operator === '>') ? m.currentValue >= m.threshold : m.currentValue < m.threshold;
+                    metricsRows += '<tr><td>' + escapeHtml(d.serverName) + '</td><td>' + escapeHtml(m.name) + '</td><td class="' + (isAlert ? 'val-highlight' : 'val-normal') + '">' + m.currentValue + '%</td><td>' + escapeHtml(m.operator) + ' ' + m.threshold + '%</td><td>' + escapeHtml(d.detectTime) + '</td><td class="val-warning">' + escapeHtml(d.duration) + '</td></tr>';
+                });
+            }
+            detailHTML = `
+                <div class="detail-greeting">您好：</div>
+                <div class="detail-desc">您的服务出现性能异常，请立即处理避免服务中断。</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>服务节点</th><th>异常指标</th><th>当前值</th><th>阈值</th><th>检测时间</th><th>持续时长</th></tr></thead>
+                    <tbody>${metricsRows}</tbody>
+                </table></div>`;
+
+        } else if (item.type === '告警摘要') {
+            let batchRows = '';
+            if (d.batchItems) {
+                d.batchItems.forEach(bi => {
+                    batchRows += '<tr><td><span class="batch-level-tag ' + escapeHtml(bi.batchLevelClass) + '">' + escapeHtml(bi.batchLevel) + '</span></td><td style="text-align:left;white-space:normal;">' + escapeHtml(bi.batchText) + '</td><td>' + escapeHtml(bi.batchTime) + '</td></tr>';
+                });
+            }
+            detailHTML = `
+                <div class="batch-summary-header">
+                    <span class="batch-icon">📋</span>
+                    <div class="batch-info">
+                        <div class="batch-title">${escapeHtml(d.batchTitle || '告警摘要')}</div>
+                        <div class="batch-time-range">时间范围：${escapeHtml(d.batchTimeRange)}</div>
+                    </div>
+                    <div class="batch-count">${d.batchTotal || 0}</div>
+                </div>
+                <div class="detail-desc" style="color:#999;font-size:12px;">${escapeHtml(d.batchRule || '')}</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>告警类型</th><th>告警内容</th><th>触发时间</th></tr></thead>
+                    <tbody>${batchRows}</tbody>
+                </table></div>
+                <div style="margin-top:12px;padding:10px 14px;background:#f8f9fb;border-radius:6px;font-size:12px;color:#999;line-height:1.6;">
+                    <strong style="color:#666;">批量合并规则：</strong><br>
+                    ✅ 可合并：合同到期提醒、额度用量预警、用量预测预警<br>
+                    ✅ 同时间可合并：服务失败异常、服务超时异常、系统性能异常<br>
+                    ❌ 不可合并（实时触发）：服务审批通知、通用服务异常
+                </div>
+                <div class="batch-footer"><a href="javascript:void(0)" onclick="alert('跳转至告警管理页面查看全部告警')">👉 查看全部告警详情</a></div>`;
+
+        } else {
+            detailHTML = `
+                <div class="detail-desc" style="font-weight:500;color:#333;">服务出现异常：</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>供应商</th><th>API服务</th><th>异常详情</th></tr></thead>
+                    <tbody><tr>
+                        <td>${escapeHtml(d.supplier || '')}</td>
+                        <td>${escapeHtml(d.api || '')}</td>
+                        <td class="val-highlight">${escapeHtml(d.errorDetail || d.errorType || '')}</td>
+                    </tr></tbody>
+                </table></div>
+                <div class="detail-desc">请及时排查处理。</div>`;
+        }
+
+    } else if (item.type === '合同到期提醒') {
+        detailHTML = `
+            <div class="detail-greeting">您好：</div>
+            <div class="detail-desc">您有以下服务合同即将到期，请及时处理续期事宜；避免服务中断影响业务，请尽早与供应商沟通续约或切换方案。</div>
+            <div class="detail-table-wrap"><table class="detail-table">
+                <thead><tr><th>合同名称</th><th>供应商</th><th>合同到期日</th><th>距到期剩余</th></tr></thead>
+                <tbody><tr>
+                    <td>${escapeHtml(d.contractName)}</td>
+                    <td>${escapeHtml(d.supplier)}</td>
+                    <td>${escapeHtml(d.expireDate)}</td>
+                    <td class="${d.daysLeft <= 7 ? 'val-highlight' : 'val-warning'}">${d.daysLeft} 天</td>
+                </tr></tbody>
+            </table></div>`;
+
+    } else if (item.type === '服务审批通知') {
+        if (d.subType === 'pending') {
+            detailHTML = `
+                <div class="detail-desc">您有一条新的服务申请待审批，请及时登录平台完成审批。</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>申请单号</th><th>申请人</th><th>申请人租户</th><th>申请人系统</th><th>申请用途</th><th>申请时间</th></tr></thead>
+                    <tbody><tr>
+                        <td>${escapeHtml(d.applyNo)}</td>
+                        <td>${escapeHtml(d.applicant)}</td>
+                        <td>${escapeHtml(d.applicantTenant)}</td>
+                        <td>${escapeHtml(d.applicantSystem)}</td>
+                        <td style="white-space:normal;max-width:160px;">${escapeHtml(d.purpose)}</td>
+                        <td>${escapeHtml(item.time)}</td>
+                    </tr></tbody>
+                </table></div>`;
+        } else if (d.subType === 'approved') {
+            detailHTML = `
+                <div class="detail-desc">恭喜，您的服务申请已通过审批，您现在可以在系统中正常调用该服务。</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>申请单号</th><th>申请服务</th><th>审批人</th><th>审批时间</th></tr></thead>
+                    <tbody><tr>
+                        <td>${escapeHtml(d.applyNo)}</td>
+                        <td>${escapeHtml(d.serviceName)}</td>
+                        <td>${escapeHtml(d.approver)}</td>
+                        <td>${escapeHtml(d.approveTime)}</td>
+                    </tr></tbody>
+                </table></div>`;
+        } else if (d.subType === 'rejected') {
+            detailHTML = `
+                <div class="detail-desc">您的服务申请被驳回，如有疑问请联系审批人或修改申请后重新提交。</div>
+                <div class="detail-table-wrap"><table class="detail-table">
+                    <thead><tr><th>申请单号</th><th>申请服务</th><th>审批人</th><th>审批时间</th><th>驳回原因</th></tr></thead>
+                    <tbody><tr>
+                        <td>${escapeHtml(d.applyNo)}</td>
+                        <td>${escapeHtml(d.serviceName)}</td>
+                        <td>${escapeHtml(d.approver)}</td>
+                        <td>${escapeHtml(d.approveTime)}</td>
+                        <td class="val-highlight" style="white-space:normal;max-width:180px;">${escapeHtml(d.reason)}</td>
+                    </tr></tbody>
+                </table></div>`;
+        }
+    }
+
     document.getElementById('modalBody').innerHTML = `
         <div class="message-detail-content">
             <div class="detail-header">
-                <span class="detail-type">消息类型：${escapeHtml(item.type)}</span>
+                <span class="detail-type">消息类型：${escapeHtml(item.type)}${d.subType && d.subType !== 'batchSummary' && d.subType !== item.type ? ' · ' + escapeHtml(d.subType) : (d.subType === 'batchSummary' ? ' · 合并通知' : '')}</span>
                 <div class="detail-level-wrapper">
                     <span class="detail-level-label">严重程度：</span>
                     <span class="detail-level ${levelClass}">${item.levelText}</span>
                 </div>
             </div>
-            <div class="detail-content-text">
-                【${escapeHtml(item.tenant)}】${escapeHtml(item.summary)}，请及时处理！
+            <div class="detail-meta-bar">
+                <span>👤 租户：${escapeHtml(item.tenant)}</span>
             </div>
+            <div class="detail-content-text" style="text-indent:0;">
+                ${escapeHtml(item.summary)}
+            </div>
+            ${detailHTML}
             <div class="detail-time">${escapeHtml(item.time)}</div>
         </div>
     `;
     document.getElementById('detailModal').classList.add('active');
+}
+
+function formatNum(num) {
+    if (!num && num !== 0) return '-';
+    if (num >= 10000) return (num / 10000).toFixed(0) + '万';
+    return num.toLocaleString();
 }
 
 // 渲染我的审批
@@ -909,16 +1439,16 @@ function renderApprovalTable() {
     const pageData = filteredApproval.slice((currentPage.approval-1)*pageSize, currentPage.approval*pageSize);
     const tbody = document.getElementById('approvalTableBody');
     if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">暂无数据</div></div></div></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">暂无数据</td></tr>';
     } else {
         tbody.innerHTML = pageData.map(i => `<tr>
             <td>${i.id}</td>
-            <td>${escapeHtml(i.applyNo)}</div></td>
-            <td>${escapeHtml(i.applicant)}</div></td>
-            <td>${escapeHtml(i.applicantTenant)}</div></td>
-            <td>${escapeHtml(i.applicantSystem)}</div></td>
-            <td>${escapeHtml(i.purpose)}</div></td>
-            <td>${escapeHtml(i.applyTime)}</div></td>
+            <td>${escapeHtml(i.applyNo)}</td>
+            <td>${escapeHtml(i.applicant)}</td>
+            <td>${escapeHtml(i.applicantTenant)}</td>
+            <td>${escapeHtml(i.applicantSystem)}</td>
+            <td>${escapeHtml(i.purpose)}</td>
+            <td>${escapeHtml(i.applyTime)}</td>
             <td><span class="status-badge ${i.status==='待审批'?'status-pending':'status-approved'}">${i.status}</span></td>
             <td><a class="action-link" onclick="handleApproval(${i.id})">${i.status==='待审批'?'去审批':'查看详情'}</a></td>
         </tr>`).join('');
@@ -946,14 +1476,14 @@ function renderFavoritesTable() {
     const pageData = filteredFavorites.slice((currentPage.favorites-1)*pageSize, currentPage.favorites*pageSize);
     const tbody = document.getElementById('favoritesTableBody');
     if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</div></div></div></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</td></tr>';
     } else {
         tbody.innerHTML = pageData.map(i => `<tr>
             <td>${i.id}</td>
             <td><span class="service-link" onclick="alert('跳转服务详情：${escapeHtml(i.name)}')">${escapeHtml(i.name)}</span></td>
-            <td>${escapeHtml(i.version)}</div></td>
-            <td>${escapeHtml(i.publisher)}</div></td>
-            <td>${escapeHtml(i.domain)}</div></td>
+            <td>${escapeHtml(i.version)}</td>
+            <td>${escapeHtml(i.publisher)}</td>
+            <td>${escapeHtml(i.domain)}</td>
             <td><span class="status-badge ${i.authStatus==='审批中'?'status-pending':(i.authStatus==='已授权'?'status-approved':'status-disabled')}">${i.authStatus}</span></td>
             <td><span class="status-badge ${i.serviceStatus==='已发布'?'status-approved':'status-disabled'}">${i.serviceStatus}</span></td>
             <td><a class="action-link danger" onclick="cancelFavorite(${i.id})">取消收藏</a></td>
@@ -1095,6 +1625,7 @@ const navMenus = {
     personal: [
         { name: '我的审批', url: '个人中心V1.3.html#approval' },
         { name: '我的收藏', url: '个人中心V1.3.html#favorites' },
+        { name: '我的服务', url: '我的服务.html' },
         { name: '消息通知', url: '个人中心V1.3.html#message' }
     ],
     system: [

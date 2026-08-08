@@ -548,7 +548,7 @@
                 <div class="filter-section">
                     <div class="filter-bar">
                         <div class="filter-left">
-                            <div class="filter-item"><label>规则类型</label><select id="ruleTypeFilter"><option value="">全部</option><option value="合同账单提醒">合同账单提醒</option><option value="服务用量预警">服务用量预警</option><option value="服务异常告警">服务异常告警</option></select></div>
+                            <div class="filter-item"><label>规则类型</label><select id="ruleTypeFilter"><option value="">全部</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="服务异常告警">服务异常告警</option></select></div>
                             <div class="filter-item"><label>规则名称</label><input type="text" id="ruleNameFilter" placeholder="请输入规则名称"></div>
                         </div>
                         <div class="filter-right"><button class="btn-primary" id="ruleSearchBtn">查询</button><button class="btn-default" id="ruleResetBtn">重置</button></div>
@@ -613,7 +613,7 @@
     </div>
 
     <!-- 规则弹窗 -->
-    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="服务用量预警">服务用量预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
                         <div class="multi-select-container">
                             <div class="multi-select-trigger" onclick="toggleMultiSelect()">
                                 <span class="multi-select-placeholder">请选择时间点</span>
@@ -686,8 +686,9 @@ const allServices = ["全局", "企查查", ...servicesList];
 // ======================== 规则数据 ========================
 let ruleList = [
     { id: 1, tenant: "某某金控", type: "合同账单提醒", name: "合同到期提醒", conditions: ["距离合同到期日 <= 30 天"], service: "全局", level: "P3提醒", receiver: ["服务管理人员"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" },
-    { id: 2, tenant: "某某金控", type: "服务用量预警", name: "配额用量预警", conditions: ["已用量 >= 80%", "已用量 >= 90%", "已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 3, tenant: "某某金控", type: "服务用量预警", name: "配额用量预测", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
+    { id: 2, tenant: "某某金控", type: "API用量预警", name: "额度用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%", "API已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 3, tenant: "某某金控", type: "API用量预警", name: "用量预测预警", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
+    { id: 7, tenant: "某某金控", type: "服务使用预警", name: "服务用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "每日检查", timePoints: ["09:00"], status: "启用" },
     { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务失败异常", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 5, tenant: "某某金控", type: "服务异常告警", name: "服务超时异常", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "天眼查", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 6, tenant: "某某金控", type: "服务异常告警", name: "系统性能异常", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
@@ -1067,20 +1068,27 @@ function updateRuleFormByType() {
     const type = document.getElementById('ruleType').value;
     let ruleNames = [];
     if (type === '合同账单提醒') ruleNames = ["合同到期提醒"];
-    else if (type === '服务用量预警') ruleNames = ["配额用量预警", "配额用量预测"];
+    else if (type === 'API用量预警') ruleNames = ["额度用量预警", "用量预测预警"];
+    else if (type === '服务使用预警') ruleNames = ["服务用量预警"];
     else if (type === '服务异常告警') ruleNames = ["服务失败异常", "服务超时异常", "系统性能异常"];
     const nameSelect = document.getElementById('ruleNameSelect');
     nameSelect.innerHTML = '<option value="">请选择规则名称</option>' + ruleNames.map(n => `<option value="${n}">${n}</option>`).join('');
+    // 服务使用预警默认：发送对象=服务应用人员、发送频率=每日检查（编辑/查看时由既有逻辑覆盖）
+    if (type === '服务使用预警') {
+        setSelectValue('ruleReceiver', '服务应用人员');
+        const freqSel = document.getElementById('ruleFreq');
+        if (freqSel) freqSel.value = '每日检查';
+    }
 }
 
 function renderConditions(ruleName) {
     const container = document.getElementById('dynamicConditions');
     if (!ruleName || ruleName === '') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">触发条件</div><div style="color:#999;">请先选择规则名称</div></div>`;
-    } else if (ruleName === '配额用量预警') {
-        container.innerHTML = `<div class="condition-group"><div class="condition-header">已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
+    } else if (ruleName === '额度用量预警' || ruleName === '服务用量预警') {
+        container.innerHTML = `<div class="condition-group"><div class="condition-header">API已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderQuotaConditions();
-    } else if (ruleName === '配额用量预测') {
+    } else if (ruleName === '用量预测预警') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">预测用完日</div><div id="predictConditionList"></div><button type="button" class="btn-default" onclick="addPredictCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderPredictConditions();
     } else if (ruleName === '合同到期提醒') {
@@ -1162,8 +1170,8 @@ function updateSystemPerfVal(idx, val) { systemPerfConditions[idx].value = parse
 function updateSystemPerfDurMin(idx, val) { systemPerfConditions[idx].durMin = parseInt(val); }
 
 function getConditionsText(ruleName) {
-    if (ruleName === '配额用量预警') return quotaConditions.map(c => `已用量 ${c.operator} ${c.value}%`);
-    if (ruleName === '配额用量预测') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
+    if (ruleName === '额度用量预警' || ruleName === '服务用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
+    if (ruleName === '用量预测预警') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
     if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
     if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}, 持续 >= ${c.durMin}分钟`);
     if (ruleName === '服务超时异常') return serviceTimeoutConditions.map(c => `服务P95时间 ${c.operator} ${c.value}ms, 持续 >= ${c.durMin}分钟`);
@@ -1281,10 +1289,11 @@ function editRule(id) {
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = false;
-            if(item.name==='配额用量预警'){
+            if(item.name==='额度用量预警' || item.name==='服务用量预警'){
                 quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
+                renderConditions(item.name);
                 renderQuotaConditions();
-            } else if(item.name==='配额用量预测'){
+            } else if(item.name==='用量预测预警'){
                 predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
@@ -1347,10 +1356,11 @@ function viewRule(id) {
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = true;
-            if(item.name==='配额用量预警'){
+            if(item.name==='额度用量预警' || item.name==='服务用量预警'){
                 quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
+                renderConditions(item.name);
                 renderQuotaConditions();
-            } else if(item.name==='配额用量预测'){
+            } else if(item.name==='用量预测预警'){
                 predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
@@ -1415,7 +1425,7 @@ function deleteRule(id) { if(confirm('确定删除该规则吗？')){ ruleList =
 function addRule() { 
     currentRuleId=null; 
     document.getElementById('ruleModalTitle').innerText='新增规则'; 
-    document.getElementById('ruleType').value='服务用量预警'; 
+    document.getElementById('ruleType').value='API用量预警';
     document.getElementById('ruleType').disabled = false;
     updateRuleFormByType(); 
     quotaConditions = [{ operator: ">=", value: 80 }]; 

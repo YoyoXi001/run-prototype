@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | 我的服务</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f6; color: #666666; font-size: 14px; }
+        .app-layout { min-height: 100vh; background: #f5f7fa; }
+
+        /* 顶部导航栏 */
+        .top-nav { background: linear-gradient(135deg, #84B9FD, #E1EDFB); box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08); position: sticky; top: 0; z-index: 100; height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
+        .logo-area { width: 265px; height: 50px; display: flex; align-items: center; gap: 12px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 18px; font-weight: 700; color: #1f2f3d; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; letter-spacing: 1px; line-height: 1.3; }
+        .logo-sub { font-size: 10px; color: #5a6e8c; margin-top: 2px; }
+        .nav-tabs { display: flex; gap: 48px; position: absolute; left: 320px; }
+        .nav-tab { cursor: pointer; font-size: 18px; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; color: #333333; position: relative; transition: 0.3s; font-weight: 400; padding-bottom: 4px; text-decoration: none; }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active { color: #1152c5; font-weight: 700; }
+        .nav-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; right: 0; height: 2px; background: #1152c5; border-radius: 2px; }
+        .user-area { display: flex; align-items: center; gap: 16px; position: relative; }
+        .message-icon-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .message-icon { font-size: 20px; color: #5a5e66; }
+        .message-icon:hover { color: #1152c5; }
+        .unread-badge-icon { position: absolute; top: -8px; right: -12px; background: #f5222d; color: #fff; font-size: 11px; font-weight: 500; padding: 2px 5px; border-radius: 20px; min-width: 18px; text-align: center; border: 1px solid #fff; line-height: 1.2; }
+        .tenant-info { font-size: 14px; color: #5a5e66; font-family: 'Source Han Sans SC', sans-serif; cursor: pointer; padding: 4px 8px; }
+        .tenant-name { font-weight: 500; color: #1f2f3d; }
+        .avatar { width: 33px; height: 33px; background: #fcb53e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; font-family: 'Source Han Sans SC', sans-serif; }
+
+        /* 左侧菜单（个人中心） */
+        .side-menu { width: 240px; background: #fff; border-right: 0; position: fixed; left: 0; top: 80px; bottom: 0; overflow-y: auto; padding: 16px 0; box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02); }
+        .menu-item { display: flex; align-items: center; gap: 12px; width: 240px; height: 48px; padding: 0 20px; margin-bottom: 10px; cursor: pointer; font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif; font-size: 16px; color: #333333; transition: 0.3s; background: transparent; border-radius: 0; text-decoration: none; }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active { background: linear-gradient(270deg, #fefdfb, #fef5ec); color: #f89d34; border-right: 2px solid #f89d34; }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容区域 */
+        .main-content { margin-left: 240px; padding: 8px 16px 16px 16px; min-height: calc(100vh - 80px); background: #F5F7FA; display: flex; flex-direction: column; }
+        .content-card { background: transparent; border-radius: 0; padding: 0; box-shadow: none; flex: 1; display: flex; flex-direction: column; }
+        .forecast-layout { flex: 1; display: flex; flex-direction: column; }
+        .forecast-white-card { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 6px; padding: 16px; padding-bottom: 20px; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); min-height: 0; }
+        .flex-table-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 0; }
+
+        /* 面包屑 */
+        .breadcrumb { padding: 0; margin: 0 0 8px 0; background: transparent; font-size: 14px; color: #666; border: none; }
+        .breadcrumb .separator { margin: 0 8px; color: #c0c4cc; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        /* 概览统计 */
+        .stat-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .stat-card { flex: 1; min-width: 160px; background: #fff; border: 1px solid #e9ecef; border-radius: 6px; padding: 16px 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+        .stat-card .stat-label { font-size: 13px; color: #909399; }
+        .stat-card .stat-value { font-size: 28px; font-weight: 700; color: #1f2f3d; font-family: 'Source Sans Pro', sans-serif; line-height: 1.1; }
+        .stat-card .stat-value.text-ok { color: #52c41a; }
+        .stat-card .stat-value.text-warn { color: #fa8c16; }
+        .stat-card .stat-value.text-danger { color: #f5222d; }
+
+        /* ? 提示（参考配额管理） */
+        .help-tooltip { position: relative; display: inline-block; }
+        .help-icon { display: inline-block; width: 16px; height: 16px; background: #e9ecef; border-radius: 50%; text-align: center; line-height: 16px; font-size: 11px; color: #666; cursor: pointer; margin-left: 6px; vertical-align: middle; }
+        .help-icon:hover { background: #f89d34; color: #fff; }
+        .help-tooltip .tooltip-text { visibility: hidden; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 5px 10px; position: absolute; z-index: 9999; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s; font-size: 12px; white-space: nowrap; pointer-events: none; }
+        .help-tooltip .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #333 transparent transparent transparent; }
+        .help-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+        /* 筛选栏 */
+        .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
+        .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
+        .filter-left { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 14px; font-weight: 500; color: #666666; white-space: nowrap; }
+        .filter-item input, .filter-item select { width: 222px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; outline: none; color: #333333; }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary { background: #f89d34; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+        .btn-primary:hover { background: #e68f2a; }
+        .btn-default { background: #fff; border: 1px solid #dcdfe6; padding: 8px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; color: #666666; }
+        .btn-default:hover { background: #f5f7fa; }
+
+        /* 表格 */
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; padding: 0; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { padding: 0 12px; height: 48px; background: #F5F7FA; font-weight: 600; color: #777777; font-size: 14px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
+        .data-table td { padding: 0 12px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; vertical-align: middle; }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .expand-row { cursor: pointer; }
+        .expand-row:hover td { background: #fef5ec; }
+        .expand-arrow { display: inline-block; width: 16px; font-size: 10px; color: #999; transition: transform 0.2s; text-align: center; }
+        .expand-arrow.open { transform: rotate(90deg); }
+        .sub-row > td { background: #f8fafc; padding: 12px 12px 12px 42px; border-bottom: 1px solid #ebeef5; }
+        .sub-api-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; border: 1px solid #c0c6d0; border-radius: 4px; overflow: hidden; }
+        .sub-api-table th { background: #eef1f6; font-weight: 600; color: #777; font-size: 12px; padding: 6px 12px; height: 32px; border-bottom: 1px solid #c0c6d0; border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; }
+        .sub-api-table th:last-child { border-right: none; }
+        .sub-api-table td { background: #fafbfc; font-size: 12px; padding: 6px 12px; height: 36px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666; text-align: center; vertical-align: middle; }
+        .sub-api-table td:last-child { border-right: none; }
+        .sub-api-table tr:last-child td { border-bottom: none; }
+        .service-link { color: #0d6cff; cursor: pointer; text-decoration: none; }
+        .service-link:hover { text-decoration: underline; }
+        .action-link { color: #0d6cff; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .action-link:hover { text-decoration: underline; }
+        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .status-enabled { background: #e6f7e6; color: #52c41a; }
+        .status-disabled { background: #f0f0f0; color: #999999; }
+
+        /* 分页 */
+        .pagination { padding: 16px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 13px; color: #333333; flex-wrap: wrap; }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn { min-width: 28px; height: 28px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 28px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo-area">
+            <div class="logo-text">
+                <div class="logo-title">外数平台</div>
+                <div class="logo-sub">EXTERNAL DATA PLATFORM</div>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a class="nav-tab" href="index.html?nav=portal" style="text-decoration:none;">数据门户</a>
+            <a class="nav-tab" href="index.html?nav=external" style="text-decoration:none;">外源管理</a>
+            <a class="nav-tab" href="index.html?nav=service" style="text-decoration:none;">服务管理</a>
+            <a class="nav-tab" href="用数大屏.html" style="text-decoration:none;">监控统计</a>
+            <a class="nav-tab" href="告警管理V1.2.html?nav=operation#rule" style="text-decoration:none;">运营管理</a>
+            <a class="nav-tab active" href="我的服务.html" style="text-decoration:none;">个人中心</a>
+            <a class="nav-tab" href="用户管理.html?nav=system" style="text-decoration:none;">系统管理</a>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper" onclick="window.location.href='个人中心V1.3.html#message'">
+                <i class="el-icon-bell message-icon"></i>
+            </div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar">席</div>
+        </div>
+    </nav>
+
+    <!-- 左侧菜单 -->
+    <aside class="side-menu">
+        <a class="menu-item" href="个人中心V1.3.html#approval"><i class="el-icon-document-checked"></i>我的审批</a>
+        <a class="menu-item" href="个人中心V1.3.html#favorites"><i class="el-icon-star-on"></i>我的收藏</a>
+        <a class="menu-item active" href="我的服务.html"><i class="el-icon-s-grid"></i>我的服务</a>
+        <a class="menu-item" href="个人中心V1.3.html#message"><i class="el-icon-message"></i>我的消息</a>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="breadcrumb">
+            <span>个人中心</span>
+            <span class="separator">/</span>
+            <span class="current">我的服务</span>
+        </div>
+        <div class="content-card">
+        <div class="forecast-layout">
+
+            <!-- 概览统计 -->
+            <div class="stat-row" id="statRow"></div>
+
+            <!-- 筛选栏 -->
+            <div class="filter-section">
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <div class="filter-item">
+                            <label>服务名称</label>
+                            <input type="text" id="filterService" placeholder="请输入服务名称">
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <button class="btn-primary" id="searchBtn">查询</button>
+                        <button class="btn-default" id="resetBtn">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="forecast-white-card">
+                <div class="flex-table-container">
+                <div class="table-container">
+                    <table class="data-table" id="mainTable">
+                        <thead>
+                            <tr>
+                                <th style="width:30px;"></th>
+                                <th>编号</th>
+                                <th>服务名称</th>
+                                <th>版本</th>
+                                <th>服务发布者</th>
+                                <th>服务域</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="paginationArea"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// 当前调用方租户
+var currentTenant = "某某金控";
+
+// ======================== 我的服务数据 ========================
+// 模型：集团将不同供应商的外部API编排组合为一个「服务」，供租户作为调用方使用。
+// 配额来自配额管理：按「租户 × 供应商 × API」分配，含 quota/used/周期范围/状态(启用|停用)。
+var serviceList = [
+    {
+        id: 1, serviceName: "企业画像查询服务", version: "v2.1", publisher: "某某金控", domain: "金融公共服务",
+        apis: [
+            { name: "企业基本信息",  supplier: "企查查", quota: 2000000, used: 1800000, startDate: "2026-07-01", endDate: "2027-07-01", status: "启用" },
+            { name: "股东信息",      supplier: "企查查", quota: 500000,  used: 120000,  startDate: "2026-07-01", endDate: "2027-07-01", status: "启用" },
+            { name: "企业关联关系",  supplier: "天眼查", quota: 300000,  used: 90000,   startDate: "2026-06-01", endDate: "2027-06-01", status: "启用" },
+            { name: "企业规模",      supplier: "企查查", quota: 1000000, used: 800000,  startDate: "2026-07-01", endDate: "2027-07-01", status: "启用" }
+        ]
+    },
+    {
+        id: 2, serviceName: "金融风控服务", version: "v3.0", publisher: "某某金控", domain: "租户私有",
+        apis: [
+            { name: "融资历史",      supplier: "天眼查", quota: 1500000, used: 1485000, startDate: "2025-08-01", endDate: "2026-08-01", status: "启用" },
+            { name: "严重违法记录",  supplier: "企查查", quota: 800000,  used: 720000,  startDate: "2025-08-01", endDate: "2026-08-01", status: "启用" },
+            { name: "信用评分",      supplier: "中诚信", quota: 600000,  used: 150000,  startDate: "2025-09-01", endDate: "2026-09-01", status: "启用" },
+            { name: "司法风险",      supplier: "天眼查", quota: 400000,  used: 60000,   startDate: "2025-09-01", endDate: "2026-09-01", status: "启用" }
+        ]
+    },
+    {
+        id: 3, serviceName: "身份核验服务", version: "v1.5", publisher: "天眼查", domain: "金融公共服务",
+        apis: [
+            { name: "身份证二要素核验", supplier: "百行征信", quota: 300000, used: 50000, startDate: "2026-03-01", endDate: "2027-03-01", status: "启用" },
+            { name: "手机三要素核验",   supplier: "前海征信", quota: 300000, used: 92000, startDate: "2026-03-01", endDate: "2027-03-01", status: "启用" }
+        ]
+    },
+    {
+        id: 4, serviceName: "信用报告查询服务", version: "v2.0", publisher: "某某金控", domain: "金融公共服务",
+        apis: [
+            { name: "个人信用报告", supplier: "百行征信", quota: 200000, used: 78000, startDate: "2025-11-01", endDate: "2026-11-01", status: "启用" },
+            { name: "企业信用报告", supplier: "中诚信",   quota: 150000, used: 40000, startDate: "2025-11-01", endDate: "2026-11-01", status: "启用" }
+        ]
+    },
+    {
+        id: 5, serviceName: "舆情监控服务", version: "v1.2", publisher: "企查查", domain: "租户私有",
+        apis: [
+            { name: "负面舆情检索", supplier: "企查查", quota: 200000, used: 56000, startDate: "2026-01-01", endDate: "2027-01-01", status: "启用" }
+        ]
+    }
+];
+
+var currentPage = 1, pageSize = 10;
+var filteredList = [];
+var _expanded = {};
+
+function formatNum(num) {
+    if (num === null || num === undefined) return '不限';
+    if (num === 0) return '0';
+    if (num >= 10000) return (num / 10000).toFixed(num % 10000 === 0 ? 0 : 1) + '万';
+    return num.toLocaleString();
+}
+function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>]/g, function(m) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;' })[m]; }); }
+
+// 渲染概览统计（文字在上，数字在下，无图标）
+function renderStat() {
+    var serviceCount = serviceList.length;
+    var apiTotal = 0, exhaustedCount = 0, lowCount = 0;
+    for (var i = 0; i < serviceList.length; i++) {
+        var apis = serviceList[i].apis;
+        for (var j = 0; j < apis.length; j++) {
+            apiTotal++;
+            var a = apis[j];
+            if (a.status === '停用' || a.quota === null) continue;
+            var usedPercent = a.quota ? (a.used / a.quota) * 100 : 0;
+            if (usedPercent >= 100) exhaustedCount++;
+            else if (usedPercent >= 80) lowCount++;
+        }
+    }
+    document.getElementById('statRow').innerHTML =
+          '<div class="stat-card"><div class="stat-label">已订阅服务</div><div class="stat-value">' + serviceCount + '</div></div>'
+        + '<div class="stat-card"><div class="stat-label">涉及API总数</div><div class="stat-value">' + apiTotal + '</div></div>'
+        + '<div class="stat-card"><div class="stat-label">额度偏低API<span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">已用配额占比 ≥ 80% 且未耗尽的API数量</span></span></div><div class="stat-value text-warn">' + lowCount + '</div></div>'
+        + '<div class="stat-card"><div class="stat-label">耗尽API<span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">已用配额占比 = 100% 的API数量</span></span></div><div class="stat-value text-danger">' + exhaustedCount + '</div></div>';
+}
+
+// 渲染表格（服务级主表 + 可展开API子表）
+function renderTable() {
+    var svcName = document.getElementById('filterService').value.trim();
+
+    filteredList = serviceList.filter(function(s) {
+        if (svcName && s.serviceName.indexOf(svcName) === -1) return false;
+        return true;
+    });
+
+    var total = Math.ceil(filteredList.length / pageSize) || 1;
+    if (currentPage > total) currentPage = total;
+    var startIdx = (currentPage - 1) * pageSize;
+    var pageData = filteredList.slice(startIdx, startIdx + pageSize);
+
+    var tbody = document.getElementById('tableBody');
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+        updatePagination(0, 1);
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < pageData.length; i++) {
+        var s = pageData[i];
+        var key = 'svc-' + s.id;
+        var isOpen = !!_expanded[key];
+        // 父行（点击展开）
+        html += '<tr class="expand-row" data-key="' + key + '" onclick="toggleExpand(\'' + key + '\')">'
+            + '<td><span class="expand-arrow' + (isOpen ? ' open' : '') + '">▶</span></td>'
+            + '<td>' + (startIdx + i + 1) + '</td>'
+            + '<td><a class="service-link" href="index.html?nav=service" onclick="event.stopPropagation()">' + escapeHtml(s.serviceName) + '</a></td>'
+            + '<td>' + escapeHtml(s.version) + '</td>'
+            + '<td>' + escapeHtml(s.publisher) + '</td>'
+            + '<td>' + escapeHtml(s.domain) + '</td>'
+            + '</tr>';
+        // 子行（API信息，参考配额管理）
+        html += '<tr class="sub-row" data-key="' + key + '" style="display:' + (isOpen ? '' : 'none') + ';">'
+            + '<td colspan="6">'
+            + '<table class="sub-api-table">'
+            + '<thead><tr><th>API</th><th>供应商</th><th>配额</th><th>已用</th><th>周期范围</th><th>状态</th></tr></thead>'
+            + '<tbody>';
+        for (var j = 0; j < s.apis.length; j++) {
+            var a = s.apis[j];
+            var unlimited = (a.status === '停用' || a.quota === null);
+            var period = (a.startDate && a.endDate) ? (a.startDate + ' ~ ' + a.endDate) : '—';
+            var statusClass = a.status === '启用' ? 'status-enabled' : 'status-disabled';
+            // 已用：参考配额管理，显示 已用次数 + 进度条 + 百分比
+            var usedCell;
+            if (unlimited) {
+                usedCell = '<span>' + a.used.toLocaleString() + '</span>';
+            } else {
+                var usagePercent = ((a.used / a.quota) * 100).toFixed(1);
+                usedCell = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;">'
+                    + '<span>' + a.used.toLocaleString() + '</span>'
+                    + '<div style="background:#e9ecef;border-radius:10px;height:6px;width:70px;">'
+                    + '<div style="background:#3a6df0;height:6px;border-radius:10px;width:' + Math.min(usagePercent, 100) + '%"></div>'
+                    + '</div>'
+                    + '<span style="font-size:11px;">' + usagePercent + '%</span>'
+                    + '</div>';
+            }
+            html += '<tr>'
+                + '<td>' + escapeHtml(a.name) + '</td>'
+                + '<td>' + escapeHtml(a.supplier) + '</td>'
+                + '<td>' + (unlimited ? '不限' : (a.quota.toLocaleString() + ' 次')) + '</td>'
+                + '<td>' + usedCell + '</td>'
+                + '<td>' + escapeHtml(period) + '</td>'
+                + '<td><span class="status-badge ' + statusClass + '">' + escapeHtml(a.status) + '</span></td>'
+                + '</tr>';
+        }
+        html += '</tbody></table></td></tr>';
+    }
+    tbody.innerHTML = html;
+    updatePagination(filteredList.length, total);
+}
+
+// 展开/收起
+function toggleExpand(key) {
+    _expanded[key] = !_expanded[key];
+    var isOpen = _expanded[key];
+    var rows = document.querySelectorAll('tr[data-key="' + key + '"]');
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].classList.contains('sub-row')) {
+            rows[i].style.display = isOpen ? '' : 'none';
+        }
+    }
+    var arrow = document.querySelector('tr.expand-row[data-key="' + key + '"] .expand-arrow');
+    if (arrow) arrow.classList.toggle('open', isOpen);
+}
+
+// 分页（参考账单管理）
+function updatePagination(totalCount, totalPages) {
+    var cp = currentPage;
+    var container = document.getElementById('paginationArea');
+    var html = '<span class="total-text">共 ' + totalCount + ' 条</span>';
+    html += '<button class="page-btn" ' + (cp===1?'disabled':'') + ' onclick="changePage(' + (cp-1) + ')"><i class="el-icon-arrow-left"></i></button>';
+    var start = Math.max(1, cp - 2), end = Math.min(totalPages, cp + 2);
+    for (var i = start; i <= end; i++) {
+        html += '<span class="page-number ' + (i===cp?'active':'') + '" onclick="changePage(' + i + ')">' + i + '</span>';
+    }
+    html += '<button class="page-btn" ' + (cp===totalPages?'disabled':'') + ' onclick="changePage(' + (cp+1) + ')"><i class="el-icon-arrow-right"></i></button>';
+    html += '<select class="page-size-select" onchange="changePageSize(this.value)">'
+        + '<option value="10" ' + (pageSize===10?'selected':'') + '>10条/页</option>'
+        + '<option value="20" ' + (pageSize===20?'selected':'') + '>20条/页</option>'
+        + '<option value="50" ' + (pageSize===50?'selected':'') + '>50条/页</option>'
+        + '</select>';
+    html += '<div class="jump-section"><span>前往</span><input type="number" id="jumpPageInput" min="1" max="' + totalPages + '" value="' + cp + '" onkeydown="if(event.keyCode===13) jumpPage()"><span>页</span></div>';
+    container.innerHTML = html;
+}
+function changePage(page) { currentPage = page; _expanded = {}; renderTable(); }
+function changePageSize(size) { pageSize = parseInt(size); currentPage = 1; _expanded = {}; renderTable(); }
+function jumpPage() {
+    var p = parseInt(document.getElementById('jumpPageInput').value);
+    var total = Math.ceil(filteredList.length / pageSize) || 1;
+    if (p >= 1 && p <= total) { currentPage = p; _expanded = {}; renderTable(); }
+}
+
+// 查询 & 重置
+function doQuery() { currentPage = 1; _expanded = {}; renderTable(); }
+function doReset() {
+    document.getElementById('filterService').value = '';
+    currentPage = 1; _expanded = {}; renderTable();
+}
+document.getElementById('searchBtn').addEventListener('click', doQuery);
+document.getElementById('resetBtn').addEventListener('click', doReset);
+
+// 初始化
+renderStat();
+renderTable();
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    var navTab = e.target.closest('a.nav-tab');
+    if (navTab) {
+        var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
+        var text = navTab.textContent.trim();
+        if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+    }
+});
+</script>
+</body>
+</html>
