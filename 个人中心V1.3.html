@@ -1087,7 +1087,7 @@ let messageList = [
     { id: 18, tenant: "招商金控", type: "用量预测预警", summary: "融资历史API预计15天后配额耗尽", time: "2026-07-02 10:00:00", level: "medium", levelText: "警告", read: false, detail: { supplier: "天眼查", api: "融资历史", quota: 900000, used: 750000, predictDate: "2026-07-17", daysLeft: 15, gap: 120000 } },
     { id: 19, tenant: "招商金控", type: "合同到期提醒", summary: "天眼查数据服务合同将于15天后到期", time: "2026-07-02 09:00:00", level: "medium", levelText: "提醒", read: false, detail: { contractName: "天眼查数据服务合同", contractNo: "CT-2026-003", supplier: "天眼查", expireDate: "2026-07-17", daysLeft: 15 } },
     { id: 20, tenant: "某某金控", type: "服务审批通知", summary: "席某提交企业画像查询服务申请", time: "2026-06-28 09:53:11", level: "low", levelText: "提示", read: true, detail: { applyNo: "APsmL5FTk", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "企业画像查询", status: "待审批", subType: "pending" } },
-    { id: 21, tenant: "某某金控", type: "服务用量预警", summary: "【服务用量预警】2项服务额度提醒通知", time: "2026-07-02 09:00:00", level: "medium", levelText: "警告", read: false, detail: { count: 2, services: [
+    { id: 21, tenant: "某某金控", type: "服务用量预警", summary: "【服务用量预警】2项服务用量提醒通知", time: "2026-07-02 09:00:00", level: "medium", levelText: "警告", read: false, detail: { count: 2, services: [
         { service: "企业画像查询服务", supplier: "企查查", api: "企业基本信息", quota: 2000000, used: 1800000, remain: 200000, percent: 10 },
         { service: "金融风控服务", supplier: "天眼查", api: "融资历史", quota: 1500000, used: 1485000, remain: 15000, percent: 1 }
     ] } }
@@ -1234,9 +1234,9 @@ function viewMessageDetail(id) {
         }
         detailHTML = `
             <div class="detail-greeting">您好：</div>
-            <div class="detail-desc">您有${count}个服务剩余额度不足，请合理规划后续调用量，如需增加额度请提前申请。</div>
+            <div class="detail-desc">您有${count}个服务中的API剩余额度不足，请合理规划后续调用量，如需增加额度请提前申请。</div>
             <div class="detail-table-wrap"><table class="detail-table">
-                <thead><tr><th>服务</th><th>供应商</th><th>API接口</th><th>额度总量</th><th>已用额度</th><th>剩余额度</th><th>剩余%</th></tr></thead>
+                <thead><tr><th>服务</th><th>供应商</th><th>API接口</th><th>API配额</th><th>已用额度</th><th>剩余额度</th><th>剩余%</th></tr></thead>
                 <tbody>${svcRows}</tbody>
             </table></div>
             <div class="detail-actions"><a href="我的服务.html" onclick="closeModal()">查看详情&gt;&gt;</a><span style="color:#999;font-size:12px;margin-left:8px;">（跳转至外数平台【我的服务】页面）</span></div>`;
