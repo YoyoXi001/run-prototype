@@ -356,7 +356,6 @@
         /* 内容区域 */
         .content-section { background: #fff; border: 1px solid #e9ecef; overflow: hidden; margin-bottom: 16px; }
         .condition-badge { display: inline-block; background: #f5f7fa; padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 12px; }
-        .condition-connector { display: inline-block; padding: 2px 8px; margin: 0 4px; border-radius: 4px; background: #eef4ff; color: #3a6df0; font-size: 12px; font-weight: 600; }
         .level-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
         .level-p0 { background: #f5222d; color: #fff; }
         .level-p1 { background: #fa8c16; color: #fff; }
@@ -1013,8 +1012,8 @@ function setTrendPeriod(period){
 
 // ======================== 规则表格及相关操作 ========================
 let currentRuleId = null;
-let quotaConditions = [{ operator: ">=", value: 80, logic: 'or' }];
-let predictConditions = [{ operator: "<=", days: 3, logic: 'or' }];
+let quotaConditions = [{ operator: ">=", value: 80 }];
+let predictConditions = [{ operator: "<=", days: 3 }];
 
 function renderRuleTable() {
     const type = document.getElementById('ruleTypeFilter')?.value || '';
@@ -1037,7 +1036,7 @@ function renderRuleTable() {
         <td>${escapeHtml(i.ruleName || i.name)}</td>
         <td>${escapeHtml(i.type)}</td>
         <td>${escapeHtml(i.name)}</td>
-        <td>${i.conditions.map(c => { var p = parseLogicPrefix(c); var parts = p.s.split(', 持续 '); var badge = parts.length > 1 ? `<span class="condition-badge">${escapeHtml(parts[0])}, <span style="color:#fa8c16;font-weight:500;">持续 ${escapeHtml(parts[1])}</span></span>` : `<span class="condition-badge">${escapeHtml(p.s)}</span>`; return (p.logic ? ` <span class="condition-connector">${p.logic==='and'?'且':'或'}</span> ` : '') + badge; }).join('')}</td>
+        <td>${i.conditions.map(c => { var parts = c.split(', 持续 '); return parts.length > 1 ? `<span class="condition-badge">${escapeHtml(parts[0])}, <span style="color:#fa8c16;font-weight:500;">持续 ${escapeHtml(parts[1])}</span></span>` : `<span class="condition-badge">${escapeHtml(c)}</span>`; }).join(' ')}</td>
         <td>${serviceDisplay}</td>
         <td>${escapeHtml(i.level)}</td>
         <td>${i.receiver.join(',')}</td>
@@ -1111,46 +1110,26 @@ function renderConditions(ruleName) {
     }
 }
 
-// 条件之间的逻辑连接（OR / AND）
-function buildLogicSelect(updateFn, idx, cond) {
-    if (idx === 0) return '<span style="display:inline-block;width:74px;"></span>';
-    return `<select onchange="${updateFn}(${idx}, this.value)" style="width:74px;"><option value="or" ${cond.logic!=='and'?'selected':''}>或 (OR)</option><option value="and" ${cond.logic==='and'?'selected':''}>且 (AND)</option></select>`;
-}
-// 从已保存的条件字符串中解析出前缀的逻辑连接词
-function parseLogicPrefix(c) {
-    let logic = null, s = c;
-    if (s.indexOf(' 且 ') === 0) { logic = 'and'; s = s.slice(3); }
-    else if (s.indexOf(' 或 ') === 0) { logic = 'or'; s = s.slice(3); }
-    return { logic: logic, s: s };
-}
-// 拼接条件文本：首条无前缀，其余按 logic 前缀 或/且
-function logicJoin(idx, cond, text) {
-    return idx === 0 ? text : ((cond.logic === 'and' ? ' 且 ' : ' 或 ') + text);
-}
-
-function renderQuotaConditions() { const c = document.getElementById('quotaConditionList'); if(!c) return; c.innerHTML = quotaConditions.map((cond, idx) => `<div class="condition-item">${buildLogicSelect('updateQuotaLogic', idx, cond)}<select onchange="updateQuotaOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateQuotaVal(${idx}, this.value)" style="width:80px;"> %<span class="action-link danger" onclick="removeQuotaCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
-function renderPredictConditions() { const c = document.getElementById('predictConditionList'); if(!c) return; c.innerHTML = predictConditions.map((cond, idx) => `<div class="condition-item">${buildLogicSelect('updatePredictLogic', idx, cond)}<select onchange="updatePredictOp(${idx}, this.value)"><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option></select><input type="number" value="${cond.days}" onchange="updatePredictDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removePredictCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
-let contractDueConditions = [{ operator: "<=", days: 30, logic: 'or' }];
+function renderQuotaConditions() { const c = document.getElementById('quotaConditionList'); if(!c) return; c.innerHTML = quotaConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateQuotaOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateQuotaVal(${idx}, this.value)" style="width:80px;"> %<span class="action-link danger" onclick="removeQuotaCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
+function renderPredictConditions() { const c = document.getElementById('predictConditionList'); if(!c) return; c.innerHTML = predictConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updatePredictOp(${idx}, this.value)"><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option></select><input type="number" value="${cond.days}" onchange="updatePredictDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removePredictCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
+let contractDueConditions = [{ operator: "<=", days: 30 }];
 function renderContractDueConditions() {
     const c = document.getElementById('contractDueConditionList');
     if(!c) return;
-    c.innerHTML = contractDueConditions.map((cond, idx) => `<div class="condition-item">${buildLogicSelect('updateContractDueLogic', idx, cond)}<select onchange="updateContractDueOp(${idx}, this.value)"><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator==="<="?"selected":""}><=</option></select><input type="number" value="${cond.days}" onchange="updateContractDueDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removeContractDueCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join('');
+    c.innerHTML = contractDueConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateContractDueOp(${idx}, this.value)"><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator==="<="?"selected":""}><=</option></select><input type="number" value="${cond.days}" onchange="updateContractDueDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removeContractDueCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join('');
 }
-function addContractDueCondition() { contractDueConditions.push({ operator: "<=", days: 30, logic: 'or' }); renderContractDueConditions(); }
+function addContractDueCondition() { contractDueConditions.push({ operator: "<=", days: 30 }); renderContractDueConditions(); }
 function removeContractDueCondition(idx) { contractDueConditions.splice(idx,1); renderContractDueConditions(); }
 function updateContractDueOp(idx, val) { contractDueConditions[idx].operator = val; }
 function updateContractDueDays(idx, val) { contractDueConditions[idx].days = parseInt(val); }
-function updateContractDueLogic(idx, val) { contractDueConditions[idx].logic = val; }
-function addQuotaCondition() { quotaConditions.push({ operator: ">=", value: 80, logic: 'or' }); renderQuotaConditions(); }
-function addPredictCondition() { predictConditions.push({ operator: "<=", days: 7, logic: 'or' }); renderPredictConditions(); }
+function addQuotaCondition() { quotaConditions.push({ operator: ">=", value: 80 }); renderQuotaConditions(); }
+function addPredictCondition() { predictConditions.push({ operator: "<=", days: 7 }); renderPredictConditions(); }
 function removeQuotaCondition(idx) { quotaConditions.splice(idx,1); renderQuotaConditions(); }
 function removePredictCondition(idx) { predictConditions.splice(idx,1); renderPredictConditions(); }
 function updateQuotaOp(idx, val) { quotaConditions[idx].operator = val; }
 function updateQuotaVal(idx, val) { quotaConditions[idx].value = parseInt(val); }
 function updatePredictOp(idx, val) { predictConditions[idx].operator = val; }
 function updatePredictDays(idx, val) { predictConditions[idx].days = parseInt(val); }
-function updateQuotaLogic(idx, val) { quotaConditions[idx].logic = val; }
-function updatePredictLogic(idx, val) { predictConditions[idx].logic = val; }
 
 // ======================== 服务失败异常条件 ========================
 let serviceFailConditions = [{ operator: "=", value: "失败", durMin: 5 }];
@@ -1179,27 +1158,26 @@ function updateServiceTimeoutVal(idx, val) { serviceTimeoutConditions[idx].value
 function updateServiceTimeoutDurMin(idx, val) { serviceTimeoutConditions[idx].durMin = parseInt(val); }
 
 // ======================== 系统性能异常条件 ========================
-let systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15, logic: 'or' }];
+let systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }];
 function renderSystemPerfConditions() {
     const c = document.getElementById('systemPerfConditionList');
     if(!c) return;
-    c.innerHTML = systemPerfConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;">${buildLogicSelect('updateSystemPerfLogic', idx, cond)}<select onchange="updateSystemPerfMetric(${idx}, this.value)" style="width:100px;"><option ${cond.metric==="CPU使用率"?"selected":""}>CPU使用率</option><option ${cond.metric==="内存使用率"?"selected":""}>内存使用率</option><option ${cond.metric==="磁盘使用率"?"selected":""}>磁盘使用率</option></select><select onchange="updateSystemPerfOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateSystemPerfVal(${idx}, this.value)" style="width:70px;"><span style="color:#999;white-space:nowrap;">%</span><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateSystemPerfDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeSystemPerfCondition(${idx})">删除</span></div>`).join('');
+    c.innerHTML = systemPerfConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;"><select onchange="updateSystemPerfMetric(${idx}, this.value)" style="width:100px;"><option ${cond.metric==="CPU使用率"?"selected":""}>CPU使用率</option><option ${cond.metric==="内存使用率"?"selected":""}>内存使用率</option><option ${cond.metric==="磁盘使用率"?"selected":""}>磁盘使用率</option></select><select onchange="updateSystemPerfOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateSystemPerfVal(${idx}, this.value)" style="width:70px;"><span style="color:#999;white-space:nowrap;">%</span><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateSystemPerfDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeSystemPerfCondition(${idx})">删除</span></div>`).join('');
 }
-function addSystemPerfCondition() { systemPerfConditions.push({ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15, logic: 'or' }); renderSystemPerfConditions(); }
+function addSystemPerfCondition() { systemPerfConditions.push({ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }); renderSystemPerfConditions(); }
 function removeSystemPerfCondition(idx) { systemPerfConditions.splice(idx,1); renderSystemPerfConditions(); }
 function updateSystemPerfMetric(idx, val) { systemPerfConditions[idx].metric = val; }
 function updateSystemPerfOp(idx, val) { systemPerfConditions[idx].operator = val; }
 function updateSystemPerfVal(idx, val) { systemPerfConditions[idx].value = parseInt(val); }
 function updateSystemPerfDurMin(idx, val) { systemPerfConditions[idx].durMin = parseInt(val); }
-function updateSystemPerfLogic(idx, val) { systemPerfConditions[idx].logic = val; }
 
 function getConditionsText(ruleName) {
-    if (ruleName === '额度用量预警' || ruleName === '服务用量预警') return quotaConditions.map((c, idx) => logicJoin(idx, c, `API已用量 ${c.operator} ${c.value}%`));
-    if (ruleName === '用量预测预警') return predictConditions.map((c, idx) => logicJoin(idx, c, `预测用完日 ${c.operator} ${c.days} 天`));
-    if (ruleName === '合同到期提醒') return contractDueConditions.map((c, idx) => logicJoin(idx, c, `距离合同到期日 ${c.operator} ${c.days} 天`));
+    if (ruleName === '额度用量预警' || ruleName === '服务用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
+    if (ruleName === '用量预测预警') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
+    if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
     if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}, 持续 >= ${c.durMin}分钟`);
     if (ruleName === '服务超时异常') return serviceTimeoutConditions.map(c => `服务P95时间 ${c.operator} ${c.value}ms, 持续 >= ${c.durMin}分钟`);
-    if (ruleName === '系统性能异常') return systemPerfConditions.map((c, idx) => logicJoin(idx, c, `${c.metric} ${c.operator} ${c.value}%, 持续 >= ${c.durMin}分钟`));
+    if (ruleName === '系统性能异常') return systemPerfConditions.map(c => `${c.metric} ${c.operator} ${c.value}%, 持续 >= ${c.durMin}分钟`);
     return ["服务异常"];
 }
 
@@ -1316,11 +1294,11 @@ function editRule(id) {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = false;
             if(item.name==='额度用量预警' || item.name==='服务用量预警'){
-                quotaConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80), logic: p.logic||'or' }; });
+                quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
             } else if(item.name==='用量预测预警'){
-                predictConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3), logic: p.logic||'or' }; });
+                predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
                 serviceFailConditions = item.conditions.map(c => {
@@ -1338,9 +1316,8 @@ function editRule(id) {
                 renderServiceTimeoutConditions();
             } else if(item.name==='系统性能异常'){
                 systemPerfConditions = item.conditions.map(c => {
-                    let p = parseLogicPrefix(c);
-                    let m = p.s.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
-                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15, logic: p.logic||'or' };
+                    let m = c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15 };
                 });
                 renderConditions(item.name);
                 renderSystemPerfConditions();
@@ -1396,11 +1373,11 @@ function viewRule(id) {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = true;
             if(item.name==='额度用量预警' || item.name==='服务用量预警'){
-                quotaConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80), logic: p.logic||'or' }; });
+                quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
             } else if(item.name==='用量预测预警'){
-                predictConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3), logic: p.logic||'or' }; });
+                predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
                 serviceFailConditions = item.conditions.map(c => {
@@ -1420,9 +1397,8 @@ function viewRule(id) {
                 disableConditionInputs('serviceTimeoutConditionList');
             } else if(item.name==='系统性能异常'){
                 systemPerfConditions = item.conditions.map(c => {
-                    let p = parseLogicPrefix(c);
-                    let m = p.s.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
-                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15, logic: p.logic||'or' };
+                    let m = c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15 };
                 });
                 renderConditions(item.name);
                 renderSystemPerfConditions();
@@ -1480,8 +1456,8 @@ function addRule() {
     document.getElementById('ruleType').value='';
     document.getElementById('ruleType').disabled = false;
     updateRuleFormByType(); 
-    quotaConditions = [{ operator: ">=", value: 80, logic: 'or' }];
-    predictConditions = [{ operator: "<=", days: 3, logic: 'or' }];
+    quotaConditions = [{ operator: ">=", value: 80 }];
+    predictConditions = [{ operator: "<=", days: 3 }];
     serviceFailConditions = [{ operator: "=", value: "失败", durMin: 5 }];
     serviceTimeoutConditions = [{ operator: ">=", value: 3000, durMin: 10 }];
     systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }];
