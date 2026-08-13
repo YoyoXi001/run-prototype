@@ -356,6 +356,7 @@
         /* 内容区域 */
         .content-section { background: #fff; border: 1px solid #e9ecef; overflow: hidden; margin-bottom: 16px; }
         .condition-badge { display: inline-block; background: #f5f7fa; padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 12px; }
+        .condition-connector { display: inline-block; padding: 2px 8px; margin: 0 4px; border-radius: 4px; background: #eef4ff; color: #3a6df0; font-size: 12px; font-weight: 600; }
         .level-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
         .level-p0 { background: #f5222d; color: #fff; }
         .level-p1 { background: #fa8c16; color: #fff; }
@@ -557,7 +558,7 @@
                 <div class="forecast-white-card">
                     <div class="action-bar"><button class="btn-add-rule" id="addRuleBtn">新增</button></div>
                     <div class="flex-table-container">
-                        <div class="table-container"><table class="data-table"><thead><th>编号</th><th>租户</th><th>规则类型</th><th>规则名称</th><th>触发条件</th><th>适用范围</th><th>告警级别</th><th>发送对象</th><th>触发频率</th><th>状态</th><th>操作</th></thead><tbody id="ruleTableBody"></tbody></table></div>
+                        <div class="table-container"><table class="data-table"><thead><th>编号</th><th>租户</th><th>规则名称</th><th>规则类型</th><th>规则子项</th><th>触发条件</th><th>适用范围</th><th>告警级别</th><th>发送对象</th><th>触发频率</th><th>状态</th><th>操作</th></thead><tbody id="ruleTableBody"></tbody></table></div>
                         <div id="rulePagination" class="pagination"></div>
                     </div>
                 </div>
@@ -613,7 +614,7 @@
     </div>
 
     <!-- 规则弹窗 -->
-    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则名称</label><select id="ruleNameSelect"><option value="">请选择规则名称</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则名称</label><input type="text" id="ruleNameInput" placeholder="请输入规则名称"></div><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="">请选择规则类型</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="服务异常告警">服务异常告警</option></select></div><div class="form-row"><label>规则子项</label><select id="ruleNameSelect"><option value="">请选择规则子项</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
                         <div class="multi-select-container">
                             <div class="multi-select-trigger" onclick="toggleMultiSelect()">
                                 <span class="multi-select-placeholder">请选择时间点</span>
@@ -685,13 +686,13 @@ const allServices = ["全局", "企查查", ...servicesList];
 
 // ======================== 规则数据 ========================
 let ruleList = [
-    { id: 1, tenant: "某某金控", type: "合同账单提醒", name: "合同到期提醒", conditions: ["距离合同到期日 <= 30 天"], service: "全局", level: "P3提醒", receiver: ["服务管理人员"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" },
-    { id: 2, tenant: "某某金控", type: "API用量预警", name: "额度用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%", "API已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 3, tenant: "某某金控", type: "API用量预警", name: "用量预测预警", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
-    { id: 7, tenant: "某某金控", type: "服务使用预警", name: "服务用量预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%"], service: "企业画像查询服务", level: "P2警告", receiver: ["服务应用人员"], freq: "每日检查", timePoints: ["09:00"], status: "启用" },
-    { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务失败异常", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 5, tenant: "某某金控", type: "服务异常告警", name: "服务超时异常", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "天眼查", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 6, tenant: "某某金控", type: "服务异常告警", name: "系统性能异常", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
+    { id: 1, tenant: "某某金控", type: "合同账单提醒", name: "合同到期提醒", ruleName: "企查查合同到期提醒", conditions: ["距离合同到期日 <= 30 天"], service: "全局", level: "P3提醒", receiver: ["服务管理人员"], freq: "每日检查", timePoints: ["09:00", "15:00"], status: "启用" },
+    { id: 2, tenant: "某某金控", type: "API用量预警", name: "额度用量预警", ruleName: "企业基本信息配额预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%", "API已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 3, tenant: "某某金控", type: "API用量预警", name: "用量预测预警", ruleName: "企业基本信息用量预测", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
+    { id: 7, tenant: "某某金控", type: "服务使用预警", name: "服务用量预警", ruleName: "企业画像服务额度预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%"], service: "企业画像查询服务", level: "P2警告", receiver: ["服务应用人员"], freq: "每日检查", timePoints: ["09:00"], status: "启用" },
+    { id: 4, tenant: "某某金控", type: "服务异常告警", name: "服务失败异常", ruleName: "企查查连接失败告警", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "企查查", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 5, tenant: "某某金控", type: "服务异常告警", name: "服务超时异常", ruleName: "天眼查P95超时告警", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "天眼查", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 6, tenant: "某某金控", type: "服务异常告警", name: "系统性能异常", ruleName: "服务节点性能告警", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
 ];
 
 // ======================== 渠道数据 ========================
@@ -1012,18 +1013,18 @@ function setTrendPeriod(period){
 
 // ======================== 规则表格及相关操作 ========================
 let currentRuleId = null;
-let quotaConditions = [{ operator: ">=", value: 80 }];
-let predictConditions = [{ operator: "<=", days: 3 }];
+let quotaConditions = [{ operator: ">=", value: 80, logic: 'or' }];
+let predictConditions = [{ operator: "<=", days: 3, logic: 'or' }];
 
 function renderRuleTable() {
     const type = document.getElementById('ruleTypeFilter')?.value || '';
     const name = document.getElementById('ruleNameFilter')?.value.trim() || '';
-    let filtered = ruleList.filter(i => (!type || i.type === type) && (!name || i.name.includes(name)));
+    let filtered = ruleList.filter(i => (!type || i.type === type) && (!name || (i.ruleName || i.name).includes(name)));
     const total = Math.ceil(filtered.length / pageSize) || 1;
     if (rulePage > total) rulePage = total;
     const pageData = filtered.slice((rulePage-1)*pageSize, rulePage*pageSize);
     const tbody = document.getElementById('ruleTableBody');
-    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateRulePagination(total, filtered.length); return; }
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateRulePagination(total, filtered.length); return; }
     tbody.innerHTML = pageData.map(i => {
         let serviceDisplay = escapeHtml(i.service);
         if (i.service !== '全局' && i.api) {
@@ -1033,9 +1034,10 @@ function renderRuleTable() {
         return `<tr>
         <td>${i.id}</td>
         <td>${escapeHtml(i.tenant)}</td>
+        <td>${escapeHtml(i.ruleName || i.name)}</td>
         <td>${escapeHtml(i.type)}</td>
         <td>${escapeHtml(i.name)}</td>
-        <td>${i.conditions.map(c => { var parts = c.split(', 持续 '); return parts.length > 1 ? `<span class="condition-badge">${escapeHtml(parts[0])}, <span style="color:#fa8c16;font-weight:500;">持续 ${escapeHtml(parts[1])}</span></span>` : `<span class="condition-badge">${escapeHtml(c)}</span>`; }).join('')}</td>
+        <td>${i.conditions.map(c => { var p = parseLogicPrefix(c); var parts = p.s.split(', 持续 '); var badge = parts.length > 1 ? `<span class="condition-badge">${escapeHtml(parts[0])}, <span style="color:#fa8c16;font-weight:500;">持续 ${escapeHtml(parts[1])}</span></span>` : `<span class="condition-badge">${escapeHtml(p.s)}</span>`; return (p.logic ? ` <span class="condition-connector">${p.logic==='and'?'且':'或'}</span> ` : '') + badge; }).join('')}</td>
         <td>${serviceDisplay}</td>
         <td>${escapeHtml(i.level)}</td>
         <td>${i.receiver.join(',')}</td>
@@ -1109,26 +1111,46 @@ function renderConditions(ruleName) {
     }
 }
 
-function renderQuotaConditions() { const c = document.getElementById('quotaConditionList'); if(!c) return; c.innerHTML = quotaConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateQuotaOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateQuotaVal(${idx}, this.value)" style="width:80px;"> %<span class="action-link danger" onclick="removeQuotaCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
-function renderPredictConditions() { const c = document.getElementById('predictConditionList'); if(!c) return; c.innerHTML = predictConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updatePredictOp(${idx}, this.value)"><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option></select><input type="number" value="${cond.days}" onchange="updatePredictDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removePredictCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
-let contractDueConditions = [{ operator: "<=", days: 30 }];
-function renderContractDueConditions() { 
-    const c = document.getElementById('contractDueConditionList'); 
-    if(!c) return; 
-    c.innerHTML = contractDueConditions.map((cond, idx) => `<div class="condition-item"><select onchange="updateContractDueOp(${idx}, this.value)"><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator==="<="?"selected":""}><=</option></select><input type="number" value="${cond.days}" onchange="updateContractDueDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removeContractDueCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); 
+// 条件之间的逻辑连接（OR / AND）
+function buildLogicSelect(updateFn, idx, cond) {
+    if (idx === 0) return '<span style="display:inline-block;width:74px;"></span>';
+    return `<select onchange="${updateFn}(${idx}, this.value)" style="width:74px;"><option value="or" ${cond.logic!=='and'?'selected':''}>或 (OR)</option><option value="and" ${cond.logic==='and'?'selected':''}>且 (AND)</option></select>`;
 }
-function addContractDueCondition() { contractDueConditions.push({ operator: "<=", days: 30 }); renderContractDueConditions(); }
+// 从已保存的条件字符串中解析出前缀的逻辑连接词
+function parseLogicPrefix(c) {
+    let logic = null, s = c;
+    if (s.indexOf(' 且 ') === 0) { logic = 'and'; s = s.slice(3); }
+    else if (s.indexOf(' 或 ') === 0) { logic = 'or'; s = s.slice(3); }
+    return { logic: logic, s: s };
+}
+// 拼接条件文本：首条无前缀，其余按 logic 前缀 或/且
+function logicJoin(idx, cond, text) {
+    return idx === 0 ? text : ((cond.logic === 'and' ? ' 且 ' : ' 或 ') + text);
+}
+
+function renderQuotaConditions() { const c = document.getElementById('quotaConditionList'); if(!c) return; c.innerHTML = quotaConditions.map((cond, idx) => `<div class="condition-item">${buildLogicSelect('updateQuotaLogic', idx, cond)}<select onchange="updateQuotaOp(${idx}, this.value)"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateQuotaVal(${idx}, this.value)" style="width:80px;"> %<span class="action-link danger" onclick="removeQuotaCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
+function renderPredictConditions() { const c = document.getElementById('predictConditionList'); if(!c) return; c.innerHTML = predictConditions.map((cond, idx) => `<div class="condition-item">${buildLogicSelect('updatePredictLogic', idx, cond)}<select onchange="updatePredictOp(${idx}, this.value)"><option ${cond.operator==="<="?"selected":""}><=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option></select><input type="number" value="${cond.days}" onchange="updatePredictDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removePredictCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join(''); }
+let contractDueConditions = [{ operator: "<=", days: 30, logic: 'or' }];
+function renderContractDueConditions() {
+    const c = document.getElementById('contractDueConditionList');
+    if(!c) return;
+    c.innerHTML = contractDueConditions.map((cond, idx) => `<div class="condition-item">${buildLogicSelect('updateContractDueLogic', idx, cond)}<select onchange="updateContractDueOp(${idx}, this.value)"><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="="?"selected":""}>=</option><option ${cond.operator==="<"?"selected":""}><</option><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator==="<="?"selected":""}><=</option></select><input type="number" value="${cond.days}" onchange="updateContractDueDays(${idx}, this.value)" style="width:80px;"> 天<span class="action-link danger" onclick="removeContractDueCondition(${idx})" style="margin-left:8px;">删除</span></div>`).join('');
+}
+function addContractDueCondition() { contractDueConditions.push({ operator: "<=", days: 30, logic: 'or' }); renderContractDueConditions(); }
 function removeContractDueCondition(idx) { contractDueConditions.splice(idx,1); renderContractDueConditions(); }
 function updateContractDueOp(idx, val) { contractDueConditions[idx].operator = val; }
 function updateContractDueDays(idx, val) { contractDueConditions[idx].days = parseInt(val); }
-function addQuotaCondition() { quotaConditions.push({ operator: ">=", value: 80 }); renderQuotaConditions(); }
-function addPredictCondition() { predictConditions.push({ operator: "<=", days: 7 }); renderPredictConditions(); }
+function updateContractDueLogic(idx, val) { contractDueConditions[idx].logic = val; }
+function addQuotaCondition() { quotaConditions.push({ operator: ">=", value: 80, logic: 'or' }); renderQuotaConditions(); }
+function addPredictCondition() { predictConditions.push({ operator: "<=", days: 7, logic: 'or' }); renderPredictConditions(); }
 function removeQuotaCondition(idx) { quotaConditions.splice(idx,1); renderQuotaConditions(); }
 function removePredictCondition(idx) { predictConditions.splice(idx,1); renderPredictConditions(); }
 function updateQuotaOp(idx, val) { quotaConditions[idx].operator = val; }
 function updateQuotaVal(idx, val) { quotaConditions[idx].value = parseInt(val); }
 function updatePredictOp(idx, val) { predictConditions[idx].operator = val; }
 function updatePredictDays(idx, val) { predictConditions[idx].days = parseInt(val); }
+function updateQuotaLogic(idx, val) { quotaConditions[idx].logic = val; }
+function updatePredictLogic(idx, val) { predictConditions[idx].logic = val; }
 
 // ======================== 服务失败异常条件 ========================
 let serviceFailConditions = [{ operator: "=", value: "失败", durMin: 5 }];
@@ -1157,26 +1179,27 @@ function updateServiceTimeoutVal(idx, val) { serviceTimeoutConditions[idx].value
 function updateServiceTimeoutDurMin(idx, val) { serviceTimeoutConditions[idx].durMin = parseInt(val); }
 
 // ======================== 系统性能异常条件 ========================
-let systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }];
+let systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15, logic: 'or' }];
 function renderSystemPerfConditions() {
     const c = document.getElementById('systemPerfConditionList');
     if(!c) return;
-    c.innerHTML = systemPerfConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;"><select onchange="updateSystemPerfMetric(${idx}, this.value)" style="width:100px;"><option ${cond.metric==="CPU使用率"?"selected":""}>CPU使用率</option><option ${cond.metric==="内存使用率"?"selected":""}>内存使用率</option><option ${cond.metric==="磁盘使用率"?"selected":""}>磁盘使用率</option></select><select onchange="updateSystemPerfOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateSystemPerfVal(${idx}, this.value)" style="width:70px;"><span style="color:#999;white-space:nowrap;">%</span><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateSystemPerfDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeSystemPerfCondition(${idx})">删除</span></div>`).join('');
+    c.innerHTML = systemPerfConditions.map((cond, idx) => `<div class="condition-item" style="flex-wrap:nowrap;">${buildLogicSelect('updateSystemPerfLogic', idx, cond)}<select onchange="updateSystemPerfMetric(${idx}, this.value)" style="width:100px;"><option ${cond.metric==="CPU使用率"?"selected":""}>CPU使用率</option><option ${cond.metric==="内存使用率"?"selected":""}>内存使用率</option><option ${cond.metric==="磁盘使用率"?"selected":""}>磁盘使用率</option></select><select onchange="updateSystemPerfOp(${idx}, this.value)" style="width:50px;"><option ${cond.operator===">="?"selected":""}>>=</option><option ${cond.operator===">"?"selected":""}>></option><option ${cond.operator==="<"?"selected":""}><</option></select><input type="number" value="${cond.value}" onchange="updateSystemPerfVal(${idx}, this.value)" style="width:70px;"><span style="color:#999;white-space:nowrap;">%</span><span style="color:#f89d34;font-weight:500;white-space:nowrap;">持续</span><input type="number" value="${cond.durMin}" onchange="updateSystemPerfDurMin(${idx}, this.value)" min="1" style="flex:1;min-width:60px;"><span style="color:#666;white-space:nowrap;">分钟</span><span class="action-link danger" onclick="removeSystemPerfCondition(${idx})">删除</span></div>`).join('');
 }
-function addSystemPerfCondition() { systemPerfConditions.push({ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }); renderSystemPerfConditions(); }
+function addSystemPerfCondition() { systemPerfConditions.push({ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15, logic: 'or' }); renderSystemPerfConditions(); }
 function removeSystemPerfCondition(idx) { systemPerfConditions.splice(idx,1); renderSystemPerfConditions(); }
 function updateSystemPerfMetric(idx, val) { systemPerfConditions[idx].metric = val; }
 function updateSystemPerfOp(idx, val) { systemPerfConditions[idx].operator = val; }
 function updateSystemPerfVal(idx, val) { systemPerfConditions[idx].value = parseInt(val); }
 function updateSystemPerfDurMin(idx, val) { systemPerfConditions[idx].durMin = parseInt(val); }
+function updateSystemPerfLogic(idx, val) { systemPerfConditions[idx].logic = val; }
 
 function getConditionsText(ruleName) {
-    if (ruleName === '额度用量预警' || ruleName === '服务用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
-    if (ruleName === '用量预测预警') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
-    if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
+    if (ruleName === '额度用量预警' || ruleName === '服务用量预警') return quotaConditions.map((c, idx) => logicJoin(idx, c, `API已用量 ${c.operator} ${c.value}%`));
+    if (ruleName === '用量预测预警') return predictConditions.map((c, idx) => logicJoin(idx, c, `预测用完日 ${c.operator} ${c.days} 天`));
+    if (ruleName === '合同到期提醒') return contractDueConditions.map((c, idx) => logicJoin(idx, c, `距离合同到期日 ${c.operator} ${c.days} 天`));
     if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}, 持续 >= ${c.durMin}分钟`);
     if (ruleName === '服务超时异常') return serviceTimeoutConditions.map(c => `服务P95时间 ${c.operator} ${c.value}ms, 持续 >= ${c.durMin}分钟`);
-    if (ruleName === '系统性能异常') return systemPerfConditions.map(c => `${c.metric} ${c.operator} ${c.value}%, 持续 >= ${c.durMin}分钟`);
+    if (ruleName === '系统性能异常') return systemPerfConditions.map((c, idx) => logicJoin(idx, c, `${c.metric} ${c.operator} ${c.value}%, 持续 >= ${c.durMin}分钟`));
     return ["服务异常"];
 }
 
@@ -1279,23 +1302,25 @@ function setSelectValue(id, value) {
     select.value = value;
 }
 
-function editRule(id) { 
-    const item = ruleList.find(i=>i.id===id); 
-    if(item){ 
-        currentRuleId=id; 
-        document.getElementById('ruleModalTitle').innerText='编辑规则'; 
-        document.getElementById('ruleType').value=item.type; 
+function editRule(id) {
+    const item = ruleList.find(i=>i.id===id);
+    if(item){
+        currentRuleId=id;
+        document.getElementById('ruleModalTitle').innerText='编辑规则';
+        document.getElementById('ruleNameInput').value = item.ruleName || '';
+        document.getElementById('ruleNameInput').disabled = false;
+        document.getElementById('ruleType').value=item.type;
         document.getElementById('ruleType').disabled = false;
         updateRuleFormByType(); 
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = false;
             if(item.name==='额度用量预警' || item.name==='服务用量预警'){
-                quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
+                quotaConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80), logic: p.logic||'or' }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
             } else if(item.name==='用量预测预警'){
-                predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
+                predictConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3), logic: p.logic||'or' }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
                 serviceFailConditions = item.conditions.map(c => {
@@ -1313,8 +1338,9 @@ function editRule(id) {
                 renderServiceTimeoutConditions();
             } else if(item.name==='系统性能异常'){
                 systemPerfConditions = item.conditions.map(c => {
-                    let m = c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
-                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15 };
+                    let p = parseLogicPrefix(c);
+                    let m = p.s.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15, logic: p.logic||'or' };
                 });
                 renderConditions(item.name);
                 renderSystemPerfConditions();
@@ -1356,23 +1382,25 @@ function editRule(id) {
     } 
 }
 
-function viewRule(id) { 
-    const item = ruleList.find(i=>i.id===id); 
-    if(item){ 
-        currentRuleId=id; 
-        document.getElementById('ruleModalTitle').innerText='查看规则'; 
-        document.getElementById('ruleType').value=item.type; 
+function viewRule(id) {
+    const item = ruleList.find(i=>i.id===id);
+    if(item){
+        currentRuleId=id;
+        document.getElementById('ruleModalTitle').innerText='查看规则';
+        document.getElementById('ruleNameInput').value = item.ruleName || '';
+        document.getElementById('ruleNameInput').disabled = true;
+        document.getElementById('ruleType').value=item.type;
         document.getElementById('ruleType').disabled = true;
         updateRuleFormByType(); 
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = true;
             if(item.name==='额度用量预警' || item.name==='服务用量预警'){
-                quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
+                quotaConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80), logic: p.logic||'or' }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
             } else if(item.name==='用量预测预警'){
-                predictConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3) }; });
+                predictConditions = item.conditions.map(c => { let p=parseLogicPrefix(c); let m=p.s.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||"<=", days: parseInt(m?.[2]||3), logic: p.logic||'or' }; });
                 renderPredictConditions();
             } else if(item.name==='服务失败异常'){
                 serviceFailConditions = item.conditions.map(c => {
@@ -1392,8 +1420,9 @@ function viewRule(id) {
                 disableConditionInputs('serviceTimeoutConditionList');
             } else if(item.name==='系统性能异常'){
                 systemPerfConditions = item.conditions.map(c => {
-                    let m = c.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
-                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15 };
+                    let p = parseLogicPrefix(c);
+                    let m = p.s.match(/(CPU使用率|内存使用率|磁盘使用率)\s*([><=]+)\s*(\d+)%(?:,\s*持续\s*[><=]+\s*(\d+))?/);
+                    return { metric: m?.[1]||"CPU使用率", operator: m?.[2]||">=", value: parseInt(m?.[3]||90), durMin: parseInt(m?.[4])||15, logic: p.logic||'or' };
                 });
                 renderConditions(item.name);
                 renderSystemPerfConditions();
@@ -1443,14 +1472,16 @@ function toggleRuleStatus(id) {
 
 function deleteRule(id) { if(confirm('确定删除该规则吗？')){ ruleList = ruleList.filter(i=>i.id!==id); renderRuleTable(); alert('删除成功'); } }
 
-function addRule() { 
-    currentRuleId=null; 
-    document.getElementById('ruleModalTitle').innerText='新增规则'; 
-    document.getElementById('ruleType').value='API用量预警';
+function addRule() {
+    currentRuleId=null;
+    document.getElementById('ruleModalTitle').innerText='新增规则';
+    document.getElementById('ruleNameInput').value = '';
+    document.getElementById('ruleNameInput').disabled = false;
+    document.getElementById('ruleType').value='';
     document.getElementById('ruleType').disabled = false;
     updateRuleFormByType(); 
-    quotaConditions = [{ operator: ">=", value: 80 }]; 
-    predictConditions = [{ operator: "<=", days: 3 }];
+    quotaConditions = [{ operator: ">=", value: 80, logic: 'or' }];
+    predictConditions = [{ operator: "<=", days: 3, logic: 'or' }];
     serviceFailConditions = [{ operator: "=", value: "失败", durMin: 5 }];
     serviceTimeoutConditions = [{ operator: ">=", value: 3000, durMin: 10 }];
     systemPerfConditions = [{ metric: "CPU使用率", operator: ">=", value: 90, durMin: 15 }];
@@ -1474,9 +1505,12 @@ function addRule() {
 }
 
 function saveRule() {
+    const ruleName = document.getElementById('ruleNameInput').value.trim();
     const type = document.getElementById('ruleType').value;
+    if(!type){ alert('请选择规则类型'); return; }
     const name = document.getElementById('ruleNameSelect').value;
-    if(!name){ alert('请选择规则名称'); return; }
+    if(!name){ alert('请选择规则子项'); return; }
+    if(!ruleName){ alert('请输入规则名称'); return; }
     const conditions = getConditionsText(name);
     const level = document.getElementById('ruleLevel').value;
     let service;
@@ -1492,7 +1526,7 @@ function saveRule() {
     const freq = document.getElementById('ruleFreq').value;
     const timePoints = getTimePoints();
     if(!receiver){ alert('请选择发送对象'); return; }
-    const data = { tenant: '某某金控', type, name, conditions, service, api, level, receiver: [receiver], status, freq, timePoints }; 
+    const data = { tenant: '某某金控', type, name, ruleName, conditions, service, api, level, receiver: [receiver], status, freq, timePoints };
     if(currentRuleId){ 
         const idx=ruleList.findIndex(i=>i.id===currentRuleId); 
         if(idx!==-1) ruleList[idx]={...ruleList[idx], ...data, id:currentRuleId}; 

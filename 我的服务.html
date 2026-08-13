@@ -53,23 +53,6 @@
         .breadcrumb .separator { margin: 0 8px; color: #c0c4cc; }
         .breadcrumb .current { color: #666; font-weight: normal; }
 
-        /* 概览统计 */
-        .stat-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-        .stat-card { flex: 1; min-width: 160px; background: #fff; border: 1px solid #e9ecef; border-radius: 6px; padding: 16px 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
-        .stat-card .stat-label { font-size: 13px; color: #909399; }
-        .stat-card .stat-value { font-size: 28px; font-weight: 700; color: #1f2f3d; font-family: 'Source Sans Pro', sans-serif; line-height: 1.1; }
-        .stat-card .stat-value.text-ok { color: #52c41a; }
-        .stat-card .stat-value.text-warn { color: #fa8c16; }
-        .stat-card .stat-value.text-danger { color: #f5222d; }
-
-        /* ? 提示（参考配额管理） */
-        .help-tooltip { position: relative; display: inline-block; }
-        .help-icon { display: inline-block; width: 16px; height: 16px; background: #e9ecef; border-radius: 50%; text-align: center; line-height: 16px; font-size: 11px; color: #666; cursor: pointer; margin-left: 6px; vertical-align: middle; }
-        .help-icon:hover { background: #f89d34; color: #fff; }
-        .help-tooltip .tooltip-text { visibility: hidden; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 5px 10px; position: absolute; z-index: 9999; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s; font-size: 12px; white-space: nowrap; pointer-events: none; }
-        .help-tooltip .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #333 transparent transparent transparent; }
-        .help-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
-
         /* 筛选栏 */
         .filter-section { background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; margin-bottom: 16px; }
         .filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 16px; }
@@ -169,9 +152,6 @@
         </div>
         <div class="content-card">
         <div class="forecast-layout">
-
-            <!-- 概览统计 -->
-            <div class="stat-row" id="statRow"></div>
 
             <!-- 筛选栏 -->
             <div class="filter-section">
@@ -276,28 +256,6 @@ function formatNum(num) {
     return num.toLocaleString();
 }
 function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>]/g, function(m) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;' })[m]; }); }
-
-// 渲染概览统计（文字在上，数字在下，无图标）
-function renderStat() {
-    var serviceCount = serviceList.length;
-    var apiTotal = 0, exhaustedCount = 0, lowCount = 0;
-    for (var i = 0; i < serviceList.length; i++) {
-        var apis = serviceList[i].apis;
-        for (var j = 0; j < apis.length; j++) {
-            apiTotal++;
-            var a = apis[j];
-            if (a.status === '停用' || a.quota === null) continue;
-            var usedPercent = a.quota ? (a.used / a.quota) * 100 : 0;
-            if (usedPercent >= 100) exhaustedCount++;
-            else if (usedPercent >= 80) lowCount++;
-        }
-    }
-    document.getElementById('statRow').innerHTML =
-          '<div class="stat-card"><div class="stat-label">已订阅服务</div><div class="stat-value">' + serviceCount + '</div></div>'
-        + '<div class="stat-card"><div class="stat-label">涉及API总数</div><div class="stat-value">' + apiTotal + '</div></div>'
-        + '<div class="stat-card"><div class="stat-label">额度偏低API<span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">已用配额占比 ≥ 80% 且未耗尽的API数量</span></span></div><div class="stat-value text-warn">' + lowCount + '</div></div>'
-        + '<div class="stat-card"><div class="stat-label">耗尽API<span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">已用配额占比 = 100% 的API数量</span></span></div><div class="stat-value text-danger">' + exhaustedCount + '</div></div>';
-}
 
 // 渲染表格（服务级主表 + 可展开API子表）
 function renderTable() {
@@ -425,7 +383,6 @@ document.getElementById('searchBtn').addEventListener('click', doQuery);
 document.getElementById('resetBtn').addEventListener('click', doReset);
 
 // 初始化
-renderStat();
 renderTable();
 </script>
 <script>
