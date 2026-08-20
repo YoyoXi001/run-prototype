@@ -1042,7 +1042,7 @@ function renderRuleTable() {
         <td>${i.receiver.join(',')}</td>
         <td>${escapeHtml(i.freq)}</td>
         <td><span class="status-badge ${i.status === '启用' ? 'status-active' : 'status-inactive'}">${i.status}</span></td>
-        <td><a class="action-link" onclick="viewRule(${i.id})">查看</a><a class="action-link" onclick="editRule(${i.id})">编辑</a><a class="action-link" onclick="toggleRuleStatus(${i.id})">${i.status === '启用' ? '停用' : '启用'}</a><a class="action-link danger" onclick="deleteRule(${i.id})">删除</a></td>
+        <td><a class="action-link" onclick="viewRule(${i.id})">查看</a><a class="action-link" onclick="editRule(${i.id})">编辑</a><a class="action-link" onclick="copyRule(${i.id})">复制</a><a class="action-link" onclick="toggleRuleStatus(${i.id})">${i.status === '启用' ? '停用' : '启用'}</a><a class="action-link danger" onclick="deleteRule(${i.id})">删除</a></td>
     </tr>`;
     }).join('');
     updateRulePagination(total, filtered.length);
@@ -1434,7 +1434,17 @@ function viewRule(id) {
         document.getElementById('ruleFreq').disabled = true;
         document.getElementById('saveRuleBtn').style.display = 'none';
         document.getElementById('ruleModal').classList.add('active');
-    } 
+    }
+}
+
+function copyRule(id) {
+    const item = ruleList.find(i => i.id === id);
+    if (!item) return;
+    // 复用编辑逻辑加载表单，再改为「复制」模式：保存时作为新增规则
+    editRule(id);
+    currentRuleId = null;
+    document.getElementById('ruleModalTitle').innerText = '复制规则';
+    document.getElementById('ruleNameInput').value = (item.ruleName || item.name || '') + '-副本';
 }
 
 function toggleRuleStatus(id) {
