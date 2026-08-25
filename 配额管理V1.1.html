@@ -677,14 +677,7 @@
             flex-direction: column;
             min-height: 0;
         }
-        /* 每日限额申请：表格高度自适应剩余空间（取消最外侧滚动条，表格内部滚动） */
-        #dailyLimitModule .table-container {
-            flex: 1 1 auto;
-            min-height: 0;
-            max-height: none;
-            /* 与配额管理Tab一致：表格距下方分页栏 16px */
-            margin: 0 16px 16px 16px;
-        }
+        /* 大额用量申请：表格画布与配额管理Tab一致（基类 max-height 460px + 表头吸顶 + 内部滚动，分页栏 16px 贴底） */
         #dailyLimitModule .action-bar,
         #dailyLimitModule .pagination,
         #dailyLimitModule .info-banner,
@@ -731,14 +724,6 @@
             margin-top: 2px;
         }
 
-        /* 审批级别自动判定区块（calc-section） */
-        .calc-section {
-            border: 1px solid #e8eaed;
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-        }
         .calc-header {
             display: flex;
             align-items: center;
@@ -901,7 +886,7 @@
             <div class="outer-container">
                 <div class="page-tabs" id="pageTabs">
                     <span class="page-tab active" data-tab="quota">配额管理</span>
-                    <span class="page-tab" data-tab="daily">每日限额申请</span>
+                    <span class="page-tab" data-tab="daily">大额用量申请</span>
                 </div>
                 <div id="quotaModule" class="module-view active">
                     <div class="filter-section">
@@ -930,7 +915,6 @@
                     <div class="filter-section">
                         <div class="filter-bar">
                             <div class="filter-left">
-                                <div class="filter-item"><label>申请单号</label><input type="text" id="dlFilterNo" placeholder="请输入申请单号"></div>
                                 <div class="filter-item"><label>审批状态</label><select id="dlFilterStatus"><option value="全部">全部</option><option value="待审批">待审批</option><option value="已通过">已通过</option><option value="已驳回">已驳回</option></select></div>
                                 <div class="filter-item"><label>申请日期</label><div class="date-range" style="width:300px;"><input type="text" id="dlFilterStart" class="dl-f-datepicker" placeholder="开始日期" readonly><span>-</span><input type="text" id="dlFilterEnd" class="dl-f-datepicker" placeholder="结束日期" readonly></div></div>
                             </div>
@@ -943,18 +927,11 @@
                         </div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>申请单号</th><th>业务单元</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请拟超用量</th><th>申请理由</th><th>判定级别</th><th>审批状态</th><th>额度状态</th><th>申请时间</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>业务单元</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请拟超用量</th><th>申请理由</th><th>审批状态</th><th>申请时间</th><th>操作</th></tr></thead>
                                 <tbody id="dlTableBody"></tbody>
                             </table>
                         </div>
                         <div id="dlPagination" class="pagination"></div>
-                        <div class="info-banner">
-                            <div class="warning-title">注意事项：</div>
-                            <p>1. 业务单元对某供应商API 连续两天累计使用超过大额触发阈值（默认 10,000 次，分业务单元可配）后，需先提交每日限额申请，审批通过后方可超用。</p>
-                            <p>2. 审批通过后，在申请日期范围内每日可用上限 = 大额触发阈值 + 申请拟超用量；当天满额即停，范围结束后恢复常规使用额度监测；仍需超用须再次提交申请，规则同上。</p>
-                            <p>3. 审批时按「最近30个自然日累计已使用量 + 已批未用的超用量 + 申请拟超用量」计算判定审批级别（合计低于二级审批阈值仅【初级管理员】审批，否则【初级管理员】审批后流转【高级管理员】两级审批）；30日累计用量含配额内与超用额度用量，每个用量只统计一次。</p>
-                            <p>4. 申请的超用额度与用量不影响配额管理的总额度与已用比例，总调用量以配额管理为准；范围结束后继续应用配额管理的预警监控。</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1046,7 +1023,7 @@
     <!-- 每日限额申请弹窗（新增申请） -->
     <div id="dlApplyModal" class="modal-mask">
         <div class="modal-container" style="width: 720px;">
-            <div class="modal-header"><span>每日限额申请（超用申请）</span><i class="el-icon-close" id="closeDlApplyModal" style="cursor:pointer;"></i></div>
+            <div class="modal-header"><span>大额用量申请（超用申请）</span><i class="el-icon-close" id="closeDlApplyModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
                 <div class="form-row-horizontal"><label>申请人</label><input type="text" id="dlApplicant" class="form-control" disabled></div>
                 <div class="form-row-horizontal"><label>供应商 <span class="required">*</span></label><select id="dlSupplier" class="form-control"><option value="">请选择供应商</option></select></div>
@@ -1055,46 +1032,16 @@
                 <div class="form-row-horizontal"><label>大额触发阈值</label><div class="select-with-info"><input type="text" id="dlTriggerInfo" class="form-control" disabled style="background:#f5f7fa;"><span class="quota-info">默认 10,000 次/天，分业务单元可配；当日基础额度</span></div></div>
                 <div class="form-row-horizontal"><label>申请拟超用量 <span class="required">*</span></label><input type="number" id="dlPlanned" class="form-control" min="1" placeholder="正整数，如 12000"></div>
                 <div class="form-row-horizontal"><label>申请理由 <span class="required">*</span></label><div style="flex:1;display:flex;flex-direction:column;gap:4px;"><textarea id="dlReason" class="form-control" rows="3" maxlength="200" style="resize:vertical;font-family:inherit;" placeholder="请填写申请理由（不超过200字）"></textarea><span style="font-size:12px;color:#999;" id="dlReasonCount">0/200</span></div></div>
-                <div class="calc-section">
-                    <div class="calc-header">审批级别自动判定 <span style="font-weight:400;font-size:12px;color:#999;">（提交时预估，审批时最终计算）</span></div>
-                    <div id="dlPreview"></div>
-                </div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="cancelDlApplyModal">取消</button><button class="btn-primary" id="submitDlApplyBtn">提交申请</button></div>
         </div>
     </div>
 
-    <!-- 审批弹窗（模拟流转，原型演示） -->
-    <div id="dlApproveModal" class="modal-mask">
-        <div class="modal-container" style="width: 820px;">
-            <div class="modal-header"><span>审批（每日限额申请）</span><i class="el-icon-close" id="closeDlApproveModal" style="cursor:pointer;"></i></div>
-            <div class="modal-body">
-                <div class="calc-header">申请详情</div>
-                <div class="detail-grid" id="dlApproveInfo"></div>
-                <div class="calc-header">审批计算 <span style="font-weight:400;font-size:12px;color:#999;">（审批时执行：最近30个自然日累计已使用量 + 已批未用的超用量 + 拟超用量）</span></div>
-                <div id="dlApproveCalc"></div>
-                <div class="calc-header">审批进度</div>
-                <div class="timeline" id="dlApproveTimeline"></div>
-                <div class="form-row-horizontal" style="margin-top:12px;"><label>审批意见</label><div style="flex:1;display:flex;flex-direction:column;gap:4px;"><textarea id="dlApproveOpinion" class="form-control" rows="2" style="resize:vertical;font-family:inherit;" placeholder="驳回时必填，通过选填"></textarea></div></div>
-                <div style="font-size:12px;color:#999;" id="dlApproveHint">原型演示：真实系统由审批中心按判定级别流转至【初级管理员】/【高级管理员】处理，这里模拟通过/驳回操作。</div>
-            </div>
-            <div class="modal-footer"><button class="btn-reject" id="dlRejectBtn">驳回</button><button class="btn-primary" id="dlPassBtn">通过</button></div>
-        </div>
-    </div>
-
-    <!-- 申请详情弹窗 -->
+    <!-- 申请详情弹窗（查看：与新增申请弹窗一致的表单版式，只读） -->
     <div id="dlDetailModal" class="modal-mask">
-        <div class="modal-container" style="width: 820px;">
+        <div class="modal-container" style="width: 720px;">
             <div class="modal-header"><span>申请详情</span><i class="el-icon-close" id="closeDlDetailModal" style="cursor:pointer;"></i></div>
-            <div class="modal-body">
-                <div class="calc-header">申请详情</div>
-                <div class="detail-grid" id="dlDetailInfo"></div>
-                <div class="calc-header">审批计算 <span style="font-weight:400;font-size:12px;color:#999;">（提交时快照，审批时按当时数据最终计算）</span></div>
-                <div id="dlDetailCalc"></div>
-                <div class="calc-header">审批进度</div>
-                <div class="timeline" id="dlDetailTimeline"></div>
-                <div id="dlDetailEffect"></div>
-            </div>
+            <div class="modal-body" id="dlDetailInfo"></div>
             <div class="modal-footer"><button class="btn-default" id="closeDlDetailModalBtn">关闭</button></div>
         </div>
     </div>
@@ -1102,14 +1049,14 @@
     <!-- 阈值设置弹窗（金控管理员） -->
     <div id="dlThresholdModal" class="modal-mask">
         <div class="modal-container" style="width: 1000px;">
-            <div class="modal-header"><span>阈值设置（分业务单元）</span><i class="el-icon-close" id="closeDlThModal" style="cursor:pointer;"></i></div>
+            <div class="modal-header"><span>阈值设置</span><i class="el-icon-close" id="closeDlThModal" style="cursor:pointer;"></i></div>
             <div class="modal-body" style="max-height: 540px; overflow-y: auto;">
-                <div style="margin-bottom:12px;font-size:12px;color:#999;">设置权限：仅金控管理员。启用时该业务单元（租户-公司-部门-系统）对指定供应商API适用大额审批控制（超用需申请），停用后不触发超用申请。</div>
                 <button class="btn-add" id="addThBtn" style="margin-bottom:10px;">新增</button>
                 <table class="detail-table">
-                    <thead><tr><th>业务单元</th><th>供应商</th><th>API</th><th>大额触发阈值(次) <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">连续两天累计使用超过该阈值需提交超用申请；也是申请生效范围内每日基础额度</span></span></th><th>二级审批阈值(次) <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">30日累计使用量+已批未用的超用量+申请拟超用量 ≥ 该阈值时需初级→高级两级审批</span></span></th><th>启用状态</th><th>更新时间</th><th>更新人</th><th>操作</th></tr></thead>
+                    <thead><tr><th>编号</th><th>业务单元</th><th>供应商</th><th>API</th><th>大额触发阈值(次) <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">连续两天累计使用超过该阈值需提交超用申请；也是申请生效范围内每日基础额度</span></span></th><th>二级审批阈值(次) <span class="help-tooltip"><span class="help-icon">?</span><span class="tooltip-text">30日累计使用量+已批未用的超用量+申请拟超用量 ≥ 该阈值时需初级→高级两级审批</span></span></th><th>启用状态</th><th>更新时间</th><th>更新人</th><th>操作</th></tr></thead>
                     <tbody id="thTableBody"></tbody>
                 </table>
+                <div id="thPagination" class="pagination" style="margin-top:12px;"></div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="closeDlThModalBtn">关闭</button></div>
         </div>
@@ -1869,97 +1816,20 @@ function calcJudge(tenant, company, dept, sys, supplier, api, planned, start, en
     const level = (total < cfg.second) ? '仅初级审批' : '初级+高级审批';
     return { A, B, C, total, threshold: cfg.second, trigger: cfg.trigger, level };
 }
-function currentNode(a) {
-    return (a.level === '初级+高级审批' && a.passLevel1) ? '高级审批' : '初级审批';
-}
-function levelBadge(level) {
-    return `<span class="status-badge ${level === '仅初级审批' ? 'status-approved' : 'status-pending2'}">${level}</span>`;
-}
-
-// ---------- 计算明细渲染（申请弹窗预览 / 审批弹窗 共用）----------
-function calcRowsHtml(r, ctx) {
-    let bDetail = '';
-    if (r.B > 0 && ctx) {
-        const rows = overuseApplyList.filter(x =>
-            x.tenant === ctx.tenant && x.dept === ctx.dept && x.sys === ctx.sys &&
-            x.supplier === ctx.supplier && x.api === ctx.api &&
-            x.status === '已通过' && !(x.start > ctx.end || x.end < ctx.start));
-        bDetail = `<div class="b-detail-box"><div class="b-detail-title">已批未用超用量明细（范围有交集的已批准申请，每单只计未用余额，已用不重复计入）：</div>
-        <table class="daily-table"><thead><tr><th>申请单号</th><th>生效范围</th><th>拟超用量</th><th>已用</th><th>未用</th></tr></thead>
-        <tbody>${rows.map(x => `<tr><td>${x.applyNo}</td><td>${x.start} ~ ${x.end}</td><td>${(x.planned || 0).toLocaleString()}</td><td>${(x.excessUsed || 0).toLocaleString()}</td><td style="font-weight:600;color:#d46b08;">${((x.planned || 0) - (x.excessUsed || 0)).toLocaleString()}</td></tr>`).join('')}</tbody></table></div>`;
-    }
-    const judgeText = r.level === '仅初级审批'
-        ? `合计 ${r.total.toLocaleString()} &lt; ${r.threshold.toLocaleString()}，仅需【初级管理员】审批即可`
-        : `合计 ${r.total.toLocaleString()} ≥ ${r.threshold.toLocaleString()}，需【初级管理员】审批后流转【高级管理员】两级审批`;
+// 查看详情：与新增申请弹窗一致的表单版式（字段顺序同新增申请，增加调用方），全部只读
+function dlDetailFormHtml(a, cfg) {
+    const ro = v => `<input type="text" class="form-control" disabled style="background:#f5f7fa;" value="${escapeHtml(v)}">`;
     return `
-        <div class="calc-row"><span>A. 最近30个自然日累计已使用量（配额内+超用额度，各计一次）</span><span class="val">${r.A.toLocaleString()} 次</span></div>
-        ${ctx ? '<a class="action-link" style="font-size:12px;" onclick="toggleDailyDetail()">展开/收起30日用量明细</a><div id="dlDailyDetail" style="display:none;"></div>' : ''}
-        <div class="calc-row"><span>B. 已批未用的超用量</span><span class="val">${r.B.toLocaleString()} 次</span></div>
-        ${bDetail}
-        <div class="calc-row"><span>C. 拟超用量</span><span class="val">${r.C.toLocaleString()} 次</span></div>
-        <div class="calc-row total"><span>合计（A+B+C）</span><span class="val">${r.total.toLocaleString()} 次</span></div>
-        <div class="calc-row"><span>二级审批阈值</span><span class="val">${r.threshold.toLocaleString()} 次</span></div>
-        <div class="calc-judge">${levelBadge(r.level)}<span class="judge-text">${judgeText}</span></div>`;
-}
-function toggleDailyDetail() {
-    const box = document.getElementById('dlDailyDetail');
-    if (!box) return;
-    const a = overuseApplyList.find(x => x.id === dlApproveId);
-    if (!a) return;
-    if (box.style.display !== 'none') { box.style.display = 'none'; return; }
-    const rows = dailyUsageMap[`${a.tenant}-${a.dept}-${a.sys}-${a.supplier}-${a.api}`] || [];
-    const note = dailyUsageDef[`${a.tenant}-${a.dept}-${a.sys}-${a.supplier}-${a.api}`]?.note || '';
-    box.innerHTML = `<div style="font-size:12px;color:#999;margin:4px 0;">${escapeHtml(note)}</div>
-        <table class="daily-table"><thead><tr><th>日期</th><th>配额内用量</th><th>超用额度用量</th><th>备注</th></tr></thead>
-        <tbody>${rows.map(r => {
-            const isToday = r.date === TODAY;
-            const hl = r.excess > 0 || isToday;
-            const noteTxt = r.excess > 0 ? '超用额度（归属已批申请单）' : (isToday ? '当日已用配额（场景 c）' : '');
-            return `<tr class="${hl ? 'hl' : ''}"><td>${r.date}</td><td>${r.base.toLocaleString()}</td><td>${r.excess.toLocaleString()}</td><td>${noteTxt}</td></tr>`;
-        }).join('')}</tbody></table>`;
-    box.style.display = 'block';
-}
-function dlInfoGridHtml(a, cfg) {
-    return `<div class="dg-item"><label>申请单号</label><span>${a.applyNo}</span></div>
-    <div class="dg-item"><label>申请人</label><span>${escapeHtml(a.applicant)}</span></div>
-    <div class="dg-item"><label>租户</label><span>${escapeHtml(a.tenant)}</span></div>
-    <div class="dg-item"><label>公司</label><span>${escapeHtml(a.company || a.tenant)}</span></div>
-    <div class="dg-item"><label>部门</label><span>${escapeHtml(a.dept)}</span></div>
-    <div class="dg-item"><label>系统</label><span>${escapeHtml(a.sys)}</span></div>
-    <div class="dg-item"><label>供应商</label><span>${escapeHtml(a.supplier || '—')}</span></div>
-    <div class="dg-item"><label>API</label><span>${escapeHtml(a.api || '—')}</span></div>
-    <div class="dg-item"><label>申请日期范围</label><span>${a.start} ~ ${a.end}</span></div>
-    <div class="dg-item"><label>申请拟超用量</label><span>${(a.planned || 0).toLocaleString()} 次</span></div>
-    <div class="dg-item"><label>大额触发阈值</label><span>${cfg.trigger.toLocaleString()} 次/天</span></div>
-    <div class="dg-item full"><label>申请理由</label><span>${escapeHtml(a.reason)}</span></div>
-    <div class="dg-item"><label>申请时间</label><span>${a.appliedAt}</span></div>`;
-}
-function dlTimelineHtml(a) {
-    const logs = a.opLog || [];
-    const two = a.level === '初级+高级审批';
-    const submit = logs.find(l => l.node === '提交申请');
-    let html = `<div class="timeline-item done"><div class="timeline-title">提交申请</div><div class="timeline-meta">${submit ? escapeHtml(submit.by) + (submit.time ? ' · ' + submit.time : '') : ''}</div></div>`;
-    const l1 = logs.find(l => l.node === '初级审批');
-    let state1 = 'undecided';
-    if (l1) { state1 = l1.reject ? 'rejected' : 'done'; }
-    else if (a.status === '待审批') { state1 = a.passLevel1 ? 'done' : 'current'; }
-    else if (a.status === '已通过') { state1 = 'done'; }
-    html += `<div class="timeline-item ${state1}"><div class="timeline-title">初级审批${state1 === 'current' ? '<span class="timeline-state">待审批</span>' : ''}</div>${l1 ? `<div class="timeline-meta">${escapeHtml(l1.by)} · ${l1.time}</div>${l1.opinion ? `<div class="timeline-opinion">${l1.reject ? '驳回意见' : '审批意见'}：${escapeHtml(l1.opinion)}</div>` : ''}` : ''}</div>`;
-    if (two) {
-        const l2 = logs.find(l => l.node === '高级审批');
-        let state2 = 'undecided';
-        if (l2) { state2 = l2.reject ? 'rejected' : 'done'; }
-        else if (a.status === '待审批' && a.passLevel1) { state2 = 'current'; }
-        else if (a.status === '已通过') { state2 = 'done'; }
-        html += `<div class="timeline-item ${state2}"><div class="timeline-title">高级审批${state2 === 'current' ? '<span class="timeline-state">待审批</span>' : (state2 === 'undecided' ? '<span class="timeline-state">未开始</span>' : '')}</div>${l2 ? `<div class="timeline-meta">${escapeHtml(l2.by)} · ${l2.time}</div>${l2.opinion ? `<div class="timeline-opinion">${l2.reject ? '驳回意见' : '审批意见'}：${escapeHtml(l2.opinion)}</div>` : ''}` : ''}</div>`;
-    }
-    return html;
-}
-function dlEffectHtml(a) {
-    if (a.status !== '已通过') return '';
-    const cfg = getUnitConfig(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, a.api);
-    const limit = cfg.trigger + (a.planned || 0);
-    return `<div class="success-bar">审批已通过，额度已生效：<br>生效范围：${a.start} ~ ${a.end}（按申请日期范围）<br>每日可用上限：${cfg.trigger.toLocaleString()} + ${(a.planned || 0).toLocaleString()} = <b>${limit.toLocaleString()} 次/天</b>（大额触发阈值 + 拟超用量）<br>当天满额即停；范围结束后恢复常规使用额度监测（继续应用配额管理的预警监控）。申请的超用额度与用量不影响配额管理的总额度与已用比例。如仍需超用，请再次提交申请。</div>`;
+    <div class="form-row-horizontal"><label>申请人</label>${ro(a.applicant)}</div>
+    <div class="form-row-horizontal"><label>调用方</label>${ro(`${a.tenant}-${a.company || a.tenant}-${a.dept}-${a.sys}`)}</div>
+    <div class="form-row-horizontal"><label>供应商</label>${ro(a.supplier || '—')}</div>
+    <div class="form-row-horizontal"><label>API</label>${ro(a.api || '—')}</div>
+    <div class="form-row-horizontal"><label>申请日期范围</label><div class="date-range"><input type="text" class="dl-datepicker" value="${a.start}" disabled style="background:#f5f7fa;"><span>-</span><input type="text" class="dl-datepicker" value="${a.end}" disabled style="background:#f5f7fa;"></div></div>
+    <div class="form-row-horizontal"><label>大额触发阈值</label><div class="select-with-info"><input type="text" class="form-control" disabled style="background:#f5f7fa;" value="${cfg.trigger.toLocaleString()} 次/天"><span class="quota-info">默认 10,000 次/天，分业务单元可配；当日基础额度</span></div></div>
+    <div class="form-row-horizontal"><label>申请拟超用量</label>${ro((a.planned || 0).toLocaleString() + ' 次')}</div>
+    <div class="form-row-horizontal"><label>申请理由</label><textarea class="form-control" rows="3" readonly style="resize:none;background:#f5f7fa;font-family:inherit;">${escapeHtml(a.reason)}</textarea></div>
+    <div class="form-row-horizontal"><label>申请单号</label>${ro(a.applyNo)}</div>
+    <div class="form-row-horizontal"><label>申请时间</label>${ro(a.appliedAt)}</div>`;
 }
 
 // ---------- 页面 tab 与列表 ----------
@@ -1978,28 +1848,14 @@ function switchPageTab(tab) {
 function dlStatusClass(st) {
     return st === '待审批' ? 'status-pending' : (st === '已通过' ? 'status-approved' : 'status-rejected');
 }
-function dlQuotaStatusHtml(a) {
-    if (a.quotaStatus === '生效中') return '<span class="status-badge status-approved">生效中</span>';
-    if (a.quotaStatus === '已满额') return '<span class="status-badge status-expired" title="当天满额即停，范围结束后恢复常规监测">已满额</span>';
-    if (a.quotaStatus === '已结束') return '<span class="status-badge status-recovered" title="生效范围已结束，已恢复常规使用额度监测">已结束</span>';
-    return '<span style="color:#c0c4cc;">—</span>';
-}
 function dlOpsHtml(a) {
-    let h = `<a class="action-link" onclick="showDlDetail(${a.id})">查看</a>`;
-    if (a.status === '待审批') {
-        h += `<a class="action-link" onclick="openDlApprove(${a.id})">模拟审批</a><a class="action-link danger" onclick="withdrawDlApply(${a.id})">撤销</a>`;
-    } else if (a.status === '已驳回' || a.quotaStatus === '已满额' || a.quotaStatus === '已结束') {
-        h += `<a class="action-link" onclick="reapplyDl(${a.id})">再次申请</a>`;
-    }
-    return h;
+    return `<a class="action-link" onclick="showDlDetail(${a.id})">查看</a><a class="action-link" title="跳转至个人中心-我的审批查看审批进展" onclick="location.href='个人中心V1.3.html#approval'">查看审批</a>`;
 }
 function renderDailyTable() {
-    const no = (document.getElementById('dlFilterNo')?.value || '').trim();
     const st = document.getElementById('dlFilterStatus')?.value || '全部';
     const ds = document.getElementById('dlFilterStart')?.value || '';
     const de = document.getElementById('dlFilterEnd')?.value || '';
     let list = overuseApplyList.filter(a => {
-        if (no && !a.applyNo.includes(no)) return false;
         if (st !== '全部' && a.status !== st) return false;
         if (ds && a.start < ds) return false;
         if (de && a.start > de) return false;
@@ -2011,19 +1867,16 @@ function renderDailyTable() {
     const pageData = list.slice(start, start + dailyPageSize);
     const tbody = document.getElementById('dlTableBody');
     if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
-    tbody.innerHTML = pageData.map(a => {
-        const nodeTag = (a.status === '待审批') ? `<div class="node-tag">当前节点：${currentNode(a)}</div>` : '';
+    tbody.innerHTML = pageData.map((a, idx) => {
         return `<tr>
-            <td>${a.applyNo}</td>
+            <td>${(dailyPage - 1) * dailyPageSize + idx + 1}</td>
             <td>${escapeHtml(a.tenant)}-${escapeHtml(a.dept)}-${escapeHtml(a.sys)}</td>
             <td>${escapeHtml(a.supplier || '—')}</td>
             <td>${escapeHtml(a.api || '—')}</td>
             <td>${a.start} ~ ${a.end}</td>
             <td>${(a.planned || 0).toLocaleString()} 次</td>
             <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(a.reason)}">${escapeHtml(a.reason)}</td>
-            <td>${levelBadge(a.level)}</td>
-            <td><span class="status-badge ${dlStatusClass(a.status)}">${a.status}</span>${nodeTag}</td>
-            <td>${dlQuotaStatusHtml(a)}</td>
+            <td><span class="status-badge ${dlStatusClass(a.status)}">${a.status}</span></td>
             <td>${a.appliedAt}</td>
             <td class="action-icons">${dlOpsHtml(a)}</td>
         </tr>`;
@@ -2046,7 +1899,6 @@ function updateDlPagination(total, totalCount) {
 function changeDlPage(p) { dailyPage = p; renderDailyTable(); }
 function changeDlPageSize(s) { dailyPageSize = parseInt(s); dailyPage = 1; renderDailyTable(); }
 function resetDlFilters() {
-    document.getElementById('dlFilterNo').value = '';
     document.getElementById('dlFilterStatus').value = '全部';
     dlFilterStartFp && dlFilterStartFp.clear();
     dlFilterEndFp && dlFilterEndFp.clear();
@@ -2067,25 +1919,17 @@ function fillApiOptions() {
     const sel = document.getElementById('dlApi');
     sel.innerHTML = '<option value="">请选择API</option>' + (dlSupplierApiMap[supplier] || []).map(a => `<option value="${a}">${a}</option>`).join('');
 }
-function renderDlPreview() {
-    const box = document.getElementById('dlPreview');
-    if (!box) return;
+function updateDlTriggerInfo() {
     const biz = currentBiz();
-    const supplier = document.getElementById('dlSupplier').value;
-    const api = document.getElementById('dlApi').value;
-    const planned = parseInt(document.getElementById('dlPlanned').value) || 0;
-    const start = document.getElementById('dlStart').value || TODAY;
-    const end = document.getElementById('dlEnd').value || addDaysStr(TODAY, 1);
+    const supplier = document.getElementById('dlSupplier').value || '';
+    const api = document.getElementById('dlApi').value || '';
+    if (!supplier || !api) { document.getElementById('dlTriggerInfo').value = ''; return; }
     // 大额触发阈值：按申请人业务单元+供应商API配置展示（分业务单元可配，未配置采用默认值）
     const cfg = getUnitConfig(biz.tenant, biz.company, biz.dept, biz.sys, supplier, api);
     const configured = thresholdConfig.some(t =>
         t.tenant === biz.tenant && t.company === biz.company && t.dept === biz.dept &&
         t.sys === biz.sys && t.supplier === supplier && t.api === api);
     document.getElementById('dlTriggerInfo').value = configured ? `${cfg.trigger.toLocaleString()} 次` : `采用默认 ${DEFAULT_TRIGGER.toLocaleString()} 次`;
-    if (!supplier || !api) { box.innerHTML = '<div class="calc-empty">请选择供应商与API后自动计算</div>'; return; }
-    if (planned < 1) { box.innerHTML = '<div class="calc-empty">请填写申请拟超用量（正整数）后自动计算</div>'; return; }
-    const r = calcJudge(biz.tenant, biz.company, biz.dept, biz.sys, supplier, api, planned, start, end);
-    box.innerHTML = calcRowsHtml(r, { tenant: biz.tenant, dept: biz.dept, sys: biz.sys, supplier, api, start, end });
 }
 function updateDlReasonCount() {
     const v = document.getElementById('dlReason').value;
@@ -2102,7 +1946,7 @@ function openDlApply(prefill) {
     document.getElementById('dlPlanned').value = prefill?.planned || '';
     document.getElementById('dlReason').value = prefill?.reason || '';
     updateDlReasonCount();
-    renderDlPreview();
+    updateDlTriggerInfo();
     document.getElementById('dlApplyModal').classList.add('active');
 }
 function closeDlApplyModal() { document.getElementById('dlApplyModal').classList.remove('active'); }
@@ -2140,103 +1984,76 @@ function submitDlApply() {
     closeDlApplyModal();
     renderDailyTable();
 }
-function withdrawDlApply(id) {
-    if (!confirm('确定撤销该申请吗？')) return;
-    overuseApplyList = overuseApplyList.filter(x => x.id !== id);
-    renderDailyTable();
-    alert('撤销成功');
-}
-function reapplyDl(id) {
-    const a = overuseApplyList.find(x => x.id === id);
-    if (!a) return;
-    openDlApply({ supplier: a.supplier, api: a.api, planned: a.planned, reason: a.reason });
-}
-
-// ---------- 审批弹窗（模拟流转，原型演示）----------
-let dlApproveId = null;
-function openDlApprove(id) {
-    const a = overuseApplyList.find(x => x.id === id);
-    if (!a) return;
-    dlApproveId = id;
-    document.getElementById('dlApproveOpinion').value = '';
-    const cfg = getUnitConfig(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, a.api);
-    const r = calcJudge(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, a.api, a.planned, a.start, a.end);
-    document.getElementById('dlApproveInfo').innerHTML = dlInfoGridHtml(a, cfg);
-    document.getElementById('dlApproveCalc').innerHTML = calcRowsHtml(r, a);
-    document.getElementById('dlApproveTimeline').innerHTML = dlTimelineHtml(a);
-    document.getElementById('dlApproveHint').textContent = `原型演示：该申请判定为【${a.level}】，当前节点【${currentNode(a)}】。真实系统由审批中心按判定级别流转处理：仅初级审批由【初级管理员】审批；两级审批由【初级管理员】审批后流转【高级管理员】。`;
-    document.getElementById('dlApproveModal').classList.add('active');
-}
-function closeDlApproveModal() { document.getElementById('dlApproveModal').classList.remove('active'); }
-function dlApprovePass() {
-    const a = overuseApplyList.find(x => x.id === dlApproveId);
-    if (!a) return;
-    const opinion = document.getElementById('dlApproveOpinion').value.trim();
-    if (a.level === '初级+高级审批' && !a.passLevel1) {
-        a.passLevel1 = true;
-        a.opLog.push({ node: '初级审批', by: '王经理(初级管理员)', time: nowStr(), opinion: opinion || '同意' });
-        alert('已通过，申请流转至【高级管理员】审批');
-    } else {
-        const isSecond = a.level === '初级+高级审批';
-        a.status = '已通过';
-        a.quotaStatus = '生效中';
-        a.opLog.push({ node: isSecond ? '高级审批' : '初级审批', by: isSecond ? '李总监(高级管理员)' : '王经理(初级管理员)', time: nowStr(), opinion: opinion || '同意' });
-        const cfg = getUnitConfig(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, a.api);
-        const limit = cfg.trigger + a.planned;
-        alert(`审批已通过，额度已生效：\n生效范围：${a.start} ~ ${a.end}\n每日可用上限：${cfg.trigger.toLocaleString()} + ${a.planned.toLocaleString()} = ${limit.toLocaleString()} 次/天\n当天满额即停；范围结束后恢复常规使用额度监测；超用额度与用量不影响配额管理总额度与已用比例。`);
-    }
-    closeDlApproveModal();
-    renderDailyTable();
-}
-function dlApproveReject() {
-    const a = overuseApplyList.find(x => x.id === dlApproveId);
-    if (!a) return;
-    const opinion = document.getElementById('dlApproveOpinion').value.trim();
-    if (!opinion) { alert('驳回时必须填写审批意见'); return; }
-    const node = currentNode(a);
-    a.status = '已驳回';
-    a.quotaStatus = '—';
-    a.opLog.push({ node, by: node === '高级审批' ? '李总监(高级管理员)' : '王经理(初级管理员)', time: nowStr(), opinion, reject: true });
-    alert('已驳回，申请已退回申请人（可在申请列表「再次申请」预填重提）');
-    closeDlApproveModal();
-    renderDailyTable();
-}
-
 // ---------- 申请详情弹窗 ----------
 function showDlDetail(id) {
     const a = overuseApplyList.find(x => x.id === id);
     if (!a) return;
     const cfg = getUnitConfig(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, a.api);
-    document.getElementById('dlDetailInfo').innerHTML = dlInfoGridHtml(a, cfg);
-    const s = a.snapshot || {};
-    const r = { A: s.A || 0, B: s.B || 0, C: s.C || 0, total: s.total || 0, threshold: s.threshold || 0, level: s.level || a.level };
-    document.getElementById('dlDetailCalc').innerHTML = calcRowsHtml(r, a);
-    document.getElementById('dlDetailTimeline').innerHTML = dlTimelineHtml(a);
-    document.getElementById('dlDetailEffect').innerHTML = dlEffectHtml(a);
+    document.getElementById('dlDetailInfo').innerHTML = dlDetailFormHtml(a, cfg);
     document.getElementById('dlDetailModal').classList.add('active');
 }
 function closeDlDetailModal() { document.getElementById('dlDetailModal').classList.remove('active'); }
 
 // ---------- 阈值设置（金控管理员，维度=租户-公司-部门-系统-供应商-API）----------
 let thEditIdx = -1;
+let thPage = 1, thPageSize = 5;
 function openThresholdModal() {
+    thPage = 1;
     renderThTable();
+    renderThPagination();
     document.getElementById('dlThresholdModal').classList.add('active');
 }
 function closeThresholdModal() { document.getElementById('dlThresholdModal').classList.remove('active'); }
 function renderThTable() {
     const tbody = document.getElementById('thTableBody');
-    tbody.innerHTML = thresholdConfig.map((c, i) => `<tr>
-        <td>${escapeHtml(c.tenant)}-${escapeHtml(c.company || c.tenant)}-${escapeHtml(c.dept)}-${escapeHtml(c.sys)}</td>
-        <td>${escapeHtml(c.supplier || '—')}</td>
-        <td>${escapeHtml(c.api || '—')}</td>
-        <td>${c.trigger.toLocaleString()}</td>
-        <td>${c.second.toLocaleString()}</td>
-        <td><span class="status-badge ${c.enabled ? 'status-approved' : 'status-disabled'}">${c.enabled ? '启用' : '停用'}</span></td>
-        <td>2026-08-26 10:00</td>
-        <td>席某</td>
-        <td><a class="action-link" onclick="openThForm(${i})">编辑</a></td>
-    </tr>`).join('');
+    const start = (thPage - 1) * thPageSize;
+    const pageData = thresholdConfig.slice(start, start + thPageSize);
+    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;">暂无数据</td></tr>'; return; }
+    tbody.innerHTML = pageData.map((c, i) => {
+        const gIdx = start + i;
+        return `<tr>
+            <td>${gIdx + 1}</td>
+            <td>${escapeHtml(c.tenant)}-${escapeHtml(c.company || c.tenant)}-${escapeHtml(c.dept)}-${escapeHtml(c.sys)}</td>
+            <td>${escapeHtml(c.supplier || '—')}</td>
+            <td>${escapeHtml(c.api || '—')}</td>
+            <td>${c.trigger.toLocaleString()}</td>
+            <td>${c.second.toLocaleString()}</td>
+            <td><span class="status-badge ${c.enabled ? 'status-approved' : 'status-disabled'}">${c.enabled ? '启用' : '停用'}</span></td>
+            <td>2026-08-26 10:00</td>
+            <td>席某</td>
+            <td><a class="action-link" onclick="openThForm(${gIdx})">编辑</a><a class="action-link danger" onclick="deleteThConfig(${gIdx})">删除</a></td>
+        </tr>`;
+    }).join('');
+}
+function renderThPagination() {
+    const container = document.getElementById('thPagination');
+    if (!container) return;
+    const total = Math.ceil(thresholdConfig.length / thPageSize) || 1;
+    let html = `<span class="total-text">共 ${thresholdConfig.length} 条</span><button class="page-btn" ${thPage === 1 ? 'disabled' : ''} onclick="changeThPage(${thPage - 1})">‹</button>`;
+    for (let i = 1; i <= total; i++) html += `<span class="page-number ${i === thPage ? 'active' : ''}" onclick="changeThPage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${thPage === total ? 'disabled' : ''} onclick="changeThPage(${thPage + 1})">›</button>`;
+    html += `<select class="page-size-select" onchange="changeThPageSize(this.value)"><option value="5" ${thPageSize === 5 ? 'selected' : ''}>5条/页</option><option value="10" ${thPageSize === 10 ? 'selected' : ''}>10条/页</option><option value="20" ${thPageSize === 20 ? 'selected' : ''}>20条/页</option></select>`;
+    container.innerHTML = html;
+}
+function changeThPage(p) {
+    const total = Math.ceil(thresholdConfig.length / thPageSize) || 1;
+    if (p < 1 || p > total) return;
+    thPage = p;
+    renderThTable();
+}
+function changeThPageSize(s) {
+    thPageSize = parseInt(s);
+    thPage = 1;
+    renderThTable();
+    renderThPagination();
+}
+function deleteThConfig(idx) {
+    if (!confirm('确定删除该阈值配置吗？')) return;
+    thresholdConfig.splice(idx, 1);
+    const total = Math.ceil(thresholdConfig.length / thPageSize) || 1;
+    if (thPage > total) thPage = total;
+    renderThTable();
+    renderThPagination();
 }
 function fillThTenantOptions() {
     const sel = document.getElementById('thTenant');
@@ -2329,13 +2146,14 @@ function saveThForm() {
     }
     closeThFormModal();
     renderThTable();
+    renderThPagination();
 }
 
 // ---------- 事件绑定与初始化 ----------
 let dlStartFp = null, dlEndFp = null, dlFilterStartFp = null, dlFilterEndFp = null;
 if (window.flatpickr) {
-    dlStartFp = flatpickr('#dlStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: renderDlPreview });
-    dlEndFp = flatpickr('#dlEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: renderDlPreview });
+    dlStartFp = flatpickr('#dlStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: updateDlTriggerInfo });
+    dlEndFp = flatpickr('#dlEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: updateDlTriggerInfo });
     dlFilterStartFp = flatpickr('#dlFilterStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
     dlFilterEndFp = flatpickr('#dlFilterEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
 }
@@ -2350,9 +2168,6 @@ document.getElementById('dlThBtn')?.addEventListener('click', openThresholdModal
 document.getElementById('closeDlApplyModal')?.addEventListener('click', closeDlApplyModal);
 document.getElementById('cancelDlApplyModal')?.addEventListener('click', closeDlApplyModal);
 document.getElementById('submitDlApplyBtn')?.addEventListener('click', submitDlApply);
-document.getElementById('closeDlApproveModal')?.addEventListener('click', closeDlApproveModal);
-document.getElementById('dlPassBtn')?.addEventListener('click', dlApprovePass);
-document.getElementById('dlRejectBtn')?.addEventListener('click', dlApproveReject);
 document.getElementById('closeDlDetailModal')?.addEventListener('click', closeDlDetailModal);
 document.getElementById('closeDlDetailModalBtn')?.addEventListener('click', closeDlDetailModal);
 document.getElementById('closeDlThModal')?.addEventListener('click', closeThresholdModal);
@@ -2361,9 +2176,8 @@ document.getElementById('addThBtn')?.addEventListener('click', function () { ope
 document.getElementById('closeThFormModal')?.addEventListener('click', closeThFormModal);
 document.getElementById('cancelThFormBtn')?.addEventListener('click', closeThFormModal);
 document.getElementById('saveThBtn')?.addEventListener('click', saveThForm);
-document.getElementById('dlSupplier')?.addEventListener('change', function () { fillApiOptions(); renderDlPreview(); });
-document.getElementById('dlApi')?.addEventListener('change', renderDlPreview);
-document.getElementById('dlPlanned')?.addEventListener('input', renderDlPreview);
+document.getElementById('dlSupplier')?.addEventListener('change', function () { fillApiOptions(); updateDlTriggerInfo(); });
+document.getElementById('dlApi')?.addEventListener('change', updateDlTriggerInfo);
 document.getElementById('dlReason')?.addEventListener('input', updateDlReasonCount);
 document.getElementById('thTenant')?.addEventListener('change', fillThCompanyOptions);
 document.getElementById('thCompany')?.addEventListener('change', fillThDeptOptions);
@@ -2371,7 +2185,7 @@ document.getElementById('thDept')?.addEventListener('change', fillThSysOptions);
 document.getElementById('thSys')?.addEventListener('change', fillThSupplierOptions);
 document.getElementById('thSupplier')?.addEventListener('change', fillThApiOptions);
 // 新增弹窗点击遮罩关闭
-['dlApplyModal', 'dlApproveModal', 'dlDetailModal', 'dlThresholdModal', 'dlThFormModal'].forEach(id => {
+['dlApplyModal', 'dlDetailModal', 'dlThresholdModal', 'dlThFormModal'].forEach(id => {
     const m = document.getElementById(id);
     if (m) m.addEventListener('click', function (e) { if (e.target === this) this.classList.remove('active'); });
 });
