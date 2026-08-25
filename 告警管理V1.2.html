@@ -548,7 +548,7 @@
                 <div class="filter-section">
                     <div class="filter-bar">
                         <div class="filter-left">
-                            <div class="filter-item"><label>规则类型</label><select id="ruleTypeFilter"><option value="">全部</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="调用异常告警">调用异常告警</option></select></div>
+                            <div class="filter-item"><label>规则类型</label><select id="ruleTypeFilter"><option value="">全部</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="调用异常告警">调用异常告警</option><option value="系统性能监控">系统性能监控</option></select></div>
                             <div class="filter-item"><label>规则名称</label><input type="text" id="ruleNameFilter" placeholder="请输入规则名称"></div>
                         </div>
                         <div class="filter-right"><button class="btn-primary" id="ruleSearchBtn">查询</button><button class="btn-default" id="ruleResetBtn">重置</button></div>
@@ -613,7 +613,7 @@
     </div>
 
     <!-- 规则弹窗 -->
-    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则名称</label><input type="text" id="ruleNameInput" placeholder="请输入规则名称"></div><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="">请选择规则类型</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="调用异常告警">调用异常告警</option></select></div><div class="form-row"><label>规则子项</label><select id="ruleNameSelect"><option value="">请选择规则子项</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleSupplierRow" style="display: none;"><label>供应商</label><select id="ruleSupplier"><option value="全部">全部</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则名称</label><input type="text" id="ruleNameInput" placeholder="请输入规则名称"></div><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="">请选择规则类型</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="调用异常告警">调用异常告警</option><option value="系统性能监控">系统性能监控</option></select></div><div class="form-row"><label>规则子项</label><select id="ruleNameSelect"><option value="">请选择规则子项</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleSupplierRow" style="display: none;"><label>供应商</label><select id="ruleSupplier"><option value="全部">全部</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
                         <div class="multi-select-container">
                             <div class="multi-select-trigger" onclick="toggleMultiSelect()">
                                 <span class="multi-select-placeholder">请选择时间点</span>
@@ -689,9 +689,9 @@ let ruleList = [
     { id: 2, tenant: "某某金控", type: "API用量预警", name: "额度用量预警", ruleName: "企业基本信息配额预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%", "API已用量 >= 99%"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务应用人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
     { id: 3, tenant: "某某金控", type: "API用量预警", name: "用量预测预警", ruleName: "企业基本信息用量预测", conditions: ["预测用完日 <= 3 天", "预测用完日 <= 10 天", "预测用完日 <= 15 天"], service: "企业基本信息查询", level: "P2警告", receiver: ["服务运营人员"], freq: "每日检查", timePoints: ["10:00", "14:00", "18:00"], status: "停用" },
     { id: 7, tenant: "某某金控", type: "服务使用预警", name: "服务用量预警", ruleName: "企业画像服务额度预警", conditions: ["API已用量 >= 80%", "API已用量 >= 90%"], service: "企业画像查询服务", level: "P2警告", receiver: ["服务应用人员"], freq: "每日检查", timePoints: ["09:00"], status: "启用" },
-    { id: 4, tenant: "某某金控", type: "调用异常告警", name: "服务失败异常", ruleName: "企查查连接失败告警", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "外部API", supplier: "企查查", api: "all", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 5, tenant: "某某金控", type: "调用异常告警", name: "响应时间异常", ruleName: "天眼查P95超时告警", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "外部API", supplier: "天眼查", api: "all", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
-    { id: 6, tenant: "某某金控", type: "调用异常告警", name: "系统性能异常", ruleName: "服务节点性能告警", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "内部服务", svc: "全部", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
+    { id: 4, tenant: "某某金控", type: "调用异常告警", name: "服务失败异常", ruleName: "企查查连接失败告警", conditions: ["服务连接状态 = 失败, 持续 >= 5分钟", "服务连接状态 = 超时, 持续 >= 5分钟"], service: "外源API", supplier: "企查查", api: "all", level: "P1严重", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 5, tenant: "某某金控", type: "调用异常告警", name: "响应时间异常", ruleName: "天眼查P95超时告警", conditions: ["服务P95时间 >= 3000ms, 持续 >= 10分钟"], service: "外源API", supplier: "天眼查", api: "all", level: "P2警告", receiver: ["服务开发人员"], freq: "触发时发送一次", timePoints: [], status: "启用" },
+    { id: 6, tenant: "某某金控", type: "系统性能监控", name: "系统性能异常", ruleName: "服务节点性能告警", conditions: ["CPU使用率 >= 90%, 持续 >= 15分钟", "内存使用率 >= 85%, 持续 >= 15分钟"], service: "全局", level: "P1严重", receiver: ["运维组"], freq: "触发时发送一次", timePoints: [], status: "启用" }
 ];
 
 // ======================== 渠道数据 ========================
@@ -1033,7 +1033,7 @@ function renderRuleTable() {
             } else {
                 const supplierDisplay = i.supplier && i.supplier !== '全部' ? escapeHtml(i.supplier) : '全部';
                 const apiDisplay = i.api && i.api !== 'all' ? escapeHtml(i.api) : '不限';
-                serviceDisplay = `外部API-${supplierDisplay}-${apiDisplay}`;
+                serviceDisplay = `外源API-${supplierDisplay}-${apiDisplay}`;
             }
         } else {
             serviceDisplay = escapeHtml(i.service);
@@ -1083,7 +1083,8 @@ function updateRuleFormByType() {
     if (type === '合同账单提醒') ruleNames = ["合同到期提醒"];
     else if (type === 'API用量预警') ruleNames = ["额度用量预警", "用量预测预警"];
     else if (type === '服务使用预警') ruleNames = ["服务用量预警"];
-    else if (type === '调用异常告警') ruleNames = ["服务失败异常", "响应时间异常", "系统性能异常"];
+    else if (type === '调用异常告警') ruleNames = ["服务失败异常", "响应时间异常"];
+    else if (type === '系统性能监控') ruleNames = ["系统性能异常"];
     const nameSelect = document.getElementById('ruleNameSelect');
     nameSelect.innerHTML = '<option value="">请选择规则名称</option>' + ruleNames.map(n => `<option value="${n}">${n}</option>`).join('');
     updateScopeUI();
@@ -1343,7 +1344,7 @@ function editRule(id) {
                     setSelectValue('ruleService', '内部服务');
                     setSelectValue('ruleSvcSelect', item.svc || '全部');
                 } else {
-                    setSelectValue('ruleService', '外部API');
+                    setSelectValue('ruleService', '外源API');
                     setSelectValue('ruleSupplier', item.supplier || '全部');
                     updateRuleApiOptions(item.supplier || '全部');
                     if (item.api) setRuleApiValue(item.api);
@@ -1435,7 +1436,7 @@ function viewRule(id) {
                     setSelectValue('ruleService', '内部服务');
                     setSelectValue('ruleSvcSelect', item.svc || '全部');
                 } else {
-                    setSelectValue('ruleService', '外部API');
+                    setSelectValue('ruleService', '外源API');
                     setSelectValue('ruleSupplier', item.supplier || '全部');
                     updateRuleApiOptions(item.supplier || '全部');
                     if (item.api) setRuleApiValue(item.api);
@@ -1543,9 +1544,9 @@ function saveRule() {
     let svc = '';
     let api = '';
     if (isCallExceptionRule()) {
-        const scope = getSelectValue('ruleService') || '外部API';
+        const scope = getSelectValue('ruleService') || '外源API';
         service = scope;
-        if (scope === '外部API') {
+        if (scope === '外源API') {
             supplier = getSelectValue('ruleSupplier') || '全部';
             api = getRuleApiValue();
         } else {
@@ -1649,7 +1650,7 @@ function updateScopeUI() {
     const callExc = isCallExceptionRule();
     const current = scopeSelect.value;
     let opts;
-    if (callExc) opts = ['外部API', '内部服务'];
+    if (callExc) opts = ['外源API', '内部服务'];
     else if (special) opts = ['全局', '指定服务'];
     else opts = ['全局', '企查查', '天眼查'];
     scopeSelect.innerHTML = opts.map(o => '<option value="' + o + '">' + o + '</option>').join('');
@@ -1669,7 +1670,7 @@ function applyScopeVisibility() {
         if (supplierRow) supplierRow.style.display = 'none';
         if (apiRow) apiRow.style.display = 'none';
         if (svcRow) svcRow.style.display = 'none';
-        if (scope === '外部API') {
+        if (scope === '外源API') {
             if (supplierRow) supplierRow.style.display = 'flex';
             if (apiRow) apiRow.style.display = 'flex';
             updateRuleApiOptions(getSelectValue('ruleSupplier') || '全部');
