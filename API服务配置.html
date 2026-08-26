@@ -1647,13 +1647,14 @@ function structParse() {
         if (untouched) {
             r.parseAttr = r.children ? '表' : '字段';
             r.parseResult = upperSnake(r.name);
-            r.dbType = dbTypeOf(r.type);
+            r.dbType = r.children ? '' : dbTypeOf(r.type); // 解析属性=表：解析类型清空置灰（类型交由归组决定）
         } else if (r.parseAttr !== '不解析' && !r.parseResult) {
             r.parseResult = upperSnake(r.name);
         }
         if (r.parseAttr === '不解析') {
             r.parseResult = '';
-        } else {
+        } else if (r.parseAttr !== '表') {
+            // 解析属性=表：解析类型保持清空置灰
             r.dbType = r.dbType || (r.parseAttr === 'JSON串' ? 'CLOB' : dbTypeOf(r.type));
         }
     });
@@ -1739,11 +1740,15 @@ function getStructGroups() {
     // 主表排第一位（无论行序如何生成）
     const mi = groups.findIndex(g => g.name === '主表');
     if (mi > 0) groups.unshift(groups.splice(mi, 1)[0]);
-    groups.forEach(g => { g.displayName = g.name === '主表' ? (formTable || '主表') : g.name; });
+    groups.forEach(g => {
+        g.displayName = g.name === '主表' ? (formTable || '主表') : g.name;
+        // 每张表默认增加主键 id 字段（首列；BIGINT 自增主键，示例值 1）
+        g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: '1', desc: '主键' });
+    });
     // 主表追加登录账户审计字段（租户/公司/部门/系统，值取自当前登录账户信息）
     const mainGroup = groups.find(g => g.name === '主表');
     if (mainGroup) {
-        const audit = [['tenant', LOGIN_INFO.tenant], ['company', LOGIN_INFO.company], ['department', LOGIN_INFO.department], ['system', LOGIN_INFO.system]];
+        const audit = [['TENANT', LOGIN_INFO.tenant], ['COMPANY', LOGIN_INFO.company], ['DEPARTMENT', LOGIN_INFO.department], ['SYSTEM', LOGIN_INFO.system]];
         audit.forEach(([name, value]) => mainGroup.rows.push({ field: name, dbType: 'VARCHAR', value, desc: '登录账户' }));
     }
     return groups;
@@ -1876,7 +1881,7 @@ function renderRespRows() {
                 <td><select class="cell-select" ${ro ? 'disabled' : ''} data-f="type">${TYPE_OPTIONS.map(t => `<option value="${t}" ${r.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
                 <td><select class="cell-select" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseAttr">${parseAttrOptions(r, i, rows)}</select></td>
                 <td><input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果"></td>
-                <td><input class="cell-input" value="${escapeHtml(r.dbType || dbTypeOf(r.type))}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="dbType" placeholder="字段类型"></td>
+                <td><input class="cell-input" value="${escapeHtml(r.parseAttr === '表' ? '' : (r.dbType || dbTypeOf(r.type)))}" ${ro || isArrElementRow(rows, i) || r.parseAttr === '表' ? 'disabled' : ''} data-f="dbType" placeholder="字段类型"></td>
                 <td><input class="cell-input" value="${escapeHtml(r.desc)}" ${ro ? 'disabled' : ''} data-f="desc" placeholder="说明"></td>
                 <td>${rowOpsHtml(i, rows, 'resp', ro)}</td>
             </tr>`;
@@ -2025,6 +2030,7 @@ function normalizeParseAttr(r, rows, i) {
     if (isArrElementRow(rows, i)) { r.parseAttr = '不解析'; r.parseResult = ''; r.dbType = ''; return; }
     const canTable = r.type === 'array' || r.type === 'object';
     if (r.parseAttr === '表' && !canTable) r.parseAttr = '字段';
+    if (r.parseAttr === '表') r.dbType = ''; // 解析属性=表：解析类型清空
 }
 /* 选择「不解析」：该字段与其下所有层级全部置为不解析（结构保留，层级不提升） */
 function cascadeSkipParse(i) {
@@ -2113,6 +2119,12 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
             // 选择「JSON串」：该字段与字段值整体作为JSON串存储（CLOB），其下所有字段解析属性一并变为JSON串
             row.dbType = 'CLOB';
             if (row.children) cascadeJsonAttr(idx);
+            renderRespRows();
+            return;
+        }
+        if (cell.value === '表') {
+            // 选择「表」：解析类型清空并置灰禁用（表的类型由结构化归组生成，不在此列填写）
+            row.dbType = '';
             renderRespRows();
             return;
         }
@@ -2228,7 +2240,7 @@ function parseJsonToRespData(parsed) {
             example: childKeys.length ? '' : (isObj || isArr ? JSON.stringify(value) : String(value)),
             parseAttr: childKeys.length ? '表' : '字段',
             parseResult: upperSnake(name),
-            dbType: dbTypeOf(type),
+            dbType: childKeys.length ? '' : dbTypeOf(type), // 解析属性=表：解析类型清空置灰
             desc: '',
             children: childKeys.length > 0,
             expanded: true
