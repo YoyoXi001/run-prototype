@@ -1,0 +1,2679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>外数 | API服务配置</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f6;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .app-layout {
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background: linear-gradient(135deg, #84B9FD, #E1EDFB);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+        .logo-area {
+            width: 265px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2f3d;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+        .logo-sub {
+            font-size: 10px;
+            color: #5a6e8c;
+            margin-top: 2px;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 48px;
+            position: absolute;
+            left: 320px;
+        }
+        .nav-tab {
+            cursor: pointer;
+            font-size: 18px;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            color: #333333;
+            position: relative;
+            transition: 0.3s;
+            font-weight: 400;
+            padding-bottom: 4px;
+        }
+        .nav-tab:hover { color: #1152c5; }
+        .nav-tab.active {
+            color: #1152c5;
+            font-weight: 700;
+        }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1152c5;
+            border-radius: 2px;
+        }
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+        .message-icon-wrapper {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .message-icon {
+            font-size: 20px;
+            color: #5a5e66;
+        }
+        .message-icon:hover {
+            color: #1152c5;
+        }
+        .unread-badge-icon {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: #f5222d;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 5px;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
+            border: 1px solid #fff;
+            display: none;
+            line-height: 1.2;
+        }
+        .tenant-info {
+            font-size: 14px;
+            color: #5a5e66;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+        .tenant-name {
+            font-weight: 500;
+            color: #1f2f3d;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #fcb53e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', sans-serif;
+        }
+
+        /* 左侧菜单 */
+        .side-menu {
+            width: 240px;
+            background: #fff;
+            border-right: 0;
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 16px 0;
+            box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02);
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 240px;
+            height: 48px;
+            padding: 0 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-family: 'Source Han Sans SC', 'Source Sans Pro', sans-serif;
+            font-size: 16px;
+            color: #333333;
+            transition: 0.3s;
+            background: transparent;
+            border-radius: 0;
+        }
+        .menu-item:last-child { margin-bottom: 0; }
+        .menu-item:hover { background: #fef5ec; }
+        .menu-item.active {
+            background: linear-gradient(270deg, #fefdfb, #fef5ec);
+            color: #f89d34;
+            border-right: 2px solid #f89d34;
+        }
+        .menu-item i { font-size: 18px; width: 22px; }
+
+        /* 右侧内容面板 */
+        .main-content {
+            margin-left: 240px;
+            padding: 8px 16px 16px 16px;
+            height: calc(100vh - 80px);
+            background: #F5F7FA;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-card {
+            background: #f5f7fa;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .content-card .breadcrumb { flex-shrink: 0; }
+
+        /* 面包屑 */
+        .breadcrumb {
+            padding: 0;
+            margin: 0 0 8px 0;
+            background: #f5f7fa;
+            font-size: 14px;
+            color: #666;
+            border: none;
+        }
+        .breadcrumb .separator { margin: 0 8px; color: #666; }
+        .breadcrumb .current { color: #666; font-weight: normal; }
+
+        .outer-container {
+            background: #F5F7FA;
+            padding: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        /* 筛选框 DIV */
+        .filter-section {
+            background: #fff;
+            border: 1px solid #d8d8d8;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+        }
+        .filter-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-item label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            white-space: nowrap;
+        }
+        .filter-item input, .filter-item select {
+            width: 180px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #333333;
+            background: #fff;
+        }
+        .filter-item input:focus, .filter-item select:focus { border-color: #f89d34; }
+        .filter-right { display: flex; gap: 12px; }
+        .btn-primary {
+            background: #f89d34;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-default {
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #666666;
+        }
+        .btn-default:hover { background: #f5f7fa; }
+
+        .btn-add {
+            background: #fff;
+            color: #f89d34;
+            border: 1px solid #f89d34;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-add:hover { background: #fef5ec; }
+
+        /* 参数表格上方的功能按钮 */
+        .btn-mini {
+            background: #fff;
+            color: #666666;
+            border: 1px solid #dcdfe6;
+            padding: 5px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            line-height: 1.4;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-mini:hover { border-color: #f89d34; color: #f89d34; background: #fefaf4; }
+        .btn-mini.primary { color: #f89d34; border-color: #f89d34; }
+        .btn-mini.primary:hover { background: #fef5ec; }
+        .btn-mini:disabled { color: #c0c4cc; border-color: #ebeef5; background: #fafbfc; cursor: not-allowed; }
+
+        .action-bar {
+            padding: 16px 16px 0 16px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .table-container {
+            margin: 0 16px 16px 16px;
+            border: 1px solid #ebeef5;
+            border-radius: 2px;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 460px;
+            padding: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th {
+            padding: 0 12px;
+            height: 48px;
+            background: #F5F7FA;
+            font-weight: 600;
+            color: #777777;
+            font-size: 14px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .data-table td {
+            padding: 0 12px;
+            height: 40px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            color: #666666;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .action-link {
+            color: #0d6cff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 0 6px;
+            display: inline-block;
+        }
+        .action-link:hover { text-decoration: underline; }
+        .action-link.danger { color: #f5222d; }
+
+        /* 分页栏 */
+        .pagination {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #333333;
+        }
+        .pagination .total-text { margin-right: 16px; color: #666666; }
+        .pagination .page-btn {
+            min-width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666666;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number {
+            min-width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666666;
+            background: transparent;
+            border: none;
+        }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select {
+            padding: 5px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333333;
+            background: #fff;
+            cursor: pointer;
+            margin-left: 16px;
+        }
+        .pagination .jump-section {
+            margin-left: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pagination .jump-section input {
+            width: 60px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        /* 弹窗（删除确认） */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-mask.active { visibility: visible; opacity: 1; }
+        .modal-container {
+            background: #fff;
+            width: 380px;
+            max-width: 90%;
+            border-radius: 2px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 18px;
+            color: #333333;
+            background: transparent;
+        }
+        .modal-body { padding: 20px; max-height: 55vh; overflow-y: auto; }
+        .json-input {
+            width: 100%;
+            min-height: 180px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13px;
+            color: #333333;
+            outline: none;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        .json-input:focus { border-color: #f89d34; }
+        .json-input-tip {
+            font-size: 13px;
+            color: #666666;
+            margin-bottom: 10px;
+        }
+        .delete-header {
+            background: #fff;
+            border-bottom: none;
+            padding: 16px 20px;
+        }
+        .delete-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            gap: 12px;
+        }
+        .delete-icon {
+            width: 40px;
+            height: 40px;
+            background: #ffe7e7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #f56c6c;
+            flex-shrink: 0;
+        }
+        .delete-message {
+            font-size: 14px;
+            color: #666666;
+        }
+        .delete-footer {
+            padding: 12px 20px;
+            border-top: 0;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            background: transparent;
+        }
+
+        .module-view { display: none; }
+        .module-view.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+        /* 内容区域 DIV */
+        .content-section {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        #apiModule .action-bar,
+        #apiModule .pagination,
+        #apiModule .filter-section { flex-shrink: 0; }
+        #apiModule .table-container { max-height: 460px; }
+
+        /* =========================================================
+         * 编辑/新增/详情 视图（API新增/API编辑/API详情）
+         * 参考：API服务配置编辑2.png
+         * ========================================================= */
+        .view-scroll {
+            overflow-y: auto;
+            padding-bottom: 8px;
+        }
+        .back-link {
+            color: #0d6cff;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .edit-toolbar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .form-card, .section-card {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+        }
+        /* 两列表单 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 48px;
+            row-gap: 22px;
+        }
+        .form-field {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .form-field.half-row { grid-column: 1; }
+        .form-field.full-row { grid-column: 1 / -1; }
+        .form-field > label {
+            width: 90px;
+            flex-shrink: 0;
+            text-align: right;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            line-height: 32px;
+        }
+        .form-field > label b { color: #f5222d; font-weight: normal; margin-left: 2px; }
+        .form-field .fc {
+            flex: 1;
+            min-width: 0;
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #333333;
+            background: #fff;
+        }
+        .form-field .fc:focus { border-color: #f89d34; }
+        .form-field .fc:disabled {
+            background: #f5f7fa;
+            color: #8c8f99;
+            cursor: not-allowed;
+            -webkit-text-fill-color: #8c8f99;
+        }
+        .form-field .field-wrap {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .form-field textarea.fc {
+            height: 96px;
+            padding: 8px 12px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .desc-count {
+            position: absolute;
+            right: 8px;
+            bottom: 6px;
+            font-size: 12px;
+            color: #a5abb2;
+            background: #fff;
+            padding: 0 4px;
+            pointer-events: none;
+        }
+
+        /* 是否结构化 开关 + 表名 */
+        .struct-control {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #dcdfe6;
+            border-radius: 22px;
+            transition: 0.3s;
+        }
+        .switch .switch-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            top: 2px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .switch input:checked + .switch-slider { background: #f89d34; }
+        .switch input:checked + .switch-slider::before { transform: translateX(22px); }
+        .switch input:disabled + .switch-slider { opacity: 0.5; cursor: not-allowed; }
+        .struct-table-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 0 0 320px;
+        }
+        .struct-table-field .sub-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            white-space: nowrap;
+        }
+        .struct-table-field .sub-label b { color: #f5222d; font-weight: normal; margin-left: 2px; }
+        .struct-table-field input { width: 220px; }
+
+        /* 返回结果数据结构化 */
+        .struct-empty {
+            border: 1px dashed #dcdfe6;
+            border-radius: 4px;
+            padding: 24px 12px;
+            text-align: center;
+            font-size: 13px;
+            color: #999999;
+            background: #fafbfc;
+        }
+        .struct-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #666666;
+            background: #fafcff;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+        }
+        .struct-meta .m-label { color: #999; }
+        .struct-meta b { color: #333333; font-weight: 600; }
+        .struct-table { margin-top: 0; }
+        .modal-body .struct-preview-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .struct-preview-table-cell {
+            background: #fafcff;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+        .struct-preview-table-cell .pt-label { color: #999; margin-right: 8px; }
+        .struct-preview-table-cell .pt-val { color: #333; font-weight: 600; word-break: break-all; }
+
+        /* 结构化结果表（一个表一张卡片，字段横向排布，数据一行） */
+        .struct-table-card {
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            background: #fff;
+        }
+        .struct-table-card:last-child { margin-bottom: 0; }
+        .struct-table-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            background: #fafcff;
+            border-bottom: 1px solid #e4e7ed;
+            border-left: 3px solid #f89d34;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333333;
+        }
+        .struct-table-card-title i { color: #f89d34; font-size: 14px; }
+        .struct-table-card-body { padding: 10px; overflow-x: auto; }
+        .struct-horiz { min-width: 100%; }
+        .struct-horiz th, .struct-horiz td { white-space: nowrap; }
+
+        /* 区块标题与参数操作的链接按钮 */
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .param-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .param-tops {
+            display: flex;
+            gap: 20px;
+        }
+        .param-tab {
+            font-size: 14px;
+            color: #666666;
+            cursor: pointer;
+            padding: 4px 0;
+            position: relative;
+            user-select: none;
+        }
+        .param-tab:hover { color: #f89d34; }
+        .param-tab.active {
+            color: #f89d34;
+            font-weight: 600;
+        }
+        .param-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #f89d34;
+            border-radius: 2px;
+        }
+        .toolbar-links {
+            display: flex;
+            gap: 20px;
+            margin-left: auto;
+        }
+        .link-btn {
+            color: #0d6cff;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        .link-btn:hover { text-decoration: underline; }
+        .link-btn.disabled { color: #c0c4cc; cursor: not-allowed; text-decoration: none; }
+
+        /* 页面「返回」按钮（编辑/详情/测试页返回列表） */
+        .btn-back {
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            padding: 6px 18px;
+            font-size: 13px;
+            color: #666666;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .btn-back:hover { border-color: #f89d34; color: #f89d34; background: #fefaf4; }
+
+        /* 参数表格 */
+        .sub-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ebeef5;
+            font-size: 13px;
+        }
+        .sub-table th {
+            height: 40px;
+            background: #F5F7FA;
+            font-weight: 600;
+            color: #777777;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            text-align: center;
+        }
+        .sub-table th:last-child { border-right: none; }
+        .sub-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #ebeef5;
+            border-right: 1px solid #ebeef5;
+            vertical-align: middle;
+        }
+        .sub-table td:last-child { border-right: none; }
+        .sub-table tr:last-child td { border-bottom: none; }
+        .sub-table .empty-cell {
+            text-align: center;
+            color: #999999;
+            padding: 28px 0;
+        }
+        .cell-input, .cell-select {
+            width: 100%;
+            height: 30px;
+            padding: 0 8px;
+            border: 1px solid transparent;
+			border-color: #dcdfe6;
+            background: #FFFFFF;
+            border-radius: 3px;
+            font-size: 13px;
+            outline: none;
+            color: #333333;
+        }
+        .cell-input:focus, .cell-select:focus { border-color: #f89d34; background: #fff; }
+        .cell-input:disabled, .cell-select:disabled {
+            background: #f5f7fa;
+            color: #8c8f99;
+            cursor: not-allowed;
+        }
+        .cell-del {
+            color: #f5222d;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .cell-del:hover { text-decoration: underline; }
+        .cell-del.disabled { color: #c0c4cc; cursor: not-allowed; text-decoration: none; }
+
+        /* 操作列：上下移动箭头 + 新增相邻/子节点 */
+        .cell-op {
+            color: #0d6cff;
+            cursor: pointer;
+            font-size: 13px;
+            margin: 0 4px;
+            white-space: nowrap;
+        }
+        .cell-op:hover { text-decoration: underline; }
+        .cell-op.disabled { color: #c0c4cc; cursor: not-allowed; text-decoration: none; }
+        .mv-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 20px;
+            color: #0d6cff;
+            cursor: pointer;
+            font-size: 13px;
+            border-radius: 2px;
+            vertical-align: middle;
+        }
+        .mv-btn:hover { background: #eef3ff; }
+        .mv-btn.disabled { color: #c0c4cc; cursor: not-allowed; }
+        .mv-btn.disabled:hover { background: transparent; }
+
+        /* 层级参数（返回参数：对象/数组可展开） */
+        .name-cell {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            min-width: 0;
+        }
+        .name-cell .cell-input { flex: 1; min-width: 60px; }
+        .row-arrow {
+            width: 16px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #909399;
+            user-select: none;
+        }
+        .row-arrow .el-icon-arrow-right { font-size: 12px; transition: transform 0.15s; }
+        .row-arrow.expanded .el-icon-arrow-right { transform: rotate(90deg); }
+        .row-arrow.placeholder { cursor: default; visibility: hidden; }
+
+        /* 返回示例 */
+        .resp-example {
+            width: 100%;
+            height: 200px;
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333333;
+            outline: none;
+            resize: vertical;
+            background: #fff;
+        }
+        .resp-example:focus { border-color: #f89d34; }
+        .resp-example:disabled { background: #f5f7fa; color: #8c8f99; }
+
+        /* 文档上传 */
+        .upload-box {
+            border: 1px dashed #c0c4cc;
+            border-radius: 4px;
+            padding: 28px 20px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fafbfc;
+        }
+        .upload-box:hover { border-color: #f89d34; background: #fefaf4; }
+        .upload-box.disabled { cursor: not-allowed; opacity: 0.6; }
+        .upload-box .upload-icon {
+            font-size: 22px;
+            color: #f89d34;
+        }
+        .upload-box .click-upload {
+            font-size: 14px;
+            color: #0d6cff;
+            margin-top: 6px;
+        }
+        .upload-box .upload-tip {
+            font-size: 12px;
+            color: #999999;
+            margin-top: 4px;
+        }
+        .upload-box .upload-name {
+            display: none;
+            font-size: 13px;
+            color: #333333;
+            margin-top: 8px;
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding: 8px 0 20px;
+            flex-shrink: 0;
+        }
+
+        /* =========================================================
+         * 测试视图（API在线测试）
+         * 参考：API服务配置测试3.png
+         * ========================================================= */
+        .info-kv {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .kv-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            font-size: 14px;
+        }
+        .kv-row .k {
+            width: 90px;
+            flex-shrink: 0;
+            text-align: right;
+            color: #999999;
+            line-height: 22px;
+        }
+        .kv-row .v {
+            color: #333333;
+            line-height: 22px;
+            word-break: break-all;
+        }
+        .kv-row .v.mono { font-family: Consolas, Monaco, monospace; }
+        .method-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            line-height: 18px;
+        }
+        .method-GET { background: #52c41a; }
+        .method-POST { background: #0d6cff; }
+        .method-PUT { background: #fa8c16; }
+        .method-DELETE { background: #f5222d; }
+
+        .resp-body {
+            border: 1px solid #ebeef5;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .resp-meta {
+            display: none;
+            align-items: center;
+            gap: 20px;
+            padding: 8px 14px;
+            background: #fafcff;
+            border-bottom: 1px solid #ebeef5;
+            font-size: 13px;
+            color: #666666;
+        }
+        .resp-meta.show { display: flex; }
+        .result-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .result-success { background: #e6f7e6; color: #52c41a; }
+        .result-fail { background: #ffe7e7; color: #f5222d; }
+        .resp-pre {
+            margin: 0;
+            padding: 14px;
+            min-height: 140px;
+            background: #282c34;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #abb2bf;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .resp-pre.placeholder {
+            background: #fafbfc;
+            color: #a5abb2;
+            text-align: center;
+            font-size: 22px;
+            font-family: 'Noto Sans SC', sans-serif;
+            line-height: 140px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <div class="top-nav">
+        <div class="logo-area"><div class="logo-text"><div class="logo-title">外数平台</div><div class="logo-sub">EXTERNAL DATA PLATFORM</div></div></div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="showNavMenu('portal')">数据门户</div>
+            <div class="nav-tab active" onclick="showNavMenu('external')">外源管理</div>
+            <div class="nav-tab" onclick="showNavMenu('service')">服务管理</div>
+            <div class="nav-tab" onclick="showNavMenu('monitor')">监控统计</div>
+            <div class="nav-tab" onclick="showNavMenu('operation')">运营管理</div>
+            <div class="nav-tab" onclick="showNavMenu('personal')">个人中心</div>
+            <div class="nav-tab" onclick="showNavMenu('system')">系统管理</div>
+        </div>
+        <div class="user-area">
+            <div class="message-icon-wrapper"><i class="el-icon-bell message-icon"></i><span class="unread-badge-icon">3</span></div>
+            <div class="tenant-info"><span class="tenant-name">某某金控</span></div>
+            <div class="avatar" style="width:33px;height:33px;font-size:16px;">席</div>
+        </div>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-item" onclick="navigateTo('index.html?nav=external')"><i class="el-icon-building"></i>供应商管理</div>
+        <div class="menu-item" onclick="navigateTo('合同管理.html')"><i class="el-icon-document"></i>合同管理</div>
+        <div class="menu-item active" onclick="navigateTo('API服务配置.html')"><i class="el-icon-cpu"></i>API服务配置</div>
+        <div class="menu-item" onclick="navigateTo('index.html?nav=external')"><i class="el-icon-database"></i>数据库服务配置</div>
+        <div class="menu-item" onclick="navigateTo('index.html?nav=external')"><i class="el-icon-settings"></i>数据库配置</div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-card">
+            <!-- ==================== 列表视图 ==================== -->
+            <div id="listModule" class="module-view active">
+                <div class="breadcrumb" id="listCrumb"><span>外源管理</span><span class="separator">/</span><span class="current">API服务配置</span></div>
+                <div class="outer-container">
+                    <div id="apiModule" class="module-view active">
+                        <div class="filter-section">
+                            <div class="filter-bar">
+                                <div class="filter-left">
+                                    <div class="filter-item"><label>API名称</label><input type="text" id="filterApiName" placeholder="请输入API名称"></div>
+                                    <div class="filter-item"><label>供应商</label><select id="filterSupplier"><option value="">全部</option></select></div>
+                                    <div class="filter-item"><label>创建时间</label><input type="text" id="filterCreatedStart" placeholder="开始日期" readonly style="width:140px;"><span style="color:#999;">-</span><input type="text" id="filterCreatedEnd" placeholder="结束日期" readonly style="width:140px;"></div>
+                                </div>
+                                <div class="filter-right"><button class="btn-primary" id="searchBtn">查询</button><button class="btn-default" id="resetBtn">重置</button></div>
+                            </div>
+                        </div>
+                        <div class="content-section">
+                            <div class="action-bar"><button class="btn-add" id="addApiBtn">新增</button></div>
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead><tr><th>编号</th><th>API名称</th><th>供应商</th><th>URL</th><th>创建时间</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+                                    <tbody id="apiTableBody"></tbody>
+                                </table>
+                            </div>
+                            <div id="apiPagination" class="pagination"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 编辑/新增/复制/详情 视图 ====================
+                 参考：API服务配置编辑2.png（详情 = 编辑页只读模式） -->
+            <div id="editModule" class="module-view" style="overflow-y:auto;">
+                <div class="breadcrumb" id="editCrumb"></div>
+                <div class="edit-toolbar"><button class="btn-back" onclick="showListView()">返回</button></div>
+
+                <div class="form-card">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label>API名称 <b>*</b></label>
+                            <input type="text" id="edName" class="fc" maxlength="50" placeholder="请输入API名称">
+                        </div>
+                        <div class="form-field">
+                            <label>供应商 <b>*</b></label>
+                            <input type="text" id="edSupplier" class="fc" maxlength="50" list="supplierList" placeholder="请输入关键词">
+                            <datalist id="supplierList"></datalist>
+                        </div>
+                        <div class="form-field half-row">
+                            <label>API地址 <b>*</b></label>
+                            <input type="text" id="edUrl" class="fc" placeholder="请输入API地址">
+                        </div>
+                        <div class="form-field">
+                            <label>请求方式 <b>*</b></label>
+                            <select id="edMethod" class="fc">
+                                <option value="">请选择请求方式</option>
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+                        <div class="form-field half-row">
+                            <label>状态 <b>*</b></label>
+                            <select id="edStatus" class="fc">
+                                <option value="">请选择状态</option>
+                                <option value="启用">启用</option>
+                                <option value="停用">停用</option>
+                            </select>
+                        </div>
+                        <div class="form-field full-row">
+                            <label>API描述 <b>*</b></label>
+                            <div class="field-wrap">
+                                <textarea id="edDesc" class="fc" maxlength="500" placeholder="请输入API描述"></textarea>
+                                <span class="desc-count" id="edDescCount">0/500</span>
+                            </div>
+                        </div>
+                        <div class="form-field full-row">
+                            <label>是否结构化</label>
+                            <div class="struct-control">
+                                <label class="switch">
+                                    <input type="checkbox" id="edStructured" onchange="toggleStructured()">
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <div class="struct-table-field">
+                                    <span class="sub-label">表名 <b>*</b></span>
+                                    <input type="text" id="edStdTable" class="fc" maxlength="64" placeholder="请输入表名" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 请求参数 -->
+                <div class="section-card">
+                    <div class="section-title">请求参数</div>
+                    <div class="param-toolbar">
+                        <div class="param-tops" id="reqTabs">
+                            <span class="param-tab active" data-tab="params" onclick="switchReqTab('params')">Params</span>
+                            <span class="param-tab" data-tab="headers" onclick="switchReqTab('headers')">Headers</span>
+                            <span class="param-tab" data-tab="body" onclick="switchReqTab('body')">Body</span>
+                        </div>
+                    </div>
+                    <div class="param-toolbar">
+                        <button class="btn-mini" id="addReqBtn" onclick="addParamRow('req')">新增参数</button>
+                        <button class="btn-mini" id="clearReqBtn" onclick="clearParamRows('req')">清空表格参数</button>
+                    </div>
+                    <table class="sub-table">
+                        <thead><tr><th style="width:20%;">参数名</th><th style="width:21%;">示例值</th><th style="width:12%;">类型</th><th style="width:11%;">是否必填</th><th style="width:20%;">说明</th><th style="width:160px;">操作</th></tr></thead>
+                        <tbody id="reqTbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 返回参数 -->
+                <div class="section-card">
+                    <div class="section-title">返回参数</div>
+                    <div class="param-toolbar">
+                        <div class="toolbar-links" style="margin-left:0;gap:12px;">
+                            <button class="btn-mini" id="addRespBtn" onclick="addParamRow('resp')">新增参数</button>
+                            <button class="btn-mini" id="jsonFormBtn" onclick="jsonToForm()">Json数据转成Form表单</button>
+                            <button class="btn-mini" id="clearRespBtn" onclick="clearParamRows('resp')">清空表格参数</button>
+                        </div>
+                    </div>
+                    <table class="sub-table">
+                        <thead><tr><th style="width:12%;">参数名</th><th style="width:13%;">示例值</th><th style="width:8%;">类型</th><th style="width:11%;">解析属性</th><th style="width:11%;">解析结果</th><th style="width:9%;">解析类型</th><th style="width:16%;">说明</th><th style="width:160px;">操作</th></tr></thead>
+                        <tbody id="respTbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 返回结果数据结构化 -->
+                <div class="section-card">
+                    <div class="section-title"><span>返回结果数据结构化</span></div>
+                    <div class="param-toolbar">
+                        <div class="toolbar-links" style="margin-left:0;gap:12px;">
+                            <button class="btn-mini primary" id="structParseBtn" onclick="structParse()">结构化解析</button>
+                            <button class="btn-mini" id="structPreviewBtn" onclick="showStructPreview()">结构化示例预览</button>
+                        </div>
+                    </div>
+                    <div id="structSummary"></div>
+                </div>
+
+                <!-- 返回示例 -->
+                <div class="section-card">
+                    <div class="section-title"><span>返回示例</span></div>
+                    <button class="btn-default" id="genPreviewBtn" onclick="genPreview()">生成返回参数预览</button>
+                    <textarea id="respExample" class="resp-example" spellcheck="false" disabled placeholder="点击「生成返回参数预览」根据返回参数生成JSON示例"></textarea>
+                </div>
+
+                <!-- 接口文档 -->
+                <div class="section-card">
+                    <div class="section-title">接口文档</div>
+                    <div class="upload-box" id="uploadBox" onclick="pickFile()">
+                        <div class="upload-icon"><i class="el-icon-upload"></i></div>
+                        <div class="click-upload">点击上传</div>
+                        <div class="upload-tip">支持doc、docx、xls、xlsx、pdf、txt格式，单个文件不超过100MB</div>
+                        <div class="upload-name" id="fileName"></div>
+                    </div>
+                    <input type="file" id="fileInput" accept=".doc,.docx,.xls,.xlsx,.pdf,.txt" style="display:none;">
+                </div>
+
+                <div class="form-footer" id="editFooter">
+                    <button class="btn-default" id="cancelEditBtn" onclick="cancelEdit()">取消</button>
+                    <button class="btn-primary" id="saveEditBtn" onclick="saveEdit()">保存</button>
+                </div>
+            </div>
+
+            <!-- ==================== 测试视图（API在线测试） ====================
+                 参考：API服务配置测试3.png -->
+            <div id="testModule" class="module-view" style="overflow-y:auto;">
+                <div class="breadcrumb" id="testCrumb"></div>
+
+                <div class="section-card">
+                    <div class="section-title"><span>API信息</span><button class="btn-back" onclick="showListView()">返回</button></div>
+                    <div class="info-kv">
+                        <div class="kv-row"><span class="k">API名称</span><span class="v" id="tName"></span></div>
+                        <div class="kv-row"><span class="k">供应商</span><span class="v" id="tSupplier"></span></div>
+                        <div class="kv-row"><span class="k">API地址</span><span class="v mono" id="tUrl"></span></div>
+                        <div class="kv-row"><span class="k">请求方式</span><span class="v"><span class="method-badge" id="tMethod"></span></span></div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">请求参数</div>
+                    <div class="param-toolbar">
+                        <div class="param-tops" id="testTabs">
+                            <span class="param-tab active" data-tab="params" onclick="switchTestTab('params')">Params</span>
+                            <span class="param-tab" data-tab="headers" onclick="switchTestTab('headers')">Headers</span>
+                            <span class="param-tab" data-tab="body" onclick="switchTestTab('body')">Body</span>
+                        </div>
+                        <div class="toolbar-links">
+                            <button class="btn-mini" onclick="addTestRow()">新增参数</button>
+                            <button class="btn-mini" onclick="clearTestRows()">清空表格参数</button>
+                        </div>
+                    </div>
+                    <table class="sub-table">
+                        <thead><tr><th style="width:40%;">参数名</th><th>参数值</th><th style="width:120px;">操作</th></tr></thead>
+                        <tbody id="testTbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">响应Body</div>
+                    <div class="resp-body">
+                        <div class="resp-meta" id="respMeta">
+                            <span class="result-badge result-success" id="respBadge">成功</span>
+                            <span>状态码：<b id="respCode">200</b></span>
+                            <span>耗时：<b id="respTime">0</b> ms</span>
+                        </div>
+                        <pre class="resp-pre placeholder" id="respPre">0</pre>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <button class="btn-default" onclick="showListView()">取消</button>
+                    <button class="btn-primary" id="runTestBtn" onclick="runTest()">测试</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Json数据转成Form表单 弹窗 -->
+    <div id="jsonFormModal" class="modal-mask">
+        <div class="modal-container" style="width: 560px;">
+            <div class="modal-header">
+                <span>Json数据转成Form表单</span>
+                <i class="el-icon-close" id="closeJsonFormModal" style="cursor:pointer;"></i>
+            </div>
+            <div class="modal-body">
+                <div class="json-input-tip">请输入JSON字符串，点击「确定」后转换为下方Form表单</div>
+                <textarea id="jsonFormInput" class="json-input" spellcheck="false" placeholder='{"code":"200","msg":"查询成功","data":{"entName":"某某科技有限公司"}}'></textarea>
+            </div>
+            <div class="modal-footer delete-footer">
+                <button class="btn-default" id="cancelJsonFormBtn">取消</button>
+                <button class="btn-primary" id="confirmJsonFormBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结构化示例预览 弹窗 -->
+    <div id="structPreviewModal" class="modal-mask">
+        <div class="modal-container" style="width: 760px;">
+            <div class="modal-header">
+                <span>结构化示例预览</span>
+                <i class="el-icon-close" id="closeStructPreviewModal" style="cursor:pointer;"></i>
+            </div>
+            <div class="modal-body">
+                <div id="structPreviewContent" class="struct-preview-info"></div>
+            </div>
+            <div class="modal-footer delete-footer">
+                <button class="btn-default" id="closeStructPreviewBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div id="deleteConfirmModal" class="modal-mask">
+        <div class="modal-container" style="width: 380px;">
+            <div class="modal-header delete-header">
+                <span>提示</span>
+                <i class="el-icon-close" id="closeDeleteModal" style="cursor:pointer;"></i>
+            </div>
+            <div class="modal-body delete-body">
+                <div class="delete-icon"><i class="el-icon-warning"></i></div>
+                <div class="delete-message">是否确认删除该数据?</div>
+            </div>
+            <div class="modal-footer delete-footer">
+                <button class="btn-default" id="cancelDeleteBtn">取消</button>
+                <button class="btn-primary" id="confirmDeleteBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+/* ==================== API服务配置 ====================
+ * 菜单位置：外源管理 - API服务配置
+ * 视图结构（参考设计稿）：
+ *   listModule  列表（筛选/表格/新增/操作列）
+ *   editModule  编辑/新增/复制/详情页（详情=只读模式）
+ *   testModule  在线测试页
+ */
+const CURRENT_USER = '席某';
+const SUPPLIERS = ['企查查', '天眼查', '外部数据供应商', '数据服务提供商', '第三方数据公司'];
+/* 当前登录账户信息（mock：取自页面登录态，结构化主表追加 租户/公司/部门/系统 审计字段时使用） */
+const LOGIN_INFO = { tenant: '某某金控', company: '某某金控', department: '数据管理部', system: '外数平台' };
+
+let apiList = [
+    { id: 1, apiName: '企业基本信息', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/BaseInfo', method: 'GET', status: '启用', desc: '根据企业名称/统一社会信用代码查询工商登记基本信息', createdAt: '2026-06-12 10:23:45', updater: '席某', updatedAt: '2026-08-18 14:32:10' },
+    { id: 2, apiName: '企业图谱', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/RelationGraph', method: 'GET', status: '启用', desc: '查询企业股权关系、对外投资等图谱数据', createdAt: '2026-06-12 10:31:08', updater: '席某', updatedAt: '2026-07-02 09:15:33' },
+    { id: 3, apiName: '风险预警', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/RiskWarning', method: 'POST', status: '启用', desc: '订阅企业风险事件，实时推送预警信息', createdAt: '2026-06-15 14:02:56', updater: '张三', updatedAt: '2026-08-05 16:40:21' },
+    { id: 4, apiName: '资质荣誉', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/Qualification', method: 'GET', status: '停用', desc: '查询企业资质认证、荣誉奖项等信息', createdAt: '2026-06-20 09:48:12', updater: '席某', updatedAt: '2026-06-20 09:48:12' },
+    { id: 5, apiName: '融资历史', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1107', method: 'GET', status: '启用', desc: '查询企业历次融资轮次、金额及投资方', createdAt: '2026-06-25 11:12:30', updater: '李四', updatedAt: '2026-08-10 10:05:47' },
+    { id: 6, apiName: '司法风险', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1032', method: 'GET', status: '启用', desc: '查询企业涉诉、被执行、失信等司法风险', createdAt: '2026-06-25 11:20:04', updater: '李四', updatedAt: '2026-07-18 15:22:09' },
+    { id: 7, apiName: '经营状况', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1116', method: 'GET', status: '启用', desc: '查询企业经营异常、行政处罚等经营状况信息', createdAt: '2026-07-01 16:35:28', updater: '席某', updatedAt: '2026-08-21 11:18:55' },
+    { id: 8, apiName: '严重违法记录', supplier: '外部数据供应商', url: 'https://ds.example-data.com/api/violation/records', method: 'POST', status: '启用', desc: '查询企业严重违法失信记录', createdAt: '2026-07-08 09:05:41', updater: '王五', updatedAt: '2026-07-30 14:52:36' },
+    { id: 9, apiName: '企业基本信息', supplier: '外部数据供应商', url: 'https://ds.example-data.com/api/enterprise/basic', method: 'POST', status: '启用', desc: '备用通道：企业工商登记基本信息查询', createdAt: '2026-07-15 10:44:19', updater: '王五', updatedAt: '2026-08-12 09:30:02' },
+    { id: 10, apiName: '企业规模', supplier: '数据服务提供商', url: 'https://api.dataprovider.cn/v2/enterprise/scale', method: 'POST', status: '启用', desc: '基于营收、人数等维度评估企业规模等级', createdAt: '2026-07-22 14:26:53', updater: '席某', updatedAt: '2026-08-15 17:08:44' },
+    { id: 11, apiName: '舆情', supplier: '第三方数据公司', url: 'https://open.thirddata.com/news/sentiment', method: 'POST', status: '启用', desc: '按关键词检索全网舆情资讯及情感分析结果', createdAt: '2026-08-02 15:58:07', updater: '张三', updatedAt: '2026-08-22 10:12:28' },
+    { id: 12, apiName: '融资历史', supplier: '数据服务提供商', url: 'https://api.dataprovider.cn/v2/enterprise/finance', method: 'POST', status: '启用', desc: '备用通道：企业融资历史查询', createdAt: '2026-08-08 09:36:25', updater: '席某', updatedAt: '2026-08-08 09:36:25' }
+];
+let nextApiId = apiList.length + 1;
+
+let apiPage = 1, apiPageSize = 10;
+let editMode = 'add';      // add | edit | copy | detail
+let editId = null;
+let deleteApiId = null;
+let testId = null;
+let currentReqTab = 'params';   // 编辑页请求参数 tab
+let currentTestTab = 'params';  // 测试页请求参数 tab
+let attachFileName = '';
+
+/* 参数表格数据
+ * reqData[tab] = [{ name, example, type, required, desc }]
+ * respData      = [{ name, example, type, desc }]
+ * testData[tab] = [{ name, value }]
+ */
+let reqData = { params: [], headers: [], body: [] };
+let respData = [];
+let testData = { params: [], headers: [], body: [] };
+
+function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]); }
+function pad2(n) { return String(n).padStart(2, '0'); }
+function nowStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+
+// ---------- 视图切换 ----------
+function showView(view) {
+    ['listModule', 'editModule', 'testModule'].forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById(view).classList.add('active');
+    if (view === 'listModule') {
+        location.hash = 'list';
+        renderApiTable();
+    }
+}
+function showListView() { showView('listModule'); }
+
+// ---------- 筛选与列表 ----------
+function initFilterSupplier() {
+    const sel = document.getElementById('filterSupplier');
+    SUPPLIERS.forEach(s => { sel.innerHTML += `<option value="${s}">${s}</option>`; });
+    const dl = document.getElementById('supplierList');
+    SUPPLIERS.forEach(s => { dl.innerHTML += `<option value="${s}"></option>`; });
+}
+
+function getFilteredApiList() {
+    const name = document.getElementById('filterApiName').value.trim();
+    const supplier = document.getElementById('filterSupplier').value;
+    const start = document.getElementById('filterCreatedStart').value;
+    const end = document.getElementById('filterCreatedEnd').value;
+    return apiList.filter(item => {
+        if (name && !item.apiName.includes(name)) return false;
+        if (supplier && item.supplier !== supplier) return false;
+        const createdDate = item.createdAt.slice(0, 10);
+        if (start && createdDate < start) return false;
+        if (end && createdDate > end) return false;
+        return true;
+    });
+}
+
+function renderApiTable() {
+    const list = getFilteredApiList();
+    const total = Math.ceil(list.length / apiPageSize) || 1;
+    if (apiPage > total) apiPage = total;
+    const startIdx = (apiPage - 1) * apiPageSize;
+    const pageData = list.slice(startIdx, startIdx + apiPageSize);
+    const tbody = document.getElementById('apiTableBody');
+    if (!pageData.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">暂无数据</td></tr>';
+        updateApiPagination(total, list.length);
+        return;
+    }
+    tbody.innerHTML = pageData.map((item, idx) => `<tr>
+        <td>${startIdx + idx + 1}</td>
+        <td>${escapeHtml(item.apiName)}</td>
+        <td>${escapeHtml(item.supplier)}</td>
+        <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</td>
+        <td>${escapeHtml(item.createdAt)}</td>
+        <td>${escapeHtml(item.updater)}</td>
+        <td>${escapeHtml(item.updatedAt)}</td>
+        <td class="action-icons"><a class="action-link" onclick="openEdit('edit', ${item.id})">编辑</a><a class="action-link" onclick="openEdit('detail', ${item.id})">详情</a><a class="action-link" onclick="openTest(${item.id})">测试</a><a class="action-link" onclick="openEdit('copy', ${item.id})">复制</a><a class="action-link danger" onclick="deleteApi(${item.id})">删除</a></td>
+    </tr>`).join('');
+    updateApiPagination(total, list.length);
+}
+
+function updateApiPagination(total, totalCount) {
+    const cp = apiPage;
+    const container = document.getElementById('apiPagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span><button class="page-btn" ${cp === 1 ? 'disabled' : ''} onclick="changeApiPage(${cp - 1})">‹</button>`;
+    const start = Math.max(1, cp - 2), end = Math.min(total, cp + 2);
+    for (let i = start; i <= end; i++) html += `<span class="page-number ${i === cp ? 'active' : ''}" onclick="changeApiPage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${cp === total ? 'disabled' : ''} onclick="changeApiPage(${cp + 1})">›</button>`;
+    html += `<select class="page-size-select" onchange="changeApiPageSize(this.value)"><option value="10" ${apiPageSize === 10 ? 'selected' : ''}>10条/页</option><option value="20" ${apiPageSize === 20 ? 'selected' : ''}>20条/页</option><option value="50" ${apiPageSize === 50 ? 'selected' : ''}>50条/页</option><option value="100" ${apiPageSize === 100 ? 'selected' : ''}>100条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="number" id="apiJumpPage" min="1" max="${total}" value="${cp}"><span>页</span></div>`;
+    container.innerHTML = html;
+    document.getElementById('apiJumpPage')?.addEventListener('change', function () { const p = parseInt(this.value); if (p >= 1 && p <= total) changeApiPage(p); });
+}
+function changeApiPage(p) { apiPage = p; renderApiTable(); }
+function changeApiPageSize(s) { apiPageSize = parseInt(s); apiPage = 1; renderApiTable(); }
+
+// ---------- 编辑/新增/复制/详情 视图 ----------
+const TYPE_OPTIONS = ['string', 'number', 'boolean', 'object', 'array'];
+const PARSE_TYPES = ['表', '字段', 'JSON串', '不解析'];
+/* 「解析类型」：与「类型」对应，用作数据库表字段的类型 */
+function dbTypeOf(type) {
+    return ({ string: 'VARCHAR', number: 'DECIMAL', boolean: 'BOOLEAN', object: 'JSON', array: 'JSON' })[type] || 'VARCHAR';
+}
+
+function openEdit(mode, id) {
+    editMode = mode;
+    editId = id || null;
+    const item = id ? apiList.find(i => i.id === id) : null;
+    const crumbs = { add: 'API新增', edit: 'API编辑', copy: 'API新增', detail: 'API详情' };
+    document.getElementById('editCrumb').innerHTML = `<span>外源管理</span><span class="separator">/</span><span>API服务配置</span><span class="separator">/</span><span class="current">${crumbs[mode]}</span>`;
+
+    // 表单预填
+    document.getElementById('edName').value = item ? item.apiName : '';
+    document.getElementById('edSupplier').value = item ? item.supplier : '';
+    document.getElementById('edUrl').value = item ? item.url : '';
+    document.getElementById('edMethod').value = item ? item.method : '';
+    document.getElementById('edStatus').value = item ? (item.status || '启用') : '';
+    document.getElementById('edDesc').value = item ? (item.desc || '') : '';
+    updateDescCount();
+
+    // 参数表
+    reqData = item && item.requestParams ? JSON.parse(JSON.stringify(item.requestParams)) : { params: [], headers: [], body: [] };
+    Object.keys(reqData).forEach(k => {
+        reqData[k] = (reqData[k] || []).map(r => ({ ...r, level: r.level || 0, expanded: true, children: !!r.children }));
+    });
+    respData = (item && item.responseParams ? JSON.parse(JSON.stringify(item.responseParams)) : [])
+        .map(r => ({ ...r, level: r.level || 0, expanded: true, parseAttr: r.parseAttr || r.stdTable || '', parseResult: r.parseResult || r.stdField || '', dbType: r.dbType || '' }));
+    respData.forEach((r, i) => normalizeParseAttr(r, respData, i));
+    attachFileName = '';
+    document.getElementById('respExample').value = item && item.responseExample ? item.responseExample : '';
+    document.getElementById('fileName').textContent = '';
+    document.getElementById('fileName').style.display = 'none';
+
+    // 是否结构化 + 表名
+    const structured = !!(item && item.structured);
+    document.getElementById('edStructured').checked = structured;
+    document.getElementById('edStdTable').value = item && item.stdTable ? item.stdTable : '';
+    document.getElementById('edStdTable').disabled = !structured;
+
+    renderParamTables();
+    setEditReadonly(mode === 'detail');
+    showView('editModule');
+}
+
+function setEditReadonly(readonly) {
+    document.querySelectorAll('#editModule .fc').forEach(el => el.disabled = readonly);
+    ['addReqBtn', 'clearReqBtn', 'addRespBtn', 'jsonFormBtn', 'clearRespBtn', 'structParseBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.disabled = readonly; }
+    });
+    document.getElementById('genPreviewBtn').disabled = readonly;
+    document.getElementById('respExample').disabled = readonly; // 仅详情(只读)禁用，可自行编辑JSON后转Form
+    document.getElementById('edStructured').disabled = readonly; // 详情只读：开关不可切换
+    // 表名：详情只读强制禁用；可编辑时跟随开关状态（关闭时不可输入）
+    document.getElementById('edStdTable').disabled = readonly ? true : !document.getElementById('edStructured').checked;
+    const box = document.getElementById('uploadBox');
+    box.classList.toggle('disabled', readonly);
+    document.getElementById('fileInput').disabled = readonly;
+
+    // 详情 = 只读：底部只保留返回
+    const footer = document.getElementById('editFooter');
+    footer.innerHTML = readonly
+        ? '<button class="btn-primary" onclick="showListView()">返回</button>'
+        : '<button class="btn-default" id="cancelEditBtn" onclick="cancelEdit()">取消</button><button class="btn-primary" id="saveEditBtn" onclick="saveEdit()">保存</button>';
+}
+
+/* 是否结构化开关：开启→表名可输入（必填）；关闭→表名清空且不可输入 */
+function toggleStructured() {
+    if (editMode === 'detail') return;
+    const on = document.getElementById('edStructured').checked;
+    const tableInput = document.getElementById('edStdTable');
+    if (!on) tableInput.value = '';
+    tableInput.disabled = !on;
+    renderStructSummary();
+}
+
+/* ---------- 结构化解析 ---------- */
+/* 参数名 → 数据库字段名/表名（大驼峰转大写蛇形） */
+function upperSnake(n) {
+    return String(n || '').trim()
+        .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+        .replace(/[^\w一-龥]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .toUpperCase() || 'FIELD';
+}
+/* 点击「结构化解析」：自动填充「解析属性 / 解析结果」，展示表名与结构化表格 */
+function structParse() {
+    if (editMode === 'detail') return;
+    if (!respData.length) { alert('请先维护返回参数'); return; }
+    // 自动填充：未选择解析属性的行，或仍为默认「不解析」（无解析类型）的行，按结构推断补全
+    // array 元素行（透明节点）恒为「不解析」，不参与解析，也不自动填充
+    respData.forEach((r, i) => {
+        if (isArrElementRow(respData, i)) { r.parseAttr = '不解析'; r.parseResult = ''; r.dbType = ''; return; }
+        const untouched = !r.parseAttr || (r.parseAttr === '不解析' && !r.dbType);
+        if (untouched) {
+            r.parseAttr = r.children ? '表' : '字段';
+            r.parseResult = upperSnake(r.name);
+            r.dbType = dbTypeOf(r.type);
+        } else if (r.parseAttr !== '不解析' && !r.parseResult) {
+            r.parseResult = upperSnake(r.name);
+        }
+        if (r.parseAttr === '不解析') {
+            r.parseResult = '';
+        } else {
+            r.dbType = r.dbType || (r.parseAttr === 'JSON串' ? 'CLOB' : dbTypeOf(r.type));
+        }
+    });
+    renderRespRows();
+    const groups = getStructGroups();
+    if (!groups.length) { alert('请先维护返回参数的「解析属性 / 解析结果」'); return; }
+    renderStructSummary();
+}
+
+/* 构建以行 r 为根的子树 JSON（用于「字段 / JSON串」整体存储的字段值展示）
+ * array 下的 object 元素层（[0] 行）是透明节点：不产生 key，其子级直接归入数组元素对象 */
+function subtreeJson(r, i) {
+    const root = {};
+    const chain = [{ obj: root, level: r.level || 0, arrSlot: r.type === 'array', fresh: true }];
+    for (let j = i + 1; j < respData.length; j++) {
+        const c = respData[j];
+        if ((c.level || 0) <= (r.level || 0)) break;
+        while (chain.length > 1 && chain[chain.length - 1].level >= (c.level || 0)) chain.pop();
+        const parent = chain[chain.length - 1];
+        // array 的紧邻第一个子级才视为元素层（透明，不产生key）；其后出现的行按普通字段并入
+        const isElem = parent.arrSlot && parent.fresh && (c.level || 0) === parent.level + 1;
+        let val = castExample(c.type, c.example);
+        if (c.children && c.type === 'array') val = [{}];
+        if (!isElem && c.name) parent.obj[c.name] = val;
+        if (c.children && !isElem) chain.push({ obj: (c.type === 'array' && Array.isArray(val)) ? val[0] : val, level: c.level || 0, arrSlot: c.type === 'array', fresh: true });
+        else parent.fresh = false;
+    }
+    return r.type === 'array' ? [root] : root;
+}
+
+/* 按层级把已解析行归组为「主表 + 若干子表」
+ * 解析属性=表     -> 解析结果为该子表的表名，子级字段归入该表（创建表和字段）
+ *                  该行还会生成关联字段「参数名_id」：父表与子表各展示一列、值相同，实现上下层级互相关联
+ * 解析属性=字段   -> 数组/JSON对象整体作为JSON对象存储在字段中（子树被吸收）
+ * 解析属性=JSON串 -> 该字段与字段值整体作为JSON串存储（子树被吸收）
+ * 解析属性=不解析 -> 跳过
+ */
+function getStructGroups() {
+    const formTable = document.getElementById('edStdTable').value.trim();
+    const groups = [];
+    const gmap = {};
+    const stack = []; // 活跃的表祖先 { level, name }
+    const getGroup = (name) => {
+        if (!gmap[name]) { gmap[name] = { name, displayName: '', rows: [] }; groups.push(gmap[name]); }
+        return gmap[name];
+    };
+    let skipAbove = -1; // 已被「字段 / JSON串」父行整体吸收的子树深度
+    let linkSeq = 0;    // 关联字段值：按行序稳定分配（父表与子表展示同一值）
+    respData.forEach((r, i) => {
+        const lvl = r.level || 0;
+        if (skipAbove >= 0 && lvl > skipAbove) return;
+        skipAbove = -1;
+        const attr = r.parseAttr || '';
+        if (attr === '不解析') return;
+        while (stack.length && stack[stack.length - 1].level >= lvl) stack.pop();
+        if (attr === '表') {
+            const mainBase = formTable || '主表';
+            const custom = (r.parseResult || '').trim();
+            // 子表名 = 主表表名 + 参数名（如主表 a + 参数 data → a_data）；手工自定义解析结果优先
+            const tname = (custom && custom !== upperSnake(r.name)) ? custom : `${mainBase}_${r.name}`;
+            const parentName = stack.length ? stack[stack.length - 1].name : '主表';
+            stack.push({ level: lvl, name: tname });
+            getGroup(tname);
+            // 关联字段「参数名_id」：父表与子表各展示一列、值相同（如 a.data_id = data.data_id）
+            const linkField = `${r.name}_id`;
+            const linkVal = ++linkSeq;
+            getGroup(parentName).rows.push({ field: linkField, desc: `关联${tname}`, dbType: 'INT', value: linkVal });
+            getGroup(tname).rows.push({ field: linkField, desc: `关联${parentName === '主表' ? (formTable || '主表') : parentName}`, dbType: 'INT', value: linkVal });
+        } else if (attr === '字段' || attr === 'JSON串') {
+            const field = (r.parseResult || '').trim();
+            if (!field) return;
+            skipAbove = lvl; // 数组/JSON对象整体作为一个字段存储，子树不再拆分
+            const raw = r.children ? subtreeJson(r, i) : (r.example ?? '');
+            const value = (typeof raw === 'string') ? raw : JSON.stringify(raw);
+            getGroup(stack.length ? stack[stack.length - 1].name : '主表').rows.push({
+                field,
+                desc: r.desc,
+                dbType: attr === 'JSON串' ? 'CLOB' : (r.dbType || dbTypeOf(r.type)),
+                value
+            });
+        }
+    });
+    // 主表排第一位（无论行序如何生成）
+    const mi = groups.findIndex(g => g.name === '主表');
+    if (mi > 0) groups.unshift(groups.splice(mi, 1)[0]);
+    groups.forEach(g => { g.displayName = g.name === '主表' ? (formTable || '主表') : g.name; });
+    // 主表追加登录账户审计字段（租户/公司/部门/系统，值取自当前登录账户信息）
+    const mainGroup = groups.find(g => g.name === '主表');
+    if (mainGroup) {
+        const audit = [['tenant', LOGIN_INFO.tenant], ['company', LOGIN_INFO.company], ['department', LOGIN_INFO.department], ['system', LOGIN_INFO.system]];
+        audit.forEach(([name, value]) => mainGroup.rows.push({ field: name, dbType: 'VARCHAR', value, desc: '登录账户' }));
+    }
+    return groups;
+}
+
+/* 一个结构化表的卡片：表名标题 + 字段横向成一列、数据一行 */
+function tableCardHtml(displayName, rows) {
+    if (!rows.length) rows = [{ field: '暂无字段', type: '', value: '', desc: '' }];
+    return `<div class="struct-table-card">
+        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span></div>
+        <div class="struct-table-card-body">
+            <table class="sub-table struct-horiz">
+                <thead><tr>${rows.map(f => `<th>${escapeHtml(f.field)}</th>`).join('')}</tr></thead>
+                <tbody><tr>${rows.map(f => `<td>${escapeHtml(f.value)}</td>`).join('')}</tr></tbody>
+            </table>
+        </div>
+    </div>`;
+}
+
+/* 返回结果数据结构化：展示数据库表名，表名下方字段一列、数据一行，多表多卡片 */
+function renderStructSummary() {
+    const box = document.getElementById('structSummary');
+    if (!box) return;
+    const groups = getStructGroups();
+    if (!groups.length) {
+        box.innerHTML = '<div class="struct-empty">开启「是否结构化」，Json数据转成Form表单自动填充「解析属性 / 解析结果」；也可点击上方「结构化解析」生成表结构</div>';
+        return;
+    }
+    const tables = groups.map(g => g.displayName);
+    const totalFields = groups.reduce((s, g) => s + g.rows.length, 0);
+    box.innerHTML = `
+        <div class="struct-meta">
+            <span class="m-label">数据库表名：</span><b>${escapeHtml(tables.join('、'))}</b>
+            <span style="margin-left:16px;" class="m-label">字段总数：</span><b>${totalFields}</b>
+        </div>
+        ${groups.map(g => tableCardHtml(g.displayName, g.rows)).join('')}`;
+}
+
+/* 结构化示例预览：按表展示（卡片区分，表与表间隔明显），纵向表格可查看字段、类型与说明 */
+function showStructPreview() {
+    const groups = getStructGroups();
+    if (!groups.reduce((s, g) => s + g.rows.length, 0)) { alert('请先点击「结构化解析」或维护返回参数的「解析属性 / 解析结果」'); return; }
+    const cards = groups.map(g => `<div class="struct-table-card">
+        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(g.displayName)}</span></div>
+        <div class="struct-table-card-body" style="padding:10px;">
+            <table class="sub-table">
+                <thead><tr><th style="width:26%;">字段名</th><th style="width:16%;">类型</th><th style="width:30%;">字段的值</th><th>说明</th></tr></thead>
+                <tbody>${g.rows.length
+                    ? g.rows.map(f => `<tr><td>${escapeHtml(f.field)}</td><td>${escapeHtml(f.dbType)}</td><td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td><td>${escapeHtml(f.desc)}</td></tr>`).join('')
+                    : '<tr><td colspan="4" class="empty-cell">暂无字段</td></tr>'}</tbody>
+            </table>
+        </div>
+    </div>`).join('');
+    document.getElementById('structPreviewContent').innerHTML = `<div class="struct-preview-info">${cards}</div>`;
+    document.getElementById('structPreviewModal').classList.add('active');
+}
+function closeStructPreviewModalFn() { document.getElementById('structPreviewModal').classList.remove('active'); }
+
+function cancelEdit() { showListView(); }
+
+function updateDescCount() {
+    const v = document.getElementById('edDesc').value;
+    document.getElementById('edDescCount').textContent = `${v.length}/500`;
+}
+
+function switchReqTab(tab) {
+    currentReqTab = tab;
+    document.querySelectorAll('#reqTabs .param-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    renderReqRows();
+}
+
+/* ---------- 参数表格渲染 ---------- */
+function renderParamTables() { renderReqRows(); renderRespRows(); }
+
+function renderReqRows() {
+    const rows = reqData[currentReqTab] || [];
+    const tbody = document.getElementById('reqTbody');
+    const ro = editMode === 'detail';
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-cell">暂无数据</td></tr>`;
+        return;
+    }
+    // 层级渲染：仅当所有祖先展开时显示当前行
+    const chain = [];
+    let html = '';
+    rows.forEach((r, i) => {
+        while (chain.length && chain[chain.length - 1].level >= (r.level || 0)) chain.pop();
+        if (chain.every(c => c.expanded)) {
+            const isContainer = r.type === 'array' || r.type === 'object';
+            const arrow = r.children
+                ? `<span class="row-arrow ${r.expanded ? 'expanded' : ''}" onclick="toggleReqRow(${i})" title="展开/收起"><i class="el-icon-arrow-right"></i></span>`
+                : '<span class="row-arrow placeholder"></span>';
+            const nameDis = ro || isArrElementRow(rows, i);   // array 元素行参数名锁定
+            const exDis = ro || isContainer;             // array/object 示例值置灰
+            html += `<tr data-idx="${i}">
+                <td><div class="name-cell" style="padding-left:${(r.level || 0) * 22}px;">${arrow}<input class="cell-input" value="${escapeHtml(r.name)}" ${nameDis ? 'disabled' : ''} data-f="name" placeholder="参数名"></div></td>
+                <td><input class="cell-input" value="${escapeHtml(r.example)}" ${exDis ? 'disabled' : ''} data-f="example" placeholder="示例值"></td>
+                <td><select class="cell-select" ${ro ? 'disabled' : ''} data-f="type">${TYPE_OPTIONS.map(t => `<option value="${t}" ${r.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+                <td><select class="cell-select" ${ro ? 'disabled' : ''} data-f="required"><option value="否" ${r.required !== '是' ? 'selected' : ''}>否</option><option value="是" ${r.required === '是' ? 'selected' : ''}>是</option></select></td>
+                <td><input class="cell-input" value="${escapeHtml(r.desc)}" ${ro ? 'disabled' : ''} data-f="desc" placeholder="说明"></td>
+                <td>${rowOpsHtml(i, rows, 'req', ro)}</td>
+            </tr>`;
+        }
+        if (r.children) chain.push({ level: r.level || 0, expanded: r.expanded });
+    });
+    tbody.innerHTML = html;
+}
+
+function renderRespRows() {
+    const rows = respData;
+    const tbody = document.getElementById('respTbody');
+    const ro = editMode === 'detail';
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-cell">暂无数据</td></tr>`;
+        renderStructSummary(); // 空表时同步刷新结构化摘要
+        return;
+    }
+    // 层级渲染：仅当所有祖先展开时显示当前行（副作用：折叠的祖先下的子树随之隐藏）
+    const chain = [];
+    let html = '';
+    rows.forEach((r, i) => {
+        while (chain.length && chain[chain.length - 1].level >= (r.level || 0)) chain.pop();
+        if (chain.every(c => c.expanded)) {
+            const arrow = r.children
+                ? `<span class="row-arrow ${r.expanded ? 'expanded' : ''}" onclick="toggleRespRow(${i})" title="展开/收起"><i class="el-icon-arrow-right"></i></span>`
+                : '<span class="row-arrow placeholder"></span>';
+            html += `<tr data-idx="${i}">
+                <td><div class="name-cell" style="padding-left:${(r.level || 0) * 22}px;">${arrow}<input class="cell-input" value="${escapeHtml(r.name)}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="name" placeholder="参数名"></div></td>
+                <td><input class="cell-input" value="${escapeHtml(r.example)}" ${ro || (r.type === 'array' || r.type === 'object') ? 'disabled' : ''} data-f="example" placeholder="示例值"></td>
+                <td><select class="cell-select" ${ro ? 'disabled' : ''} data-f="type">${TYPE_OPTIONS.map(t => `<option value="${t}" ${r.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+                <td><select class="cell-select" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseAttr">${parseAttrOptions(r, i, rows)}</select></td>
+                <td><input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果"></td>
+                <td><input class="cell-input" value="${escapeHtml(r.dbType || dbTypeOf(r.type))}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="dbType" placeholder="字段类型"></td>
+                <td><input class="cell-input" value="${escapeHtml(r.desc)}" ${ro ? 'disabled' : ''} data-f="desc" placeholder="说明"></td>
+                <td>${rowOpsHtml(i, rows, 'resp', ro)}</td>
+            </tr>`;
+        }
+        if (r.children) chain.push({ level: r.level || 0, expanded: r.expanded });
+    });
+    tbody.innerHTML = html;
+    renderStructSummary();
+}
+
+function toggleRespRow(i) {
+    const r = respData[i];
+    if (!r || !r.children) return;
+    r.expanded = !r.expanded;
+    renderRespRows();
+}
+function toggleReqRow(i) {
+    const r = (reqData[currentReqTab] || [])[i];
+    if (!r || !r.children) return;
+    r.expanded = !r.expanded;
+    renderReqRows();
+}
+
+/* ---------- 层级节点操作（请求/返回参数共用） ---------- */
+function newReqRow(level) { return { name: '', example: '', type: 'string', required: '否', desc: '', level, children: false, expanded: true }; }
+function newRespRow(level) { return { name: '', example: '', type: 'string', parseAttr: '不解析', parseResult: '', dbType: '', desc: '', level, children: false, expanded: true }; }
+/* array 元素层行（array 下新增的 object 元素，字段放入该 object 内；名称锁定、不参与解析） */
+function newReqElemRow(level) { return { name: '[0]', example: '', type: 'object', required: '否', desc: '', level, children: false, expanded: true }; }
+function newRespElemRow(level) { return { name: '[0]', example: '', type: 'object', parseAttr: '不解析', parseResult: '', dbType: '', desc: '', level, children: false, expanded: true }; }
+/* 行 i 是否有子级 */
+function hasChild(rows, i) {
+    const lvl = rows[i].level || 0;
+    return i + 1 < rows.length && (rows[i + 1].level || 0) > lvl;
+}
+/* 行 i 是否为 array 的直接子级（数组元素层：名称锁定、不参与解析、无相邻新增） */
+function isArrElementRow(rows, i) {
+    const lvl = rows[i].level || 0;
+    if (lvl === 0) return false;
+    for (let j = i - 1; j >= 0; j--) {
+        if ((rows[j].level || 0) < lvl) return rows[j].type === 'array';
+    }
+    return false;
+}
+/* 查找行 i 的相邻兄弟：dir=-1 上一个，dir=1 下一个；无兄弟返回 -1 */
+function findSiblingIdx(rows, i, dir) {
+    const lvl = rows[i].level || 0;
+    if (dir < 0) {
+        for (let j = i - 1; j >= 0; j--) {
+            const l = rows[j].level || 0;
+            if (l < lvl) return -1;
+            if (l === lvl) return j;
+        }
+    } else {
+        for (let j = i + 1; j < rows.length; j++) {
+            const l = rows[j].level || 0;
+            if (l < lvl) return -1;
+            if (l === lvl) return j;
+        }
+    }
+    return -1;
+}
+/* 操作列：上下移动箭头 + 新增相邻节点/新增子节点 + 删除
+ * array/object 行 →「新增子节点」；array 元素行（array 直接子级）→ 无「新增相邻节点」，
+ * 仅容器类型可「新增子节点」（array 下只能有一个节点）；其余普通字段行 →「新增相邻节点」 */
+function rowOpsHtml(i, rows, section, ro) {
+    if (ro) return '<span class="cell-del disabled">删除</span>';
+    const r = rows[i];
+    const prev = findSiblingIdx(rows, i, -1);
+    const next = findSiblingIdx(rows, i, 1);
+    let html = `<span class="mv-btn ${prev < 0 ? 'disabled' : ''}" onclick="moveParamRow('${section}', ${i}, -1)" title="上移"><i class="el-icon-arrow-up"></i></span>`;
+    html += `<span class="mv-btn ${next < 0 ? 'disabled' : ''}" onclick="moveParamRow('${section}', ${i}, 1)" title="下移"><i class="el-icon-arrow-down"></i></span>`;
+    const isElem = isArrElementRow(rows, i);
+    if (r.type === 'array' || r.type === 'object') {
+        // 容器行 →「新增子节点」；array 下只能有一个节点：已有子级则不再提供
+        if (r.type !== 'array' || !hasChild(rows, i)) {
+            html += `<span class="cell-op" onclick="addChildNode('${section}', ${i})">新增子节点</span>`;
+        }
+    } else if (!isElem) {
+        // 非容器的普通字段行 →「新增相邻节点」（array 元素行除外：数组仅一个元素节点）
+        html += `<span class="cell-op" onclick="addSiblingNode('${section}', ${i})">新增相邻节点</span>`;
+    }
+    html += `<span class="cell-del" onclick="removeParamRow('${section}', ${i})">删除</span>`;
+    return html;
+}
+/* 上下移动（整棵子树随之移动） */
+function moveParamRow(section, i, dir) {
+    if (editMode === 'detail') return;
+    const rows = section === 'req' ? (reqData[currentReqTab] || []) : respData;
+    const j = findSiblingIdx(rows, i, dir);
+    if (j < 0 || j === i) return;
+    const lvl = rows[i].level || 0;
+    let end = i + 1;
+    while (end < rows.length && (rows[end].level || 0) > lvl) end++;
+    const block = rows.splice(i, end - i);
+    const insertAt = dir < 0 ? j : j - block.length + 1;
+    rows.splice(insertAt, 0, ...block);
+    if (section === 'req') renderReqRows(); else renderRespRows();
+}
+/* 新增相邻节点：在当前行（含子树）之后插入同层新行 */
+function addSiblingNode(section, i) {
+    if (editMode === 'detail') return;
+    const rows = section === 'req' ? (reqData[currentReqTab] || []) : respData;
+    const lvl = rows[i].level || 0;
+    let end = i + 1;
+    while (end < rows.length && (rows[end].level || 0) > lvl) end++;
+    rows.splice(end, 0, section === 'req' ? newReqRow(lvl) : newRespRow(lvl));
+    if (section === 'req') renderReqRows(); else renderRespRows();
+}
+/* 新增子节点：仅 array/object 行；array 下只能有一个节点
+ * array 下新增 object 元素行（[0]，字段放入该 object 内）；object 下新增普通字段行 */
+function addChildNode(section, i) {
+    if (editMode === 'detail') return;
+    const rows = section === 'req' ? (reqData[currentReqTab] || []) : respData;
+    const r = rows[i];
+    if (!r || (r.type !== 'array' && r.type !== 'object')) return;
+    if (r.type === 'array' && hasChild(rows, i)) return;
+    r.children = true;
+    r.expanded = true;
+    const lv = (r.level || 0) + 1;
+    let row;
+    if (r.type === 'array') row = section === 'req' ? newReqElemRow(lv) : newRespElemRow(lv);
+    else row = section === 'req' ? newReqRow(lv) : newRespRow(lv);
+    rows.splice(i + 1, 0, row);
+    if (section === 'req') renderReqRows(); else renderRespRows();
+}
+
+/* 解析属性下拉：
+ * - array/object 行：可选「表」「字段」「不解析」，「JSON串」禁用
+ * - 非 array/object 行（string/number/boolean）：仅可选「字段」「不解析」，「表」「JSON串」禁用
+ * - 「JSON串」不可手动选择，但容器行选择「字段」时级联带出，下拉展示为选中禁用态
+ * - array 元素行（透明节点）：仅「不解析」并整列禁用
+ * 非法当前值仅显示回退，不改数据 */
+function parseAttrOptions(r, i, rows) {
+    if (isArrElementRow(rows, i)) return '<option value="不解析" selected disabled>不解析</option>';
+    const canTable = r.type === 'array' || r.type === 'object';
+    const invalid = (a) => a === '表' && !canTable;
+    const cur = invalid(r.parseAttr) ? '字段' : (r.parseAttr || '不解析');
+    return PARSE_TYPES.map(t => {
+        const dis = (t === '表' && !canTable) || t === 'JSON串';
+        return `<option value="${t}" ${cur === t ? 'selected' : ''} ${dis ? 'disabled' : ''}>${t}</option>`;
+    }).join('');
+}
+/* 解析属性合法性校正（类型变更/加载旧数据时归一化数据）；array 元素行恒为「不解析」；
+ * 「JSON串」为容器「字段」级联带出的内部态，不做归一化 */
+function normalizeParseAttr(r, rows, i) {
+    if (isArrElementRow(rows, i)) { r.parseAttr = '不解析'; r.parseResult = ''; r.dbType = ''; return; }
+    const canTable = r.type === 'array' || r.type === 'object';
+    if (r.parseAttr === '表' && !canTable) r.parseAttr = '字段';
+}
+/* 选择「不解析」：该字段与其下所有层级全部置为不解析（结构保留，层级不提升） */
+function cascadeSkipParse(i) {
+    const base = respData[i].level || 0;
+    let end = i + 1;
+    while (end < respData.length && (respData[end].level || 0) > base) end++;
+    for (let j = i + 1; j < end; j++) {
+        respData[j].parseAttr = '不解析';
+        respData[j].parseResult = '';
+    }
+}
+
+/* 容器行选择「字段」：该容器下的所有字段解析属性自动变为「JSON串」(CLOB)；array 元素行保持透明（不解析） */
+function cascadeFieldAttr(i) {
+    const base = respData[i].level || 0;
+    let end = i + 1;
+    while (end < respData.length && (respData[end].level || 0) > base) end++;
+    for (let j = i + 1; j < end; j++) {
+        if (isArrElementRow(respData, j)) continue;
+        respData[j].parseAttr = 'JSON串';
+        respData[j].dbType = 'CLOB';
+    }
+}
+
+/* 数组/对象行选择「JSON串」：其下所有字段的解析属性一并设为 JSON串（整棵子树作为JSON串存储）；
+ * array 元素行保持透明（不解析），不参与级联 */
+function cascadeJsonAttr(i) {
+    const base = respData[i].level || 0;
+    let end = i + 1;
+    while (end < respData.length && (respData[end].level || 0) > base) end++;
+    for (let j = i + 1; j < end; j++) {
+        if (isArrElementRow(respData, j)) continue;
+        respData[j].parseAttr = 'JSON串';
+        respData[j].dbType = 'CLOB';
+    }
+}
+
+/* 输入即存：监听单元格 input 同步到数据 */
+document.getElementById('reqTbody')?.addEventListener('input', function (e) {
+    const cell = e.target.closest('.cell-input, .cell-select');
+    if (!cell) return;
+    const tr = cell.closest('tr');
+    const idx = parseInt(tr.dataset.idx, 10);
+    const f = cell.dataset.f;
+    const row = (reqData[currentReqTab] || [])[idx];
+    if (!row) return;
+    row[f] = cell.value;
+    // 类型变更 → 重渲染（array/object 示例值置灰、操作列新增功能切换），切换类型清空子节点
+    if (f === 'type') {
+        const rows = reqData[currentReqTab] || [];
+        const lvl = row.level || 0;
+        let end = idx + 1;
+        while (end < rows.length && (rows[end].level || 0) > lvl) end++;
+        if (end > idx + 1) {
+            rows.splice(idx + 1, end - idx - 1);
+            row.children = false;
+            row.expanded = true;
+        }
+        renderReqRows();
+    }
+});
+document.getElementById('respTbody')?.addEventListener('input', function (e) {
+    const cell = e.target.closest('.cell-input, .cell-select');
+    if (!cell) return;
+    const tr = cell.closest('tr');
+    const idx = parseInt(tr.dataset.idx, 10);
+    const f = cell.dataset.f;
+    const row = respData[idx];
+    if (!row) return;
+    row[f] = cell.value;
+    if (f === 'parseAttr') {
+        if (cell.value === '不解析') {
+            // 选择「不解析」：解析结果清空；该字段与其下所有层级全部置为不解析（结构保留）
+            row.parseResult = '';
+            if (row.children) cascadeSkipParse(idx);
+            renderRespRows();
+            return;
+        }
+        if (cell.value === '字段' && row.children) {
+            // 容器行选择「字段」：该容器下的所有字段解析属性自动变为「JSON串」（整体作为JSON对象/串存储）
+            cascadeFieldAttr(idx);
+            renderRespRows();
+            return;
+        }
+        if (cell.value === 'JSON串') {
+            // 选择「JSON串」：该字段与字段值整体作为JSON串存储（CLOB），其下所有字段解析属性一并变为JSON串
+            row.dbType = 'CLOB';
+            if (row.children) cascadeJsonAttr(idx);
+            renderRespRows();
+            return;
+        }
+    }
+    // 「解析类型」与「类型」对应：类型变更时自动联动并重渲染（示例值禁用/操作列切换/解析属性合法性校正）
+    if (f === 'type') {
+        // 类型切换（含 array/object 互切）→ 清空该行的全部子节点
+        const lvl = row.level || 0;
+        let end = idx + 1;
+        while (end < respData.length && (respData[end].level || 0) > lvl) end++;
+        if (end > idx + 1) {
+            respData.splice(idx + 1, end - idx - 1);
+            row.children = false;
+            row.expanded = true;
+        }
+        row.dbType = (cell.value === 'array' || cell.value === 'object') ? '' : dbTypeOf(cell.value); // 容器类型不预写dbType，交由结构化解析决定（表/字段）
+        normalizeParseAttr(row, respData, idx);
+        renderRespRows();
+        return;
+    }
+    renderStructSummary(); // 结构化结果实时联动
+});
+
+function addParamRow(section) {
+    if (editMode === 'detail') return;
+    if (section === 'req') {
+        reqData[currentReqTab].push(newReqRow(0));
+        renderReqRows();
+    } else {
+        respData.push(newRespRow(0));
+        renderRespRows();
+    }
+}
+function removeParamRow(section, i) {
+    if (editMode === 'detail') return;
+    if (section === 'req') {
+        // 删除数组/对象行时，级联删除其全部子行
+        const level = (reqData[currentReqTab][i].level) || 0;
+        let end = i + 1;
+        while (end < reqData[currentReqTab].length && (reqData[currentReqTab][end].level || 0) > level) end++;
+        reqData[currentReqTab].splice(i, end - i);
+        renderReqRows();
+    }
+    else {
+        // 删除对象/数组行时，级联删除其全部子行
+        const level = respData[i].level || 0;
+        let end = i + 1;
+        while (end < respData.length && (respData[end].level || 0) > level) end++;
+        respData.splice(i, end - i);
+        renderRespRows();
+    }
+}
+function clearParamRows(section) {
+    if (editMode === 'detail') return;
+    if (section === 'req') { reqData[currentReqTab] = []; renderReqRows(); }
+    else { respData = []; renderRespRows(); }
+}
+
+/* 生成返回参数预览 */
+function castExample(type, val) {
+    if (type === 'number') { const n = Number.parseFloat(val); return Number.isNaN(n) ? 0 : n; }
+    if (type === 'boolean') return val === 'true' || val === '是' || val === '1';
+    if (type === 'object') return {};
+    if (type === 'array') {
+        const s = String(val || '').trim();
+        if (s) { try { const arr = JSON.parse(s); if (Array.isArray(arr)) return arr; } catch (e) {} }
+        return [];
+    }
+    return val || '';
+}
+function genPreview() {
+    if (editMode === 'detail') return;
+    if (!respData.length) { alert('请先维护返回参数'); return; }
+    // 按 level 层级重建嵌套 JSON；array 的 object 元素层（[0]）为透明节点：不产生 key，子级归入数组元素对象
+    const root = {};
+    const chain = [{ obj: root, level: -1, arrSlot: false, fresh: false }];
+    respData.forEach(r => {
+        while (chain.length > 1 && chain[chain.length - 1].level >= (r.level || 0)) chain.pop();
+        const parent = chain[chain.length - 1];
+        // array 的紧邻第一个子级才视为元素行（透明，不产生key）；其后出现的行按普通字段并入
+        const isElem = parent.arrSlot && parent.fresh && (r.level || 0) === parent.level + 1;
+        let val = castExample(r.type, r.example);
+        // 数组行含子元素时：子级key应挂到数组第一个元素上
+        if (r.children && r.type === 'array') val = [{}];
+        if (!isElem && r.name) parent.obj[r.name] = val;
+        if (r.children && !isElem) {
+            const target = (r.type === 'array' && Array.isArray(val)) ? val[0] : val;
+            chain.push({ obj: target, level: r.level || 0, arrSlot: r.type === 'array', fresh: true });
+        } else parent.fresh = false;
+    });
+    document.getElementById('respExample').value = JSON.stringify(root, null, 2);
+}
+/* 将JSON对象扁平化为层级行（level记录深度，children标记可展开节点）
+ * array 元素的值为对象时：array 下方新增 object 元素层（[0] 透明行），字段放入该 object 内 */
+function parseJsonToRespData(parsed) {
+    const rows = [];
+    const walk = (name, value, level) => {
+        const isArr = Array.isArray(value);
+        const isObj = value !== null && typeof value === 'object';
+        // 数组元素为（非空）对象 → 需在 array 下新增 object 元素层
+        const arrHasObjElem = isArr && value.length > 0 && value[0] !== null && typeof value[0] === 'object' && !Array.isArray(value[0]) && Object.keys(value[0]).length > 0;
+        let childKeys = [];
+        if (isArr) {
+            if (arrHasObjElem) childKeys = Object.keys(value[0]);
+        } else if (isObj) {
+            childKeys = Object.keys(value);
+        }
+        const type = isArr ? 'array' : isObj ? 'object' : value === null ? 'string' : typeof value;
+        rows.push({
+            name: name,
+            level: level,
+            type: type,
+            example: childKeys.length ? '' : (isObj || isArr ? JSON.stringify(value) : String(value)),
+            parseAttr: childKeys.length ? '表' : '字段',
+            parseResult: upperSnake(name),
+            dbType: dbTypeOf(type),
+            desc: '',
+            children: childKeys.length > 0,
+            expanded: true
+        });
+        if (childKeys.length) {
+            if (arrHasObjElem) {
+                // array 元素为对象：array 下方新增 object 元素行（透明：不解析、不产生key），字段放入 object 内
+                rows.push({
+                    name: '[0]',
+                    level: level + 1,
+                    type: 'object',
+                    example: '',
+                    parseAttr: '不解析',
+                    parseResult: '',
+                    dbType: '',
+                    desc: '',
+                    children: true,
+                    expanded: true
+                });
+                Object.keys(value[0]).forEach(k => walk(k, value[0][k], level + 2));
+            } else {
+                const source = isArr ? value[0] : value;
+                childKeys.forEach(k => walk(k, source[k], level + 1));
+            }
+        }
+    };
+    Object.keys(parsed).forEach(k => walk(k, parsed[k], 0));
+    return rows;
+}
+/* Json数据转成Form表单：弹窗输入JSON字符串，点击确定后转换为下方Form表单 */
+function jsonToForm() {
+    if (editMode === 'detail') return;
+    // 预填当前返回示例内容，便于修改后再次转换
+    document.getElementById('jsonFormInput').value = document.getElementById('respExample').value.trim();
+    document.getElementById('jsonFormModal').classList.add('active');
+}
+function confirmJsonToForm() {
+    const text = document.getElementById('jsonFormInput').value.trim();
+    if (!text) { alert('请输入JSON字符串'); return; }
+    let parsed;
+    try { parsed = JSON.parse(text); } catch (e) { alert('JSON格式不正确，请检查后重试'); return; }
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) { alert('请输入JSON对象，如 {"code":"200","msg":"查询成功"}'); return; }
+    respData = parseJsonToRespData(parsed);
+    renderRespRows();
+    closeJsonFormModal();
+}
+function closeJsonFormModal() { document.getElementById('jsonFormModal').classList.remove('active'); }
+
+/* 文档上传 */
+function pickFile() {
+    if (editMode === 'detail') return;
+    document.getElementById('fileInput').click();
+}
+
+/* ---------- 保存 ---------- */
+function saveEdit() {
+    const apiName = document.getElementById('edName').value.trim();
+    const supplier = document.getElementById('edSupplier').value.trim();
+    const url = document.getElementById('edUrl').value.trim();
+    const method = document.getElementById('edMethod').value;
+    const status = document.getElementById('edStatus').value;
+    const desc = document.getElementById('edDesc').value.trim();
+    const structured = document.getElementById('edStructured').checked;
+    const stdTable = document.getElementById('edStdTable').value.trim();
+    if (!apiName) { alert('请输入API名称'); return; }
+    if (!supplier) { alert('请选择供应商'); return; }
+    if (!url) { alert('请输入API地址'); return; }
+    if (!/^https?:\/\//i.test(url)) { alert('API地址需以 http:// 或 https:// 开头'); return; }
+    if (!method) { alert('请选择请求方式'); return; }
+    if (!status) { alert('请选择状态'); return; }
+    if (!desc) { alert('请输入API描述'); return; }
+    if (structured && !stdTable) { alert('开启结构化后表名必填'); return; }
+
+    const now = nowStr();
+    const saved = {
+        apiName, supplier, url, method, status, desc, structured, stdTable,
+        requestParams: JSON.parse(JSON.stringify(reqData)),
+        responseParams: JSON.parse(JSON.stringify(respData)).map(r => ({ name: r.name, example: r.example, type: r.type, desc: r.desc, level: r.level, children: !!r.children, parseAttr: r.parseAttr || '', parseResult: r.parseResult || '', dbType: r.dbType || '' })),
+        responseExample: document.getElementById('respExample').value,
+        attachFile: attachFileName
+    };
+    if (editMode === 'edit' && editId) {
+        const idx = apiList.findIndex(i => i.id === editId);
+        if (idx !== -1) {
+            apiList[idx] = { ...apiList[idx], ...saved, updater: CURRENT_USER, updatedAt: now };
+            alert('修改成功');
+        }
+    } else {
+        // 新增 / 复制：保存均另存为一条新数据
+        apiList.unshift({ id: nextApiId++, ...saved, createdAt: now, updater: CURRENT_USER, updatedAt: now });
+        alert(editMode === 'copy' ? '复制成功，已保存为新数据' : '新增成功');
+        apiPage = 1;
+    }
+    showListView();
+}
+
+// ---------- 删除 ----------
+function deleteApi(id) {
+    deleteApiId = id;
+    document.getElementById('deleteConfirmModal').classList.add('active');
+}
+function confirmDelete() {
+    apiList = apiList.filter(i => i.id !== deleteApiId);
+    deleteApiId = null;
+    closeDeleteModal();
+    renderApiTable();
+    alert('删除成功');
+}
+function closeDeleteModal() { document.getElementById('deleteConfirmModal').classList.remove('active'); }
+
+// ---------- 测试视图（API在线测试） ----------
+function defaultTestRows(item) {
+    const params = [
+        { name: 'page', value: '' },
+        { name: 'size', value: '20' }
+    ];
+    const headers = [
+        { name: 'Content-Type', value: 'application/json' },
+        { name: 'Authorization', value: 'Bearer <token>' }
+    ];
+    if (item && item.requestParams) {
+        const saved = item.requestParams;
+        if (saved.params && saved.params.length) {
+            return {
+                params: saved.params.map(r => ({ name: r.name, value: r.example })),
+                headers: (saved.headers && saved.headers.length ? saved.headers : headers).map(r => ({ name: r.name, value: r.example })),
+                body: saved.body ? saved.body.map(r => ({ name: r.name, value: r.example })) : []
+            };
+        }
+    }
+    return { params, headers, body: [] };
+}
+
+function openTest(id) {
+    const item = apiList.find(i => i.id === id);
+    if (!item) return;
+    testId = id;
+    document.getElementById('testCrumb').innerHTML = `<span>外源管理</span><span class="separator">/</span><span>API服务配置</span><span class="separator">/</span><span class="current">API在线测试</span>`;
+    document.getElementById('tName').textContent = item.apiName;
+    document.getElementById('tSupplier').textContent = item.supplier;
+    document.getElementById('tUrl').textContent = item.url;
+    const methodEl = document.getElementById('tMethod');
+    methodEl.textContent = item.method;
+    methodEl.className = 'method-badge method-' + item.method;
+
+    testData = defaultTestRows(item);
+    currentTestTab = 'params';
+    document.querySelectorAll('#testTabs .param-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'params'));
+    renderTestRows();
+    // 重置响应区
+    document.getElementById('respMeta').classList.remove('show');
+    document.getElementById('respPre').className = 'resp-pre placeholder';
+    document.getElementById('respPre').textContent = '0';
+    const btn = document.getElementById('runTestBtn');
+    btn.disabled = false;
+    btn.textContent = '测试';
+    showView('testModule');
+}
+
+function switchTestTab(tab) {
+    currentTestTab = tab;
+    document.querySelectorAll('#testTabs .param-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    renderTestRows();
+}
+
+function renderTestRows() {
+    const rows = testData[currentTestTab] || [];
+    const tbody = document.getElementById('testTbody');
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="3" class="empty-cell">暂无数据</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = rows.map((r, i) => `<tr>
+        <td><input class="cell-input" value="${escapeHtml(r.name)}" data-f="name" placeholder="参数名"></td>
+        <td><input class="cell-input" value="${escapeHtml(r.value)}" data-f="value" placeholder="参数值"></td>
+        <td style="text-align:center;"><span class="cell-del" onclick="removeTestRow(${i})">删除</span></td>
+    </tr>`).join('');
+}
+
+document.getElementById('testTbody')?.addEventListener('input', function (e) {
+    const cell = e.target.closest('.cell-input');
+    if (!cell) return;
+    const tr = cell.closest('tr');
+    const idx = Array.from(tr.parentNode.children).indexOf(tr);
+    const row = (testData[currentTestTab] || [])[idx];
+    if (row) row[cell.dataset.f] = cell.value;
+});
+
+function addTestRow() {
+    testData[currentTestTab].push({ name: '', value: '' });
+    renderTestRows();
+}
+function removeTestRow(i) {
+    testData[currentTestTab].splice(i, 1);
+    renderTestRows();
+}
+function clearTestRows() {
+    testData[currentTestTab] = [];
+    renderTestRows();
+}
+
+function buildMockResponse(item) {
+    const dataMap = {
+        '企业基本信息': { entName: '某某科技有限公司', creditCode: '91440300MA5EXAMPLE', legalPerson: '张某', regCapital: '5000万元人民币', estDate: '2015-03-18', regStatus: '在营（开业）企业' },
+        '企业图谱': { entName: '某某科技有限公司', investCount: 6, branchCount: 3, shareholderCount: 4, relationLevel: 3 },
+        '风险预警': { entName: '某某科技有限公司', riskLevel: '低风险', riskCount: 2, latestRisk: { type: '经营异常', date: '2026-07-02' } },
+        '资质荣誉': { entName: '某某科技有限公司', qualifications: ['高新技术企业', 'ISO9001质量管理体系认证'], honors: 3 },
+        '融资历史': { entName: '某某科技有限公司', totalRound: 3, latestRound: 'B轮', latestAmount: '1.5亿元人民币', latestDate: '2025-11-20' },
+        '司法风险': { entName: '某某科技有限公司', lawsuitCount: 5, executedCount: 0, dishonestCount: 0, riskLevel: '中风险' },
+        '经营状况': { entName: '某某科技有限公司', abnormalCount: 0, penaltyCount: 1, taxLevel: 'A级' },
+        '严重违法记录': { entName: '某某科技有限公司', violationCount: 0, detail: [] },
+        '企业规模': { entName: '某某科技有限公司', scaleLevel: '中型', employeeRange: '500-1000人', revenueRange: '1-5亿元' },
+        '舆情': { keyword: '华润集团', totalCount: 128, negativeCount: 3, latestTitle: '华润集团发布2026年中期业绩报告', latestDate: '2026-08-24' }
+    };
+    return {
+        code: '200',
+        msg: '查询成功',
+        data: dataMap[item.apiName] || { entName: '某某科技有限公司', result: '命中测试数据' },
+        requestId: 'REQ-' + Date.now()
+    };
+}
+
+function runTest() {
+    const item = apiList.find(i => i.id === testId);
+    if (!item) return;
+    // 拼接 Params 形成查询串
+    const qs = (testData.params || []).filter(r => r.name).map(r => `${encodeURIComponent(r.name)}=${encodeURIComponent(r.value || '')}`).join('&');
+    const urlEl = document.getElementById('tUrl');
+    urlEl.textContent = qs ? item.url + (item.url.includes('?') ? '&' : '?') + qs : item.url;
+
+    const btn = document.getElementById('runTestBtn');
+    btn.disabled = true;
+    btn.textContent = '请求中…';
+    const respPre = document.getElementById('respPre');
+    respPre.className = 'resp-pre';
+    respPre.textContent = '正在请求 ' + item.url + ' …';
+
+    const elapsed = Math.floor(120 + Math.random() * 380);
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '测试';
+        const resp = buildMockResponse(item);
+        document.getElementById('respMeta').classList.add('show');
+        document.getElementById('respCode').textContent = resp.code;
+        document.getElementById('respTime').textContent = elapsed;
+        respPre.className = 'resp-pre';
+        respPre.textContent = JSON.stringify(resp, null, 2);
+    }, elapsed + 300);
+}
+
+// ---------- 导航 ----------
+function navigateTo(url) {
+    var navKeys = { '数据门户': 'portal', '外源管理': 'external', '服务管理': 'service', '监控统计': 'monitor', '运营管理': 'operation', '个人中心': 'personal', '系统管理': 'system' };
+    try {
+        var navTab = event && event.target ? event.target.closest('.nav-tab') : null;
+        if (navTab) {
+            var text = navTab.textContent.trim();
+            if (navKeys[text]) localStorage.setItem('_navMenu', navKeys[text]);
+        }
+    } catch (e) {}
+    var targetPage = url.split('?')[0].split('#')[0];
+    var currentPage = decodeURIComponent(window.location.pathname.split('/').pop());
+    if (targetPage === currentPage) {
+        document.querySelectorAll('.menu-item').forEach(function (m) { m.classList.remove('active'); });
+        document.querySelectorAll('.menu-item').forEach(function (m) {
+            var onclick = m.getAttribute('onclick') || '';
+            var match = onclick.match(/navigateTo\('([^']+)'\)/);
+            if (match) {
+                var itemPage = match[1].split('?')[0].split('#')[0];
+                if (itemPage === currentPage) m.classList.add('active');
+            }
+        });
+        if (url.includes('#')) {
+            window.location.hash = url.split('#')[1];
+        }
+        return;
+    }
+    window.location.href = url;
+}
+
+const navMenus = {
+    portal: [
+        { name: '数据门户', url: 'index.html' }
+    ],
+    external: [
+        { name: '供应商管理', url: 'index.html', icon: 'el-icon-building' },
+        { name: '合同管理', url: '合同管理.html', icon: 'el-icon-document' },
+        { name: 'API服务配置', url: 'API服务配置.html', icon: 'el-icon-cpu' },
+        { name: '数据库服务配置', url: 'index.html', icon: 'el-icon-database' },
+        { name: '数据库配置', url: 'index.html', icon: 'el-icon-settings' }
+    ],
+    service: [
+        { name: '服务管理', url: 'index.html' },
+        { name: '调用方管理', url: 'index.html' },
+        { name: '目录管理', url: 'index.html' },
+        { name: '状态码映射', url: 'index.html' }
+    ],
+    monitor: [
+        { name: '用数大屏', url: 'index.html' },
+        { name: '用量统计', url: '告警管理V1.2.html' },
+        { name: '数据源调用统计', url: 'index.html' },
+        { name: '服务调用统计', url: 'index.html' },
+        { name: '业务单元调用统计', url: 'index.html' },
+        { name: '链路实时监控', url: 'index.html' },
+        { name: '数据质量监控', url: 'index.html' },
+        { name: '系统性能监控', url: 'index.html' },
+        { name: '服务性能监控', url: 'index.html' },
+        { name: '流量分析', url: 'index.html' }
+    ],
+    operation: [
+        { name: '告警管理', url: '告警管理V1.2.html?nav=operation#rule', icon: 'el-icon-bell' },
+        { name: '用量预测', url: '告警管理V1.2.html?nav=operation#forecast', icon: 'el-icon-data-line' },
+        { name: '告警渠道', url: '告警管理V1.2.html?nav=operation#channel', icon: 'el-icon-message' },
+        { name: '配额管理', url: '配额管理V1.1.html', icon: 'el-icon-s-grid' },
+        { name: '计费管理', url: '计费管理.html', icon: 'el-icon-s-finance' },
+        { name: '账单管理', url: '账单管理.html', icon: 'el-icon-document' },
+        { name: '对账管理', url: '对账管理.html', icon: 'el-icon-s-check' },
+        { name: '任务管理', url: '任务管理.html', icon: 'el-icon-s-order' }
+    ],
+    personal: [
+        { name: '我的审批', url: '个人中心V1.3.html#approval' },
+        { name: '我的收藏', url: '个人中心V1.3.html#favorites' },
+        { name: '我的服务', url: '我的服务.html' },
+        { name: '消息通知', url: '个人中心V1.3.html#message' }
+    ],
+    system: [
+        { name: '调用日志', url: '调用日志.html' },
+        { name: '操作日志', url: 'index.html' },
+        { name: '用户管理', url: 'index.html' },
+        { name: '权限管理', url: 'index.html' },
+        { name: '数据字典', url: 'index.html' }
+    ]
+};
+
+function showNavMenu(menuKey) {
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    try {
+        if (typeof event !== 'undefined' && event && event.target) {
+            event.target.classList.add('active');
+        } else {
+            var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+            if (tab) tab.classList.add('active');
+        }
+    } catch (e) {
+        var tab = document.querySelector('.nav-tab[onclick*="\'' + menuKey + '\'"]');
+        if (tab) tab.classList.add('active');
+    }
+    localStorage.setItem('_navMenu', menuKey);
+
+    const menu = navMenus[menuKey] || [];
+    const sideMenu = document.getElementById('sideMenu');
+
+    if (menu.length === 0) {
+        sideMenu.innerHTML = '<div class="menu-item active" onclick="navigateTo(\'index.html\')"><i class="el-icon-home"></i>首页</div>';
+        return;
+    }
+
+    let html = '';
+    menu.forEach((item, index) => {
+        var hashPart = item.url.includes('#') ? item.url.split('#')[1] : '';
+        var dataAttr = hashPart ? ' data-module="' + hashPart + '"' : '';
+        var icon = item.icon || 'el-icon-document';
+        html += `<div class="menu-item ${index === 0 ? 'active' : ''}"${dataAttr} onclick="navigateTo('${item.url}')"><i class="${icon}"></i>${item.name}</div>`;
+    });
+    sideMenu.innerHTML = html;
+
+    var currentPath = decodeURIComponent(window.location.pathname.split('/').pop());
+    var currentHash = window.location.hash;
+    sideMenu.querySelectorAll('.menu-item').forEach(function (m, i) {
+        var itemUrl = menu[i].url.split('?')[0].split('#')[0];
+        var itemHash = menu[i].url.includes('#') ? '#' + menu[i].url.split('#')[1] : '';
+        if (itemUrl === currentPath && (itemHash === currentHash || itemHash === '')) {
+            m.classList.add('active');
+        } else {
+            m.classList.remove('active');
+        }
+    });
+}
+
+// ---------- 事件绑定与初始化 ----------
+let filterCreatedStartFp = null, filterCreatedEndFp = null;
+if (window.flatpickr) {
+    filterCreatedStartFp = flatpickr('#filterCreatedStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
+    filterCreatedEndFp = flatpickr('#filterCreatedEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
+}
+
+document.getElementById('searchBtn')?.addEventListener('click', function () { apiPage = 1; renderApiTable(); });
+document.getElementById('resetBtn')?.addEventListener('click', function () {
+    document.getElementById('filterApiName').value = '';
+    document.getElementById('filterSupplier').value = '';
+    filterCreatedStartFp && filterCreatedStartFp.clear();
+    filterCreatedEndFp && filterCreatedEndFp.clear();
+    apiPage = 1;
+    renderApiTable();
+});
+document.getElementById('addApiBtn')?.addEventListener('click', function () { openEdit('add'); });
+document.getElementById('edDesc')?.addEventListener('input', updateDescCount);
+
+// 文件上传
+document.getElementById('fileInput')?.addEventListener('change', function () {
+    const f = this.files && this.files[0];
+    if (!f) return;
+    const okExt = /\.(doc|docx|xls|xlsx|pdf|txt)$/i;
+    if (!okExt.test(f.name)) { alert('仅支持doc、docx、xls、xlsx、pdf、txt格式文件'); this.value = ''; return; }
+    if (f.size > 100 * 1024 * 1024) { alert('单个文件不能超过100MB'); this.value = ''; return; }
+    attachFileName = f.name;
+    document.getElementById('fileName').textContent = '已选择文件：' + f.name;
+    document.getElementById('fileName').style.display = 'block';
+});
+
+document.getElementById('closeDeleteModal')?.addEventListener('click', closeDeleteModal);
+document.getElementById('cancelDeleteBtn')?.addEventListener('click', closeDeleteModal);
+document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+
+// 删除弹窗点击遮罩关闭
+document.getElementById('deleteConfirmModal')?.addEventListener('click', function (e) { if (e.target === this) this.classList.remove('active'); });
+
+// Json转Form弹窗
+document.getElementById('closeJsonFormModal')?.addEventListener('click', closeJsonFormModal);
+document.getElementById('cancelJsonFormBtn')?.addEventListener('click', closeJsonFormModal);
+document.getElementById('confirmJsonFormBtn')?.addEventListener('click', confirmJsonToForm);
+document.getElementById('jsonFormModal')?.addEventListener('click', function (e) { if (e.target === this) this.classList.remove('active'); });
+
+// 结构化示例预览弹窗
+document.getElementById('closeStructPreviewModal')?.addEventListener('click', closeStructPreviewModalFn);
+document.getElementById('closeStructPreviewBtn')?.addEventListener('click', closeStructPreviewModalFn);
+document.getElementById('structPreviewModal')?.addEventListener('click', function (e) { if (e.target === this) this.classList.remove('active'); });
+
+// 表名输入即时刷新结构化摘要
+document.getElementById('edStdTable')?.addEventListener('input', renderStructSummary);
+
+initFilterSupplier();
+renderApiTable();
+
+document.addEventListener('DOMContentLoaded', function () {
+    var params = new URLSearchParams(window.location.search);
+    var navParam = params.get('nav');
+    var savedNav = localStorage.getItem('_navMenu');
+    var activeNav = navParam || savedNav || 'external';
+    if (navMenus[activeNav]) {
+        showNavMenu(activeNav);
+    } else {
+        showNavMenu('external');
+    }
+});
+</script>
+</body>
+</html>
