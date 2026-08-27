@@ -1578,6 +1578,7 @@ function openEdit(mode, id) {
     respData = (item && item.responseParams ? JSON.parse(JSON.stringify(item.responseParams)) : [])
         .map(r => ({ ...r, level: r.level || 0, expanded: true, parseAttr: r.parseAttr || r.stdTable || '', parseResult: r.parseResult || r.stdField || '', dbType: r.dbType || '' }));
     respData.forEach((r, i) => normalizeParseAttr(r, respData, i));
+    applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」（加载旧数据归一化）
     attachFileName = '';
     document.getElementById('respExample').value = item && item.responseExample ? item.responseExample : '';
     document.getElementById('fileName').textContent = '';
@@ -1642,7 +1643,7 @@ function structParse() {
     // 自动填充：未选择解析属性的行，或仍为默认「不解析」（无解析类型）的行，按结构推断补全
     // array 元素行（透明节点）恒为「不解析」，不参与解析，也不自动填充
     respData.forEach((r, i) => {
-        if (isArrElementRow(respData, i)) { r.parseAttr = '不解析'; r.parseResult = ''; r.dbType = ''; return; }
+        if (isArrElementRow(respData, i)) { r.parseAttr = ''; r.parseResult = ''; r.dbType = ''; return; }
         const untouched = !r.parseAttr || (r.parseAttr === '不解析' && !r.dbType);
         if (untouched) {
             r.parseAttr = r.children ? '表' : '字段';
@@ -1658,6 +1659,7 @@ function structParse() {
             r.dbType = r.dbType || (r.parseAttr === 'JSON串' ? 'CLOB' : dbTypeOf(r.type));
         }
     });
+    applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」
     renderRespRows();
     const groups = getStructGroups();
     if (!groups.length) { alert('请先维护返回参数的「解析属性 / 解析结果」'); return; }
@@ -1687,7 +1689,8 @@ function subtreeJson(r, i) {
 
 /* 按层级把已解析行归组为「主表 + 若干子表」
  * 解析属性=表     -> 解析结果为该子表的表名，子级字段归入该表（创建表和字段）
- *                  该行还会生成关联字段「参数名_id」：父表与子表各展示一列、值相同，实现上下层级互相关联
+ *                  该行在子表内生成关联字段「参数名_id」= 上级表主键id值（a.id = data.data_id）；
+ *                  上级表不新增该字段，同层级表互不新增字段
  * 解析属性=字段   -> 数组/JSON对象整体作为JSON对象存储在字段中（子树被吸收）
  * 解析属性=JSON串 -> 该字段与字段值整体作为JSON串存储（子树被吸收）
  * 解析属性=不解析 -> 跳过
@@ -1698,11 +1701,13 @@ function getStructGroups() {
     const gmap = {};
     const stack = []; // 活跃的表祖先 { level, name }
     const getGroup = (name) => {
-        if (!gmap[name]) { gmap[name] = { name, displayName: '', rows: [] }; groups.push(gmap[name]); }
+        // 每张表按创建顺序分配序号（主键id值：主表=1、子表=2…），子表关联字段引用上级表序号
+        if (!gmap[name]) { gmap[name] = { name, displayName: '', rows: [], tableId: ++tableSeq }; groups.push(gmap[name]); }
         return gmap[name];
     };
     let skipAbove = -1; // 已被「字段 / JSON串」父行整体吸收的子树深度
-    let linkSeq = 0;    // 关联字段值：按行序稳定分配（父表与子表展示同一值）
+    let tableSeq = 0;   // 表序号：主键id值（主表=1），子表关联字段值=上级表主键id值
+    getGroup('主表');   // 主表恒为序号1：先预建主表，保证任意行序下 a.id=1、子表关联字段值稳定
     respData.forEach((r, i) => {
         const lvl = r.level || 0;
         if (skipAbove >= 0 && lvl > skipAbove) return;
@@ -1717,12 +1722,14 @@ function getStructGroups() {
             const tname = (custom && custom !== upperSnake(r.name)) ? custom : `${mainBase}_${r.name}`;
             const parentName = stack.length ? stack[stack.length - 1].name : '主表';
             stack.push({ level: lvl, name: tname });
-            getGroup(tname);
-            // 关联字段「参数名_id」：父表与子表各展示一列、值相同（如 a.data_id = data.data_id）
-            const linkField = `${r.name}_id`;
-            const linkVal = ++linkSeq;
-            getGroup(parentName).rows.push({ field: linkField, desc: `关联${tname}`, dbType: 'INT', value: linkVal });
-            getGroup(tname).rows.push({ field: linkField, desc: `关联${parentName === '主表' ? (formTable || '主表') : parentName}`, dbType: 'INT', value: linkVal });
+            const tg = getGroup(tname);
+            // 关联逻辑：上级表主键 id 关联下级表字段 id —— 仅子表新增「参数名_id」= 上级表主键id值
+            // （上级表不新增字段、同层级表互不新增字段），如 a.id = data.data_id
+            const parentGroup = getGroup(parentName);
+            const parentDisp = parentName === '主表' ? (formTable || '主表') : parentName;
+            // 关联字段赋值：取「父级表名」+ "_id" 作为当前表的关联字段，值 = 父表主键 id
+            // （如父表 a + 参数 data(表) → a.id = data.a_id；上级表不新增字段、同层级表互不新增字段）
+            tg.rows.push({ field: `${parentDisp}_id`, desc: `关联${parentDisp}主键id`, dbType: 'INT', value: parentGroup.tableId });
         } else if (attr === '字段' || attr === 'JSON串') {
             const field = (r.parseResult || '').trim();
             if (!field) return;
@@ -1742,8 +1749,8 @@ function getStructGroups() {
     if (mi > 0) groups.unshift(groups.splice(mi, 1)[0]);
     groups.forEach(g => {
         g.displayName = g.name === '主表' ? (formTable || '主表') : g.name;
-        // 每张表默认增加主键 id 字段（首列；BIGINT 自增主键，示例值 1）
-        g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: '1', desc: '主键' });
+        // 每张表默认增加主键 id 字段（首列；BIGINT；值=表序号，子表「参数名_id」关联引用上级表该值）
+        g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键' });
     });
     // 主表追加登录账户审计字段（租户/公司/部门/系统，值取自当前登录账户信息）
     const mainGroup = groups.find(g => g.name === '主表');
@@ -1881,7 +1888,7 @@ function renderRespRows() {
                 <td><select class="cell-select" ${ro ? 'disabled' : ''} data-f="type">${TYPE_OPTIONS.map(t => `<option value="${t}" ${r.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
                 <td><select class="cell-select" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseAttr">${parseAttrOptions(r, i, rows)}</select></td>
                 <td><input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果"></td>
-                <td><input class="cell-input" value="${escapeHtml(r.parseAttr === '表' ? '' : (r.dbType || dbTypeOf(r.type)))}" ${ro || isArrElementRow(rows, i) || r.parseAttr === '表' ? 'disabled' : ''} data-f="dbType" placeholder="字段类型"></td>
+                <td><input class="cell-input" value="${escapeHtml(r.parseAttr === '表' || isArrElementRow(rows, i) ? '' : (r.dbType || dbTypeOf(r.type)))}" ${ro || isArrElementRow(rows, i) || r.parseAttr === '表' ? 'disabled' : ''} data-f="dbType" placeholder="解析类型"></td>
                 <td><input class="cell-input" value="${escapeHtml(r.desc)}" ${ro ? 'disabled' : ''} data-f="desc" placeholder="说明"></td>
                 <td>${rowOpsHtml(i, rows, 'resp', ro)}</td>
             </tr>`;
@@ -1908,9 +1915,9 @@ function toggleReqRow(i) {
 /* ---------- 层级节点操作（请求/返回参数共用） ---------- */
 function newReqRow(level) { return { name: '', example: '', type: 'string', required: '否', desc: '', level, children: false, expanded: true }; }
 function newRespRow(level) { return { name: '', example: '', type: 'string', parseAttr: '不解析', parseResult: '', dbType: '', desc: '', level, children: false, expanded: true }; }
-/* array 元素层行（array 下新增的 object 元素，字段放入该 object 内；名称锁定、不参与解析） */
+/* array 元素层行（array 下新增的 object 元素，字段放入该 object 内；名称锁定、解析属性/解析结果/解析类型清空禁用） */
 function newReqElemRow(level) { return { name: '[0]', example: '', type: 'object', required: '否', desc: '', level, children: false, expanded: true }; }
-function newRespElemRow(level) { return { name: '[0]', example: '', type: 'object', parseAttr: '不解析', parseResult: '', dbType: '', desc: '', level, children: false, expanded: true }; }
+function newRespElemRow(level) { return { name: '[0]', example: '', type: 'object', parseAttr: '', parseResult: '', dbType: '', desc: '', level, children: false, expanded: true }; }
 /* 行 i 是否有子级 */
 function hasChild(rows, i) {
     const lvl = rows[i].level || 0;
@@ -1980,6 +1987,14 @@ function moveParamRow(section, i, dir) {
     rows.splice(insertAt, 0, ...block);
     if (section === 'req') renderReqRows(); else renderRespRows();
 }
+/* 行 i 的父行索引（最近的层级更浅的祖先），无则 -1 */
+function parentIdx(rows, i) {
+    const lvl = rows[i].level || 0;
+    for (let j = i - 1; j >= 0; j--) {
+        if ((rows[j].level || 0) < lvl) return j;
+    }
+    return -1;
+}
 /* 新增相邻节点：在当前行（含子树）之后插入同层新行 */
 function addSiblingNode(section, i) {
     if (editMode === 'detail') return;
@@ -1987,7 +2002,13 @@ function addSiblingNode(section, i) {
     const lvl = rows[i].level || 0;
     let end = i + 1;
     while (end < rows.length && (rows[end].level || 0) > lvl) end++;
-    rows.splice(end, 0, section === 'req' ? newReqRow(lvl) : newRespRow(lvl));
+    const row = section === 'req' ? newReqRow(lvl) : newRespRow(lvl);
+    // 「表」容器下的参数解析属性统一为「字段」：新增相邻节点自动带出
+    if (section === 'resp') {
+        const pi = parentIdx(rows, i);
+        if (pi >= 0 && rows[pi].parseAttr === '表') row.parseAttr = '字段';
+    }
+    rows.splice(end, 0, row);
     if (section === 'req') renderReqRows(); else renderRespRows();
 }
 /* 新增子节点：仅 array/object 行；array 下只能有一个节点
@@ -2003,7 +2024,10 @@ function addChildNode(section, i) {
     const lv = (r.level || 0) + 1;
     let row;
     if (r.type === 'array') row = section === 'req' ? newReqElemRow(lv) : newRespElemRow(lv);
-    else row = section === 'req' ? newReqRow(lv) : newRespRow(lv);
+    else {
+        row = section === 'req' ? newReqRow(lv) : newRespRow(lv);
+        if (r.parseAttr === '表') row.parseAttr = '字段'; // 容器为「表」：其下参数解析属性自动为「字段」
+    }
     rows.splice(i + 1, 0, row);
     if (section === 'req') renderReqRows(); else renderRespRows();
 }
@@ -2012,10 +2036,10 @@ function addChildNode(section, i) {
  * - array/object 行：可选「表」「字段」「不解析」，「JSON串」禁用
  * - 非 array/object 行（string/number/boolean）：仅可选「字段」「不解析」，「表」「JSON串」禁用
  * - 「JSON串」不可手动选择，但容器行选择「字段」时级联带出，下拉展示为选中禁用态
- * - array 元素行（透明节点）：仅「不解析」并整列禁用
+ * - array 元素行（透明节点）：解析属性/解析结果/解析类型清空置灰禁用
  * 非法当前值仅显示回退，不改数据 */
 function parseAttrOptions(r, i, rows) {
-    if (isArrElementRow(rows, i)) return '<option value="不解析" selected disabled>不解析</option>';
+    if (isArrElementRow(rows, i)) return '<option value="" selected disabled></option>';
     const canTable = r.type === 'array' || r.type === 'object';
     const invalid = (a) => a === '表' && !canTable;
     const cur = invalid(r.parseAttr) ? '字段' : (r.parseAttr || '不解析');
@@ -2024,23 +2048,57 @@ function parseAttrOptions(r, i, rows) {
         return `<option value="${t}" ${cur === t ? 'selected' : ''} ${dis ? 'disabled' : ''}>${t}</option>`;
     }).join('');
 }
-/* 解析属性合法性校正（类型变更/加载旧数据时归一化数据）；array 元素行恒为「不解析」；
+/* 解析属性合法性校正（类型变更/加载旧数据时归一化数据）；array 元素行恒为清空禁用态；
  * 「JSON串」为容器「字段」级联带出的内部态，不做归一化 */
 function normalizeParseAttr(r, rows, i) {
-    if (isArrElementRow(rows, i)) { r.parseAttr = '不解析'; r.parseResult = ''; r.dbType = ''; return; }
+    if (isArrElementRow(rows, i)) { r.parseAttr = ''; r.parseResult = ''; r.dbType = ''; return; }
     const canTable = r.type === 'array' || r.type === 'object';
     if (r.parseAttr === '表' && !canTable) r.parseAttr = '字段';
     if (r.parseAttr === '表') r.dbType = ''; // 解析属性=表：解析类型清空
 }
-/* 选择「不解析」：该字段与其下所有层级全部置为不解析（结构保留，层级不提升） */
+/* 选择「不解析」：该字段与其下所有层级全部置为不解析（结构保留，层级不提升）；array 元素行保持清空禁用态 */
 function cascadeSkipParse(i) {
     const base = respData[i].level || 0;
     let end = i + 1;
     while (end < respData.length && (respData[end].level || 0) > base) end++;
     for (let j = i + 1; j < end; j++) {
-        respData[j].parseAttr = '不解析';
-        respData[j].parseResult = '';
+        if (isArrElementRow(respData, j)) {
+            respData[j].parseAttr = '';
+            respData[j].parseResult = '';
+            respData[j].dbType = '';
+        } else {
+            respData[j].parseAttr = '不解析';
+            respData[j].parseResult = '';
+        }
     }
+}
+
+/* 容器行选择「表」：其下叶子参数解析属性自动变为「字段」（成为该表的数据列）；
+ * 嵌套 array/object 容器保持默认「表」（各自建表、按层级链式关联，同 getStructGroups 栈式归组）；
+ * array 元素行保持清空禁用态 */
+function cascadeTableAttr(i) {
+    const base = respData[i].level || 0;
+    let end = i + 1;
+    while (end < respData.length && (respData[end].level || 0) > base) end++;
+    for (let j = i + 1; j < end; j++) {
+        if (isArrElementRow(respData, j)) {
+            respData[j].parseAttr = '';
+            respData[j].parseResult = '';
+            respData[j].dbType = '';
+        } else if (respData[j].type === 'array' || respData[j].type === 'object') {
+            // 嵌套容器：默认「表」，解析类型清空置灰（类型交由结构化归组决定）
+            respData[j].parseAttr = '表';
+            respData[j].dbType = '';
+        } else {
+            respData[j].parseAttr = '字段';
+        }
+    }
+}
+/* 归一化：所有「表」容器行对其子树执行「→字段」级联（选择时刻/结构化解析/Json转Form/加载回填多入口统一） */
+function applyTableCascade() {
+    respData.forEach((r, i) => {
+        if (r.children && (r.type === 'array' || r.type === 'object') && r.parseAttr === '表') cascadeTableAttr(i);
+    });
 }
 
 /* 容器行选择「字段」：该容器下的所有字段解析属性自动变为「JSON串」(CLOB)；array 元素行保持透明（不解析） */
@@ -2123,8 +2181,10 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
             return;
         }
         if (cell.value === '表') {
-            // 选择「表」：解析类型清空并置灰禁用（表的类型由结构化归组生成，不在此列填写）
+            // 选择「表」：解析类型清空并置灰禁用（表的类型由结构化归组生成，不在此列填写）；
+            // 该字段下的所有参数解析属性自动变为「字段」
             row.dbType = '';
+            if (row.children) cascadeTableAttr(idx);
             renderRespRows();
             return;
         }
@@ -2141,6 +2201,9 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
             row.expanded = true;
         }
         row.dbType = (cell.value === 'array' || cell.value === 'object') ? '' : dbTypeOf(cell.value); // 容器类型不预写dbType，交由结构化解析决定（表/字段）
+        // 类型为 array/object 时解析属性默认「表」：包含嵌套容器（array/object 的子节点为 array/object 同样默认「表」，各自建表并链式关联）；
+        // 禁用的 array 元素行（[0]）不考虑
+        if ((cell.value === 'array' || cell.value === 'object') && !isArrElementRow(respData, idx)) row.parseAttr = '表';
         normalizeParseAttr(row, respData, idx);
         renderRespRows();
         return;
@@ -2247,13 +2310,13 @@ function parseJsonToRespData(parsed) {
         });
         if (childKeys.length) {
             if (arrHasObjElem) {
-                // array 元素为对象：array 下方新增 object 元素行（透明：不解析、不产生key），字段放入 object 内
+                // array 元素为对象：array 下方新增 object 元素行（透明：解析列清空禁用、不产生key），字段放入 object 内
                 rows.push({
                     name: '[0]',
                     level: level + 1,
                     type: 'object',
                     example: '',
-                    parseAttr: '不解析',
+                    parseAttr: '',
                     parseResult: '',
                     dbType: '',
                     desc: '',
@@ -2284,6 +2347,7 @@ function confirmJsonToForm() {
     try { parsed = JSON.parse(text); } catch (e) { alert('JSON格式不正确，请检查后重试'); return; }
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) { alert('请输入JSON对象，如 {"code":"200","msg":"查询成功"}'); return; }
     respData = parseJsonToRespData(parsed);
+    applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」
     renderRespRows();
     closeJsonFormModal();
 }
