@@ -326,6 +326,7 @@
                                 <th>响应时间(ms)</th>
                                 <th>调用时间</th>
                                 <th>调用状态</th>
+                                <th>结构化状态</th>
                                 <th style="width:80px;">操作</th>
                             </tr>
                         </thead>
@@ -380,21 +381,21 @@
 
     // ========== 供应商数据 ==========
     var supplierData = [
-        { id: 1, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 125,  callTime: '2024-06-01 10:23:15', status: '成功' },
-        { id: 2, supplier: '天眼查',   url: '/api/tianyacha/judicial/risk',     respTime: 156,  callTime: '2024-06-01 10:22:30', status: '成功' },
-        { id: 3, supplier: '企查查',   url: '/api/qichacha/enterprise/info',    respTime: 132,  callTime: '2024-06-01 10:21:45', status: '成功' },
-        { id: 4, supplier: '企查查',   url: '/api/qichacha/enterprise/graph',   respTime: 1250, callTime: '2024-06-01 10:20:12', status: '失败' },
-        { id: 5, supplier: '中诚信',   url: '/api/zhongchengxin/credit/score',  respTime: 98,   callTime: '2024-06-01 10:19:33', status: '成功' },
-        { id: 6, supplier: '天眼查',   url: '/api/tianyacha/business/status',   respTime: 145,  callTime: '2024-06-01 10:18:20', status: '成功' },
-        { id: 7, supplier: '前海征信', url: '/api/qianhai/anti-fraud/score',    respTime: 3200, callTime: '2024-06-01 10:17:05', status: '超时' },
-        { id: 8, supplier: '百行征信', url: '/api/baihang/personal/credit/report', respTime: 230, callTime: '2024-06-01 10:15:50', status: '成功' },
-        { id: 9, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 118,  callTime: '2024-06-01 09:55:15', status: '成功' },
-        { id: 10, supplier: '企查查',  url: '/api/qichacha/judicial/risk',      respTime: 168,  callTime: '2024-06-01 09:50:30', status: '成功' },
-        { id: 11, supplier: '前海征信',url: '/api/qianhai/anti-fraud/score',    respTime: 890,  callTime: '2024-06-01 09:45:10', status: '失败' },
-        { id: 12, supplier: '企查查',  url: '/api/qichacha/enterprise/graph',   respTime: 320,  callTime: '2024-06-01 09:40:22', status: '成功' },
-        { id: 13, supplier: '天眼查',  url: '/api/tianyacha/business/status',   respTime: 142,  callTime: '2024-06-01 09:35:18', status: '成功' },
-        { id: 14, supplier: '中诚信',  url: '/api/zhongchengxin/credit/score',  respTime: 105,  callTime: '2024-06-01 09:30:05', status: '成功' },
-        { id: 15, supplier: '天眼查',  url: '/api/tianyacha/enterprise/info',   respTime: 128,  callTime: '2024-06-01 09:25:50', status: '成功' }
+        { id: 1, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 125,  callTime: '2024-06-01 10:23:15', status: '成功', structStatus: '成功' },
+        { id: 2, supplier: '天眼查',   url: '/api/tianyacha/judicial/risk',     respTime: 156,  callTime: '2024-06-01 10:22:30', status: '成功', structStatus: '成功' },
+        { id: 3, supplier: '企查查',   url: '/api/qichacha/enterprise/info',    respTime: 132,  callTime: '2024-06-01 10:21:45', status: '成功', structStatus: '成功' },
+        { id: 4, supplier: '企查查',   url: '/api/qichacha/enterprise/graph',   respTime: 1250, callTime: '2024-06-01 10:20:12', status: '失败', structStatus: '失败' },
+        { id: 5, supplier: '中诚信',   url: '/api/zhongchengxin/credit/score',  respTime: 98,   callTime: '2024-06-01 10:19:33', status: '成功', structStatus: '成功' },
+        { id: 6, supplier: '天眼查',   url: '/api/tianyacha/business/status',   respTime: 145,  callTime: '2024-06-01 10:18:20', status: '成功', structStatus: '-' },
+        { id: 7, supplier: '前海征信', url: '/api/qianhai/anti-fraud/score',    respTime: 3200, callTime: '2024-06-01 10:17:05', status: '超时', structStatus: '成功' },
+        { id: 8, supplier: '百行征信', url: '/api/baihang/personal/credit/report', respTime: 230, callTime: '2024-06-01 10:15:50', status: '成功', structStatus: '成功' },
+        { id: 9, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 118,  callTime: '2024-06-01 09:55:15', status: '成功', structStatus: '成功' },
+        { id: 10, supplier: '企查查',  url: '/api/qichacha/judicial/risk',      respTime: 168,  callTime: '2024-06-01 09:50:30', status: '成功', structStatus: '成功' },
+        { id: 11, supplier: '前海征信',url: '/api/qianhai/anti-fraud/score',    respTime: 890,  callTime: '2024-06-01 09:45:10', status: '失败', structStatus: '失败' },
+        { id: 12, supplier: '企查查',  url: '/api/qichacha/enterprise/graph',   respTime: 320,  callTime: '2024-06-01 09:40:22', status: '成功', structStatus: '-' },
+        { id: 13, supplier: '天眼查',  url: '/api/tianyacha/business/status',   respTime: 142,  callTime: '2024-06-01 09:35:18', status: '成功', structStatus: '成功' },
+        { id: 14, supplier: '中诚信',  url: '/api/zhongchengxin/credit/score',  respTime: 105,  callTime: '2024-06-01 09:30:05', status: '成功', structStatus: '成功' },
+        { id: 15, supplier: '天眼查',  url: '/api/tianyacha/enterprise/info',   respTime: 128,  callTime: '2024-06-01 09:25:50', status: '成功', structStatus: '成功' }
     ];
 
     // ========== 当前Tab & 分页状态 ==========
@@ -513,7 +514,7 @@
 
         var tbody = document.getElementById('supplierTableBody');
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
         } else {
             var html = '';
             for (var i = 0; i < pageData.length; i++) {
@@ -527,12 +528,20 @@
                     + '<td' + respClass + '>' + r.respTime.toLocaleString() + '</td>'
                     + '<td style="font-size:13px;">' + r.callTime + '</td>'
                     + '<td>' + getStatusBadge(r.status) + '</td>'
+                    + '<td>' + getStructStatusBadge(r.structStatus) + '</td>'
                     + '<td><div class="ops-cell"><button class="action-link" onclick="openSupplierDetail(' + r.id + ')">详情</button></div></td>'
                     + '</tr>';
             }
             tbody.innerHTML = html;
         }
         renderPagination(total, totalPages);
+    }
+
+    // ========== 结构化状态徽标：成功/失败/- ==========
+    function getStructStatusBadge(v) {
+        if (v === '成功') return '<span class="status-badge success">成功</span>';
+        if (v === '失败') return '<span class="status-badge fail">失败</span>';
+        return '<span style="color:#a5abb2;">-</span>';
     }
 
     // ========== 渲染分页栏 ==========
@@ -675,7 +684,8 @@
             + '<div class="detail-item"><div class="detail-label">接口URL</div><div class="detail-value" style="font-size:13px;">' + r.url + '</div></div>'
             + '<div class="detail-item"><div class="detail-label">响应时间</div><div class="detail-value">' + r.respTime + 'ms</div></div>'
             + '<div class="detail-item"><div class="detail-label">调用时间</div><div class="detail-value">' + r.callTime + '</div></div>'
-            + '<div class="detail-item"><div class="detail-label">调用状态</div><div class="detail-value">' + getStatusBadge(r.status) + '</div></div>';
+            + '<div class="detail-item"><div class="detail-label">调用状态</div><div class="detail-value">' + getStatusBadge(r.status) + '</div></div>'
+            + '<div class="detail-item"><div class="detail-label">结构化状态</div><div class="detail-value">' + getStructStatusBadge(r.structStatus) + '</div></div>';
         document.getElementById('detailModal').classList.add('active');
     }
 

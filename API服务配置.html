@@ -706,6 +706,21 @@
         .switch input:checked + .switch-slider { background: #f89d34; }
         .switch input:checked + .switch-slider::before { transform: translateX(22px); }
         .switch input:disabled + .switch-slider { opacity: 0.5; cursor: not-allowed; }
+        .struct-db-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 0 0 300px;
+        }
+        .struct-db-field .sub-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            white-space: nowrap;
+        }
+        .struct-db-field .sub-label b { color: #f5222d; font-weight: normal; margin-left: 2px; }
+        .struct-db-field select { width: 200px; }
         .struct-table-field {
             display: flex;
             align-items: center;
@@ -1228,6 +1243,18 @@
                                     <input type="checkbox" id="edStructured" onchange="toggleStructured()">
                                     <span class="switch-slider"></span>
                                 </label>
+                                <div class="struct-db-field">
+                                    <span class="sub-label">数据库 <b>*</b></span>
+                                    <select id="edStdDb" class="fc" disabled>
+                                        <option value="">请选择数据库</option>
+                                        <option value="MySQL">MySQL</option>
+                                        <option value="Oracle">Oracle</option>
+                                        <option value="PostgreSQL">PostgreSQL</option>
+                                        <option value="SQL Server">SQL Server</option>
+                                        <option value="达梦">达梦</option>
+                                        <option value="GaussDB">GaussDB</option>
+                                    </select>
+                                </div>
                                 <div class="struct-table-field">
                                     <span class="sub-label">表名 <b>*</b></span>
                                     <input type="text" id="edStdTable" class="fc" maxlength="64" placeholder="请输入表名" disabled>
@@ -1587,6 +1614,8 @@ function openEdit(mode, id) {
     // 是否结构化 + 表名
     const structured = !!(item && item.structured);
     document.getElementById('edStructured').checked = structured;
+    document.getElementById('edStdDb').value = item && item.stdDb ? item.stdDb : '';
+    document.getElementById('edStdDb').disabled = !structured;
     document.getElementById('edStdTable').value = item && item.stdTable ? item.stdTable : '';
     document.getElementById('edStdTable').disabled = !structured;
 
@@ -1604,6 +1633,8 @@ function setEditReadonly(readonly) {
     document.getElementById('genPreviewBtn').disabled = readonly;
     document.getElementById('respExample').disabled = readonly; // 仅详情(只读)禁用，可自行编辑JSON后转Form
     document.getElementById('edStructured').disabled = readonly; // 详情只读：开关不可切换
+    // 数据库：详情只读强制禁用；可编辑时跟随开关状态（关闭时不可输入）
+    document.getElementById('edStdDb').disabled = readonly ? true : !document.getElementById('edStructured').checked;
     // 表名：详情只读强制禁用；可编辑时跟随开关状态（关闭时不可输入）
     document.getElementById('edStdTable').disabled = readonly ? true : !document.getElementById('edStructured').checked;
     const box = document.getElementById('uploadBox');
@@ -1617,12 +1648,14 @@ function setEditReadonly(readonly) {
         : '<button class="btn-default" id="cancelEditBtn" onclick="cancelEdit()">取消</button><button class="btn-primary" id="saveEditBtn" onclick="saveEdit()">保存</button>';
 }
 
-/* 是否结构化开关：开启→表名可输入（必填）；关闭→表名清空且不可输入 */
+/* 是否结构化开关：开启→数据库/表名可输入（必填）；关闭→数据库/表名清空且不可输入 */
 function toggleStructured() {
     if (editMode === 'detail') return;
     const on = document.getElementById('edStructured').checked;
+    const dbSel = document.getElementById('edStdDb');
     const tableInput = document.getElementById('edStdTable');
-    if (!on) tableInput.value = '';
+    if (!on) { dbSel.value = ''; tableInput.value = ''; }
+    dbSel.disabled = !on;
     tableInput.disabled = !on;
     renderStructSummary();
 }
@@ -2368,6 +2401,7 @@ function saveEdit() {
     const status = document.getElementById('edStatus').value;
     const desc = document.getElementById('edDesc').value.trim();
     const structured = document.getElementById('edStructured').checked;
+    const stdDb = document.getElementById('edStdDb').value;
     const stdTable = document.getElementById('edStdTable').value.trim();
     if (!apiName) { alert('请输入API名称'); return; }
     if (!supplier) { alert('请选择供应商'); return; }
@@ -2376,11 +2410,12 @@ function saveEdit() {
     if (!method) { alert('请选择请求方式'); return; }
     if (!status) { alert('请选择状态'); return; }
     if (!desc) { alert('请输入API描述'); return; }
+    if (structured && !stdDb) { alert('开启结构化后数据库必填'); return; }
     if (structured && !stdTable) { alert('开启结构化后表名必填'); return; }
 
     const now = nowStr();
     const saved = {
-        apiName, supplier, url, method, status, desc, structured, stdTable,
+        apiName, supplier, url, method, status, desc, structured, stdDb, stdTable,
         requestParams: JSON.parse(JSON.stringify(reqData)),
         responseParams: JSON.parse(JSON.stringify(respData)).map(r => ({ name: r.name, example: r.example, type: r.type, desc: r.desc, level: r.level, children: !!r.children, parseAttr: r.parseAttr || '', parseResult: r.parseResult || '', dbType: r.dbType || '' })),
         responseExample: document.getElementById('respExample').value,

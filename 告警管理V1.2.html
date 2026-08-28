@@ -1081,7 +1081,7 @@ function updateRuleFormByType() {
     const type = document.getElementById('ruleType').value;
     let ruleNames = [];
     if (type === '合同账单提醒') ruleNames = ["合同到期提醒"];
-    else if (type === 'API用量预警') ruleNames = ["额度用量预警", "用量预测预警"];
+    else if (type === 'API用量预警') ruleNames = ["额度用量预警", "用量预测预警", "超额用量预警"];
     else if (type === '服务使用预警') ruleNames = ["服务用量预警"];
     else if (type === '调用异常告警') ruleNames = ["服务失败异常", "响应时间异常"];
     else if (type === '系统性能监控') ruleNames = ["系统性能异常"];
@@ -1100,7 +1100,7 @@ function renderConditions(ruleName) {
     const container = document.getElementById('dynamicConditions');
     if (!ruleName || ruleName === '') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">触发条件</div><div style="color:#999;">请先选择规则名称</div></div>`;
-    } else if (ruleName === '额度用量预警' || ruleName === '服务用量预警') {
+    } else if (ruleName === '额度用量预警' || ruleName === '服务用量预警' || ruleName === '超额用量预警') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">API已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderQuotaConditions();
     } else if (ruleName === '用量预测预警') {
@@ -1185,7 +1185,7 @@ function updateSystemPerfVal(idx, val) { systemPerfConditions[idx].value = parse
 function updateSystemPerfDurMin(idx, val) { systemPerfConditions[idx].durMin = parseInt(val); }
 
 function getConditionsText(ruleName) {
-    if (ruleName === '额度用量预警' || ruleName === '服务用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
+    if (ruleName === '额度用量预警' || ruleName === '服务用量预警' || ruleName === '超额用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
     if (ruleName === '用量预测预警') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
     if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
     if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}, 持续 >= ${c.durMin}分钟`);
@@ -1306,7 +1306,7 @@ function editRule(id) {
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = false;
-            if(item.name==='额度用量预警' || item.name==='服务用量预警'){
+            if(item.name==='额度用量预警' || item.name==='服务用量预警' || item.name==='超额用量预警'){
                 quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
@@ -1397,7 +1397,7 @@ function viewRule(id) {
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = true;
-            if(item.name==='额度用量预警' || item.name==='服务用量预警'){
+            if(item.name==='额度用量预警' || item.name==='服务用量预警' || item.name==='超额用量预警'){
                 quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
