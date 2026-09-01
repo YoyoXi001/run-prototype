@@ -202,7 +202,7 @@
                     <div class="action-bar"><button class="btn-upload" id="addTaskBtn">新增</button></div>
                     <div class="table-container">
                         <table class="data-table">
-                            <thead><th>编号</th><th>任务名称</th><th>任务描述</th><th>Bean名称</th><th>参数</th><th>调度规则</th><th>最近执行</th><th>状态</th><th>操作</th></thead>
+                            <thead><th>编号</th><th>任务名称</th><th>任务类型</th><th>任务描述</th><th>Bean名称</th><th>参数</th><th>调度规则</th><th>最近执行</th><th>状态</th><th>操作</th></thead>
                             <tbody id="taskTableBody"></tbody>
                         </table>
                     </div>
@@ -218,10 +218,11 @@
             <div class="modal-header"><span id="taskModalTitle">新增任务</span><i class="el-icon-close" id="closeTaskModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
                 <div class="form-row"><label>任务名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="taskName" placeholder="请输入任务名称"></div></div>
+                <div class="form-row"><label>任务类型 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="taskTypeSelect" onchange="onTaskTypeChange()"><option value="定时任务">定时任务</option><option value="手动任务">手动任务</option></select></div></div>
                 <div class="form-row"><label>任务描述</label><div class="form-content"><input type="text" id="taskDesc" placeholder="请输入任务描述"></div></div>
                 <div class="form-row"><label>Bean名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="beanNameSelect" onchange="onBeanChange()"><option value="">请选择调度类</option></select></div></div>
                 <div class="form-row"><label>参数</label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{"key": "value"}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
-                <div class="form-row"><label>调度规则 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
+                <div class="form-row" id="cronRow"><label>调度规则 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
                 <input type="hidden" id="cronExpr">
                 <div class="form-row"><label>状态</label><div class="form-content"><select id="taskStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div></div>
             </div>
@@ -247,6 +248,7 @@
             <div class="modal-header"><span>任务详情</span><i class="el-icon-close" id="closeTaskViewModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
                 <div class="form-row"><label>任务名称：</label><div class="form-content"><span id="viewTaskName" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>任务类型：</label><div class="form-content"><span id="viewTaskType" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>任务描述：</label><div class="form-content"><span id="viewTaskDesc" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>Bean名称：</label><div class="form-content"><span id="viewBeanName" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>参数：</label><div class="form-content"><span id="viewTaskParams" class="readonly-value"></span></div></div>
@@ -316,10 +318,10 @@ let beanClassList = [
 
 // ======================== 任务数据 ========================
 let taskList = [
-    { id: 1, taskName: "工商变更", beanName: "businessChangeTask", beanNameCn: "工商变更任务", beanClassName: "com.deepseek.task.BusinessChangeTask", description: "工商信息变更消息推送", params: JSON.stringify({ tenantId: "T001", serviceName: "" }, null, 2), cron: "0 0 9 1 * ?", cronDesc: "每月1号09:00", lastExecute: "2026/4/1", status: "启用" },
-    { id: 2, taskName: "服务用量", beanName: "serviceUsageTask", beanNameCn: "服务用量预警任务", beanClassName: "com.deepseek.task.ServiceUsageTask", description: "服务用量预警提醒", params: JSON.stringify({ tenantId: "T001", threshold: 80 }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
-    { id: 3, taskName: "企业违法", beanName: "enterpriseViolationTask", beanNameCn: "企业违法记录任务", beanClassName: "com.deepseek.task.EnterpriseViolationTask", description: "企业严重违法记录推送", params: JSON.stringify({ tenantId: "T001", alertLevel: "high" }, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
-    { id: 4, taskName: "数据清理", beanName: "dataCleanTask", beanNameCn: "数据清理任务", beanClassName: "com.deepseek.task.DataCleanTask", description: "清理过期数据", params: JSON.stringify({ keepDays: 30 }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" }
+    { id: 1, taskName: "工商变更", taskType: "定时任务", beanName: "businessChangeTask", beanNameCn: "工商变更任务", beanClassName: "com.deepseek.task.BusinessChangeTask", description: "工商信息变更消息推送", params: JSON.stringify({ tenantId: "T001", serviceName: "" }, null, 2), cron: "0 0 9 1 * ?", cronDesc: "每月1号09:00", lastExecute: "2026/4/1", status: "启用" },
+    { id: 2, taskName: "服务用量", taskType: "定时任务", beanName: "serviceUsageTask", beanNameCn: "服务用量预警任务", beanClassName: "com.deepseek.task.ServiceUsageTask", description: "服务用量预警提醒", params: JSON.stringify({ tenantId: "T001", threshold: 80 }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
+    { id: 3, taskName: "企业违法", taskType: "定时任务", beanName: "enterpriseViolationTask", beanNameCn: "企业违法记录任务", beanClassName: "com.deepseek.task.EnterpriseViolationTask", description: "企业严重违法记录推送", params: JSON.stringify({ tenantId: "T001", alertLevel: "high" }, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
+    { id: 4, taskName: "数据清理", taskType: "定时任务", beanName: "dataCleanTask", beanNameCn: "数据清理任务", beanClassName: "com.deepseek.task.DataCleanTask", description: "清理过期数据", params: JSON.stringify({ keepDays: 30 }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" }
 ];
 
 let taskFiltered = [...taskList];
@@ -336,14 +338,15 @@ function renderTaskTable() {
     if (taskPage > total) taskPage = total;
     const pageData = taskFiltered.slice((taskPage-1)*pageSize, taskPage*pageSize);
     const tbody = document.getElementById('taskTableBody');
-    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateTaskPagination(total, taskFiltered.length); return; }
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateTaskPagination(total, taskFiltered.length); return; }
     tbody.innerHTML = pageData.map(i => `<tr>
         <td>${i.id}</td>
         <td>${escapeHtml(i.taskName)}</td>
+        <td>${escapeHtml(i.taskType || '-')}</td>
         <td>${escapeHtml(i.description || '-')}</td>
         <td style="font-size:12px;max-width:200px;word-break:break-all;">${escapeHtml(i.beanClassName || i.beanNameCn || i.beanName)}</td>
         <td style="font-size:12px;max-width:150px;word-break:break-all;">${formatParams(i.params)}</td>
-        <td><a class="action-link" onclick="openCronConfigForTask(${i.id})">${escapeHtml(i.cronDesc || '点击配置')}</a></td>
+        <td>${i.taskType === '定时任务' ? `<a class="action-link" onclick="openCronConfigForTask(${i.id})">${escapeHtml(i.cronDesc || '点击配置')}</a>` : '-'}</td>
         <td>${escapeHtml(i.lastExecute || '-')}</td>
         <td><span class="status-badge ${i.status==='启用'?'status-running':'status-not-enabled'}">${i.status}</span></td>
         <td><a class="action-link" onclick="viewTask(${i.id})">查看</a><a class="action-link" onclick="editTask(${i.id})">编辑</a><a class="action-link" onclick="runOnceTask(${i.id})">执行一次</a><a class="action-link" onclick="viewTaskLog(${i.id})">查看日志</a><a class="action-link danger" onclick="deleteTask(${i.id})">删除</a></td>
@@ -389,6 +392,14 @@ function getParamJson() {
     try { JSON.parse(paramTextarea.value); return paramTextarea.value; } catch(e) { showToast('参数格式不正确，请输入有效的JSON格式', 'error'); return null; }
 }
 
+// 任务类型切换：定时任务需配置调度规则，手动任务不需要
+function onTaskTypeChange() {
+    const taskType = document.getElementById('taskTypeSelect').value;
+    const cronRow = document.getElementById('cronRow');
+    if (!cronRow) return;
+    cronRow.style.display = (taskType === '定时任务') ? '' : 'none';
+}
+
 // 任务操作
 function editTask(id) {
     const item = taskList.find(i=>i.id===id);
@@ -396,6 +407,8 @@ function editTask(id) {
         currentTaskId=id;
         document.getElementById('taskModalTitle').innerText='编辑任务';
         document.getElementById('taskName').value=item.taskName;
+        document.getElementById('taskTypeSelect').value=item.taskType||'定时任务';
+        onTaskTypeChange();
         document.getElementById('taskDesc').value=item.description||'';
         document.getElementById('beanNameSelect').value=item.beanName;
         document.getElementById('taskParams').value=item.params||'';
@@ -437,6 +450,8 @@ function addTask() {
     document.getElementById('taskParams').value='';
     document.getElementById('cronDesc').value='';
     document.getElementById('cronExpr').value='';
+    document.getElementById('taskTypeSelect').value='定时任务';
+    onTaskTypeChange();
     document.getElementById('taskStatus').value='启用';
     document.getElementById('taskModal').classList.add('active');
 }
@@ -444,6 +459,7 @@ function viewTask(id) {
     const item = taskList.find(i=>i.id===id);
     if(item){
         document.getElementById('viewTaskName').textContent = item.taskName;
+        document.getElementById('viewTaskType').textContent = item.taskType || '-';
         document.getElementById('viewTaskDesc').textContent = item.description || '-';
         document.getElementById('viewBeanName').textContent = item.beanClassName || item.beanNameCn || item.beanName;
         document.getElementById('viewTaskParams').textContent = item.params || '-';
@@ -456,12 +472,15 @@ function viewTask(id) {
 function saveTask() {
     const name=document.getElementById('taskName').value.trim();
     const beanId=document.getElementById('beanNameSelect').value.trim();
-    const cron=document.getElementById('cronExpr').value.trim();
-    const cronDesc=document.getElementById('cronDesc').value.trim();
-    if(!name||!beanId||!cron){ showToast('请填写任务名称、选择Bean名称和配置调度规则', 'warning'); return; }
+    const taskType=document.getElementById('taskTypeSelect').value||'定时任务';
+    const isScheduled=taskType==='定时任务';
+    const cron=isScheduled?document.getElementById('cronExpr').value.trim():'';
+    const cronDesc=isScheduled?document.getElementById('cronDesc').value.trim():'';
+    if(!name||!beanId){ showToast('请填写任务名称和选择Bean名称', 'warning'); return; }
+    if(isScheduled&&!cron){ showToast('定时任务需要配置调度规则', 'warning'); return; }
     const params = getParamJson(); if(params === null) return;
     const bean=beanClassList.find(b=>b.id===beanId);
-    const data={ taskName:name, beanName:beanId, beanNameCn:bean?.name||beanId, beanClassName:bean?.className||beanId, description:document.getElementById('taskDesc').value, params:params, cron:cron, cronDesc:cronDesc, lastExecute:'', status:document.getElementById('taskStatus').value };
+    const data={ taskName:name, taskType:taskType, beanName:beanId, beanNameCn:bean?.name||beanId, beanClassName:bean?.className||beanId, description:document.getElementById('taskDesc').value, params:params, cron:cron, cronDesc:cronDesc, lastExecute:'', status:document.getElementById('taskStatus').value };
     if(currentTaskId){
         const idx = taskList.findIndex(i=>i.id===currentTaskId);
         if(idx!==-1) taskList[idx]={...taskList[idx], ...data, id:currentTaskId};

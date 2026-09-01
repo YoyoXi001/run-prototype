@@ -148,6 +148,31 @@
         .detail-item { }
         .detail-label { font-size: 12px; color: #909399; margin-bottom: 4px; }
         .detail-value { font-size: 14px; color: #303133; font-weight: 500; }
+
+        /* === Log Detail: URL + 请求参数/响应参数 Tabs === */
+        .dlg-id-row, .dlg-url-row { display: flex; align-items: center; gap: 10px; }
+        .dlg-id-row { margin-bottom: 8px; }
+        .dlg-url-row { margin-bottom: 14px; }
+        .dlg-label { font-size: 13px; color: #909399; font-weight: 500; white-space: nowrap; }
+        .dlg-label span { color: #303133; font-weight: 500; font-family: Consolas, Menlo, monospace; }
+        .dlg-url-value { flex: 1; font-size: 13px; color: #303133; background: #f5f7fa; border: 1px solid #ebeef5; border-radius: 4px; padding: 8px 10px; word-break: break-all; font-family: Consolas, Menlo, monospace; }
+        .dlg-copy-btn { background: #fff; border: 1px solid #dcdfe6; color: #666; border-radius: 4px; padding: 6px 14px; font-size: 13px; cursor: pointer; width: auto; height: auto; line-height: normal; }
+        .dlg-copy-btn:hover { border-color: #f89d34; color: #f89d34; }
+        .dlg-tabs { display: flex; gap: 0; margin-bottom: 12px; }
+        .dlg-tab { padding: 7px 18px; font-size: 14px; color: #666666; border: 1px solid #dcdfe6; background: #fff; cursor: pointer; user-select: none; }
+        .dlg-tab:first-child { border-radius: 4px 0 0 4px; }
+        .dlg-tab:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+        .dlg-tab.active { background: #f89d34; color: #fff; border-color: #f89d34; }
+        .dlg-content { border: 1px solid #ebeef5; border-radius: 4px; background: #fafbfc; max-height: 300px; overflow: auto; }
+        .dlg-params-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .dlg-params-table th { background: #f5f7fa; color: #777777; font-weight: 600; padding: 9px 12px; border: 1px solid #ebeef5; text-align: left; white-space: nowrap; }
+        .dlg-params-table td { padding: 9px 12px; border: 1px solid #ebeef5; color: #303133; word-break: break-all; }
+        .dlg-params-table tr:last-child td { border-bottom: none; }
+        .dlg-json { margin: 0; padding: 12px; font-family: Consolas, Menlo, monospace; font-size: 12.5px; line-height: 1.7; color: #303133; white-space: pre-wrap; word-break: break-all; }
+        .dlg-struct-msg { padding: 10px 12px; border-radius: 4px; font-size: 13px; line-height: 1.7; margin-bottom: 10px; word-break: break-all; }
+        .dlg-struct-msg.success { background: #f0f9eb; border: 1px solid #b7eb8f; color: #529b2e; }
+        .dlg-struct-msg.fail { background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
+        .dlg-struct-empty { padding: 24px 0; text-align: center; color: #999; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -255,6 +280,10 @@
                             </select>
                         </div>
                         <div class="filter-item">
+                            <label>日志ID</label>
+                            <input id="filterSupplierLogId" placeholder="请输入日志ID精准查询" style="width:220px;">
+                        </div>
+                        <div class="filter-item">
                             <label>接口URL</label>
                             <input id="filterSupplierUrl" placeholder="请输入接口URL" style="width:260px;">
                         </div>
@@ -321,6 +350,7 @@
                         <thead>
                             <tr>
                                 <th>编号</th>
+                                <th>日志ID</th>
                                 <th>供应商</th>
                                 <th>接口URL</th>
                                 <th>响应时间(ms)</th>
@@ -347,11 +377,28 @@
 <div class="modal-mask" id="detailModal">
     <div class="detail-modal">
         <div class="modal-header">
-            <span class="modal-title" id="detailModalTitle">调用详情</span>
+            <span class="modal-title" id="detailModalTitle">调用日志详情</span>
             <i class="el-icon-close modal-close" onclick="closeDetailModal()"></i>
         </div>
         <div class="modal-body">
+            <!-- 调用方详情：传统信息网格 -->
             <div class="detail-grid" id="detailGrid"></div>
+            <!-- 供应商详情：日志ID + URL + 请求参数/响应参数 Tab（参考版式） -->
+            <div id="dlgIdRow" class="dlg-id-row" style="display:none;">
+                <span class="dlg-label">日志ID</span>
+                <span class="dlg-label" id="dlgLogId"></span>
+            </div>
+            <div id="dlgUrlRow" class="dlg-url-row" style="display:none;">
+                <span class="dlg-label">URL</span>
+                <div class="dlg-url-value" id="dlgUrl"></div>
+                <button class="dlg-copy-btn" onclick="copyDetailUrl()">复制</button>
+            </div>
+            <div id="dlgTabs" class="dlg-tabs" style="display:none;">
+                <span class="dlg-tab active" id="tabDetailReq" onclick="switchDetailTab('req')">请求参数</span>
+                <span class="dlg-tab" id="tabDetailResp" onclick="switchDetailTab('resp')">响应参数</span>
+                <span class="dlg-tab" id="tabDetailStruct" onclick="switchDetailTab('struct')">结构化结果</span>
+            </div>
+            <div id="dlgContent" class="dlg-content" style="display:none;"></div>
         </div>
         <div class="modal-footer">
             <button class="btn-cancel-modal" onclick="closeDetailModal()">关闭</button>
@@ -381,22 +428,54 @@
 
     // ========== 供应商数据 ==========
     var supplierData = [
-        { id: 1, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 125,  callTime: '2024-06-01 10:23:15', status: '成功', structStatus: '成功' },
-        { id: 2, supplier: '天眼查',   url: '/api/tianyacha/judicial/risk',     respTime: 156,  callTime: '2024-06-01 10:22:30', status: '成功', structStatus: '成功' },
-        { id: 3, supplier: '企查查',   url: '/api/qichacha/enterprise/info',    respTime: 132,  callTime: '2024-06-01 10:21:45', status: '成功', structStatus: '成功' },
-        { id: 4, supplier: '企查查',   url: '/api/qichacha/enterprise/graph',   respTime: 1250, callTime: '2024-06-01 10:20:12', status: '失败', structStatus: '失败' },
-        { id: 5, supplier: '中诚信',   url: '/api/zhongchengxin/credit/score',  respTime: 98,   callTime: '2024-06-01 10:19:33', status: '成功', structStatus: '成功' },
-        { id: 6, supplier: '天眼查',   url: '/api/tianyacha/business/status',   respTime: 145,  callTime: '2024-06-01 10:18:20', status: '成功', structStatus: '-' },
-        { id: 7, supplier: '前海征信', url: '/api/qianhai/anti-fraud/score',    respTime: 3200, callTime: '2024-06-01 10:17:05', status: '超时', structStatus: '成功' },
-        { id: 8, supplier: '百行征信', url: '/api/baihang/personal/credit/report', respTime: 230, callTime: '2024-06-01 10:15:50', status: '成功', structStatus: '成功' },
-        { id: 9, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 118,  callTime: '2024-06-01 09:55:15', status: '成功', structStatus: '成功' },
-        { id: 10, supplier: '企查查',  url: '/api/qichacha/judicial/risk',      respTime: 168,  callTime: '2024-06-01 09:50:30', status: '成功', structStatus: '成功' },
-        { id: 11, supplier: '前海征信',url: '/api/qianhai/anti-fraud/score',    respTime: 890,  callTime: '2024-06-01 09:45:10', status: '失败', structStatus: '失败' },
-        { id: 12, supplier: '企查查',  url: '/api/qichacha/enterprise/graph',   respTime: 320,  callTime: '2024-06-01 09:40:22', status: '成功', structStatus: '-' },
-        { id: 13, supplier: '天眼查',  url: '/api/tianyacha/business/status',   respTime: 142,  callTime: '2024-06-01 09:35:18', status: '成功', structStatus: '成功' },
-        { id: 14, supplier: '中诚信',  url: '/api/zhongchengxin/credit/score',  respTime: 105,  callTime: '2024-06-01 09:30:05', status: '成功', structStatus: '成功' },
-        { id: 15, supplier: '天眼查',  url: '/api/tianyacha/enterprise/info',   respTime: 128,  callTime: '2024-06-01 09:25:50', status: '成功', structStatus: '成功' }
+        { id: 1, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 125,  callTime: '2024-06-01 10:23:15', status: '成功', structStatus: '成功', reqParams: { appId: 'TYC_APP01', keyword: '某某科技' } },
+        { id: 2, supplier: '天眼查',   url: '/api/tianyacha/judicial/risk',     respTime: 156,  callTime: '2024-06-01 10:22:30', status: '成功', structStatus: '成功', reqParams: { appId: 'TYC_APP01', companyName: '某某科技有限公司' } },
+        { id: 3, supplier: '企查查',   url: '/api/qichacha/enterprise/info',    respTime: 132,  callTime: '2024-06-01 10:21:45', status: '成功', structStatus: '成功', reqParams: { appId: 'QCC_APP02', keyword: '某某科技' } },
+        { id: 4, supplier: '企查查',   url: '/api/qichacha/enterprise/graph',   respTime: 1250, callTime: '2024-06-01 10:20:12', status: '失败', structStatus: '失败', reqParams: { appId: 'QCC_APP02', companyName: '某某科技有限公司' }, respBody: '{\n  "code": 401,\n  "msg": "Missing required headers: X-Open-Token or (X-Access-Key + X-Timestamp + X-Signature)",\n  "errmsg": "请求未授权：缺少鉴权头 X-Open-Token 或签名，无有效 data 数据可结构化解析"\n}', structReason: '接口返回 401 鉴权错误（Missing required headers: X-Open-Token），无有效 data 数据可结构化解析' },
+        { id: 5, supplier: '中诚信',   url: '/api/zhongchengxin/credit/score',  respTime: 98,   callTime: '2024-06-01 10:19:33', status: '成功', structStatus: '成功', reqParams: { appId: 'ZCX_APP03', name: '张三', idCard: '4201**********1234' } },
+        { id: 6, supplier: '天眼查',   url: '/api/tianyacha/business/status',   respTime: 145,  callTime: '2024-06-01 10:18:20', status: '成功', structStatus: '-', reqParams: { appId: 'TYC_APP01', keyword: '某某供应链有限公司' } },
+        { id: 7, supplier: '前海征信', url: '/api/qianhai/anti-fraud/score',    respTime: 3200, callTime: '2024-06-01 10:17:05', status: '超时', structStatus: '成功', reqParams: { appId: 'QH_APP04', phone: '138****1234', idCard: '4201**********5678' } },
+        { id: 8, supplier: '百行征信', url: '/api/baihang/personal/credit/report', respTime: 230, callTime: '2024-06-01 10:15:50', status: '成功', structStatus: '成功', reqParams: { appId: 'BH_APP05', name: '李四', idCard: '3201**********9012' } },
+        { id: 9, supplier: '天眼查',   url: '/api/tianyacha/enterprise/info',   respTime: 118,  callTime: '2024-06-01 09:55:15', status: '成功', structStatus: '成功', reqParams: { appId: 'TYC_APP01', keyword: '某某实业' } },
+        { id: 10, supplier: '企查查',  url: '/api/qichacha/judicial/risk',      respTime: 168,  callTime: '2024-06-01 09:50:30', status: '成功', structStatus: '成功', reqParams: { appId: 'QCC_APP02', companyName: '某某实业有限公司' } },
+        { id: 11, supplier: '前海征信',url: '/api/qianhai/anti-fraud/score',    respTime: 890,  callTime: '2024-06-01 09:45:10', status: '失败', structStatus: '失败', reqParams: { appId: 'QH_APP04', phone: '139****5678', idCard: '4201**********4321' }, structReason: '响应文本非标准 JSON（msg 字段为超长文本且含转义字符），解析器无法生成结构化字段' },
+        { id: 12, supplier: '企查查',  url: '/api/qichacha/enterprise/graph',   respTime: 320,  callTime: '2024-06-01 09:40:22', status: '成功', structStatus: '-', reqParams: { appId: 'QCC_APP02', companyName: '某某网络有限公司' } },
+        { id: 13, supplier: '天眼查',  url: '/api/tianyacha/business/status',   respTime: 142,  callTime: '2024-06-01 09:35:18', status: '成功', structStatus: '成功', reqParams: { appId: 'TYC_APP01', keyword: '某某商业保理有限公司' } },
+        { id: 14, supplier: '中诚信',  url: '/api/zhongchengxin/credit/score',  respTime: 105,  callTime: '2024-06-01 09:30:05', status: '成功', structStatus: '成功', reqParams: { appId: 'ZCX_APP03', name: '王五', idCard: '1101**********8765' } },
+        { id: 15, supplier: '天眼查',  url: '/api/tianyacha/enterprise/info',   respTime: 128,  callTime: '2024-06-01 09:25:50', status: '成功', structStatus: '成功', reqParams: { appId: 'TYC_APP01', keyword: '某某集团股份有限公司' } },
+        { id: 16, supplier: '天眼查',  url: '/api/tianyacha/patent/list',        respTime: 380,  callTime: '2024-06-01 11:02:41', status: '成功', structStatus: '失败', reqParams: { appId: 'TYC_APP01', companyName: '某某科技有限公司' }, structReason: '返回结果 data 中 patentOwner 为超长文本字段（32000字符），超出结构表字段长度上限，建表失败' },
+        { id: 17, supplier: '中诚信',  url: '/api/zhongchengxin/credit/query',   respTime: 95,   callTime: '2024-06-01 11:05:13', status: '成功', structStatus: '失败', reqParams: { appId: 'ZCX_APP03', name: '张三', idCard: '4201**********1234' }, structReason: '返回字段名含非法字符前缀（#score），无法映射为数据库列名' },
+        { id: 18, supplier: '百行征信', url: '/api/baihang/loan/conditions',     respTime: 150,  callTime: '2024-06-01 11:08:02', status: '成功', structStatus: '失败', reqParams: { appId: 'BH_APP05', name: '李四', idCard: '3201**********9012' }, structReason: '返回数据缺失主键字段（loanId），无法插入结构表' }
     ];
+
+    // 供应商响应报文样例（按接口URL区分，回参Tab展示；code=200 成功/非200 失败，errmsg 为结构化失败原因）
+    var respBodySamples = {
+        '/api/tianyacha/enterprise/info': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "companyName": "某某科技有限公司", "status": "存续", "regNo": "91310000MA1K35XQXX" }\n}',
+        '/api/tianyacha/judicial/risk': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "caseCount": 3, "totalAmount": "1250000.00", "cases": [ { "caseNo": "(2024)沪01民初125号" } ] }\n}',
+        '/api/qichacha/enterprise/info': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "companyName": "某某科技有限公司", "status": "存续", "regNo": "91310000MA1K35XQXX" }\n}',
+        '/api/qichacha/enterprise/graph': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "investList": [ [ { "name": "某某投资有限公司" } ] ] }\n}',
+        '/api/zhongchengxin/credit/score': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "score": 628, "level": "BB" }\n}',
+        '/api/tianyacha/business/status': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "bizStatus": "存续", "regStatus": "开业" }\n}',
+        '/api/qianhai/anti-fraud/score': '{\n  "code": 200,\n  "msg": "成功",\n  "errmsg": "返回报文 msg 字段含嵌套转义文本（hitRisk 字段转义），非标准结构，无法生成结构化字段",\n  "data": { "score": 82, "hitRisk": "Y" }\n}',
+        '/api/baihang/personal/credit/report': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "reportNo": "20240601101550JH", "creditClass": "正常" }\n}',
+        '/api/qichacha/judicial/risk': '{\n  "code": 200,\n  "msg": "成功",\n  "data": { "riskCount": 1, "details": [ { "caseNo": "(2024)京01执保88号" } ] }\n}',
+        '/api/tianyacha/patent/list': '{\n  "code": 200,\n  "msg": "成功",\n  "errmsg": "data 中 patentOwner 为超长文本字段（32000字符），超出结构表字段长度上限，建表失败",\n  "data": { "companyName": "某某科技有限公司", "patentCount": 12, "patentOwner": "某某集团股份有限公司（股东及实际控制人信息……超长文本 32000 字符）" }\n}',
+        '/api/zhongchengxin/credit/query': '{\n  "code": 200,\n  "msg": "成功",\n  "errmsg": "返回字段名含非法字符前缀（#score），无法映射为数据库列名",\n  "data": { "#score": 712, "level": "AA" }\n}',
+        '/api/baihang/loan/conditions': '{\n  "code": 200,\n  "msg": "成功",\n  "errmsg": "返回数据缺失主键字段（loanId），无法插入结构表",\n  "data": { "loanType": "经营贷", "amount": 500000, "term": 36 }\n}'
+    };
+    function getLogId(r) { return r.logId || 'LOG20240601' + ('000' + r.id).slice(-4); }
+
+    // 供应商服务主机：接口URL完整地址 = 主机 + 接口路径
+    var supplierHosts = {
+        '天眼查': 'http://100.75.105.3:80',
+        '企查查': 'http://100.75.105.4:8080',
+        '中诚信': 'http://100.75.105.5:8080',
+        '前海征信': 'http://100.75.105.6:9010',
+        '百行征信': 'http://100.75.105.7:9010'
+    };
+    function resolveUrl(r) {
+        return r.url.indexOf('://') >= 0 ? r.url : (supplierHosts[r.supplier] || '') + r.url;
+    }
 
     // ========== 当前Tab & 分页状态 ==========
     var currentTab = 'caller';
@@ -514,7 +593,7 @@
 
         var tbody = document.getElementById('supplierTableBody');
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="padding:40px 0;color:#999;">暂无数据</td></tr>';
         } else {
             var html = '';
             for (var i = 0; i < pageData.length; i++) {
@@ -523,11 +602,12 @@
                 var respClass = r.respTime > 1000 ? ' class="val-error"' : '';
                 html += '<tr>'
                     + '<td>' + seq + '</td>'
+                    + '<td style="font-size:13px;font-family:Consolas,Menlo,monospace;">' + getLogId(r) + '</td>'
                     + '<td>' + r.supplier + '</td>'
-                    + '<td style="font-size:13px;text-align:left;padding-left:12px;">' + r.url + '</td>'
+                    + '<td style="font-size:12px;text-align:left;padding-left:12px;font-family:Consolas,Menlo,monospace;word-break:break-all;">' + resolveUrl(r) + '</td>'
                     + '<td' + respClass + '>' + r.respTime.toLocaleString() + '</td>'
                     + '<td style="font-size:13px;">' + r.callTime + '</td>'
-                    + '<td>' + getStatusBadge(r.status) + '</td>'
+                    + '<td>' + getStatusBadge(getCallStatus(r)) + '</td>'
                     + '<td>' + getStructStatusBadge(r.structStatus) + '</td>'
                     + '<td><div class="ops-cell"><button class="action-link" onclick="openSupplierDetail(' + r.id + ')">详情</button></div></td>'
                     + '</tr>';
@@ -542,6 +622,24 @@
         if (v === '成功') return '<span class="status-badge success">成功</span>';
         if (v === '失败') return '<span class="status-badge fail">失败</span>';
         return '<span style="color:#a5abb2;">-</span>';
+    }
+
+    // ========== 调用状态：与详情-响应参数 code 对应（200→成功，非200→失败） ==========
+    function getRespBodyText(r) {
+        return r.respBody || respBodySamples[r.url] || '';
+    }
+    function parseRespMeta(body) {
+        try {
+            var o = JSON.parse(body);
+            return { code: o.code, msg: o.msg, errmsg: o.errmsg };
+        } catch (e) { return {}; }
+    }
+    function getCallStatus(r) {
+        if (r.status === '超时') return '超时';
+        var meta = parseRespMeta(getRespBodyText(r));
+        if (meta.code === 200) return '成功';
+        if (meta.code !== undefined && meta.code !== null) return '失败';
+        return r.status || '成功';
     }
 
     // ========== 渲染分页栏 ==========
@@ -624,13 +722,15 @@
     function doQuerySupplier() {
         var supplierFilter = document.getElementById('filterSupplierName').value;
         var urlFilter = document.getElementById('filterSupplierUrl').value.trim();
+        var logIdFilter = document.getElementById('filterSupplierLogId').value.trim();
         var statusFilter = document.getElementById('filterSupplierStatus').value;
         var dateStart = document.getElementById('supplierDateStart').value;
         var dateEnd = document.getElementById('supplierDateEnd').value;
         var filtered = supplierData.filter(function(r) {
             if (supplierFilter && r.supplier !== supplierFilter) return false;
-            if (urlFilter && r.url !== urlFilter) return false;
-            if (statusFilter && r.status !== statusFilter) return false;
+            if (urlFilter && resolveUrl(r) !== urlFilter) return false;
+            if (logIdFilter && getLogId(r) !== logIdFilter) return false;
+            if (statusFilter && getCallStatus(r) !== statusFilter) return false;
             if (dateStart && r.callTime < dateStart) return false;
             if (dateEnd && r.callTime > dateEnd) return false;
             return true;
@@ -642,6 +742,7 @@
     function doResetSupplier() {
         document.getElementById('filterSupplierName').value = '';
         document.getElementById('filterSupplierUrl').value = '';
+        document.getElementById('filterSupplierLogId').value = '';
         document.getElementById('filterSupplierStatus').value = '';
         if (document.getElementById('supplierDateStart')._flatpickr) document.getElementById('supplierDateStart')._flatpickr.clear();
         if (document.getElementById('supplierDateEnd')._flatpickr) document.getElementById('supplierDateEnd')._flatpickr.clear();
@@ -649,7 +750,7 @@
         renderSupplierTable(supplierData);
     }
 
-    // ========== 详情弹窗：调用方 ==========
+    // ========== 详情弹窗：调用方（传统信息网格） ==========
     function openCallerDetail(id) {
         var r = null;
         for (var i = 0; i < callerData.length; i++) {
@@ -657,6 +758,11 @@
         }
         if (!r) return;
         document.getElementById('detailModalTitle').textContent = '调用方详情';
+        document.getElementById('detailGrid').style.display = '';
+        document.getElementById('dlgIdRow').style.display = 'none';
+        document.getElementById('dlgUrlRow').style.display = 'none';
+        document.getElementById('dlgTabs').style.display = 'none';
+        document.getElementById('dlgContent').style.display = 'none';
         document.getElementById('detailGrid').innerHTML =
             '<div class="detail-item"><div class="detail-label">编号</div><div class="detail-value">' + r.id + '</div></div>'
             + '<div class="detail-item"><div class="detail-label">调用方</div><div class="detail-value">' + r.caller + '</div></div>'
@@ -670,22 +776,95 @@
         document.getElementById('detailModal').classList.add('active');
     }
 
-    // ========== 详情弹窗：供应商 ==========
+    // ========== 详情弹窗：供应商（参考版式：日志ID + URL + 请求参数/响应参数/结构化结果） ==========
+    var curDetailParams = {};
+    var curDetailRespBody = '';
+    var curDetailRow = null;
+
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderDetailReqParams() {
+        var keys = Object.keys(curDetailParams);
+        var html = '<table class="dlg-params-table"><thead><tr><th style="width:220px;">参数名</th><th>参数值</th></tr></thead><tbody>';
+        if (keys.length === 0) {
+            html += '<tr><td colspan="2" style="text-align:center;color:#999;padding:24px 0;">无请求参数</td></tr>';
+        } else {
+            for (var i = 0; i < keys.length; i++) {
+                html += '<tr><td>' + keys[i] + '</td><td>' + curDetailParams[keys[i]] + '</td></tr>';
+            }
+        }
+        html += '</tbody></table>';
+        document.getElementById('dlgContent').innerHTML = html;
+    }
+
+    function renderDetailRespParams() {
+        var pretty = curDetailRespBody;
+        try { pretty = JSON.stringify(JSON.parse(curDetailRespBody), null, 2); } catch (e) { /* 非标准JSON，原样展示 */ }
+        document.getElementById('dlgContent').innerHTML = '<pre class="dlg-json">' + escapeHtml(pretty) + '</pre>';
+    }
+
+    // 结构化结果Tab：成功→仅显示"成功"；失败→仅显示失败原因描述(errmsg)；未结构化→提示
+    function renderDetailStructResult() {
+        var c = document.getElementById('dlgContent');
+        if (!curDetailRow) { c.innerHTML = '<div class="dlg-struct-empty">无结构化结果</div>'; return; }
+        var meta = parseRespMeta(curDetailRespBody);
+        if (curDetailRow.structStatus === '成功') {
+            c.innerHTML = '<div class="dlg-struct-msg success">成功</div>';
+        } else if (curDetailRow.structStatus === '失败') {
+            var errTxt = (meta.errmsg !== undefined && meta.errmsg !== null && meta.errmsg !== '')
+                ? meta.errmsg : (curDetailRow.structReason || '未知原因');
+            c.innerHTML = '<div class="dlg-struct-msg fail">' + escapeHtml(String(errTxt)) + '</div>';
+        } else {
+            c.innerHTML = '<div class="dlg-struct-empty">该日志未进行结构化处理</div>';
+        }
+    }
+
+    function switchDetailTab(tab) {
+        document.getElementById('tabDetailReq').classList.toggle('active', tab === 'req');
+        document.getElementById('tabDetailResp').classList.toggle('active', tab === 'resp');
+        document.getElementById('tabDetailStruct').classList.toggle('active', tab === 'struct');
+        if (tab === 'req') renderDetailReqParams();
+        else if (tab === 'resp') renderDetailRespParams();
+        else renderDetailStructResult();
+    }
+
+    function copyDetailUrl() {
+        var url = document.getElementById('dlgUrl').textContent;
+        function done() { alert('URL 已复制'); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done, done);
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = url;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            done();
+        }
+    }
+
     function openSupplierDetail(id) {
         var r = null;
         for (var i = 0; i < supplierData.length; i++) {
             if (supplierData[i].id === id) { r = supplierData[i]; break; }
         }
         if (!r) return;
-        document.getElementById('detailModalTitle').textContent = '供应商调用详情';
-        document.getElementById('detailGrid').innerHTML =
-            '<div class="detail-item"><div class="detail-label">编号</div><div class="detail-value">' + r.id + '</div></div>'
-            + '<div class="detail-item"><div class="detail-label">供应商</div><div class="detail-value">' + r.supplier + '</div></div>'
-            + '<div class="detail-item"><div class="detail-label">接口URL</div><div class="detail-value" style="font-size:13px;">' + r.url + '</div></div>'
-            + '<div class="detail-item"><div class="detail-label">响应时间</div><div class="detail-value">' + r.respTime + 'ms</div></div>'
-            + '<div class="detail-item"><div class="detail-label">调用时间</div><div class="detail-value">' + r.callTime + '</div></div>'
-            + '<div class="detail-item"><div class="detail-label">调用状态</div><div class="detail-value">' + getStatusBadge(r.status) + '</div></div>'
-            + '<div class="detail-item"><div class="detail-label">结构化状态</div><div class="detail-value">' + getStructStatusBadge(r.structStatus) + '</div></div>';
+        document.getElementById('detailModalTitle').textContent = '调用日志详情';
+        document.getElementById('detailGrid').style.display = 'none';
+        document.getElementById('dlgIdRow').style.display = 'flex';
+        document.getElementById('dlgUrlRow').style.display = 'flex';
+        document.getElementById('dlgTabs').style.display = 'flex';
+        document.getElementById('dlgContent').style.display = '';
+        document.getElementById('dlgLogId').textContent = getLogId(r);
+        document.getElementById('dlgLogId').style.color = '#303133';
+        document.getElementById('dlgUrl').textContent = resolveUrl(r);
+        curDetailParams = r.reqParams || {};
+        curDetailRespBody = getRespBodyText(r);
+        curDetailRow = r;
+        switchDetailTab('req');
         document.getElementById('detailModal').classList.add('active');
     }
 

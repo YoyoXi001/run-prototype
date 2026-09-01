@@ -747,6 +747,65 @@
             background: linear-gradient(180deg, #f89d34 0%, #f5a623 100%);
             border-radius: 2px;
         }
+        /* 调用方区域（阈值/申请弹窗底部业务单元归属区） */
+        .caller-section {
+            margin-top: 8px;
+            padding: 14px;
+            border: 1px dashed #e0e4ea;
+            border-radius: 6px;
+            background: #fafbfc;
+        }
+        .caller-section .form-row-horizontal:last-child { margin-bottom: 0; }
+        .caller-section-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: #f89d34;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+        .caller-section-title::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: linear-gradient(180deg, #f89d34 0%, #f5a623 100%);
+            border-radius: 2px;
+        }
+        /* API 多选下拉（参考计费管理） */
+        .form-row-horizontal .multi-select-wrap { flex: 1; }
+        .multi-select-wrap { position: relative; }
+        .multi-select-display {
+            width: 100%; min-height: 36px; padding: 4px 30px 4px 8px; border: 1px solid #dcdfe6; border-radius: 4px;
+            font-size: 14px; color: #333; cursor: pointer; background: #fff;
+            display: flex; align-items: center; flex-wrap: nowrap; overflow: hidden; gap: 4px;
+        }
+        .multi-select-display:focus { border-color: #f89d34; outline: none; }
+        .multi-select-placeholder { color: #c0c4cc; font-size: 14px; }
+        .multi-select-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #c0c4cc; font-size: 12px; pointer-events: none; }
+        .multi-select-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #dcdfe6;
+            border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 260px; overflow-y: auto; display: none;
+        }
+        .multi-select-dropdown.show { display: block; }
+        .multi-select-option { display: flex; align-items: center; gap: 8px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: #333; transition: background 0.15s; }
+        .multi-select-option:hover { background: #f5f7fa; }
+        .multi-select-option input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .multi-select-option .cb-box {
+            width: 14px; height: 14px; border: 1px solid #dcdfe6; border-radius: 2px; background: #fff;
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; cursor: pointer;
+        }
+        .multi-select-option .cb-box::after {
+            content: ''; width: 4px; height: 8px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) scale(0); transition: transform 0.12s; display: block; margin-top: -1px;
+        }
+        .multi-select-option input[type="checkbox"]:checked + .cb-box { background: #f89d34; border-color: #f89d34; }
+        .multi-select-option input[type="checkbox"]:checked + .cb-box::after { transform: rotate(45deg) scale(1); }
+        .multi-select-option label { flex: 1; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 20px; text-align: left; width: auto; padding: 0; margin: 0; font-weight: normal; font-size: 13px; color: #333; }
+        .multi-select-option.unlimited-option { border-bottom: 1px solid #ebeef5; font-weight: 500; }
+        .api-tag { display: inline-flex; align-items: center; gap: 4px; background: #f0f2f5; border-radius: 3px; padding: 2px 8px; font-size: 12px; color: #333; white-space: nowrap; flex-shrink: 0; }
+        .api-tag .tag-close { cursor: pointer; color: #999; font-size: 14px; line-height: 1; }
+        .api-tag .tag-close:hover { color: #f5222d; }
+        .api-tag-more { display: inline-flex; align-items: center; background: #e8eaed; border-radius: 3px; padding: 2px 8px; font-size: 12px; color: #666; white-space: nowrap; flex-shrink: 0; }
         .calc-row {
             display: flex;
             justify-content: space-between;
@@ -932,7 +991,7 @@
                         <div class="action-bar" style="justify-content:flex-start;"><button class="btn-add" id="addDlApplyBtn">新增申请</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>调用方</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请拟超用量</th><th>申请理由</th><th>审批状态</th><th>申请时间</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>调用方</th><th>申请人</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请拟超用量</th><th>申请理由</th><th>审批状态</th><th>申请时间</th><th>操作</th></tr></thead>
                                 <tbody id="dlTableBody"></tbody>
                             </table>
                         </div>
@@ -956,7 +1015,7 @@
                         <div class="action-bar"><button class="btn-add" id="addThBtn">新增</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>阈值(次/天)</th><th>启用状态</th><th>更新时间</th><th>更新人</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>调用方</th><th>供应商</th><th>API</th><th>阈值(次/天)</th><th>启用状态</th><th>更新时间</th><th>更新人</th><th>操作</th></tr></thead>
                                 <tbody id="thTableBody"></tbody>
                             </table>
                         </div>
@@ -1056,15 +1115,27 @@
             <div class="modal-body">
                 <div class="form-row-horizontal"><label>租户 <span class="required">*</span></label><select id="dlTenant" class="form-control"><option value="">请选择租户</option></select></div>
                 <div class="form-row-horizontal"><label>供应商 <span class="required">*</span></label><select id="dlSupplier" class="form-control"><option value="">请选择供应商</option></select></div>
-                <div class="form-row-horizontal"><label>API <span class="required">*</span></label><select id="dlApi" class="form-control"><option value="">请选择API</option></select></div>
-                <div class="form-row-horizontal"><label>阈值</label><input type="text" id="dlTriggerInfo" class="form-control" disabled style="background:#f5f7fa;" placeholder="选择供应商与API后自动带出"></div>
+                <div class="form-row-horizontal">
+                    <label>API <span class="required">*</span></label>
+                    <div class="multi-select-wrap" id="dlApiWrap">
+                        <div class="multi-select-display" id="dlApiDisplay" tabindex="0">
+                            <span class="multi-select-placeholder" id="dlApiPlaceholder">请选择API</span>
+                        </div>
+                        <span class="multi-select-arrow"><i class="el-icon-arrow-down"></i></span>
+                        <div class="multi-select-dropdown" id="dlApiDropdown"></div>
+                    </div>
+                </div>
+                <div class="form-row-horizontal"><label>阈值(次/天)</label><input type="text" id="dlTriggerInfo" class="form-control" disabled style="background:#f5f7fa;" placeholder="选择供应商与API后自动带出"></div>
                 <div class="form-row-horizontal"><label>申请日期范围 <span class="required">*</span></label><div class="date-range"><input type="text" id="dlStart" class="dl-datepicker" placeholder="开始日期" readonly><span>-</span><input type="text" id="dlEnd" class="dl-datepicker" placeholder="结束日期" readonly></div></div>
-                <div class="form-row-horizontal"><label>申请拟超用量(次) <span class="required">*</span></label><input type="number" id="dlPlanned" class="form-control" min="1" placeholder="正整数，如 12000"></div>
+                <div class="form-row-horizontal"><label>申请超用量(次) <span class="required">*</span></label><input type="number" id="dlPlanned" class="form-control" min="1" placeholder="正整数，如 12000"></div>
                 <div class="form-row-horizontal"><label>申请理由 <span class="required">*</span></label><div style="flex:1;display:flex;flex-direction:column;gap:4px;"><textarea id="dlReason" class="form-control" rows="3" maxlength="200" style="resize:vertical;font-family:inherit;" placeholder="请填写申请理由（不超过200字）"></textarea><span style="font-size:12px;color:#999;" id="dlReasonCount">0/200</span></div></div>
-                <div class="form-row-horizontal"><label>租户</label><input type="text" id="dlBizTenant" class="form-control" disabled style="background:#f5f7fa;"></div>
-                <div class="form-row-horizontal"><label>公司</label><select id="dlCompany" class="form-control"><option value="">请选择公司</option></select></div>
-                <div class="form-row-horizontal"><label>部门</label><select id="dlDept" class="form-control"><option value="">请选择部门</option></select></div>
-                <div class="form-row-horizontal"><label>系统</label><select id="dlSys" class="form-control"><option value="">请选择系统</option></select></div>
+                <div class="caller-section">
+                    <div class="caller-section-title">调用方</div>
+                    <div class="form-row-horizontal"><label>租户</label><input type="text" id="dlBizTenant" class="form-control" disabled style="background:#f5f7fa;"></div>
+                    <div class="form-row-horizontal"><label>公司</label><select id="dlCompany" class="form-control"><option value="">请选择公司</option></select></div>
+                    <div class="form-row-horizontal"><label>部门</label><select id="dlDept" class="form-control"><option value="">请选择部门</option></select></div>
+                    <div class="form-row-horizontal"><label>系统</label><select id="dlSys" class="form-control"><option value="">请选择系统</option></select></div>
+                </div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="cancelDlApplyModal">取消</button><button class="btn-primary" id="submitDlApplyBtn">提交申请</button></div>
         </div>
@@ -1086,13 +1157,28 @@
             <div class="modal-body">
                 <div class="form-row-horizontal"><label>租户 <span class="required">*</span></label><select id="thTenant" class="form-control"><option value="">请选择租户</option></select></div>
                 <div class="form-row-horizontal"><label>供应商 <span class="required">*</span></label><select id="thSupplier" class="form-control"><option value="">请选择供应商</option></select></div>
-                <div class="form-row-horizontal"><label>API <span class="required">*</span></label><select id="thApi" class="form-control"><option value="">请选择API</option></select></div>
+                <div class="form-row-horizontal">
+                    <label>API <span class="required">*</span></label>
+                    <div class="select-with-info">
+                        <div class="multi-select-wrap" id="thApiWrap">
+                            <div class="multi-select-display" id="thApiDisplay" tabindex="0">
+                                <span class="multi-select-placeholder" id="thApiPlaceholder">请选择API</span>
+                            </div>
+                            <span class="multi-select-arrow"><i class="el-icon-arrow-down"></i></span>
+                            <div class="multi-select-dropdown" id="thApiDropdown"></div>
+                        </div>
+                        <span id="thApiQuotaInfo" class="quota-info"></span>
+                    </div>
+                </div>
                 <div class="form-row-horizontal"><label>阈值(次/天) <span class="required">*</span></label><input type="number" id="thTrigger" class="form-control" min="1" value="10000"></div>
                 <div class="form-row-horizontal"><label>启用状态 <span class="required">*</span></label><select id="thEnabled" class="form-control"><option value="true">启用</option><option value="false">停用</option></select></div>
-                <div class="form-row-horizontal"><label>租户</label><input type="text" id="thBizTenant" class="form-control" disabled style="background:#f5f7fa;"></div>
-                <div class="form-row-horizontal"><label>公司</label><select id="thCompany" class="form-control"><option value="">请选择公司</option></select></div>
-                <div class="form-row-horizontal"><label>部门</label><select id="thDept" class="form-control"><option value="">请选择部门</option></select></div>
-                <div class="form-row-horizontal"><label>系统</label><select id="thSys" class="form-control"><option value="">请选择系统</option></select></div>
+                <div class="caller-section">
+                    <div class="caller-section-title">调用方</div>
+                    <div class="form-row-horizontal"><label>租户</label><input type="text" id="thBizTenant" class="form-control" disabled style="background:#f5f7fa;"></div>
+                    <div class="form-row-horizontal"><label>公司</label><select id="thCompany" class="form-control"><option value="">请选择公司</option></select></div>
+                    <div class="form-row-horizontal"><label>部门</label><select id="thDept" class="form-control"><option value="">请选择部门</option></select></div>
+                    <div class="form-row-horizontal"><label>系统</label><select id="thSys" class="form-control"><option value="">请选择系统</option></select></div>
+                </div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="cancelThFormBtn">取消</button><button class="btn-primary" id="saveThBtn">保存</button></div>
         </div>
@@ -1729,9 +1815,108 @@ let thresholdConfig = [
 function getUnitConfig(tenant, company, dept, sys, supplier, api) {
     const c = thresholdConfig.find(t =>
         t.tenant === tenant && (t.company || company) === company &&
-        t.dept === dept && t.sys === sys && t.supplier === supplier && t.api === api);
+        t.dept === dept && t.sys === sys && t.supplier === supplier &&
+        (t.api === api || t.api === '不限' || (Array.isArray(t.api) && t.api.includes(api))));
     if (c) return c;
     return { tenant, company, dept, sys, supplier, api, trigger: DEFAULT_TRIGGER, second: DEFAULT_SECOND, enabled: true }; // 未配置 → 采用默认阈值
+}
+
+// ---------- API 多选组件（参考计费管理） ----------
+function createApiMultiSelect(ids, onChange) {
+    var wrap = document.getElementById(ids.wrap);
+    var display = document.getElementById(ids.display);
+    var placeholder = document.getElementById(ids.placeholder);
+    var dropdown = document.getElementById(ids.dropdown);
+    var selected = [];
+
+    function syncTags() {
+        display.querySelectorAll('.api-tag, .api-tag-more').forEach(function(t){ t.remove(); });
+        if (selected.length === 0) { placeholder.style.display = ''; return; }
+        placeholder.style.display = 'none';
+        selected.forEach(function(val) {
+            var tag = document.createElement('span');
+            tag.className = 'api-tag';
+            var txt = document.createElement('span');
+            txt.textContent = val;
+            tag.appendChild(txt);
+            if (!display.classList.contains('disabled')) {
+                var close = document.createElement('span');
+                close.className = 'tag-close';
+                close.innerHTML = '×';
+                close.addEventListener('click', function(e){ e.stopPropagation(); deselect(val); });
+                tag.appendChild(close);
+            }
+            display.appendChild(tag);
+        });
+    }
+    function deselect(val) {
+        selected = selected.filter(function(v){ return v !== val; });
+        dropdown.querySelectorAll('input[type="checkbox"]').forEach(function(cb){ if (cb.value === val) cb.checked = false; });
+        syncTags();
+        if (onChange) onChange();
+    }
+    function rebind() {
+        display.onclick = function(e) {
+            if (display.classList.contains('disabled')) return;
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        };
+        dropdown.querySelectorAll('.multi-select-option').forEach(function(opt) {
+            opt.onclick = function(e) {
+                if (e.target && e.target.tagName === 'INPUT') return;
+                var cb = opt.querySelector('input[type="checkbox"]');
+                if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+            };
+        });
+        dropdown.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var self = this;
+                var val = self.value;
+                if (val === '不限') {
+                    if (self.checked) {
+                        dropdown.querySelectorAll('input[type="checkbox"]').forEach(function(o){ if (o !== self) o.checked = false; });
+                        selected = ['不限'];
+                    } else { selected = []; }
+                } else {
+                    if (self.checked) {
+                        var allCb = dropdown.querySelector('input[value="不限"]');
+                        if (allCb) allCb.checked = false;
+                        selected = selected.filter(function(v){ return v !== '不限'; });
+                        if (selected.indexOf(val) === -1) selected.push(val);
+                    } else {
+                        selected = selected.filter(function(v){ return v !== val; });
+                    }
+                }
+                syncTags();
+                if (onChange) onChange();
+            });
+        });
+    }
+    function setOptions(apis) {
+        var html = '<div class="multi-select-option unlimited-option"><input type="checkbox" value="不限"><span class="cb-box"></span><label>不限</label></div>';
+        (apis || []).forEach(function(a){ html += '<div class="multi-select-option"><input type="checkbox" value="' + a + '"><span class="cb-box"></span><label>' + a + '</label></div>'; });
+        dropdown.innerHTML = html;
+        selected = [];
+        rebind();
+        syncTags();
+    }
+    function getValues() { return selected.slice(); }
+    function setValues(arr) {
+        var vals = (arr === '不限') ? ['不限'] : (Array.isArray(arr) ? arr.slice() : (arr ? [arr] : []));
+        var valid = Array.prototype.map.call(dropdown.querySelectorAll('input[type="checkbox"]'), function(cb){ return cb.value; });
+        selected = vals.filter(function(v){ return valid.indexOf(v) > -1; });
+        dropdown.querySelectorAll('input[type="checkbox"]').forEach(function(cb){ cb.checked = selected.indexOf(cb.value) > -1; });
+        syncTags();
+    }
+    function reset() {
+        selected = [];
+        dropdown.querySelectorAll('input[type="checkbox"]').forEach(function(cb){ cb.checked = false; });
+        syncTags();
+    }
+    document.addEventListener('click', function(e) {
+        if (wrap && !wrap.contains(e.target)) dropdown.classList.remove('show');
+    });
+    return { setOptions: setOptions, getValues: getValues, setValues: setValues, reset: reset, dropdown: dropdown };
 }
 
 // ---------- 日期工具 ----------
@@ -1839,17 +2024,22 @@ function dlDetailFormHtml(a, cfg) {
     return `
     <div class="form-row-horizontal"><label>租户</label>${ro(a.tenant || '—')}</div>
     <div class="form-row-horizontal"><label>供应商</label>${ro(a.supplier || '—')}</div>
-    <div class="form-row-horizontal"><label>API</label>${ro(a.api || '—')}</div>
-    <div class="form-row-horizontal"><label>阈值</label>${ro((cfg.trigger || DEFAULT_TRIGGER).toLocaleString() + ' 次/天')}</div>
+    <div class="form-row-horizontal"><label>API</label>${ro(apiText(a.api) || '—')}</div>
+    <div class="form-row-horizontal"><label>阈值(次/天)</label>${ro((cfg.trigger || DEFAULT_TRIGGER).toLocaleString())}</div>
     <div class="form-row-horizontal"><label>申请日期范围</label><div class="date-range"><input type="text" class="dl-datepicker" value="${a.start}" disabled style="background:#f5f7fa;"><span>-</span><input type="text" class="dl-datepicker" value="${a.end}" disabled style="background:#f5f7fa;"></div></div>
-    <div class="form-row-horizontal"><label>申请拟超用量(次)</label>${ro((a.planned || 0).toLocaleString())}</div>
+    <div class="form-row-horizontal"><label>申请超用量(次)</label>${ro((a.planned || 0).toLocaleString())}</div>
     <div class="form-row-horizontal"><label>申请理由</label><textarea class="form-control" rows="3" readonly style="resize:none;background:#f5f7fa;font-family:inherit;">${escapeHtml(a.reason)}</textarea></div>
-    <div class="form-row-horizontal"><label>租户</label>${ro(a.callerTenant || a.tenant || '—')}</div>
-    <div class="form-row-horizontal"><label>公司</label>${ro(a.company || '—')}</div>
-    <div class="form-row-horizontal"><label>部门</label>${ro(a.dept || '—')}</div>
-    <div class="form-row-horizontal"><label>系统</label>${ro(a.sys || '—')}</div>
+    <div class="caller-section">
+        <div class="caller-section-title">调用方</div>
+        <div class="form-row-horizontal"><label>租户</label>${ro(a.callerTenant || a.tenant || '—')}</div>
+        <div class="form-row-horizontal"><label>公司</label>${ro(a.company || '—')}</div>
+        <div class="form-row-horizontal"><label>部门</label>${ro(a.dept || '—')}</div>
+        <div class="form-row-horizontal"><label>系统</label>${ro(a.sys || '—')}</div>
+    </div>
+	<!-- 
     <div class="form-row-horizontal"><label>申请单号</label>${ro(a.applyNo)}</div>
     <div class="form-row-horizontal"><label>申请时间</label>${ro(a.appliedAt)}</div>`;
+	-->
 }
 
 // ---------- 页面 tab 与列表 ----------
@@ -1884,13 +2074,14 @@ function renderDailyTable() {
     const start = (dailyPage - 1) * dailyPageSize;
     const pageData = list.slice(start, start + dailyPageSize);
     const tbody = document.getElementById('dlTableBody');
-    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
+    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
     tbody.innerHTML = pageData.map((a, idx) => {
         return `<tr>
             <td>${(dailyPage - 1) * dailyPageSize + idx + 1}</td>
             <td>${escapeHtml(a.callerTenant || a.tenant || '—')}-${escapeHtml(a.company || '—')}-${escapeHtml(a.dept || '—')}-${escapeHtml(a.sys || '—')}</td>
+            <td>${escapeHtml(a.applicant || '—')}</td>
             <td>${escapeHtml(a.supplier || '—')}</td>
-            <td>${escapeHtml(a.api || '—')}</td>
+            <td>${escapeHtml(apiText(a.api) || '—')}</td>
             <td>${a.start} ~ ${a.end}</td>
             <td>${(a.planned || 0).toLocaleString()} 次</td>
             <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(a.reason)}">${escapeHtml(a.reason)}</td>
@@ -1934,17 +2125,17 @@ function fillSupplierOptions(keep) {
 }
 function fillApiOptions() {
     const supplier = document.getElementById('dlSupplier').value;
-    const sel = document.getElementById('dlApi');
-    sel.innerHTML = '<option value="">请选择API</option>' + (dlSupplierApiMap[supplier] || []).map(a => `<option value="${a}">${a}</option>`).join('');
+    dlApiMulti.setOptions(dlSupplierApiMap[supplier] || []);
 }
 function updateDlTriggerInfo() {
     const supplier = document.getElementById('dlSupplier').value || '';
-    const api = document.getElementById('dlApi').value || '';
-    if (!supplier || !api) { document.getElementById('dlTriggerInfo').value = ''; return; }
+    const apiValues = dlApiMulti ? dlApiMulti.getValues() : [];
+    if (!supplier || !apiValues.length) { document.getElementById('dlTriggerInfo').value = ''; return; }
+    const api = apiValues.indexOf('不限') > -1 ? '不限' : apiValues[0];
     // 阈值：按申请人业务单元+供应商API配置展示（分业务单元可配，未配置采用默认值）
     const biz = currentBiz();
     const cfg = getUnitConfig(biz.tenant, biz.company, biz.dept, biz.sys, supplier, api);
-    document.getElementById('dlTriggerInfo').value = cfg.trigger.toLocaleString() + ' 次/天';
+    document.getElementById('dlTriggerInfo').value = cfg.trigger.toLocaleString();
 }
 function updateDlReasonCount() {
     const v = document.getElementById('dlReason').value;
@@ -1984,7 +2175,7 @@ function openDlApply(prefill) {
     fillSupplierOptions();
     document.getElementById('dlSupplier').value = prefill?.supplier || '';
     fillApiOptions();
-    document.getElementById('dlApi').value = prefill?.api || '';
+    dlApiMulti.setValues(prefill?.api || []);
     dlStartFp && dlStartFp.setDate(prefill?.start || TODAY, true);
     dlEndFp && dlEndFp.setDate(prefill?.end || addDaysStr(TODAY, 1), true);
     document.getElementById('dlPlanned').value = prefill?.planned || '';
@@ -1998,7 +2189,9 @@ function submitDlApply() {
     const biz = currentBiz();
     const tenant = document.getElementById('dlTenant').value;   // 顶部：配额归属租户
     const supplier = document.getElementById('dlSupplier').value;
-    const api = document.getElementById('dlApi').value;
+    const apiValues = dlApiMulti ? dlApiMulti.getValues() : [];
+    const api = apiValues.indexOf('不限') > -1 ? '不限' : apiValues.slice();   // 不限=供应商全量；否则为已选 API 数组
+    const judgeApi = api === '不限' ? '不限' : (Array.isArray(api) ? api[0] : api);
     const planned = parseInt(document.getElementById('dlPlanned').value);
     const reason = document.getElementById('dlReason').value.trim();
     const start = document.getElementById('dlStart').value;
@@ -2009,21 +2202,21 @@ function submitDlApply() {
     const sys = document.getElementById('dlSys').value;
     if (!tenant) { alert('请选择租户'); return; }
     if (!supplier) { alert('请选择供应商'); return; }
-    if (!api) { alert('请选择API'); return; }
-    if (!planned || planned < 1 || isNaN(planned)) { alert('请填写申请拟超用量（正整数）'); return; }
+    if (!apiValues.length) { alert('请选择API'); return; }
+    if (!planned || planned < 1 || isNaN(planned)) { alert('请填写申请超用量（正整数）'); return; }
     if (!start || !end) { alert('请选择申请日期范围'); return; }
     if (end < start) { alert('结束日期不能早于开始日期'); return; }
     if (reason.length < 5) { alert('请填写申请理由（不少于5个字）'); return; }
-    const cfg = getUnitConfig(biz.tenant, biz.company, biz.dept, biz.sys, supplier, api);
-    const configured = thresholdConfig.some(t => t.tenant === biz.tenant && t.company === biz.company && t.dept === biz.dept && t.sys === biz.sys && t.supplier === supplier && t.api === api);
-    if (configured && !cfg.enabled) { alert('该业务单元已停用大额审批控制，请联系金控管理员'); return; }
-    const r = calcJudge(biz.tenant, biz.company, biz.dept, biz.sys, supplier, api, planned, start, end);
+    const cfg = getUnitConfig(biz.tenant, biz.company, biz.dept, biz.sys, supplier, judgeApi);
+    if (!cfg.enabled) { alert('该业务单元已停用大额审批控制，请联系金控管理员'); return; }
+    const r = calcJudge(biz.tenant, biz.company, biz.dept, biz.sys, supplier, judgeApi, planned, start, end);
     const dateKey = TODAY.replace(/-/g, '');
     const seq = overuseApplyList.filter(x => x.applyNo.startsWith('CY' + dateKey)).length + 1;
     const applyNo = 'CY' + dateKey + '-' + String(seq).padStart(3, '0');
     const now = nowStr();
     overuseApplyList.unshift({
         id: Date.now(), applyNo, tenant, callerTenant: biz.tenant, dept, sys, company,
+        applicant: MOCK_USER.name,
         supplier, api, start, end, planned, excessUsed: 0,
         reason, level: r.level, status: '待审批', quotaStatus: '—',
         appliedAt: now, passLevel1: false,
@@ -2038,7 +2231,8 @@ function submitDlApply() {
 function showDlDetail(id) {
     const a = overuseApplyList.find(x => x.id === id);
     if (!a) return;
-    const cfg = getUnitConfig(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, a.api);
+    const repApi = Array.isArray(a.api) ? a.api[0] : a.api;
+    const cfg = getUnitConfig(a.tenant, a.company || a.tenant, a.dept, a.sys, a.supplier, repApi);
     document.getElementById('dlDetailInfo').innerHTML = dlDetailFormHtml(a, cfg);
     document.getElementById('dlDetailModal').classList.add('active');
 }
@@ -2049,11 +2243,18 @@ let thEditIdx = -1;
 let thPage = 1, thPageSize = 10;
 let thFilterTenant = '', thFilterSupplier = '', thFilterApi = '';
 let filteredThreshold = [...thresholdConfig];
+function apiText(api) { return api === '不限' ? '不限' : (Array.isArray(api) ? api.join('、') : (api || '')); }
+function apiMatchesFilter(cApi, filter) {
+    if (!filter) return true;
+    if (cApi === '不限') return true;
+    if (Array.isArray(cApi)) return cApi.includes(filter);
+    return cApi === filter;
+}
 function applyThFilters() {
     filteredThreshold = thresholdConfig.filter(c => {
         if (thFilterTenant && c.tenant !== thFilterTenant) return false;
         if (thFilterSupplier && c.supplier !== thFilterSupplier) return false;
-        if (thFilterApi && c.api !== thFilterApi) return false;
+        if (thFilterApi && !apiMatchesFilter(c.api, thFilterApi)) return false;
         return true;
     });
 }
@@ -2069,9 +2270,9 @@ function renderThTable() {
         const gIdx = thresholdConfig.indexOf(c);
         return `<tr>
             <td>${start + i + 1}</td>
-            <td>${escapeHtml(c.tenant)}</td>
+            <td>${escapeHtml(`${c.callerTenant || c.tenant || '—'}-${c.company || '—'}-${c.dept || '—'}-${c.sys || '—'}`)}</td>
             <td>${escapeHtml(c.supplier || '—')}</td>
-            <td>${escapeHtml(c.api || '—')}</td>
+            <td>${escapeHtml(apiText(c.api) || '—')}</td>
             <td>${c.trigger.toLocaleString()}</td>
             <td><span class="status-badge ${c.enabled ? 'status-approved' : 'status-disabled'}">${c.enabled ? '启用' : '停用'}</span></td>
             <td>2026-08-26 10:00</td>
@@ -2144,8 +2345,22 @@ function fillThSupplierOptions() {
 }
 function fillThApiOptions() {
     const supplier = document.getElementById('thSupplier').value;
-    const sel = document.getElementById('thApi');
-    sel.innerHTML = '<option value="">请选择API</option>' + (dlSupplierApiMap[supplier] || []).map(a => `<option value="${a}">${a}</option>`).join('');
+    thApiMulti.setOptions(dlSupplierApiMap[supplier] || []);
+    updateThApiInfo();
+}
+function updateThApiInfo() {
+    const supplier = document.getElementById('thSupplier').value;
+    const info = document.getElementById('thApiQuotaInfo');
+    const trigger = document.getElementById('thTrigger');
+    const selected = thApiMulti ? thApiMulti.getValues() : [];
+    if (supplier && selected.indexOf('不限') > -1) {
+        const q = supplierQuotaMap[supplier];
+        info.textContent = q ? `已选「不限」：按供应商总额度配置，总额度 ${q.total.toLocaleString()} 次（可分配 ${(q.total - q.used).toLocaleString()} 次）` : '';
+        if (trigger && q) trigger.max = q.total;
+    } else {
+        info.textContent = '';
+        if (trigger) trigger.max = '';
+    }
 }
 function openThForm(idx) {
     thEditIdx = idx;
@@ -2162,7 +2377,8 @@ function openThForm(idx) {
         document.getElementById('thSys').value = c.sys || '';
         document.getElementById('thSupplier').value = c.supplier;
         fillThApiOptions();
-        document.getElementById('thApi').value = c.api;
+        thApiMulti.setValues(c.api);
+        updateThApiInfo();
         document.getElementById('thTrigger').value = c.trigger;
         document.getElementById('thEnabled').value = String(c.enabled);
     } else {
@@ -2185,18 +2401,21 @@ function saveThForm() {
     const dept = document.getElementById('thDept').value;
     const sys = document.getElementById('thSys').value;
     const supplier = document.getElementById('thSupplier').value;
-    const api = document.getElementById('thApi').value;
+    const apiValues = thApiMulti ? thApiMulti.getValues() : [];
+    const api = apiValues.indexOf('不限') > -1 ? '不限' : apiValues.slice();   // 不限=供应商全量；否则为已选 API 数组
     const trigger = parseInt(document.getElementById('thTrigger').value);
     const enabled = document.getElementById('thEnabled').value === 'true';
+    const callerTenant = document.getElementById('thBizTenant').value;
     if (!tenant) { alert('请选择租户'); return; }
-    if (!supplier || !api) { alert('请选择供应商与API'); return; }
+    if (!supplier || !apiValues.length) { alert('请选择供应商与API'); return; }
     if (!trigger || trigger < 1) { alert('阈值必须为正整数'); return; }
+    if (api === '不限' && supplierQuotaMap[supplier] && trigger > supplierQuotaMap[supplier].total) { alert(`「不限」时阈值不能超过供应商总额度（${supplierQuotaMap[supplier].total.toLocaleString()} 次/天）`); return; }
     if (thEditIdx >= 0) {
-        thresholdConfig[thEditIdx] = { ...thresholdConfig[thEditIdx], tenant, company, dept, sys, supplier, api, trigger, enabled };
+        thresholdConfig[thEditIdx] = { ...thresholdConfig[thEditIdx], tenant, callerTenant, company, dept, sys, supplier, api, trigger, enabled };
         alert('修改成功');
     } else {
-        if (thresholdConfig.some(t => t.tenant === tenant && (t.company || '') === (company || '') && (t.dept || '') === (dept || '') && (t.sys || '') === (sys || '') && t.supplier === supplier && t.api === api)) { alert('该租户下该供应商与API已存在阈值配置，请直接编辑'); return; }
-        thresholdConfig.push({ tenant, company, dept, sys, supplier, api, trigger, second: DEFAULT_SECOND, enabled });
+        if (thresholdConfig.some(t => t.tenant === tenant && t.supplier === supplier && apiText(t.api) === apiText(api))) { alert('该租户下该供应商与API已存在阈值配置，请直接编辑'); return; }
+        thresholdConfig.push({ tenant, callerTenant, company, dept, sys, supplier, api, trigger, second: DEFAULT_SECOND, enabled });
         alert('新增成功');
     }
     closeThFormModal();
@@ -2205,6 +2424,8 @@ function saveThForm() {
 
 // ---------- 事件绑定与初始化 ----------
 let dlStartFp = null, dlEndFp = null;
+let thApiMulti = createApiMultiSelect({ wrap: 'thApiWrap', display: 'thApiDisplay', placeholder: 'thApiPlaceholder', dropdown: 'thApiDropdown' }, updateThApiInfo);
+let dlApiMulti = createApiMultiSelect({ wrap: 'dlApiWrap', display: 'dlApiDisplay', placeholder: 'dlApiPlaceholder', dropdown: 'dlApiDropdown' }, updateDlTriggerInfo);
 if (window.flatpickr) {
     dlStartFp = flatpickr('#dlStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: updateDlTriggerInfo });
     dlEndFp = flatpickr('#dlEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: updateDlTriggerInfo });
@@ -2228,7 +2449,6 @@ document.getElementById('closeThFormModal')?.addEventListener('click', closeThFo
 document.getElementById('cancelThFormBtn')?.addEventListener('click', closeThFormModal);
 document.getElementById('saveThBtn')?.addEventListener('click', saveThForm);
 document.getElementById('dlSupplier')?.addEventListener('change', function () { fillApiOptions(); updateDlTriggerInfo(); });
-document.getElementById('dlApi')?.addEventListener('change', updateDlTriggerInfo);
 document.getElementById('dlReason')?.addEventListener('input', updateDlReasonCount);
 document.getElementById('dlDept')?.addEventListener('change', fillDlSysOptions);
 document.getElementById('thDept')?.addEventListener('change', fillThSysOptions);

@@ -738,6 +738,9 @@
         .struct-table-field input { width: 220px; }
 
         /* 返回结果数据结构化 */
+        /* 返回参数表「解析属性/解析结果/解析类型」与「返回结果数据结构化」模块随「是否结构化」开关显隐 */
+        #respTable.no-parse-cols .col-parse { display: none; }
+        /* 开关关闭（解析三列隐藏）时，剩余列按原 12:13:8:16 比例重排填满表格宽度（宽度由 applyStructVisibility 显式计算） */
         .struct-empty {
             border: 1px dashed #dcdfe6;
             border-radius: 4px;
@@ -1279,7 +1282,7 @@
                         <button class="btn-mini" id="clearReqBtn" onclick="clearParamRows('req')">清空表格参数</button>
                     </div>
                     <table class="sub-table">
-                        <thead><tr><th style="width:20%;">参数名</th><th style="width:21%;">示例值</th><th style="width:12%;">类型</th><th style="width:11%;">是否必填</th><th style="width:20%;">说明</th><th style="width:160px;">操作</th></tr></thead>
+                        <thead><tr><th style="width:20%;">参数名</th><th style="width:21%;">示例值</th><th style="width:12%;">类型</th><th style="width:11%;">是否必填</th><th style="width:20%;">说明</th><th style="width:180px;">操作</th></tr></thead>
                         <tbody id="reqTbody"></tbody>
                     </table>
                 </div>
@@ -1294,14 +1297,14 @@
                             <button class="btn-mini" id="clearRespBtn" onclick="clearParamRows('resp')">清空表格参数</button>
                         </div>
                     </div>
-                    <table class="sub-table">
-                        <thead><tr><th style="width:12%;">参数名</th><th style="width:13%;">示例值</th><th style="width:8%;">类型</th><th style="width:11%;">解析属性</th><th style="width:11%;">解析结果</th><th style="width:9%;">解析类型</th><th style="width:16%;">说明</th><th style="width:160px;">操作</th></tr></thead>
+                    <table class="sub-table" id="respTable">
+                        <thead><tr><th style="width:12%;">参数名</th><th style="width:13%;">示例值</th><th style="width:8%;">类型</th><th class="col-parse" style="width:11%;">解析属性</th><th class="col-parse" style="width:11%;">解析结果</th><th class="col-parse" style="width:9%;">解析类型</th><th style="width:16%;">说明</th><th style="width:180px;">操作</th></tr></thead>
                         <tbody id="respTbody"></tbody>
                     </table>
                 </div>
 
                 <!-- 返回结果数据结构化 -->
-                <div class="section-card">
+                <div class="section-card" id="structModule">
                     <div class="section-title"><span>返回结果数据结构化</span></div>
                     <div class="param-toolbar">
                         <div class="toolbar-links" style="margin-left:0;gap:12px;">
@@ -1552,7 +1555,7 @@ function renderApiTable() {
         <td>${escapeHtml(item.createdAt)}</td>
         <td>${escapeHtml(item.updater)}</td>
         <td>${escapeHtml(item.updatedAt)}</td>
-        <td class="action-icons"><a class="action-link" onclick="openEdit('edit', ${item.id})">编辑</a><a class="action-link" onclick="openEdit('detail', ${item.id})">详情</a><a class="action-link" onclick="openEdit('struct', ${item.id})">结构化</a><a class="action-link" onclick="openTest(${item.id})">测试</a><a class="action-link" onclick="openEdit('copy', ${item.id})">复制</a><a class="action-link danger" onclick="deleteApi(${item.id})">删除</a></td>
+        <td class="action-icons"><a class="action-link" onclick="openEdit('edit', ${item.id})">编辑</a><a class="action-link" onclick="openEdit('detail', ${item.id})">详情</a><a class="action-link" onclick="openTest(${item.id})">测试</a><a class="action-link" onclick="openEdit('copy', ${item.id})">复制</a><a class="action-link danger" onclick="deleteApi(${item.id})">删除</a></td>
     </tr>`).join('');
     updateApiPagination(total, list.length);
 }
@@ -1622,6 +1625,24 @@ function openEdit(mode, id) {
     renderParamTables();
     setEditReadonly(mode === 'detail');
     showView('editModule');
+    applyStructVisibility(); // 返回参数「解析属性/解析结果/解析类型」三列与「返回结果数据结构化」模块随开关显隐（须在模块可见后调用，宽度按真实布局计算）
+}
+
+/* 「是否结构化」开关开 → 返回参数表展示「解析属性/解析结果/解析类型」三列与「返回结果数据结构化」模块；
+ * 开关关 → 全部隐藏 */
+function applyStructVisibility() {
+    const on = document.getElementById('edStructured').checked;
+    const t = document.getElementById('respTable');
+    t.classList.toggle('no-parse-cols', !on);
+    document.getElementById('structModule').style.display = on ? '' : 'none';
+    // 开关关闭：解析三列隐藏后，剩余列按原 12:13:8:16 比例重排填满表格宽度（操作列 160px 固定）
+    // 注：table-layout:fixed 会把多余宽度全部给最后一列，故显式计算各列像素宽
+    const ths = t.querySelectorAll('th');
+    for (const i of [0, 1, 2, 6]) ths[i].style.width = '';
+    if (!on) {
+        const rem = Math.max(t.offsetWidth - 180, 300);
+        [12, 13, 8, 16].forEach((r, i) => { ths[i < 3 ? i : 6].style.width = Math.round(rem * r / 49) + 'px'; });
+    }
 }
 
 function setEditReadonly(readonly) {
@@ -1668,6 +1689,7 @@ function toggleStructured() {
     if (!on) { dbSel.value = ''; tableInput.value = ''; }
     dbSel.disabled = !on;
     tableInput.disabled = !on;
+    applyStructVisibility(); // 解析三列 + 结构化模块随开关显隐
     renderStructSummary();
 }
 
@@ -1931,9 +1953,9 @@ function renderRespRows() {
                 <td><div class="name-cell" style="padding-left:${(r.level || 0) * 22}px;">${arrow}<input class="cell-input" value="${escapeHtml(r.name)}" ${ro || sro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="name" placeholder="参数名"></div></td>
                 <td><input class="cell-input" value="${escapeHtml(r.example)}" ${ro || sro || (r.type === 'array' || r.type === 'object') ? 'disabled' : ''} data-f="example" placeholder="示例值"></td>
                 <td><select class="cell-select" ${ro || sro ? 'disabled' : ''} data-f="type">${TYPE_OPTIONS.map(t => `<option value="${t}" ${r.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
-                <td><select class="cell-select" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseAttr">${parseAttrOptions(r, i, rows)}</select></td>
-                <td><input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果"></td>
-                <td><input class="cell-input" value="${escapeHtml(r.parseAttr === '表' || isArrElementRow(rows, i) ? '' : (r.dbType || dbTypeOf(r.type)))}" ${ro || isArrElementRow(rows, i) || r.parseAttr === '表' ? 'disabled' : ''} data-f="dbType" placeholder="解析类型"></td>
+                <td class="col-parse"><select class="cell-select" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseAttr">${parseAttrOptions(r, i, rows)}</select></td>
+                <td class="col-parse"><input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果"></td>
+                <td class="col-parse"><input class="cell-input" value="${escapeHtml(r.parseAttr === '表' || isArrElementRow(rows, i) ? '' : (r.dbType || dbTypeOf(r.type)))}" ${ro || isArrElementRow(rows, i) || r.parseAttr === '表' ? 'disabled' : ''} data-f="dbType" placeholder="解析类型"></td>
                 <td><input class="cell-input" value="${escapeHtml(r.desc)}" ${ro || sro ? 'disabled' : ''} data-f="desc" placeholder="说明"></td>
                 <td>${rowOpsHtml(i, rows, 'resp', ro || sro)}</td>
             </tr>`;
