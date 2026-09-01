@@ -991,7 +991,7 @@
                         <div class="action-bar" style="justify-content:flex-start;"><button class="btn-add" id="addDlApplyBtn">新增申请</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>调用方</th><th>申请人</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请拟超用量</th><th>申请理由</th><th>审批状态</th><th>申请时间</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请拟超用量</th><th>申请理由</th><th>审批状态</th><th>申请时间</th><th>调用方</th><th>申请人</th><th>操作</th></tr></thead>
                                 <tbody id="dlTableBody"></tbody>
                             </table>
                         </div>
@@ -1015,7 +1015,7 @@
                         <div class="action-bar"><button class="btn-add" id="addThBtn">新增</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>调用方</th><th>供应商</th><th>API</th><th>阈值(次/天)</th><th>启用状态</th><th>更新时间</th><th>更新人</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>阈值(次/天)</th><th>启用状态</th><th>更新时间</th><th>调用方</th><th>更新人</th><th>操作</th></tr></thead>
                                 <tbody id="thTableBody"></tbody>
                             </table>
                         </div>
@@ -2074,19 +2074,20 @@ function renderDailyTable() {
     const start = (dailyPage - 1) * dailyPageSize;
     const pageData = list.slice(start, start + dailyPageSize);
     const tbody = document.getElementById('dlTableBody');
-    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
+    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
     tbody.innerHTML = pageData.map((a, idx) => {
         return `<tr>
             <td>${(dailyPage - 1) * dailyPageSize + idx + 1}</td>
-            <td>${escapeHtml(a.callerTenant || a.tenant || '—')}-${escapeHtml(a.company || '—')}-${escapeHtml(a.dept || '—')}-${escapeHtml(a.sys || '—')}</td>
-            <td>${escapeHtml(a.applicant || '—')}</td>
+            <td>${escapeHtml(a.tenant || '—')}</td>
             <td>${escapeHtml(a.supplier || '—')}</td>
-            <td>${escapeHtml(apiText(a.api) || '—')}</td>
+            <td>${escapeHtml(apiText(a.api) || '—')}</td>			
             <td>${a.start} ~ ${a.end}</td>
             <td>${(a.planned || 0).toLocaleString()} 次</td>
             <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(a.reason)}">${escapeHtml(a.reason)}</td>
             <td><span class="status-badge ${dlStatusClass(a.status)}">${a.status}</span></td>
             <td>${a.appliedAt}</td>
+			<td>${escapeHtml(`${a.callerTenant || a.tenant || '—'}-${a.company || '—'}-${a.dept || '—'}-${a.sys || '—'}`)}</td>
+<td>${escapeHtml(a.applicant || '—')}</td>			
             <td class="action-icons">${dlOpsHtml(a)}</td>
         </tr>`;
     }).join('');
@@ -2265,17 +2266,18 @@ function renderThTable() {
     if (thPage > total) thPage = total;
     const start = (thPage - 1) * thPageSize;
     const pageData = filteredThreshold.slice(start, start + thPageSize);
-    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;">暂无数据</td></tr>'; renderThPagination(); return; }
+    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;">暂无数据</td></tr>'; renderThPagination(); return; }
     tbody.innerHTML = pageData.map((c, i) => {
         const gIdx = thresholdConfig.indexOf(c);
         return `<tr>
             <td>${start + i + 1}</td>
-            <td>${escapeHtml(`${c.callerTenant || c.tenant || '—'}-${c.company || '—'}-${c.dept || '—'}-${c.sys || '—'}`)}</td>
+            <td>${escapeHtml(c.tenant || '—')}</td>
             <td>${escapeHtml(c.supplier || '—')}</td>
             <td>${escapeHtml(apiText(c.api) || '—')}</td>
             <td>${c.trigger.toLocaleString()}</td>
             <td><span class="status-badge ${c.enabled ? 'status-approved' : 'status-disabled'}">${c.enabled ? '启用' : '停用'}</span></td>
             <td>2026-08-26 10:00</td>
+            <td>${escapeHtml(`${c.callerTenant || c.tenant || '—'}-${c.company || '—'}-${c.dept || '—'}-${c.sys || '—'}`)}</td>
             <td>席某</td>
             <td><a class="action-link" onclick="openThForm(${gIdx})">编辑</a><a class="action-link danger" onclick="deleteThConfig(${gIdx})">删除</a></td>
         </tr>`;
