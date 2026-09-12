@@ -1006,6 +1006,7 @@
                     <div class="filter-left">
                         <div class="filter-item"><label>申请人</label><input type="text" id="approvalFilterApplicant" placeholder="请输入申请人"></div>
                         <div class="filter-item"><label>申请用途</label><input type="text" id="approvalFilterPurpose" placeholder="请输入申请用途"></div>
+                        <div class="filter-item"><label>业务类型</label><select id="approvalFilterBizType"><option value="全部">全部</option><option value="服务申请">服务申请</option><option value="大额用量申请">大额用量申请</option></select></div>
                     </div>
                     <div class="filter-right"><button class="btn-primary" id="approvalSearchBtn">查询</button><button class="btn-default" id="approvalResetBtn">重置</button></div>
                 </div>
@@ -1016,7 +1017,7 @@
                 </div>
                 <div class="table-container">
                     <table class="data-table">
-                        <thead><th>编号</th><th>申请单号</th><th>申请人</th><th>申请人租户</th><th>申请人系统</th><th>申请用途</th><th>申请时间</th><th>审批状态</th><th>操作</th></thead>
+                        <thead><th>编号</th><th>申请单号</th><th>申请人</th><th>申请人单位</th><th>业务类型</th><th>申请用途</th><th>调用方</th><th>申请服务</th><th>申请时间</th><th>调用方系统</th><th>审批状态</th><th>操作</th></thead>
                         <tbody id="approvalTableBody"></tbody>
                     </table>
                 </div>
@@ -1095,15 +1096,15 @@ let messageList = [
 
 // ======================== 我的审批数据 ========================
 let approvalList = [
-    { id: 1, applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "测试", applyTime: "2026-04-15 10:23:15", status: "待审批" },
-    { id: 2, applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某金控", applicantSystem: "风险管理系统", purpose: "需要调用数据", applyTime: "2026-04-15 09:23:15", status: "待审批" },
-    { id: 3, applyNo: "APdENtq2H", applicant: "张三", applicantTenant: "某某租赁", applicantSystem: "外数平台", purpose: "租赁调用接口", applyTime: "2026-04-15 08:23:15", status: "待审批" },
-    { id: 4, applyNo: "APsmL5FTk", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "企业画像查询", applyTime: "2026-04-08 09:53:11", status: "待审批" },
-    { id: 5, applyNo: "APcSU7Dn", applicant: "李四", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "金融风控API", applyTime: "2026-03-24 09:19:59", status: "已完成" },
-    { id: 6, applyNo: "APAIYRl4A", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "数据清洗服务", applyTime: "2026-03-23 09:58:07", status: "已完成" },
-    { id: 7, applyNo: "CY20260826-001", applicant: "席某", applicantTenant: "某某金控", applicantSystem: "外数平台", purpose: "大额用量申请：存量客户风险重评", applyTime: "2026-08-26 08:40:00", status: "待审批" },
-    { id: 8, applyNo: "CY20260824-002", applicant: "王五", applicantTenant: "某某租赁", applicantSystem: "租赁管理系统", purpose: "大额用量申请：租赁资产尽调数据批量获取", applyTime: "2026-08-25 09:30:00", status: "待审批" },
-    { id: 9, applyNo: "CY20260820-001", applicant: "张三", applicantTenant: "某某金控", applicantSystem: "营销平台", purpose: "大额用量申请：营销活动名单批量核验", applyTime: "2026-08-20 09:10:00", status: "已完成" }
+    { id: 1, applyNo: "APdENtq2H", applicant: "张三", applicantUnit: "某某金控", businessType: "服务申请", purpose: "测试", caller: "某某金控-华润金控-技术研发部-风控系统", callerSystem: "外数平台", serviceName: "金融风控API服务", applyTime: "2026-04-15 10:23:15", status: "待审批" },
+    { id: 2, applyNo: "APdENtq2H", applicant: "张三", applicantUnit: "某某金控", businessType: "服务申请", purpose: "需要调用数据", caller: "某某金控-华润金控-技术研发部-风控系统", callerSystem: "外数平台", serviceName: "企业基本信息查询服务", applyTime: "2026-04-15 09:23:15", status: "待审批" },
+    { id: 3, applyNo: "APdENtq2H", applicant: "张三", applicantUnit: "某某租赁", businessType: "服务申请", purpose: "租赁调用接口", caller: "某某租赁-华润租赁-资产管理部-租赁管理系统", callerSystem: "外数平台", serviceName: "融资历史查询服务", applyTime: "2026-04-15 08:23:15", status: "待审批" },
+    { id: 4, applyNo: "APsmL5FTk", applicant: "席某", applicantUnit: "某某金控", businessType: "服务申请", purpose: "企业画像查询", caller: "某某金控-华润金控-技术研发部-风控系统", callerSystem: "外数平台", serviceName: "企业画像查询服务", applyTime: "2026-04-08 09:53:11", status: "待审批" },
+    { id: 5, applyNo: "APcSU7Dn", applicant: "李四", applicantUnit: "某某金控", businessType: "服务申请", purpose: "金融风控API", caller: "某某金控-华润金控-产品运营部-营销平台", callerSystem: "外数平台", serviceName: "金融风控API服务", applyTime: "2026-03-24 09:19:59", status: "已完成" },
+    { id: 6, applyNo: "APAIYRl4A", applicant: "席某", applicantUnit: "某某金控", businessType: "服务申请", purpose: "数据清洗服务", caller: "某某金控-华润金控-技术研发部-风控系统", callerSystem: "外数平台", serviceName: "数据清洗服务", applyTime: "2026-03-23 09:58:07", status: "已完成" },
+    { id: 7, applyNo: "CY20260826-001", applicant: "席某", applicantUnit: "某某金控", businessType: "大额用量申请", purpose: "存量客户风险重评", caller: "某某金控-华润金控-技术研发部-风控系统", callerSystem: "外数平台", serviceName: "企查查-企业基本信息", applyTime: "2026-08-26 08:40:00", status: "待审批" },
+    { id: 8, applyNo: "CY20260824-002", applicant: "王五", applicantUnit: "某某租赁", businessType: "大额用量申请", purpose: "租赁资产尽调数据批量获取", caller: "某某租赁-华润租赁-资产管理部-租赁管理系统", callerSystem: "外数平台", serviceName: "天眼查-融资历史", applyTime: "2026-08-25 09:30:00", status: "待审批" },
+    { id: 9, applyNo: "CY20260820-001", applicant: "张三", applicantUnit: "某某金控", businessType: "大额用量申请", purpose: "营销活动名单批量核验", caller: "某某金控-华润金控-产品运营部-营销平台", callerSystem: "外数平台", serviceName: "第三方数据公司-舆情", applyTime: "2026-08-20 09:10:00", status: "已完成" }
 ];
 
 // ======================== 我的收藏数据 ========================
@@ -1423,7 +1424,8 @@ function formatNum(num) {
 function renderApprovalTable() {
     const applicant = document.getElementById('approvalFilterApplicant')?.value.trim() || '';
     const purpose = document.getElementById('approvalFilterPurpose')?.value.trim() || '';
-    
+    const bizType = document.getElementById('approvalFilterBizType')?.value || '全部';
+
     let filtered = [...approvalList];
     if (currentApprovalTab === 'my') {
         filtered = filtered.filter(i => i.applicant === currentUser);
@@ -1432,26 +1434,30 @@ function renderApprovalTable() {
     } else if (currentApprovalTab === 'completed') {
         filtered = filtered.filter(i => i.status === '已完成');
     }
-    
+
     if (applicant) filtered = filtered.filter(i => i.applicant.includes(applicant));
     if (purpose) filtered = filtered.filter(i => i.purpose.includes(purpose));
-    
+    if (bizType !== '全部') filtered = filtered.filter(i => i.businessType === bizType);
+
     filteredApproval = filtered;
     const total = Math.ceil(filteredApproval.length / pageSize) || 1;
     if (currentPage.approval > total) currentPage.approval = total;
     const pageData = filteredApproval.slice((currentPage.approval-1)*pageSize, currentPage.approval*pageSize);
     const tbody = document.getElementById('approvalTableBody');
     if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;">暂无数据</td></tr>';
     } else {
         tbody.innerHTML = pageData.map(i => `<tr>
             <td>${i.id}</td>
             <td>${escapeHtml(i.applyNo)}</td>
             <td>${escapeHtml(i.applicant)}</td>
-            <td>${escapeHtml(i.applicantTenant)}</td>
-            <td>${escapeHtml(i.applicantSystem)}</td>
+            <td>${escapeHtml(i.applicantUnit)}</td>
+            <td>${escapeHtml(i.businessType)}</td>
             <td>${escapeHtml(i.purpose)}</td>
+            <td>${escapeHtml(i.caller)}</td>
+            <td>${escapeHtml(i.serviceName)}</td>
             <td>${escapeHtml(i.applyTime)}</td>
+            <td>${escapeHtml(i.callerSystem)}</td>
             <td><span class="status-badge ${i.status==='待审批'?'status-pending':'status-approved'}">${i.status}</span></td>
             <td><a class="action-link" onclick="handleApproval(${i.id})">${i.status==='待审批'?'去审批':'查看详情'}</a></td>
         </tr>`).join('');
@@ -1496,7 +1502,7 @@ function renderFavoritesTable() {
 }
 
 function cancelFavorite(id) { if(confirm('确定取消收藏该服务吗？')){ favoritesList = favoritesList.filter(i => i.id !== id); renderFavoritesTable(); alert('已取消收藏'); } }
-function handleApproval(id) { const item = approvalList.find(i => i.id === id); if(item.status === '待审批') alert(`去审批：申请单号 ${item.applyNo}\n申请人：${item.applicant}\n申请用途：${item.purpose}`); else alert(`查看详情：申请单号 ${item.applyNo}\n申请人：${item.applicant}\n申请人租户：${item.applicantTenant}\n申请人系统：${item.applicantSystem}\n申请用途：${item.purpose}\n申请时间：${item.applyTime}\n审批状态：${item.status}`); }
+function handleApproval(id) { const item = approvalList.find(i => i.id === id); if(item.status === '待审批') alert(`去审批：申请单号 ${item.applyNo}\n申请人：${item.applicant}\n业务类型：${item.businessType}\n申请用途：${item.purpose}`); else alert(`查看详情：申请单号 ${item.applyNo}\n申请人：${item.applicant}\n申请人单位：${item.applicantUnit}\n业务类型：${item.businessType}\n申请用途：${item.purpose}\n调用方：${item.caller}\n调用方系统：${item.callerSystem}\n申请服务：${item.serviceName}\n申请时间：${item.applyTime}\n审批状态：${item.status}`); }
 
 function updatePagination(module, total, totalCount) {
     const cp = currentPage[module];
@@ -1559,7 +1565,7 @@ document.getElementById('tenantInfo')?.addEventListener('click', goToMessageFrom
 document.getElementById('msgSearchBtn')?.addEventListener('click', () => { currentPage.message=1; renderMessageTable(); });
 document.getElementById('msgResetBtn')?.addEventListener('click', () => { document.getElementById('msgFilterTenant').value=''; document.getElementById('msgFilterType').value='全部'; document.getElementById('msgFilterReadStatus').value='全部'; currentPage.message=1; renderMessageTable(); });
 document.getElementById('approvalSearchBtn')?.addEventListener('click', () => { currentPage.approval=1; renderApprovalTable(); });
-document.getElementById('approvalResetBtn')?.addEventListener('click', () => { document.getElementById('approvalFilterApplicant').value=''; document.getElementById('approvalFilterPurpose').value=''; currentPage.approval=1; renderApprovalTable(); });
+document.getElementById('approvalResetBtn')?.addEventListener('click', () => { document.getElementById('approvalFilterApplicant').value=''; document.getElementById('approvalFilterPurpose').value=''; document.getElementById('approvalFilterBizType').value='全部'; currentPage.approval=1; renderApprovalTable(); });
 document.getElementById('favSearchBtn')?.addEventListener('click', () => { currentPage.favorites=1; renderFavoritesTable(); });
 document.getElementById('favResetBtn')?.addEventListener('click', () => { document.getElementById('favFilterName').value=''; document.getElementById('favFilterPublisher').value=''; document.getElementById('favFilterDomain').value='全部'; document.getElementById('favFilterAuthStatus').value='全部'; document.getElementById('favFilterServiceStatus').value='全部'; currentPage.favorites=1; renderFavoritesTable(); });
 document.getElementById('closeModal')?.addEventListener('click', closeModal);

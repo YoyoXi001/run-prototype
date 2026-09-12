@@ -1002,7 +1002,7 @@
                         <div class="action-bar" style="justify-content:flex-start;"><button class="btn-add" id="addDlApplyBtn">新增申请</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请超用量</th><th>申请说明</th><th>审批状态</th><th>申请时间</th><th>调用方</th><th>申请人</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请超用量(次)</th><th>已用(次)</th><th>申请说明</th><th>审批状态</th><th>申请时间</th><th>调用方</th><th>申请人</th><th>操作</th></tr></thead>
                                 <tbody id="dlTableBody"></tbody>
                             </table>
                         </div>
@@ -1034,7 +1034,7 @@
                         <div class="action-bar"><button class="btn-add" id="addThBtn">新增</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API名称</th><th>调用方</th><th>阈值(次/天)</th><th>状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API名称</th><th>调用方</th><th>阈值(次/天)</th><th>已用(次)</th><th>状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
                                 <tbody id="thTableBody"></tbody>
                             </table>
                         </div>
@@ -1147,6 +1147,7 @@
                 <div class="form-row-horizontal"><label>阈值(次/天)</label><input type="text" id="dlTriggerInfo" class="form-control" disabled style="background:#f5f7fa;" placeholder="选择供应商与API后自动带出"></div>
                 <div class="form-row-horizontal"><label>申请日期范围 <span class="required">*</span></label><div class="date-range"><input type="text" id="dlStart" class="dl-datepicker" placeholder="开始日期" readonly><span>-</span><input type="text" id="dlEnd" class="dl-datepicker" placeholder="结束日期" readonly></div></div>
                 <div class="form-row-horizontal"><label>申请超用量(次) <span class="required">*</span></label><input type="number" id="dlPlanned" class="form-control" min="1" placeholder="正整数，如 12000"></div>
+                <div class="form-row-horizontal"><label>已用(次)</label><input type="text" id="dlUsed" class="form-control" disabled style="background:#f5f7fa;" value="0"></div>
                 <div class="caller-section">
                     <div class="caller-section-title">调用方</div>
                     <div class="form-row-horizontal"><label>租户</label><input type="text" id="dlBizTenant" class="form-control" disabled style="background:#f5f7fa;"></div>
@@ -1190,6 +1191,7 @@
                     </div>
                 </div>
                 <div class="form-row-horizontal"><label>阈值(次/天) <span class="required">*</span></label><input type="number" id="thTrigger" class="form-control" min="1" value="10000"></div>
+                <div class="form-row-horizontal"><label>已用(次)</label><input type="text" id="thUsed" class="form-control" disabled style="background:#f5f7fa;" value="0"></div>
                 <div class="form-row-horizontal"><label>启用状态 <span class="required">*</span></label><select id="thEnabled" class="form-control"><option value="true">启用</option><option value="false">停用</option></select></div>
                 <div class="caller-section">
                     <div class="caller-section-title">调用方</div>
@@ -1756,6 +1758,10 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         showNavMenu('operation');
     }
+    var hash = window.location.hash.slice(1);
+    if (hash === 'daily' || hash === 'threshold') {
+        switchPageTab(hash);
+    }
 });
 </script>
 <script>
@@ -1823,13 +1829,13 @@ const companyMap = {
 
 // 阈值配置（分业务单元=租户-公司-部门-系统-供应商-API 单独设置，设置权限在金控管理员）
 let thresholdConfig = [
-    { tenant: '某某金控', company: '华润金控', dept: '技术研发部', sys: '风控系统', supplier: '企查查', api: '企业基本信息', trigger: 10000, second: 150000, enabled: true },
-    { tenant: '某某金控', company: '华润金控', dept: '产品运营部', sys: '营销平台', supplier: '第三方数据公司', api: '舆情', trigger: 10000, second: 150000, enabled: true },
-    { tenant: '某某信托', company: '华润信托', dept: '风控中心', sys: '风控系统', supplier: '企查查', api: '企业规模', trigger: 10000, second: 120000, enabled: true },
-    { tenant: '某某租赁', company: '华润租赁', dept: '资产管理部', sys: '租赁管理系统', supplier: '天眼查', api: '融资历史', trigger: 8000, second: 150000, enabled: true },
-    { tenant: '某某保险', company: '华润保险', dept: '核保部', sys: '核保系统', supplier: '企查查', api: '企业基本信息', trigger: 10000, second: 150000, enabled: true },
-    { tenant: '某某银行', company: '华润银行', dept: '大数据部', sys: '反欺诈系统', supplier: '天眼查', api: '司法风险', trigger: 10000, second: 150000, enabled: true },
-    { tenant: '某某银行', company: '华润银行', dept: '运营管理部', sys: '报表系统', supplier: '天眼查', api: '企业基本信息', trigger: 10000, second: 150000, enabled: false }
+    { tenant: '某某金控', company: '华润金控', dept: '技术研发部', sys: '风控系统', supplier: '企查查', api: '企业基本信息', trigger: 10000, used: 6850, second: 150000, enabled: true },
+    { tenant: '某某金控', company: '华润金控', dept: '产品运营部', sys: '营销平台', supplier: '第三方数据公司', api: '舆情', trigger: 10000, used: 8200, second: 150000, enabled: true },
+    { tenant: '某某信托', company: '华润信托', dept: '风控中心', sys: '风控系统', supplier: '企查查', api: '企业规模', trigger: 10000, used: 9100, second: 120000, enabled: true },
+    { tenant: '某某租赁', company: '华润租赁', dept: '资产管理部', sys: '租赁管理系统', supplier: '天眼查', api: '融资历史', trigger: 8000, used: 4600, second: 150000, enabled: true },
+    { tenant: '某某保险', company: '华润保险', dept: '核保部', sys: '核保系统', supplier: '企查查', api: '企业基本信息', trigger: 10000, used: 7300, second: 150000, enabled: true },
+    { tenant: '某某银行', company: '华润银行', dept: '大数据部', sys: '反欺诈系统', supplier: '天眼查', api: '司法风险', trigger: 10000, used: 3100, second: 150000, enabled: true },
+    { tenant: '某某银行', company: '华润银行', dept: '运营管理部', sys: '报表系统', supplier: '天眼查', api: '企业基本信息', trigger: 10000, used: 0, second: 150000, enabled: false }
 ];
 function getUnitConfig(tenant, company, dept, sys, supplier, api) {
     const c = thresholdConfig.find(t =>
@@ -2047,7 +2053,7 @@ function dlDetailFormHtml(a, cfg) {
     <div class="form-row-horizontal"><label>阈值(次/天)</label>${ro((cfg.trigger || DEFAULT_TRIGGER).toLocaleString())}</div>
     <div class="form-row-horizontal"><label>申请日期范围</label><div class="date-range"><input type="text" class="dl-datepicker" value="${a.start}" disabled style="background:#f5f7fa;"><span>-</span><input type="text" class="dl-datepicker" value="${a.end}" disabled style="background:#f5f7fa;"></div></div>
     <div class="form-row-horizontal"><label>申请超用量(次)</label>${ro((a.planned || 0).toLocaleString())}</div>
-    <div class="form-row-horizontal"><label>申请说明</label><textarea class="form-control" rows="3" readonly style="resize:none;background:#f5f7fa;font-family:inherit;">${escapeHtml(a.reason)}</textarea></div>
+    <div class="form-row-horizontal"><label>已用(次)</label>${ro((a.excessUsed || 0).toLocaleString())}</div>
     <div class="caller-section">
         <div class="caller-section-title">调用方</div>
         <div class="form-row-horizontal"><label>租户</label>${ro(a.callerTenant || a.tenant || '—')}</div>
@@ -2055,6 +2061,7 @@ function dlDetailFormHtml(a, cfg) {
         <div class="form-row-horizontal"><label>部门</label>${ro(a.dept || '—')}</div>
         <div class="form-row-horizontal"><label>系统</label>${ro(a.sys || '—')}</div>
     </div>
+    <div class="form-row-horizontal"><label>申请说明</label><textarea class="form-control" rows="3" readonly style="resize:none;background:#f5f7fa;font-family:inherit;">${escapeHtml(a.reason)}</textarea></div>	
 	<!-- 
     <div class="form-row-horizontal"><label>申请单号</label>${ro(a.applyNo)}</div>
     <div class="form-row-horizontal"><label>申请时间</label>${ro(a.appliedAt)}</div>`;
@@ -2103,15 +2110,18 @@ function renderDailyTable() {
     const start = (dailyPage - 1) * dailyPageSize;
     const pageData = list.slice(start, start + dailyPageSize);
     const tbody = document.getElementById('dlTableBody');
-    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
+    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateDlPagination(total, list.length); return; }
     tbody.innerHTML = pageData.map((a, idx) => {
+        const dlExcessUsed = a.excessUsed || 0;
+        const dlUsedPercent = a.planned ? ((dlExcessUsed / a.planned) * 100).toFixed(1) : 0;
         return `<tr>
             <td>${(dailyPage - 1) * dailyPageSize + idx + 1}</td>
             <td>${escapeHtml(a.tenant || '—')}</td>
             <td>${escapeHtml(a.supplier || '—')}</td>
             <td>${escapeHtml(apiText(a.api) || '—')}</td>			
             <td>${a.start} ~ ${a.end}</td>
-            <td>${(a.planned || 0).toLocaleString()} 次</td>
+            <td>${(a.planned || 0).toLocaleString()}</td>
+            <td><div style="display:flex;align-items:center;justify-content:center;gap:8px;"><span>${dlExcessUsed.toLocaleString()}</span><div style="background:#e9ecef;border-radius:10px;height:6px;width:70px;"><div style="background:#3a6df0;height:6px;border-radius:10px;width:${Math.min(dlUsedPercent,100)}%"></div></div><span style="font-size:11px;">${dlUsedPercent}%</span></div></td>
             <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(a.reason)}">${escapeHtml(a.reason)}</td>
             <td><span class="status-badge ${dlStatusClass(a.status)}">${a.status}</span></td>
             <td>${a.appliedAt}</td>
@@ -2300,9 +2310,11 @@ function renderThTable() {
     if (thPage > total) thPage = total;
     const start = (thPage - 1) * thPageSize;
     const pageData = filteredThreshold.slice(start, start + thPageSize);
-    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;">暂无数据</td></tr>'; renderThPagination(); return; }
+    if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:24px;">暂无数据</td></tr>'; renderThPagination(); return; }
     tbody.innerHTML = pageData.map((c, i) => {
         const gIdx = thresholdConfig.indexOf(c);
+        const thUsed = c.used || 0;
+        const thUsedPercent = c.trigger ? ((thUsed / c.trigger) * 100).toFixed(1) : 0;
         return `<tr>
             <td>${start + i + 1}</td>
             <td>${escapeHtml(c.tenant || '—')}</td>
@@ -2310,6 +2322,7 @@ function renderThTable() {
             <td>${escapeHtml(apiText(c.api) || '—')}</td>
             <td>${escapeHtml(`${c.callerTenant || c.tenant || '—'}-${c.company || '—'}-${c.dept || '—'}-${c.sys || '—'}`)}</td>
             <td>${c.trigger.toLocaleString()}</td>
+            <td><div style="display:flex;align-items:center;justify-content:center;gap:8px;"><span>${thUsed.toLocaleString()}</span><div style="background:#e9ecef;border-radius:10px;height:6px;width:70px;"><div style="background:#3a6df0;height:6px;border-radius:10px;width:${Math.min(thUsedPercent,100)}%"></div></div><span style="font-size:11px;">${thUsedPercent}%</span></div></td>
             <td><span class="status-badge ${c.enabled ? 'status-approved' : 'status-disabled'}">${c.enabled ? '启用' : '停用'}</span></td>
             <td>席某</td>
             <td>2026-08-26 10:00</td>
@@ -2418,6 +2431,7 @@ function openThForm(idx) {
         thApiMulti.setValues(c.api);
         updateThApiInfo();
         document.getElementById('thTrigger').value = c.trigger;
+        document.getElementById('thUsed').value = (c.used || 0).toLocaleString();
         document.getElementById('thEnabled').value = String(c.enabled);
     } else {
         document.getElementById('thTenant').value = '';
@@ -2428,6 +2442,7 @@ function openThForm(idx) {
         document.getElementById('thSupplier').value = '';
         fillThApiOptions();
         document.getElementById('thTrigger').value = DEFAULT_TRIGGER;
+        document.getElementById('thUsed').value = '0';
         document.getElementById('thEnabled').value = 'true';
     }
     document.getElementById('dlThFormModal').classList.add('active');
@@ -2453,7 +2468,7 @@ function saveThForm() {
         alert('修改成功');
     } else {
         if (thresholdConfig.some(t => t.tenant === tenant && t.supplier === supplier && apiText(t.api) === apiText(api))) { alert('该租户下该供应商与API已存在阈值配置，请直接编辑'); return; }
-        thresholdConfig.push({ tenant, callerTenant, company, dept, sys, supplier, api, trigger, second: DEFAULT_SECOND, enabled });
+        thresholdConfig.push({ tenant, callerTenant, company, dept, sys, supplier, api, trigger, used: 0, second: DEFAULT_SECOND, enabled });
         alert('新增成功');
     }
     closeThFormModal();

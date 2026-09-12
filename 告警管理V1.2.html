@@ -613,7 +613,7 @@
     </div>
 
     <!-- 规则弹窗 -->
-    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则名称</label><input type="text" id="ruleNameInput" placeholder="请输入规则名称"></div><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="">请选择规则类型</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="调用异常告警">调用异常告警</option><option value="系统性能监控">系统性能监控</option></select></div><div class="form-row"><label>规则子项</label><select id="ruleNameSelect"><option value="">请选择规则子项</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleSupplierRow" style="display: none;"><label>供应商</label><select id="ruleSupplier"><option value="全部">全部</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
+    <div id="ruleModal" class="modal-mask form-modal"><div class="modal-container"><div class="modal-header"><span id="ruleModalTitle">新增规则</span><i class="el-icon-close" id="closeRuleModal" style="cursor:pointer;"></i></div><div class="modal-body"><div class="form-row"><label>规则名称</label><input type="text" id="ruleNameInput" placeholder="请输入规则名称"></div><div class="form-row"><label>规则类型</label><select id="ruleType"><option value="">请选择规则类型</option><option value="合同账单提醒">合同账单提醒</option><option value="API用量预警">API用量预警</option><option value="服务使用预警">服务使用预警</option><option value="调用异常告警">调用异常告警</option><option value="系统性能监控">系统性能监控</option></select></div><div class="form-row"><label>规则子项</label><select id="ruleNameSelect"><option value="">请选择规则子项</option></select></div><div class="form-row"><label>触发条件</label><div id="dynamicConditions" style="flex:1;min-width:0;"></div></div><div class="form-row"><label>适用范围</label><select id="ruleService"><option value="全局">全局</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleSupplierRow" style="display: none;"><label>供应商</label><select id="ruleSupplier"><option value="全部">全部</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option></select></div><div class="form-row" id="ruleApiRow" style="display: none;"><label>API</label><select id="ruleApi"><option value="">请选择API</option></select></div><div class="form-row" id="ruleSvcRow" style="display: none;"><label>服务</label><select id="ruleSvcSelect"><option value="">请选择服务</option></select></div><div class="form-row"><label>告警级别</label><select id="ruleLevel"><option value="P0紧急">P0紧急</option><option value="P1严重">P1严重</option><option value="P2警告">P2警告</option><option value="P3提醒">P3提醒</option></select></div><div class="form-row"><label>发送对象</label><select id="ruleReceiver"><option value="运维组">运维组</option><option value="开发组">开发组</option><option value="审批组">审批组</option><option value="法务组">法务组</option><option value="管理员">管理员</option><option value="服务应用人员">服务应用人员</option><option value="服务运营人员">服务运营人员</option><option value="服务管理人员">服务管理人员</option><option value="服务开发人员">服务开发人员</option><option value="财务人员">财务人员</option><option value="申请人">申请人</option></select></div><div class="form-row"><label>状态</label><select id="ruleStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div><div class="form-row"><label>触发频率</label><div id="freqContainer" style="display: flex; align-items: center; gap: 12px;"><select id="ruleFreq"><option value="触发时发送一次">触发时发送一次</option><option value="每日检查">每日检查</option></select><div id="timePointsContainer" style="display: none;">
                         <div class="multi-select-container">
                             <div class="multi-select-trigger" onclick="toggleMultiSelect()">
                                 <span class="multi-select-placeholder">请选择时间点</span>
@@ -1081,7 +1081,7 @@ function updateRuleFormByType() {
     const type = document.getElementById('ruleType').value;
     let ruleNames = [];
     if (type === '合同账单提醒') ruleNames = ["合同到期提醒"];
-    else if (type === 'API用量预警') ruleNames = ["额度用量预警", "用量预测预警", "超额用量预警"];
+    else if (type === 'API用量预警') ruleNames = ["额度用量预警", "用量预测预警", "大额用量预警"];
     else if (type === '服务使用预警') ruleNames = ["服务用量预警"];
     else if (type === '调用异常告警') ruleNames = ["服务失败异常", "响应时间异常"];
     else if (type === '系统性能监控') ruleNames = ["系统性能异常"];
@@ -1100,7 +1100,7 @@ function renderConditions(ruleName) {
     const container = document.getElementById('dynamicConditions');
     if (!ruleName || ruleName === '') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">触发条件</div><div style="color:#999;">请先选择规则名称</div></div>`;
-    } else if (ruleName === '额度用量预警' || ruleName === '服务用量预警' || ruleName === '超额用量预警') {
+    } else if (ruleName === '额度用量预警' || ruleName === '服务用量预警' || ruleName === '大额用量预警') {
         container.innerHTML = `<div class="condition-group"><div class="condition-header">API已用量</div><div id="quotaConditionList"></div><button type="button" class="btn-default" onclick="addQuotaCondition()" style="margin-top:8px;">+ 添加条件</button></div>`;
         renderQuotaConditions();
     } else if (ruleName === '用量预测预警') {
@@ -1185,7 +1185,7 @@ function updateSystemPerfVal(idx, val) { systemPerfConditions[idx].value = parse
 function updateSystemPerfDurMin(idx, val) { systemPerfConditions[idx].durMin = parseInt(val); }
 
 function getConditionsText(ruleName) {
-    if (ruleName === '额度用量预警' || ruleName === '服务用量预警' || ruleName === '超额用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
+    if (ruleName === '额度用量预警' || ruleName === '服务用量预警' || ruleName === '大额用量预警') return quotaConditions.map(c => `API已用量 ${c.operator} ${c.value}%`);
     if (ruleName === '用量预测预警') return predictConditions.map(c => `预测用完日 ${c.operator} ${c.days} 天`);
     if (ruleName === '合同到期提醒') return contractDueConditions.map(c => `距离合同到期日 ${c.operator} ${c.days} 天`);
     if (ruleName === '服务失败异常') return serviceFailConditions.map(c => `服务连接状态 ${c.operator} ${c.value}, 持续 >= ${c.durMin}分钟`);
@@ -1306,7 +1306,7 @@ function editRule(id) {
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = false;
-            if(item.name==='额度用量预警' || item.name==='服务用量预警' || item.name==='超额用量预警'){
+            if(item.name==='额度用量预警' || item.name==='服务用量预警' || item.name==='大额用量预警'){
                 quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
@@ -1397,7 +1397,7 @@ function viewRule(id) {
         setTimeout(() => {
             document.getElementById('ruleNameSelect').value=item.name;
             document.getElementById('ruleNameSelect').disabled = true;
-            if(item.name==='额度用量预警' || item.name==='服务用量预警' || item.name==='超额用量预警'){
+            if(item.name==='额度用量预警' || item.name==='服务用量预警' || item.name==='大额用量预警'){
                 quotaConditions = item.conditions.map(c => { let m=c.match(/([><=]+)\s*(\d+)/); return { operator: m?.[1]||">=", value: parseInt(m?.[2]||80) }; });
                 renderConditions(item.name);
                 renderQuotaConditions();
@@ -1648,10 +1648,13 @@ function updateScopeUI() {
     }
     const special = isServiceUsageRule();
     const callExc = isCallExceptionRule();
+    const nameEl = document.getElementById('ruleNameSelect');
+    const isBigUsage = !!nameEl && nameEl.value === '大额用量预警';
     const current = scopeSelect.value;
     let opts;
     if (callExc) opts = ['外源API', '内部服务'];
     else if (special) opts = ['全局', '指定服务'];
+    else if (isBigUsage) opts = ['全局'];
     else opts = ['全局', '企查查', '天眼查'];
     scopeSelect.innerHTML = opts.map(o => '<option value="' + o + '">' + o + '</option>').join('');
     scopeSelect.value = (opts.indexOf(current) !== -1) ? current : opts[0];
