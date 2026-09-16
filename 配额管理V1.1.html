@@ -983,7 +983,7 @@
                         <div class="filter-bar">
                             <div class="filter-left rows">
                                 <div class="filter-row">
-                                    <div class="filter-item"><label>租户</label><select id="dlFilterTenant"><option value="">全部</option><option value="某某金控">某某金控</option><option value="某某信托">某某信托</option><option value="某某租赁">某某租赁</option><option value="某某保险">某某保险</option><option value="某某银行">某某银行</option></select></div>
+                                    <div class="filter-item"><label>所属租户</label><select id="dlFilterTenant"><option value="">全部</option><option value="某某金控">某某金控</option><option value="某某信托">某某信托</option><option value="某某租赁">某某租赁</option><option value="某某保险">某某保险</option><option value="某某银行">某某银行</option></select></div>
                                     <div class="filter-item"><label>供应商</label><select id="dlFilterSupplier"><option value="">全部</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option><option value="外部数据供应商">外部数据供应商</option><option value="数据服务提供商">数据服务提供商</option><option value="第三方数据公司">第三方数据公司</option></select></div>
                                     <div class="filter-item"><label>API</label><input type="text" id="dlFilterApi" placeholder="请输入API名称"></div>
                                     <div class="filter-item"><label>审批状态</label><select id="dlFilterStatus"><option value="全部">全部</option><option value="待审批">待审批</option><option value="已通过">已通过</option><option value="已驳回">已驳回</option></select></div>
@@ -1002,7 +1002,7 @@
                         <div class="action-bar" style="justify-content:flex-start;"><button class="btn-add" id="addDlApplyBtn">新增申请</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请超用量(次)</th><th>已用(次)</th><th>申请说明</th><th>审批状态</th><th>申请时间</th><th>调用方</th><th>申请人</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>所属租户</th><th>供应商</th><th>API</th><th>申请日期范围</th><th>申请超用量(次)</th><th>已用(次)</th><th>申请说明</th><th>审批状态</th><th>申请时间</th><th>调用方</th><th>申请人</th><th>操作</th></tr></thead>
                                 <tbody id="dlTableBody"></tbody>
                             </table>
                         </div>
@@ -1016,7 +1016,7 @@
                         <div class="filter-bar">
                             <div class="filter-left rows">
                                 <div class="filter-row">
-                                    <div class="filter-item"><label>租户</label><select id="thFilterTenant"><option value="">全部</option><option value="某某金控">某某金控</option><option value="某某信托">某某信托</option><option value="某某租赁">某某租赁</option><option value="某某保险">某某保险</option><option value="某某银行">某某银行</option></select></div>
+                                    <div class="filter-item"><label>所属租户</label><select id="thFilterTenant"><option value="">全部</option><option value="某某金控">某某金控</option><option value="某某信托">某某信托</option><option value="某某租赁">某某租赁</option><option value="某某保险">某某保险</option><option value="某某银行">某某银行</option></select></div>
                                     <div class="filter-item"><label>供应商</label><select id="thFilterSupplier"><option value="">全部</option><option value="企查查">企查查</option><option value="天眼查">天眼查</option><option value="外部数据供应商">外部数据供应商</option><option value="数据服务提供商">数据服务提供商</option><option value="第三方数据公司">第三方数据公司</option></select></div>
                                     <div class="filter-item"><label>API名称</label><input type="text" id="thFilterApi" placeholder="请输入API名称"></div>
                                 </div>
@@ -1034,7 +1034,7 @@
                         <div class="action-bar"><button class="btn-add" id="addThBtn">新增</button></div>
                         <div class="table-container">
                             <table class="data-table">
-                                <thead><tr><th>编号</th><th>租户</th><th>供应商</th><th>API名称</th><th>调用方</th><th>阈值(次/天)</th><th>已用(次)</th><th>状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+                                <thead><tr><th>编号</th><th>所属租户</th><th>供应商</th><th>API名称</th><th>调用方</th><th>阈值(次/天)</th><th>已用(次)</th><th>状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
                                 <tbody id="thTableBody"></tbody>
                             </table>
                         </div>
@@ -1132,7 +1132,7 @@
         <div class="modal-container" style="width: 720px;">
             <div class="modal-header"><span>大额用量申请</span><i class="el-icon-close" id="closeDlApplyModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
-                <div class="form-row-horizontal"><label>租户 <span class="required">*</span></label><select id="dlTenant" class="form-control"><option value="">请选择租户</option></select></div>
+                <div class="form-row-horizontal"><label>所属租户 <span class="required">*</span></label><select id="dlTenant" class="form-control"><option value="">请选择租户</option></select></div>
                 <div class="form-row-horizontal"><label>供应商 <span class="required">*</span></label><select id="dlSupplier" class="form-control"><option value="">请选择供应商</option></select></div>
                 <div class="form-row-horizontal">
                     <label>API <span class="required">*</span></label>
@@ -1144,8 +1144,7 @@
                         <div class="multi-select-dropdown" id="dlApiDropdown"></div>
                     </div>
                 </div>
-                <div class="form-row-horizontal"><label>阈值(次/天)</label><input type="text" id="dlTriggerInfo" class="form-control" disabled style="background:#f5f7fa;" placeholder="选择供应商与API后自动带出"></div>
-                <div class="form-row-horizontal"><label>申请日期范围 <span class="required">*</span></label><div class="date-range"><input type="text" id="dlStart" class="dl-datepicker" placeholder="开始日期" readonly><span>-</span><input type="text" id="dlEnd" class="dl-datepicker" placeholder="结束日期" readonly></div></div>
+               <div class="form-row-horizontal"><label>申请日期范围 <span class="required">*</span></label><div class="date-range"><input type="text" id="dlStart" class="dl-datepicker" placeholder="开始日期" readonly><span>-</span><input type="text" id="dlEnd" class="dl-datepicker" placeholder="结束日期" readonly></div></div>
                 <div class="form-row-horizontal"><label>申请超用量(次) <span class="required">*</span></label><input type="number" id="dlPlanned" class="form-control" min="1" placeholder="正整数，如 12000"></div>
                 <div class="form-row-horizontal"><label>已用(次)</label><input type="text" id="dlUsed" class="form-control" disabled style="background:#f5f7fa;" value="0"></div>
                 <div class="caller-section">
@@ -1175,7 +1174,7 @@
         <div class="modal-container" style="width: 640px;">
             <div class="modal-header"><span id="thFormTitle">新增阈值配置</span><i class="el-icon-close" id="closeThFormModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
-                <div class="form-row-horizontal"><label>租户 <span class="required">*</span></label><select id="thTenant" class="form-control"><option value="">请选择租户</option></select></div>
+                <div class="form-row-horizontal"><label>所属租户 <span class="required">*</span></label><select id="thTenant" class="form-control"><option value="">请选择租户</option></select></div>
                 <div class="form-row-horizontal"><label>供应商 <span class="required">*</span></label><select id="thSupplier" class="form-control"><option value="">请选择供应商</option></select></div>
                 <div class="form-row-horizontal">
                     <label>API <span class="required">*</span></label>
@@ -1195,7 +1194,7 @@
                 <div class="form-row-horizontal"><label>启用状态 <span class="required">*</span></label><select id="thEnabled" class="form-control"><option value="true">启用</option><option value="false">停用</option></select></div>
                 <div class="caller-section">
                     <div class="caller-section-title">调用方</div>
-                    <div class="form-row-horizontal"><label>租户</label><select id="thBizTenant" class="form-control"><option value="">请选择租户</option></select></div>
+                    <div class="form-row-horizontal"><label>租户<span class="required">*</span></label><select id="thBizTenant" class="form-control"><option value="">请选择租户</option></select></div>
                     <div class="form-row-horizontal"><label>公司</label><select id="thCompany" class="form-control"><option value="">请选择公司</option></select></div>
                     <div class="form-row-horizontal"><label>部门</label><select id="thDept" class="form-control"><option value="">请选择部门</option></select></div>
                     <div class="form-row-horizontal"><label>系统</label><select id="thSys" class="form-control"><option value="">请选择系统</option></select></div>
@@ -2047,7 +2046,7 @@ function calcJudge(tenant, company, dept, sys, supplier, api, planned, start, en
 function dlDetailFormHtml(a, cfg) {
     const ro = v => `<input type="text" class="form-control" disabled style="background:#f5f7fa;" value="${escapeHtml(v)}">`;
     return `
-    <div class="form-row-horizontal"><label>租户</label>${ro(a.tenant || '—')}</div>
+    <div class="form-row-horizontal"><label>所属租户</label>${ro(a.tenant || '—')}</div>
     <div class="form-row-horizontal"><label>供应商</label>${ro(a.supplier || '—')}</div>
     <div class="form-row-horizontal"><label>API</label>${ro(apiText(a.api) || '—')}</div>
     <div class="form-row-horizontal"><label>阈值(次/天)</label>${ro((cfg.trigger || DEFAULT_TRIGGER).toLocaleString())}</div>
@@ -2172,16 +2171,6 @@ function fillApiOptions() {
     const supplier = document.getElementById('dlSupplier').value;
     dlApiMulti.setOptions(dlSupplierApiMap[supplier] || []);
 }
-function updateDlTriggerInfo() {
-    const supplier = document.getElementById('dlSupplier').value || '';
-    const apiValues = dlApiMulti ? dlApiMulti.getValues() : [];
-    if (!supplier || !apiValues.length) { document.getElementById('dlTriggerInfo').value = ''; return; }
-    const api = apiValues.indexOf('不限') > -1 ? '不限' : apiValues[0];
-    // 阈值：按申请人业务单元+供应商API配置展示（分业务单元可配，未配置采用默认值）
-    const biz = currentBiz();
-    const cfg = getUnitConfig(biz.tenant, biz.company, biz.dept, biz.sys, supplier, api);
-    document.getElementById('dlTriggerInfo').value = cfg.trigger.toLocaleString();
-}
 function updateDlReasonCount() {
     const v = document.getElementById('dlReason').value;
     document.getElementById('dlReasonCount').textContent = `${v.length}/200`;
@@ -2226,7 +2215,6 @@ function openDlApply(prefill) {
     document.getElementById('dlPlanned').value = prefill?.planned || '';
     document.getElementById('dlReason').value = prefill?.reason || '';
     updateDlReasonCount();
-    updateDlTriggerInfo();
     document.getElementById('dlApplyModal').classList.add('active');
 }
 function closeDlApplyModal() { document.getElementById('dlApplyModal').classList.remove('active'); }
@@ -2497,10 +2485,10 @@ function fillCallerFilterOptions() {
 // ---------- 事件绑定与初始化 ----------
 let dlStartFp = null, dlEndFp = null;
 let thApiMulti = createApiMultiSelect({ wrap: 'thApiWrap', display: 'thApiDisplay', placeholder: 'thApiPlaceholder', dropdown: 'thApiDropdown' }, updateThApiInfo);
-let dlApiMulti = createApiMultiSelect({ wrap: 'dlApiWrap', display: 'dlApiDisplay', placeholder: 'dlApiPlaceholder', dropdown: 'dlApiDropdown' }, updateDlTriggerInfo);
+let dlApiMulti = createApiMultiSelect({ wrap: 'dlApiWrap', display: 'dlApiDisplay', placeholder: 'dlApiPlaceholder', dropdown: 'dlApiDropdown' }, function () {});
 if (window.flatpickr) {
-    dlStartFp = flatpickr('#dlStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: updateDlTriggerInfo });
-    dlEndFp = flatpickr('#dlEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true, onChange: updateDlTriggerInfo });
+    dlStartFp = flatpickr('#dlStart', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
+    dlEndFp = flatpickr('#dlEnd', { dateFormat: 'Y-m-d', locale: 'zh', allowInput: true });
 }
 document.getElementById('pageTabs')?.addEventListener('click', function (e) {
     const t = e.target.closest('.page-tab');
@@ -2520,7 +2508,7 @@ document.getElementById('thResetBtn')?.addEventListener('click', function () { [
 document.getElementById('closeThFormModal')?.addEventListener('click', closeThFormModal);
 document.getElementById('cancelThFormBtn')?.addEventListener('click', closeThFormModal);
 document.getElementById('saveThBtn')?.addEventListener('click', saveThForm);
-document.getElementById('dlSupplier')?.addEventListener('change', function () { fillApiOptions(); updateDlTriggerInfo(); });
+document.getElementById('dlSupplier')?.addEventListener('change', function () { fillApiOptions(); });
 document.getElementById('dlReason')?.addEventListener('input', updateDlReasonCount);
 document.getElementById('dlDept')?.addEventListener('change', fillDlSysOptions);
 document.getElementById('thDept')?.addEventListener('change', fillThSysOptions);
