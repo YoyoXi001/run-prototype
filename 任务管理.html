@@ -137,6 +137,25 @@
         .toast i { font-size: 16px; }
         @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-12px); } }
+
+        /* 执行日志表格 */
+        .log-table-wrap { border: 1px solid #ebeef5; border-radius: 8px; overflow: auto; max-height: 40vh; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .log-table th, .log-table td { padding: 10px 12px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; text-align: center; color: #666666; }
+        .log-table th:last-child, .log-table td:last-child { border-right: none; }
+        .log-table th { background: #fafcff; font-weight: 600; color: #555555; position: sticky; top: 0; }
+        .log-table tr:last-child td { border-bottom: none; }
+        .log-table tr:hover td { background: #f8fafc; }
+        .form-row input[type="file"] { padding: 6px 8px; background: #fff; }
+        .form-row .file-hint { font-size: 12px; color: #999999; margin-top: 4px; display: block; }
+        .form-row select.select-placeholder { color: #c0c4cc; }
+        .form-row select option { color: #333333; }
+        .log-pagination { padding: 10px 0 0 0 !important; }
+
+        /* 参数附件已选文件展示 */
+        .file-info { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: #f5f7fa; border-radius: 4px; }
+        .file-name { font-size: 12px; color: #f89d34; word-break: break-all; flex: 1; }
+        .delete-file { color: #f56c6c; cursor: pointer; font-size: 16px; margin-left: 8px; }
     </style>
 </head>
 <body>
@@ -221,7 +240,17 @@
                 <div class="form-row"><label>任务类型 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="taskTypeSelect" onchange="onTaskTypeChange()"><option value="定时任务">定时任务</option><option value="手动任务">手动任务</option></select></div></div>
                 <div class="form-row"><label>任务描述</label><div class="form-content"><input type="text" id="taskDesc" placeholder="请输入任务描述"></div></div>
                 <div class="form-row"><label>Bean名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="beanNameSelect" onchange="onBeanChange()"><option value="">请选择调度类</option></select></div></div>
-                <div class="form-row"><label>参数</label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{"key": "value"}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
+                <div class="form-row"><label>参数类型 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="taskParamType" onchange="onParamTypeChange('task')"><option value="输入参数">输入参数</option><option value="数据库参数">数据库参数</option><option value="Excel参数">Excel参数</option></select></div></div>
+                <div class="form-row" id="taskDbRow" style="display:none;"><label>数据库 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="taskParamDb" onchange="syncSelectPlaceholder(this)"><option value="">请选择数据库</option></select></div></div>
+                <div class="form-row" id="taskFileRow" style="display:none;"><label>参数附件 <span style="color:#f5222d;">*</span></label><div class="form-content">
+                    <input type="file" id="taskParamFile" accept=".xlsx,.xls">
+                    <span class="file-hint" id="taskParamFileHint">请导入Excel参数文件，执行时自动解析为请求入参</span>
+                    <div id="taskFileInfo" class="file-info" style="display: none;"><div id="taskFileList" style="width:100%;"></div></div>
+                </div></div>
+                <div class="form-row"><label>参数 <span style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{
+"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo",
+"param":"请求入参"
+}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
                 <div class="form-row" id="cronRow"><label>调度规则 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
                 <input type="hidden" id="cronExpr">
                 <div class="form-row"><label>状态</label><div class="form-content"><select id="taskStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div></div>
@@ -236,7 +265,17 @@
             <div class="modal-header"><span>执行一次</span><i class="el-icon-close" id="closeRunOnceModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
                 <div class="form-row"><label>任务名称</label><div class="form-content"><input type="text" id="runOnceTaskName" readonly></div></div>
-                <div class="form-row"><label>参数</label><div class="form-content"><textarea id="runOnceParams" rows="4" placeholder='{"key": "value"}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
+                <div class="form-row"><label>参数类型 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="runOnceParamType" onchange="onParamTypeChange('runOnce')"><option value="输入参数">输入参数</option><option value="数据库参数">数据库参数</option><option value="Excel参数">Excel参数</option></select></div></div>
+                <div class="form-row" id="runOnceDbRow" style="display:none;"><label>数据库 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="runOnceParamDb" onchange="syncSelectPlaceholder(this)"><option value="">请选择数据库</option></select></div></div>
+                <div class="form-row" id="runOnceFileRow" style="display:none;"><label>参数附件 <span style="color:#f5222d;">*</span></label><div class="form-content">
+                    <input type="file" id="runOnceParamFile" accept=".xlsx,.xls">
+                    <span class="file-hint" id="runOnceParamFileHint">请导入Excel参数文件，本次执行将解析其内容作为请求入参</span>
+                    <div id="runOnceFileInfo" class="file-info" style="display: none;"><div id="runOnceFileList" style="width:100%;"></div></div>
+                </div></div>
+                <div class="form-row"><label>参数 <span style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="runOnceParams" rows="4" placeholder='{
+"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo",
+"param":"请求入参"
+}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="cancelRunOnceModal">取消</button><button class="btn-primary" id="confirmRunOnceBtn">确认执行</button></div>
         </div>
@@ -251,7 +290,10 @@
                 <div class="form-row"><label>任务类型：</label><div class="form-content"><span id="viewTaskType" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>任务描述：</label><div class="form-content"><span id="viewTaskDesc" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>Bean名称：</label><div class="form-content"><span id="viewBeanName" class="readonly-value"></span></div></div>
-                <div class="form-row"><label>参数：</label><div class="form-content"><span id="viewTaskParams" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>参数类型：</label><div class="form-content"><span id="viewParamType" class="readonly-value"></span></div></div>
+                <div class="form-row" id="viewDbRow"><label>数据库：</label><div class="form-content"><span id="viewParamDb" class="readonly-value"></span></div></div>
+                <div class="form-row" id="viewFileRow"><label>参数附件：</label><div class="form-content"><span id="viewParamFile" class="readonly-value"></span></div></div>
+                <div class="form-row"><label>参数：</label><div class="form-content"><span id="viewTaskParams" class="readonly-value" style="font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;"></span></div></div>
                 <div class="form-row"><label>调度规则：</label><div class="form-content"><span id="viewCronDesc" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>最近执行：</label><div class="form-content"><span id="viewLastExecute" class="readonly-value"></span></div></div>
                 <div class="form-row"><label>状态：</label><div class="form-content"><span id="viewTaskStatus" class="readonly-value"></span></div></div>
@@ -262,11 +304,16 @@
 
     <!-- 任务日志弹窗 -->
     <div id="taskLogModal" class="modal-mask">
-        <div class="modal-container">
+        <div class="modal-container" style="width: 1000px; max-width: 94%;">
             <div class="modal-header"><span>执行日志</span><i class="el-icon-close" id="closeTaskLogModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
-                <div class="form-row"><label>任务名称</label><div class="form-content"><input type="text" id="logTaskName" readonly></div></div>
-                <div class="form-row"><label>日志内容</label><div class="form-content"><textarea id="taskLogContent" rows="10" readonly style="font-family: monospace;font-size:12px;background:#f5f7fa;"></textarea></div></div>
+                <div class="log-table-wrap">
+                    <table class="log-table">
+                        <thead><tr><th>序号</th><th>任务名称</th><th>参数模式</th><th>参数内容</th><th>执行时间</th><th>执行结果</th></tr></thead>
+                        <tbody id="taskLogTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="taskLogPagination" class="pagination log-pagination"></div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="closeTaskLogBtn">关闭</button></div>
         </div>
@@ -313,22 +360,94 @@ let beanClassList = [
     { id: "serviceUsageTask", name: "服务用量预警任务", className: "com.deepseek.task.ServiceUsageTask", description: "服务用量预警提醒", params: [{ key: "tenantId", name: "租户ID", required: true, type: "string" }, { key: "threshold", name: "阈值", required: true, type: "number" }] },
     { id: "enterpriseViolationTask", name: "企业违法记录任务", className: "com.deepseek.task.EnterpriseViolationTask", description: "企业严重违法记录推送", params: [{ key: "tenantId", name: "租户ID", required: true, type: "string" }, { key: "alertLevel", name: "告警级别", required: false, type: "string" }] },
     { id: "dataCleanTask", name: "数据清理任务", className: "com.deepseek.task.DataCleanTask", description: "清理过期数据", params: [{ key: "keepDays", name: "保留天数", required: true, type: "number" }] },
-    { id: "reportGenTask", name: "报表生成任务", className: "com.deepseek.task.ReportGenTask", description: "生成日报表", params: [{ key: "reportType", name: "报表类型", required: true, type: "string" }, { key: "dateRange", name: "日期范围", required: false, type: "string" }] }
+    { id: "reportGenTask", name: "报表生成任务", className: "com.deepseek.task.ReportGenTask", description: "生成日报表", params: [{ key: "reportType", name: "报表类型", required: true, type: "string" }, { key: "dateRange", name: "日期范围", required: false, type: "string" }] },
+    { id: "structuredParseTask", name: "数据结构化解析任务", className: "com.deepseek.task.StructuredParseTask", description: "执行数据结构化解析入库", params: [] },
+    { id: "manualPushTask", name: "手动重推任务", className: "com.deepseek.task.ManualPushTask", description: "按清单手动重推数据", params: [] }
+];
+
+// ======================== 数据库配置 ========================
+let dbList = [
+    { id: "crds_master", name: "外数主库（crds_master）" },
+    { id: "crds_report", name: "报表库（crds_report）" },
+    { id: "qcc_cache", name: "企查查缓存库（qcc_cache）" },
+    { id: "dw_ods", name: "数仓ODS库（dw_ods）" }
 ];
 
 // ======================== 任务数据 ========================
+// 参数类型：输入参数 / 数据库参数 / Excel参数
+// 参数格式：输入参数 {"APIURL": "...", "param": "请求入参json串"}；数据库参数 {"APIURL": "...", "paramSQL": "sql内容"}；Excel参数 {"APIURL": "..."}（执行时解析Excel内容，无需param字段）
 let taskList = [
-    { id: 1, taskName: "工商变更", taskType: "定时任务", beanName: "businessChangeTask", beanNameCn: "工商变更任务", beanClassName: "com.deepseek.task.BusinessChangeTask", description: "工商信息变更消息推送", params: JSON.stringify({ tenantId: "T001", serviceName: "" }, null, 2), cron: "0 0 9 1 * ?", cronDesc: "每月1号09:00", lastExecute: "2026/4/1", status: "启用" },
-    { id: 2, taskName: "服务用量", taskType: "定时任务", beanName: "serviceUsageTask", beanNameCn: "服务用量预警任务", beanClassName: "com.deepseek.task.ServiceUsageTask", description: "服务用量预警提醒", params: JSON.stringify({ tenantId: "T001", threshold: 80 }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
-    { id: 3, taskName: "企业违法", taskType: "定时任务", beanName: "enterpriseViolationTask", beanNameCn: "企业违法记录任务", beanClassName: "com.deepseek.task.EnterpriseViolationTask", description: "企业严重违法记录推送", params: JSON.stringify({ tenantId: "T001", alertLevel: "high" }, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
-    { id: 4, taskName: "数据清理", taskType: "定时任务", beanName: "dataCleanTask", beanNameCn: "数据清理任务", beanClassName: "com.deepseek.task.DataCleanTask", description: "清理过期数据", params: JSON.stringify({ keepDays: 30 }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" }
+    { id: 1, taskName: "工商变更", taskType: "定时任务", beanName: "businessChangeTask", beanNameCn: "工商变更任务", beanClassName: "com.deepseek.task.BusinessChangeTask", description: "工商信息变更消息推送", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BaseInfo", param: '{"keyword":"某某金融控股有限公司","key":"***"}' }, null, 2), cron: "0 0 9 1 * ?", cronDesc: "每月1号09:00", lastExecute: "2026/4/1", status: "启用" },
+    { id: 2, taskName: "服务用量", taskType: "定时任务", beanName: "serviceUsageTask", beanNameCn: "服务用量预警任务", beanClassName: "com.deepseek.task.ServiceUsageTask", description: "服务用量预警提醒", paramType: "数据库参数", paramDb: "crds_report", paramFileName: "", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BaseInfo", paramSQL: "SELECT tenant_id, service_name, used_count FROM svc_usage WHERE used_ratio >= 80" }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
+    { id: 3, taskName: "企业违法", taskType: "定时任务", beanName: "enterpriseViolationTask", beanNameCn: "企业违法记录任务", beanClassName: "com.deepseek.task.EnterpriseViolationTask", description: "企业严重违法记录推送", paramType: "Excel参数", paramDb: "", paramFileName: "企业违法查询清单2026Q2.xlsx", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BlackList" }, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
+    { id: 4, taskName: "数据清理", taskType: "定时任务", beanName: "dataCleanTask", beanNameCn: "数据清理任务", beanClassName: "com.deepseek.task.DataCleanTask", description: "清理过期数据", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BaseInfo", param: '{"keepDays":30}' }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" },
+    { id: 5, taskName: "数据结构化解析", taskType: "定时任务", beanName: "structuredParseTask", beanNameCn: "数据结构化解析任务", beanClassName: "com.deepseek.task.StructuredParseTask", description: "外数报文结构化解析入库", paramType: "数据库参数", paramDb: "qcc_cache", paramFileName: "", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BaseInfo", paramSQL: "SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0" }, null, 2), cron: "0 30 2 * * ?", cronDesc: "每日2:30", lastExecute: "2026/4/29", status: "启用" },
+    { id: 6, taskName: "企业名单批量查询", taskType: "手动任务", beanName: "manualPushTask", beanNameCn: "手动重推任务", beanClassName: "com.deepseek.task.ManualPushTask", description: "按Excel名单手动批量查询工商信息", paramType: "Excel参数", paramDb: "", paramFileName: "重点监控企业名单.xlsx", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BaseInfo" }, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/25", status: "启用" },
+    { id: 7, taskName: "存量数据补推", taskType: "手动任务", beanName: "manualPushTask", beanNameCn: "手动重推任务", beanClassName: "com.deepseek.task.ManualPushTask", description: "失败请求手动补推", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ APIURL: "https://api.qichacha.com/ECIV4/BaseInfo", param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/20", status: "停用" }
 ];
+
+// 任务执行日志：参数模式、参数内容、执行时间、执行结果
+let taskLogMap = {
+    1: [
+        { paramType: "输入参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","param":"{\\"keyword\\":\\"某某金融控股有限公司\\"}"}', executeTime: "2026-04-19 09:00:00", result: "成功" },
+        { paramType: "输入参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","param":"{\\"keyword\\":\\"某某金融控股有限公司\\"}"}', executeTime: "2026-04-18 09:00:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT credit_code FROM ent_info WHERE change_flag=1"}', executeTime: "2026-04-17 09:00:00", result: "失败" }
+    ],
+    2: [
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT tenant_id, service_name FROM svc_usage WHERE used_ratio >= 80"}', executeTime: "2026-04-29 09:00:01", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT tenant_id, service_name FROM svc_usage WHERE used_ratio >= 80"}', executeTime: "2026-04-28 09:00:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT tenant_id FROM svc_usage"}', executeTime: "2026-04-27 09:00:00", result: "成功" }
+    ],
+    3: [
+        { paramType: "Excel参数", paramContent: "文件：企业违法查询清单2026Q1.xlsx（解析 128 条入参）", executeTime: "2026-04-27 09:00:02", result: "成功" },
+        { paramType: "Excel参数", paramContent: "文件：企业违法查询清单2026Q1.xlsx（解析 128 条入参）", executeTime: "2026-04-20 09:00:00", result: "失败" }
+    ],
+    4: [
+        { paramType: "输入参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","param":"{\\"keepDays\\":30}"}', executeTime: "2026-04-28 03:00:00", result: "成功" },
+        { paramType: "输入参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","param":"{\\"keepDays\\":30}"}', executeTime: "2026-04-27 03:00:00", result: "成功" }
+    ],
+    5: [
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-29 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-28 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-27 02:30:00", result: "失败" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-26 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-25 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-24 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-23 02:30:00", result: "失败" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-22 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-21 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-20 02:30:00", result: "成功" },
+        { paramType: "数据库参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","paramSQL":"SELECT id, raw_json FROM qcc_raw_data WHERE parse_status = 0"}', executeTime: "2026-04-19 02:30:00", result: "成功" }
+    ],
+    6: [
+        { paramType: "Excel参数", paramContent: "文件：重点监控企业名单.xlsx（解析 86 条入参）", executeTime: "2026-04-25 14:20:31", result: "成功" },
+        { paramType: "Excel参数", paramContent: "文件：重点监控企业名单.xlsx（解析 86 条入参）", executeTime: "2026-04-24 10:05:12", result: "失败" }
+    ],
+    7: [
+        { paramType: "输入参数", paramContent: '{"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo","param":"{\\"retryScope\\":\\"2026Q1\\",\\"maxRetry\\":3}"}', executeTime: "2026-04-20 16:40:08", result: "成功" }
+    ]
+};
 
 let taskFiltered = [...taskList];
 let taskPage = 1, pageSize = 10;
 let currentTaskId = null;
 
 function formatParams(paramsStr) { if (!paramsStr) return '-'; try { return JSON.stringify(JSON.parse(paramsStr), null, 2); } catch(e) { return paramsStr; } }
+// 列表参数列回显：参数模式 + 参数内容摘要
+function formatParamCell(item) {
+    const pType = item.paramType || '输入参数';
+    let content = '';
+    if (pType === '数据库参数') {
+        const dbObj = dbList.find(d => d.id === item.paramDb);
+        try { content = (dbObj ? dbObj.name + ' | ' : '') + JSON.parse(item.params).paramSQL; } catch(e) { content = dbObj ? dbObj.name : '-'; }
+    } else if (pType === 'Excel参数') {
+        content = item.paramFileName || '-';
+    } else {
+        try { content = JSON.parse(item.params).param || '-'; } catch(e) { content = item.params || '-'; }
+    }
+    const full = '【' + pType + '】' + (content || '');
+    return `<span title="${escapeHtml(full)}" style="display:inline-block;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;text-align:left;">${escapeHtml(full)}</span>`;
+}
 
 function renderTaskTable() {
     const taskName = document.getElementById('taskNameFilter')?.value.trim() || '';
@@ -345,7 +464,7 @@ function renderTaskTable() {
         <td>${escapeHtml(i.taskType || '-')}</td>
         <td>${escapeHtml(i.description || '-')}</td>
         <td style="font-size:12px;max-width:200px;word-break:break-all;">${escapeHtml(i.beanClassName || i.beanNameCn || i.beanName)}</td>
-        <td style="font-size:12px;max-width:150px;word-break:break-all;">${formatParams(i.params)}</td>
+        <td style="font-size:12px;">${formatParamCell(i)}</td>
         <td>${i.taskType === '定时任务' ? `<a class="action-link" onclick="openCronConfigForTask(${i.id})">${escapeHtml(i.cronDesc || '点击配置')}</a>` : '-'}</td>
         <td>${escapeHtml(i.lastExecute || '-')}</td>
         <td><span class="status-badge ${i.status==='启用'?'status-running':'status-not-enabled'}">${i.status}</span></td>
@@ -376,20 +495,103 @@ function initBeanSelect() {
     select.innerHTML = '<option value="">请选择调度类</option>';
     beanClassList.forEach(bean => { select.innerHTML += `<option value="${bean.id}">${bean.name} (${bean.className})</option>`; });
 }
-function onBeanChange() {
-    const beanId = document.getElementById('beanNameSelect').value;
-    const paramTextarea = document.getElementById('taskParams');
-    if(!beanId) { paramTextarea.value = ''; return; }
-    const bean = beanClassList.find(b => b.id === beanId);
-    if(!bean || !bean.params || bean.params.length === 0) { paramTextarea.value = ''; return; }
-    const defaultParams = {};
-    bean.params.forEach(param => { defaultParams[param.key] = ''; });
-    paramTextarea.value = JSON.stringify(defaultParams, null, 2);
+// 初始化数据库下拉选择
+function initDbSelect() {
+    ['taskParamDb', 'runOnceParamDb'].forEach(id => {
+        const select = document.getElementById(id);
+        select.innerHTML = '<option value="">请选择数据库</option>';
+        dbList.forEach(db => { select.innerHTML += `<option value="${db.id}">${db.name}</option>`; });
+        syncSelectPlaceholder(select);
+    });
 }
-function getParamJson() {
-    const paramTextarea = document.getElementById('taskParams');
-    if(!paramTextarea.value.trim()) return '';
-    try { JSON.parse(paramTextarea.value); return paramTextarea.value; } catch(e) { showToast('参数格式不正确，请输入有效的JSON格式', 'error'); return null; }
+// 未选择时select显示为placeholder灰色，选中后恢复正常字色
+function syncSelectPlaceholder(select) {
+    if (select.value === '') select.classList.add('select-placeholder');
+    else select.classList.remove('select-placeholder');
+}
+// 各参数类型的参考示例（直接作为placeholder展示）
+const PARAM_PLACEHOLDERS = {
+    '输入参数': '{\n"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo",\n"param":"请求入参"\n}',
+    '数据库参数': '{\n"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo",\n"paramSQL":"输入SQL语句SELECT * FROM TABLE_NAME ..."\n}',
+    'Excel参数': '{\n"APIURL":"https://api.qichacha.com/ECIV4/BaseInfo"\n}'
+};
+// 参数类型切换：输入参数直接编辑JSON；数据库参数需选库并填写paramSQL；Excel参数需上传附件且参数无需param字段
+function onParamTypeChange(scope) {
+    const prefix = scope === 'task' ? 'task' : 'runOnce';
+    const type = document.getElementById(prefix + 'ParamType').value;
+    const dbRow = document.getElementById(prefix + 'DbRow');
+    const fileRow = document.getElementById(prefix + 'FileRow');
+    const textarea = document.getElementById(prefix + 'Params');
+    dbRow.style.display = type === '数据库参数' ? '' : 'none';
+    fileRow.style.display = type === 'Excel参数' ? '' : 'none';
+    textarea.placeholder = PARAM_PLACEHOLDERS[type] || '';
+    // 新增任务时，示例值直接作为默认内容填充文本框
+    if (scope === 'task' && currentTaskId === null) textarea.value = PARAM_PLACEHOLDERS[type] || '';
+}
+// 参数附件：上传按钮+提示不变，已选文件在下方展示文件名+大小，可点删除图标移除
+// paramFileState[scope] = null 或 { name, size, isExisting }
+const paramFileState = { task: null, runOnce: null };
+function renderParamFileList(scope) {
+    const prefix = scope === 'task' ? 'task' : 'runOnce';
+    const info = document.getElementById(prefix + 'FileInfo');
+    const list = document.getElementById(prefix + 'FileList');
+    const hint = document.getElementById(prefix + 'ParamFileHint');
+    const st = paramFileState[scope];
+    if (!st) { info.style.display = 'none'; list.innerHTML = ''; hint.style.display = ''; return; }
+    hint.style.display = 'none';
+    info.style.display = 'flex';
+    const sizeText = st.size ? ` (${(st.size/1024).toFixed(2)} KB)` : '';
+    const tag = st.isExisting ? '<span style="font-size:12px;color:#999;margin-left:8px;">已保存附件</span>' : '';
+    list.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;min-width:0;"><i class="el-icon-document"></i><span class="file-name" style="margin-left:8px;">${escapeHtml(st.name)}${sizeText}</span>${tag}</div>
+        <i class="el-icon-delete delete-file" title="删除附件" onclick="removeParamFile('${scope}')"></i>
+    </div>`;
+}
+function handleParamFileSelect(scope, files) {
+    const file = files[0];
+    if (!file) return;
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (ext !== '.xlsx' && ext !== '.xls') { showToast('不支持的文件类型: ' + file.name + '，仅支持 .xlsx/.xls', 'error'); removeParamFileInput(scope); return; }
+    if (file.size > 100 * 1024 * 1024) { showToast('文件大小超过100MB限制', 'error'); removeParamFileInput(scope); return; }
+    paramFileState[scope] = { name: file.name, size: file.size, isExisting: false };
+    renderParamFileList(scope);
+}
+function removeParamFileInput(scope) {
+    document.getElementById((scope === 'task' ? 'task' : 'runOnce') + 'ParamFile').value = '';
+}
+// 删除已上传/已保存的参数附件
+function removeParamFile(scope) {
+    paramFileState[scope] = null;
+    removeParamFileInput(scope);
+    renderParamFileList(scope);
+}
+function initParamFileUpload() {
+    ['task', 'runOnce'].forEach(scope => {
+        const input = document.getElementById((scope === 'task' ? 'task' : 'runOnce') + 'ParamFile');
+        input.addEventListener('change', e => { if (e.target.files.length) handleParamFileSelect(scope, Array.from(e.target.files)); });
+    });
+}
+function onBeanChange() {}
+// 按参数类型校验并返回参数内容；返回 null 表示校验失败
+function getParamByType(scope) {
+    const prefix = scope === 'task' ? 'task' : 'runOnce';
+    const type = document.getElementById(prefix + 'ParamType').value;
+    const textarea = document.getElementById(prefix + 'Params');
+    const val = textarea.value.trim();
+    if (type === 'Excel参数') {
+        if (!paramFileState[scope]) { showToast('参数类型为Excel参数，请导入Excel参数附件', 'warning'); return null; }
+        if (!val) { const obj = { APIURL: "https://api.qichacha.com/ECIV4/BaseInfo" }; textarea.value = JSON.stringify(obj, null, 2); return textarea.value; }
+    }
+    if (!val) { showToast('请填写参数', 'warning'); return null; }
+    let obj;
+    try { obj = JSON.parse(val); } catch(e) { showToast('参数格式不正确，请输入有效的JSON格式', 'error'); return null; }
+    if (!obj.APIURL) { showToast('参数缺少 APIURL 字段', 'warning'); return null; }
+    if (type === '输入参数' && !obj.param) { showToast('输入参数需要 param 字段（请求入参json串）', 'warning'); return null; }
+    if (type === '数据库参数') {
+        if (!document.getElementById(prefix + 'ParamDb').value) { showToast('参数类型为数据库参数，请选择数据库', 'warning'); return null; }
+        if (!obj.paramSQL) { showToast('数据库参数需要 paramSQL 字段（sql内容）', 'warning'); return null; }
+    }
+    return val;
 }
 
 // 任务类型切换：定时任务需配置调度规则，手动任务不需要
@@ -411,6 +613,13 @@ function editTask(id) {
         onTaskTypeChange();
         document.getElementById('taskDesc').value=item.description||'';
         document.getElementById('beanNameSelect').value=item.beanName;
+        document.getElementById('taskParamType').value=item.paramType||'输入参数';
+        onParamTypeChange('task');
+        document.getElementById('taskParamDb').value=item.paramDb||'';
+        syncSelectPlaceholder(document.getElementById('taskParamDb'));
+        paramFileState.task = item.paramFileName ? { name: item.paramFileName, size: 0, isExisting: true } : null;
+        document.getElementById('taskParamFile').value='';
+        renderParamFileList('task');
         document.getElementById('taskParams').value=item.params||'';
         document.getElementById('cronDesc').value=item.cronDesc||'';
         document.getElementById('cronExpr').value=item.cron;
@@ -423,31 +632,94 @@ function runOnceTask(id) {
     if(item){
         currentTaskId = id;
         document.getElementById('runOnceTaskName').value = item.taskName;
+        document.getElementById('runOnceParamType').value = item.paramType || '输入参数';
+        onParamTypeChange('runOnce');
+        document.getElementById('runOnceParamDb').value = item.paramDb || '';
+        syncSelectPlaceholder(document.getElementById('runOnceParamDb'));
+        paramFileState.runOnce = item.paramFileName ? { name: item.paramFileName, size: 0, isExisting: true } : null;
+        document.getElementById('runOnceParamFile').value='';
+        renderParamFileList('runOnce');
         document.getElementById('runOnceParams').value = item.params||'';
         document.getElementById('runOnceModal').classList.add('active');
     }
 }
 function confirmRunOnce() {
-    const params = document.getElementById('runOnceParams').value;
-    if(params.trim()) { try { JSON.parse(params); } catch(e) { showToast('参数格式不正确，请输入有效的JSON格式', 'error'); return; } }
-    showToast('任务 #' + currentTaskId + ' 已执行一次，参数：' + (params || '无'), 'success');
+    const prefix = 'runOnce';
+    const type = document.getElementById(prefix + 'ParamType').value;
+    const params = getParamByType(prefix);
+    if (params === null) return;
+    const st = paramFileState.runOnce;
+    let content = params;
+    if (type === 'Excel参数' && st) content = '文件：' + st.name + '（解析入参）';
+    const item = taskList.find(i=>i.id===currentTaskId);
+    if (item) {
+        item.lastExecute = '2026/9/17';
+        if (!taskLogMap[currentTaskId]) taskLogMap[currentTaskId] = [];
+        taskLogMap[currentTaskId].unshift({ paramType: type, paramContent: content, executeTime: '2026-09-17 ' + new Date().toTimeString().slice(0,8), result: '成功' });
+    }
+    showToast('任务 #' + currentTaskId + ' 已执行一次（' + type + '）', 'success');
+    renderTaskTable();
     closeRunOnceModal();
 }
+// 执行日志：任务名称放入表格列，结果仅展示 成功/失败，右下角分页
+let currentLogTaskId = null;
+let logPage = 1, logPageSize = 5;
 function viewTaskLog(id) {
     const item = taskList.find(i => i.id === id);
     if (item) {
-        document.getElementById('logTaskName').value = item.taskName;
-        document.getElementById('taskLogContent').value = `2026-04-19 02:00:00 执行成功\n2026-04-18 02:00:00 执行成功\n2026-04-17 02:00:00 执行成功\n2026-04-16 02:00:00 执行成功\n2026-04-15 02:00:00 执行成功`;
+        currentLogTaskId = id;
+        logPage = 1;
+        renderTaskLogTable();
         document.getElementById('taskLogModal').classList.add('active');
     }
 }
+function renderTaskLogTable() {
+    const item = taskList.find(i => i.id === currentLogTaskId);
+    const logs = taskLogMap[currentLogTaskId] || [];
+    const tbody = document.getElementById('taskLogTableBody');
+    const total = Math.ceil(logs.length / logPageSize) || 1;
+    if (logPage > total) logPage = total;
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;">暂无执行日志</td></tr>';
+    } else {
+        const pageData = logs.slice((logPage-1)*logPageSize, logPage*logPageSize);
+        tbody.innerHTML = pageData.map((l, idx) => `<tr>
+            <td>${(logPage-1)*logPageSize + idx + 1}</td>
+            <td>${escapeHtml(item ? item.taskName : '-')}</td>
+            <td>${escapeHtml(l.paramType)}</td>
+            <td style="text-align:left;max-width:380px;word-break:break-all;font-family:monospace;font-size:12px;">${escapeHtml(l.paramContent)}</td>
+            <td style="white-space:nowrap;">${escapeHtml(l.executeTime)}</td>
+            <td><span class="status-badge ${l.result.startsWith('成功') ? 'status-running' : 'status-not-enabled'}">${l.result.startsWith('成功') ? '成功' : '失败'}</span></td>
+        </tr>`).join('');
+    }
+    renderLogPagination(total, logs.length);
+}
+function renderLogPagination(total, totalCount) {
+    const container = document.getElementById('taskLogPagination');
+    if (!container) return;
+    let html = `<span class="total-text">共 ${totalCount} 条</span>`;
+    html += `<button ${logPage===1?'disabled':''} onclick="changeLogPage(${logPage-1})"><i class="el-icon-arrow-left"></i></button>`;
+    const start = Math.max(1, logPage-2), end = Math.min(total, logPage+2);
+    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===logPage?'active':''}" onclick="changeLogPage(${i})">${i}</span>`;
+    html += `<button ${logPage===total?'disabled':''} onclick="changeLogPage(${logPage+1})"><i class="el-icon-arrow-right"></i></button>`;
+    html += `<select class="page-size-select" onchange="changeLogPageSize(this.value)"><option value="5" ${logPageSize===5?'selected':''}>5条/页</option><option value="10" ${logPageSize===10?'selected':''}>10条/页</option><option value="20" ${logPageSize===20?'selected':''}>20条/页</option></select>`;
+    container.innerHTML = html;
+}
+function changeLogPage(page) { logPage = page; renderTaskLogTable(); }
+function changeLogPageSize(size) { logPageSize = parseInt(size); logPage = 1; renderTaskLogTable(); }
 function addTask() {
     currentTaskId=null;
     document.getElementById('taskModalTitle').innerText='新增任务';
     document.getElementById('taskName').value='';
     document.getElementById('taskDesc').value='';
     document.getElementById('beanNameSelect').value='';
-    document.getElementById('taskParams').value='';
+    document.getElementById('taskParamType').value='输入参数';
+    onParamTypeChange('task');
+    document.getElementById('taskParamDb').value='';
+    syncSelectPlaceholder(document.getElementById('taskParamDb'));
+    paramFileState.task = null;
+    document.getElementById('taskParamFile').value='';
+    renderParamFileList('task');
     document.getElementById('cronDesc').value='';
     document.getElementById('cronExpr').value='';
     document.getElementById('taskTypeSelect').value='定时任务';
@@ -462,6 +734,13 @@ function viewTask(id) {
         document.getElementById('viewTaskType').textContent = item.taskType || '-';
         document.getElementById('viewTaskDesc').textContent = item.description || '-';
         document.getElementById('viewBeanName').textContent = item.beanClassName || item.beanNameCn || item.beanName;
+        const pType = item.paramType || '输入参数';
+        document.getElementById('viewParamType').textContent = pType;
+        const dbObj = dbList.find(d => d.id === item.paramDb);
+        document.getElementById('viewDbRow').style.display = pType === '数据库参数' ? '' : 'none';
+        document.getElementById('viewParamDb').textContent = dbObj ? dbObj.name : (item.paramDb || '-');
+        document.getElementById('viewFileRow').style.display = pType === 'Excel参数' ? '' : 'none';
+        document.getElementById('viewParamFile').textContent = item.paramFileName || '-';
         document.getElementById('viewTaskParams').textContent = item.params || '-';
         document.getElementById('viewCronDesc').textContent = item.cronDesc || item.cron || '-';
         document.getElementById('viewLastExecute').textContent = item.lastExecute || '-';
@@ -478,9 +757,13 @@ function saveTask() {
     const cronDesc=isScheduled?document.getElementById('cronDesc').value.trim():'';
     if(!name||!beanId){ showToast('请填写任务名称和选择Bean名称', 'warning'); return; }
     if(isScheduled&&!cron){ showToast('定时任务需要配置调度规则', 'warning'); return; }
-    const params = getParamJson(); if(params === null) return;
+    const paramType=document.getElementById('taskParamType').value;
+    const params = getParamByType('task'); if(params === null) return;
+    const paramDb = paramType==='数据库参数' ? document.getElementById('taskParamDb').value : '';
+    const st = paramFileState.task;
+    let paramFileName = paramType==='Excel参数' ? (st ? st.name : '') : '';
     const bean=beanClassList.find(b=>b.id===beanId);
-    const data={ taskName:name, taskType:taskType, beanName:beanId, beanNameCn:bean?.name||beanId, beanClassName:bean?.className||beanId, description:document.getElementById('taskDesc').value, params:params, cron:cron, cronDesc:cronDesc, lastExecute:'', status:document.getElementById('taskStatus').value };
+    const data={ taskName:name, taskType:taskType, beanName:beanId, beanNameCn:bean?.name||beanId, beanClassName:bean?.className||beanId, description:document.getElementById('taskDesc').value, paramType:paramType, paramDb:paramDb, paramFileName:paramFileName, params:params, cron:cron, cronDesc:cronDesc, lastExecute:'', status:document.getElementById('taskStatus').value };
     if(currentTaskId){
         const idx = taskList.findIndex(i=>i.id===currentTaskId);
         if(idx!==-1) taskList[idx]={...taskList[idx], ...data, id:currentTaskId};
@@ -552,7 +835,7 @@ function closeTaskModal() { document.getElementById('taskModal').classList.remov
 function closeTaskViewModal() { document.getElementById('taskViewModal').classList.remove('active'); }
 function closeTaskLogModal() { document.getElementById('taskLogModal').classList.remove('active'); }
 
-function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]); }
+function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]); }
 function navigateTo(url) {
     var navKeys = {'数据门户':'portal','外源管理':'external','服务管理':'service','监控统计':'monitor','运营管理':'operation','个人中心':'personal','系统管理':'system'};
     try {
@@ -597,6 +880,8 @@ document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDe
 
 // 初始化
 initBeanSelect();
+initDbSelect();
+initParamFileUpload();
 renderTaskTable();
 </script>
 <script>

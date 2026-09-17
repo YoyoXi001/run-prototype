@@ -806,6 +806,10 @@
         .struct-table-card-body { padding: 10px; overflow-x: auto; }
         .struct-horiz { min-width: 100%; }
         .struct-horiz th, .struct-horiz td { white-space: nowrap; }
+        /* 卡片标题「+ 添加行」按钮：贴标题最右侧 */
+        .struct-add-row { margin-left: auto; padding: 2px 12px; font-size: 12px; font-weight: 400; }
+        /* 纵向表「引用字段」列：等宽字体展示 #Param#./#Result#. 引用 */
+        .vert-ref { word-break: break-all; font-family: Consolas, Monaco, monospace; font-size: 12px; color: #0d6cff; }
 
         /* 区块标题与参数操作的链接按钮 */
         .section-title {
@@ -1493,6 +1497,8 @@ let attachFileName = '';
 let reqData = { params: [], headers: [], body: [] };
 let respData = [];
 let testData = { params: [], headers: [], body: [] };
+/* 结构化表手工添加的自定义行：structCustomRows[表名] = [{field,dbType,value,ref,desc,custom}]（纵向表中可编辑） */
+let structCustomRows = {};
 
 function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]); }
 function pad2(n) { return String(n).padStart(2, '0'); }
@@ -1609,6 +1615,7 @@ function openEdit(mode, id) {
         .map(r => ({ ...r, level: r.level || 0, expanded: true, parseAttr: r.parseAttr || r.stdTable || '', parseResult: r.parseResult || r.stdField || '', dbType: r.dbType || '' }));
     respData.forEach((r, i) => normalizeParseAttr(r, respData, i));
     applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」（加载旧数据归一化）
+    structCustomRows = item && item.structCustomRows ? JSON.parse(JSON.stringify(item.structCustomRows)) : {};
     attachFileName = '';
     document.getElementById('respExample').value = item && item.responseExample ? item.responseExample : '';
     document.getElementById('fileName').textContent = '';
@@ -1658,7 +1665,7 @@ function setEditReadonly(readonly) {
         const el = document.getElementById(id);
         if (el) { el.style.display = structMode ? 'none' : ''; }
     });
-    // 结构化解析：仅详情只读禁用；struct 模式下可点击
+    // 「结构化解析」（执行解析+页内渲染）仅详情只读禁用；「结构化示例预览」（弹窗查看）始终可点；struct 模式下解析可点击
     document.getElementById('structParseBtn').disabled = readonly;
     document.getElementById('genPreviewBtn').disabled = ro;
     document.getElementById('respExample').disabled = ro; // 仅详情(只读)禁用，可自行编辑JSON后转Form
@@ -1702,7 +1709,7 @@ function upperSnake(n) {
         .replace(/^_+|_+$/g, '')
         .toUpperCase() || 'FIELD';
 }
-/* 点击「结构化解析」：自动填充「解析属性 / 解析结果」，展示表名与结构化表格 */
+/* 点击「结构化解析」：自动填充「解析属性 / 解析结果」，解析结果写入下方结构化表格 */
 function structParse() {
     if (editMode === 'detail') return; // struct 模式可执行结构化解析
     if (!respData.length) { alert('请先维护返回参数'); return; }
@@ -1773,9 +1780,14 @@ function getStructGroups() {
     };
     let skipAbove = -1; // 已被「字段 / JSON串」父行整体吸收的子树深度
     let tableSeq = 0;   // 表序号：主键id值（主表=1），子表关联字段值=上级表主键id值
+    const pathStack = []; // 参数层级路径栈（引用字段 #Result#.xxx.yyy 的取值来源；[0] 元素层不产生层级）
     getGroup('主表');   // 主表恒为序号1：先预建主表，保证任意行序下 a.id=1、子表关联字段值稳定
     respData.forEach((r, i) => {
         const lvl = r.level || 0;
+        while (pathStack.length && pathStack[pathStack.length - 1].level >= lvl) pathStack.pop();
+        const parentPath = pathStack.length ? pathStack[pathStack.length - 1].path : '';
+        const seg = (!r.name || r.name === '[0]') ? parentPath : (parentPath ? parentPath + '.' + r.name : r.name);
+        pathStack.push({ level: lvl, path: seg });
         if (skipAbove >= 0 && lvl > skipAbove) return;
         skipAbove = -1;
         const attr = r.parseAttr || '';
@@ -1795,7 +1807,7 @@ function getStructGroups() {
             const parentDisp = parentName === '主表' ? (formTable || '主表') : parentName;
             // 关联字段赋值：取「父级表名」+ "_id" 作为当前表的关联字段，值 = 父表主键 id
             // （如父表 a + 参数 data(表) → a.id = data.a_id；上级表不新增字段、同层级表互不新增字段）
-            tg.rows.push({ field: `${parentDisp}_id`, desc: `关联${parentDisp}主键id`, dbType: 'INT', value: parentGroup.tableId });
+            tg.rows.push({ field: `${parentDisp}_id`, desc: `关联${parentDisp}主键id`, dbType: 'INT', value: parentGroup.tableId, ref: seg ? `#Result#.${seg}` : '' });
         } else if (attr === '字段' || attr === 'JSON串') {
             const field = (r.parseResult || '').trim();
             if (!field) return;
@@ -1806,7 +1818,8 @@ function getStructGroups() {
                 field,
                 desc: r.desc,
                 dbType: attr === 'JSON串' ? 'CLOB' : (r.dbType || dbTypeOf(r.type)),
-                value
+                value,
+                ref: seg ? `#Result#.${seg}` : '' // 引用字段：对应返回参数名（点分路径）
             });
         }
     });
@@ -1816,18 +1829,20 @@ function getStructGroups() {
     groups.forEach(g => {
         g.displayName = g.name === '主表' ? (formTable || '主表') : g.name;
         // 每张表默认增加主键 id 字段（首列；BIGINT；值=表序号，子表「参数名_id」关联引用上级表该值）
-        g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键' });
+        g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键', ref: '' });
+        // 追加该表手工添加的自定义行（可编辑）
+        (structCustomRows[g.name] || []).forEach((cr, ci) => g.rows.push({ ...cr, custom: true, cidx: ci }));
     });
     // 主表追加登录账户审计字段（租户/公司/部门/系统，值取自当前登录账户信息）
     const mainGroup = groups.find(g => g.name === '主表');
     if (mainGroup) {
         const audit = [['TENANT', LOGIN_INFO.tenant], ['COMPANY', LOGIN_INFO.company], ['DEPARTMENT', LOGIN_INFO.department], ['SYSTEM', LOGIN_INFO.system]];
-        audit.forEach(([name, value]) => mainGroup.rows.push({ field: name, dbType: 'VARCHAR', value, desc: '登录账户' }));
+        audit.forEach(([name, value]) => mainGroup.rows.push({ field: name, dbType: 'VARCHAR', value, desc: '登录账户', ref: '' }));
     }
     return groups;
 }
 
-/* 一个结构化表的卡片：表名标题 + 字段横向成一列、数据一行 */
+/* 一个结构化表的卡片（横向）：表名标题 + 字段横向成一列、数据一行 */
 function tableCardHtml(displayName, rows) {
     if (!rows.length) rows = [{ field: '暂无字段', type: '', value: '', desc: '' }];
     return `<div class="struct-table-card">
@@ -1841,7 +1856,89 @@ function tableCardHtml(displayName, rows) {
     </div>`;
 }
 
-/* 返回结果数据结构化：展示数据库表名，表名下方字段一列、数据一行，多表多卡片 */
+/* 自定义行「类型」候选 */
+const DB_TYPES = ['VARCHAR', 'INT', 'BIGINT', 'DECIMAL', 'BOOLEAN', 'DATE', 'DATETIME', 'CLOB', 'JSON'];
+/* 按层级扁平化参数行为点分路径（[0] 透明元素层不产生层级），用于引用字段取值 */
+function collectParamPaths(rows) {
+    const paths = [], stack = [];
+    (rows || []).forEach(r => {
+        const lvl = r.level || 0;
+        while (stack.length && stack[stack.length - 1].level >= lvl) stack.pop();
+        const parent = stack.length ? stack[stack.length - 1].path : '';
+        const named = r.name && r.name !== '[0]';
+        const seg = !named ? parent : (parent ? parent + '.' + r.name : r.name);
+        stack.push({ level: lvl, path: seg });
+        if (named && seg) paths.push(seg);
+    });
+    return paths;
+}
+/* 引用字段下拉：请求参数(#Param#.xxx) + 返回参数(#Result#.xxx)，各 tab 扁平化后去重 */
+function refSelectHtml(cur) {
+    const opt = v => `<option value="${escapeHtml(v)}" ${cur === v ? 'selected' : ''}>${escapeHtml(v)}</option>`;
+    const reqPaths = [], seen = new Set();
+    ['params', 'headers', 'body'].forEach(t => collectParamPaths(reqData[t]).forEach(p => { if (!seen.has(p)) { seen.add(p); reqPaths.push(p); } }));
+    const resPaths = collectParamPaths(respData);
+    const inList = reqPaths.some(p => '#Param#.' + p === cur) || resPaths.some(p => '#Result#.' + p === cur);
+    return `<select class="cell-select" data-f="ref">
+        <option value="">请选择引用字段</option>
+        <optgroup label="请求参数（#Param#）">${reqPaths.map(p => opt('#Param#.' + p)).join('')}</optgroup>
+        <optgroup label="返回参数（#Result#）">${resPaths.map(p => opt('#Result#.' + p)).join('')}</optgroup>
+        ${cur && !inList ? opt(cur) : ''}
+    </select>`;
+}
+/* 卡片标题右侧「＋ 添加行」：仅非详情只读模式展示（表名URL编码传参，兼容特殊字符） */
+function encTableKey(k) { return encodeURIComponent(k).replace(/'/g, '%27'); }
+function structAddBtnHtml(tableKey) {
+    if (editMode === 'detail') return '';
+    return `<button class="btn-mini struct-add-row" onclick="addStructRow('${encTableKey(tableKey)}')">＋ 添加行</button>`;
+}
+function addStructRow(encKey) {
+    if (editMode === 'detail') return;
+    const tkey = decodeURIComponent(encKey);
+    (structCustomRows[tkey] = structCustomRows[tkey] || []).push({ field: '', dbType: 'VARCHAR', value: '', ref: '', desc: '' });
+    renderStructSummary();
+}
+function removeStructRow(encKey, ci) {
+    const arr = structCustomRows[decodeURIComponent(encKey)];
+    if (arr) { arr.splice(ci, 1); renderStructSummary(); }
+}
+
+/* 一个结构化表的卡片（纵向）：表名标题(+添加行) + 逐字段一行（字段名/类型/字段值/引用字段/说明）
+ * 解析生成的行只读；「＋ 添加行」新增的行（custom）可编辑，其余行不可编辑 */
+function vertCardHtml(displayName, rows, tableKey) {
+    const ro = editMode === 'detail';
+    const trs = rows.map(f => f.custom && !ro
+        ? `<tr data-tkey="${encTableKey(tableKey)}" data-cidx="${f.cidx}">
+            <td><input class="cell-input" value="${escapeHtml(f.field)}" data-f="field" placeholder="字段名"></td>
+            <td><select class="cell-select" data-f="dbType">${DB_TYPES.map(t => `<option ${f.dbType === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+            <td><input class="cell-input" value="${escapeHtml(String(f.value ?? ''))}" data-f="value" placeholder="字段值"></td>
+            <td>${refSelectHtml(f.ref)}</td>
+            <td><input class="cell-input" value="${escapeHtml(f.desc ?? '')}" data-f="desc" placeholder="说明"></td>
+            <td><span class="cell-del" onclick="removeStructRow('${encTableKey(tableKey)}', ${f.cidx})">删除</span></td>
+          </tr>`
+        : `<tr><td>${escapeHtml(f.field)}</td><td>${escapeHtml(f.dbType)}</td><td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td><td class="vert-ref">${escapeHtml(f.ref || '')}</td><td>${escapeHtml(f.desc)}</td><td></td></tr>`).join('');
+    return `<div class="struct-table-card">
+        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span>${structAddBtnHtml(tableKey)}</div>
+        <div class="struct-table-card-body" style="padding:10px;">
+            <table class="sub-table">
+                <thead><tr><th style="width:16%;">字段名</th><th style="width:11%;">类型</th><th style="width:23%;">字段值</th><th style="width:23%;">引用字段</th><th>说明</th><th style="width:72px;">操作</th></tr></thead>
+                <tbody>${trs || '<tr><td colspan="6" class="empty-cell">暂无字段</td></tr>'}</tbody>
+            </table>
+        </div>
+    </div>`;
+}
+
+/* 结构化表集合的公共摘要行：数据库表名 + 字段总数 */
+function structMetaHtml(groups) {
+    const tables = groups.map(g => g.displayName);
+    const totalFields = groups.reduce((s, g) => s + g.rows.length, 0);
+    return `<div class="struct-meta">
+        <span class="m-label">数据库表名：</span><b>${escapeHtml(tables.join('、'))}</b>
+        <span style="margin-left:16px;" class="m-label">字段总数：</span><b>${totalFields}</b>
+    </div>`;
+}
+
+/* 返回结果数据结构化（页内）：展示数据库表名摘要，下方每表一张纵向表格卡片（Json转Form/结构化解析后即时刷新） */
 function renderStructSummary() {
     const box = document.getElementById('structSummary');
     if (!box) return;
@@ -1850,32 +1947,15 @@ function renderStructSummary() {
         box.innerHTML = '<div class="struct-empty">开启「是否结构化」，Json数据转成Form表单自动填充「解析属性 / 解析结果」；也可点击上方「结构化解析」生成表结构</div>';
         return;
     }
-    const tables = groups.map(g => g.displayName);
-    const totalFields = groups.reduce((s, g) => s + g.rows.length, 0);
-    box.innerHTML = `
-        <div class="struct-meta">
-            <span class="m-label">数据库表名：</span><b>${escapeHtml(tables.join('、'))}</b>
-            <span style="margin-left:16px;" class="m-label">字段总数：</span><b>${totalFields}</b>
-        </div>
-        ${groups.map(g => tableCardHtml(g.displayName, g.rows)).join('')}`;
+    box.innerHTML = structMetaHtml(groups) + groups.map(g => vertCardHtml(g.displayName, g.rows, g.name)).join('');
 }
 
-/* 结构化示例预览：按表展示（卡片区分，表与表间隔明显），纵向表格可查看字段、类型与说明 */
+/* 「结构化示例预览」弹窗：按表展示（卡片区分，表与表间隔明显），横向表格字段横排、数据一行 */
 function showStructPreview() {
     const groups = getStructGroups();
     if (!groups.reduce((s, g) => s + g.rows.length, 0)) { alert('请先点击「结构化解析」或维护返回参数的「解析属性 / 解析结果」'); return; }
-    const cards = groups.map(g => `<div class="struct-table-card">
-        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(g.displayName)}</span></div>
-        <div class="struct-table-card-body" style="padding:10px;">
-            <table class="sub-table">
-                <thead><tr><th style="width:26%;">字段名</th><th style="width:16%;">类型</th><th style="width:30%;">字段的值</th><th>说明</th></tr></thead>
-                <tbody>${g.rows.length
-                    ? g.rows.map(f => `<tr><td>${escapeHtml(f.field)}</td><td>${escapeHtml(f.dbType)}</td><td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td><td>${escapeHtml(f.desc)}</td></tr>`).join('')
-                    : '<tr><td colspan="4" class="empty-cell">暂无字段</td></tr>'}</tbody>
-            </table>
-        </div>
-    </div>`).join('');
-    document.getElementById('structPreviewContent').innerHTML = `<div class="struct-preview-info">${cards}</div>`;
+    const html = structMetaHtml(groups) + `<div class="struct-preview-info">${groups.map(g => tableCardHtml(g.displayName, g.rows)).join('')}</div>`;
+    document.getElementById('structPreviewContent').innerHTML = html;
     document.getElementById('structPreviewModal').classList.add('active');
 }
 function closeStructPreviewModalFn() { document.getElementById('structPreviewModal').classList.remove('active'); }
@@ -2805,6 +2885,18 @@ document.getElementById('structPreviewModal')?.addEventListener('click', functio
 
 // 表名输入即时刷新结构化摘要
 document.getElementById('edStdTable')?.addEventListener('input', renderStructSummary);
+
+// 结构化表手工添加行的行内编辑（仅「＋ 添加行」新增的行可编辑；input 不触发重渲染，避免输入丢焦点）
+document.getElementById('structSummary')?.addEventListener('input', function (e) {
+    const cell = e.target.closest('.cell-input, .cell-select');
+    if (!cell) return;
+    const tr = cell.closest('tr');
+    if (!tr || !tr.dataset.tkey) return;
+    const arr = structCustomRows[decodeURIComponent(tr.dataset.tkey)];
+    const row = arr && arr[parseInt(tr.dataset.cidx, 10)];
+    if (!row) return;
+    row[cell.dataset.f] = cell.value;
+});
 
 initFilterSupplier();
 renderApiTable();
