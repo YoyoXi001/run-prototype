@@ -221,7 +221,7 @@
                     <div class="action-bar"><button class="btn-upload" id="addTaskBtn">新增</button></div>
                     <div class="table-container">
                         <table class="data-table">
-                            <thead><th>编号</th><th>任务名称</th><th>任务类型</th><th>任务描述</th><th>Bean名称</th><th>参数</th><th>调度规则</th><th>最近执行</th><th>状态</th><th>操作</th></thead>
+                            <thead><th>编号</th><th>任务名称</th><th>任务类型</th><th>任务描述</th><th>Bean名称</th><th>参数类型</th><th>参数</th><th>调度规则</th><th>最近执行</th><th>状态</th><th>操作</th></thead>
                             <tbody id="taskTableBody"></tbody>
                         </table>
                     </div>
@@ -457,13 +457,14 @@ function renderTaskTable() {
     if (taskPage > total) taskPage = total;
     const pageData = taskFiltered.slice((taskPage-1)*pageSize, taskPage*pageSize);
     const tbody = document.getElementById('taskTableBody');
-    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateTaskPagination(total, taskFiltered.length); return; }
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateTaskPagination(total, taskFiltered.length); return; }
     tbody.innerHTML = pageData.map(i => `<tr>
         <td>${i.id}</td>
         <td>${escapeHtml(i.taskName)}</td>
         <td>${escapeHtml(i.taskType || '-')}</td>
         <td>${escapeHtml(i.description || '-')}</td>
         <td style="font-size:12px;max-width:200px;word-break:break-all;">${escapeHtml(i.beanClassName || i.beanNameCn || i.beanName)}</td>
+        <td style="white-space:nowrap;">${escapeHtml(i.paramType || '-')}</td>
         <td style="font-size:12px;">${formatParamCell(i)}</td>
         <td>${i.taskType === '定时任务' ? `<a class="action-link" onclick="openCronConfigForTask(${i.id})">${escapeHtml(i.cronDesc || '点击配置')}</a>` : '-'}</td>
         <td>${escapeHtml(i.lastExecute || '-')}</td>

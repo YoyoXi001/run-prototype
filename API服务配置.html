@@ -1499,6 +1499,9 @@ let respData = [];
 let testData = { params: [], headers: [], body: [] };
 /* 结构化表手工添加的自定义行：structCustomRows[表名] = [{field,dbType,value,ref,desc,custom}]（纵向表中可编辑） */
 let structCustomRows = {};
+/* 纵向表「类型/引用字段」整列人工覆盖：structFieldOverrides[表名||字段名] = {dbType?, ref?}
+ * （解析生成的行这两列也可编辑，覆盖值随配置持久化，重新解析后仍生效） */
+let structFieldOverrides = {};
 
 function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]); }
 function pad2(n) { return String(n).padStart(2, '0'); }
@@ -1616,6 +1619,7 @@ function openEdit(mode, id) {
     respData.forEach((r, i) => normalizeParseAttr(r, respData, i));
     applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」（加载旧数据归一化）
     structCustomRows = item && item.structCustomRows ? JSON.parse(JSON.stringify(item.structCustomRows)) : {};
+    structFieldOverrides = item && item.structFieldOverrides ? JSON.parse(JSON.stringify(item.structFieldOverrides)) : {};
     attachFileName = '';
     document.getElementById('respExample').value = item && item.responseExample ? item.responseExample : '';
     document.getElementById('fileName').textContent = '';
@@ -1828,6 +1832,11 @@ function getStructGroups() {
     if (mi > 0) groups.unshift(groups.splice(mi, 1)[0]);
     groups.forEach(g => {
         g.displayName = g.name === '主表' ? (formTable || '主表') : g.name;
+        // 解析行「类型/引用字段」人工覆盖（整列可编辑），按 表名||字段名 应用（须在追加自定义行前，避免覆盖自定义行数据）
+        g.rows.forEach(r => {
+            const ov = structFieldOverrides[g.name + '||' + r.field];
+            if (ov) { if (ov.dbType !== undefined) r.dbType = ov.dbType; if (ov.ref !== undefined) r.ref = ov.ref; }
+        });
         // 每张表默认增加主键 id 字段（首列；BIGINT；值=表序号，子表「参数名_id」关联引用上级表该值）
         g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键', ref: '' });
         // 追加该表手工添加的自定义行（可编辑）
@@ -1856,8 +1865,6 @@ function tableCardHtml(displayName, rows) {
     </div>`;
 }
 
-/* 自定义行「类型」候选 */
-const DB_TYPES = ['VARCHAR', 'INT', 'BIGINT', 'DECIMAL', 'BOOLEAN', 'DATE', 'DATETIME', 'CLOB', 'JSON'];
 /* 按层级扁平化参数行为点分路径（[0] 透明元素层不产生层级），用于引用字段取值 */
 function collectParamPaths(rows) {
     const paths = [], stack = [];
@@ -1904,19 +1911,33 @@ function removeStructRow(encKey, ci) {
 }
 
 /* 一个结构化表的卡片（纵向）：表名标题(+添加行) + 逐字段一行（字段名/类型/字段值/引用字段/说明）
- * 解析生成的行只读；「＋ 添加行」新增的行（custom）可编辑，其余行不可编辑 */
+ * 「类型」整列可编辑（自由输入，无下拉候选）、「引用字段」整列可选（请求参数#Param#/返回参数#Result#）；
+ * 其余列解析行只读，仅「＋ 添加行」新增的行可编辑 */
 function vertCardHtml(displayName, rows, tableKey) {
     const ro = editMode === 'detail';
+    const typeCell = f => ro
+        ? `<td>${escapeHtml(f.dbType)}</td>`
+        : `<td><input class="cell-input" value="${escapeHtml(f.dbType || '')}" data-f="dbType" placeholder="类型"></td>`;
+    const refCell = f => ro
+        ? `<td class="vert-ref">${escapeHtml(f.ref || '')}</td>`
+        : `<td>${refSelectHtml(f.ref)}</td>`;
     const trs = rows.map(f => f.custom && !ro
         ? `<tr data-tkey="${encTableKey(tableKey)}" data-cidx="${f.cidx}">
             <td><input class="cell-input" value="${escapeHtml(f.field)}" data-f="field" placeholder="字段名"></td>
-            <td><select class="cell-select" data-f="dbType">${DB_TYPES.map(t => `<option ${f.dbType === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+            ${typeCell(f)}
             <td><input class="cell-input" value="${escapeHtml(String(f.value ?? ''))}" data-f="value" placeholder="字段值"></td>
-            <td>${refSelectHtml(f.ref)}</td>
+            ${refCell(f)}
             <td><input class="cell-input" value="${escapeHtml(f.desc ?? '')}" data-f="desc" placeholder="说明"></td>
             <td><span class="cell-del" onclick="removeStructRow('${encTableKey(tableKey)}', ${f.cidx})">删除</span></td>
           </tr>`
-        : `<tr><td>${escapeHtml(f.field)}</td><td>${escapeHtml(f.dbType)}</td><td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td><td class="vert-ref">${escapeHtml(f.ref || '')}</td><td>${escapeHtml(f.desc)}</td><td></td></tr>`).join('');
+        : `<tr data-tkey="${encTableKey(tableKey)}" data-field="${encTableKey(f.field)}">
+            <td>${escapeHtml(f.field)}</td>
+            ${typeCell(f)}
+            <td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td>
+            ${refCell(f)}
+            <td>${escapeHtml(f.desc)}</td>
+            <td></td>
+          </tr>`).join('');
     return `<div class="struct-table-card">
         <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span>${structAddBtnHtml(tableKey)}</div>
         <div class="struct-table-card-body" style="padding:10px;">
@@ -2534,6 +2555,8 @@ function saveEdit() {
         requestParams: JSON.parse(JSON.stringify(reqData)),
         responseParams: JSON.parse(JSON.stringify(respData)).map(r => ({ name: r.name, example: r.example, type: r.type, desc: r.desc, level: r.level, children: !!r.children, parseAttr: r.parseAttr || '', parseResult: r.parseResult || '', dbType: r.dbType || '' })),
         responseExample: document.getElementById('respExample').value,
+        structCustomRows: JSON.parse(JSON.stringify(structCustomRows)),
+        structFieldOverrides: JSON.parse(JSON.stringify(structFieldOverrides)),
         attachFile: attachFileName
     };
     if ((editMode === 'edit' || editMode === 'struct') && editId) {
@@ -2886,16 +2909,26 @@ document.getElementById('structPreviewModal')?.addEventListener('click', functio
 // 表名输入即时刷新结构化摘要
 document.getElementById('edStdTable')?.addEventListener('input', renderStructSummary);
 
-// 结构化表手工添加行的行内编辑（仅「＋ 添加行」新增的行可编辑；input 不触发重渲染，避免输入丢焦点）
+// 结构化表行内编辑：自定义行（data-cidx）直接改数据；解析行（data-field）的「类型/引用字段」整列可编辑，
+// 写入 structFieldOverrides 覆盖（input 不触发重渲染，避免输入丢焦点）
 document.getElementById('structSummary')?.addEventListener('input', function (e) {
     const cell = e.target.closest('.cell-input, .cell-select');
     if (!cell) return;
     const tr = cell.closest('tr');
     if (!tr || !tr.dataset.tkey) return;
-    const arr = structCustomRows[decodeURIComponent(tr.dataset.tkey)];
-    const row = arr && arr[parseInt(tr.dataset.cidx, 10)];
-    if (!row) return;
-    row[cell.dataset.f] = cell.value;
+    const tkey = decodeURIComponent(tr.dataset.tkey);
+    const f = cell.dataset.f;
+    if (tr.dataset.cidx !== undefined) {
+        const arr = structCustomRows[tkey];
+        const row = arr && arr[parseInt(tr.dataset.cidx, 10)];
+        if (row) row[f] = cell.value;
+        return;
+    }
+    // 解析生成行：仅「类型」「引用字段」两列开放编辑，按 表名||字段名 记录人工覆盖
+    if (tr.dataset.field !== undefined && (f === 'dbType' || f === 'ref')) {
+        const okey = tkey + '||' + decodeURIComponent(tr.dataset.field);
+        (structFieldOverrides[okey] = structFieldOverrides[okey] || {})[f] = cell.value;
+    }
 });
 
 initFilterSupplier();
