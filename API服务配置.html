@@ -1499,8 +1499,8 @@ let respData = [];
 let testData = { params: [], headers: [], body: [] };
 /* 结构化表手工添加的自定义行：structCustomRows[表名] = [{field,dbType,value,ref,desc,custom}]（纵向表中可编辑） */
 let structCustomRows = {};
-/* 纵向表「类型/引用字段」整列人工覆盖：structFieldOverrides[表名||字段名] = {dbType?, ref?}
- * （解析生成的行这两列也可编辑，覆盖值随配置持久化，重新解析后仍生效） */
+/* 纵向表「类型」整列人工覆盖：structFieldOverrides[表名||字段名] = {dbType?}
+ * （解析生成的行「类型」列也可编辑，覆盖值随配置持久化，重新解析后仍生效；ref 覆盖为历史兼容保留） */
 let structFieldOverrides = {};
 
 function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]); }
@@ -1832,10 +1832,10 @@ function getStructGroups() {
     if (mi > 0) groups.unshift(groups.splice(mi, 1)[0]);
     groups.forEach(g => {
         g.displayName = g.name === '主表' ? (formTable || '主表') : g.name;
-        // 解析行「类型/引用字段」人工覆盖（整列可编辑），按 表名||字段名 应用（须在追加自定义行前，避免覆盖自定义行数据）
+        // 解析行「类型」人工覆盖（整列可编辑），按 表名||字段名 应用（须在追加自定义行前，避免覆盖自定义行数据）
         g.rows.forEach(r => {
             const ov = structFieldOverrides[g.name + '||' + r.field];
-            if (ov) { if (ov.dbType !== undefined) r.dbType = ov.dbType; if (ov.ref !== undefined) r.ref = ov.ref; }
+            if (ov && ov.dbType !== undefined) r.dbType = ov.dbType;
         });
         // 每张表默认增加主键 id 字段（首列；BIGINT；值=表序号，子表「参数名_id」关联引用上级表该值）
         g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键', ref: '' });
@@ -1911,22 +1911,19 @@ function removeStructRow(encKey, ci) {
 }
 
 /* 一个结构化表的卡片（纵向）：表名标题(+添加行) + 逐字段一行（字段名/类型/字段值/引用字段/说明）
- * 「类型」整列可编辑（自由输入，无下拉候选）、「引用字段」整列可选（请求参数#Param#/返回参数#Result#）；
+ * 「类型」整列可编辑（自由输入，无下拉候选）；「引用字段」仅「＋ 添加行」新增行可选（解析行只读展示）；
  * 其余列解析行只读，仅「＋ 添加行」新增的行可编辑 */
 function vertCardHtml(displayName, rows, tableKey) {
     const ro = editMode === 'detail';
     const typeCell = f => ro
         ? `<td>${escapeHtml(f.dbType)}</td>`
         : `<td><input class="cell-input" value="${escapeHtml(f.dbType || '')}" data-f="dbType" placeholder="类型"></td>`;
-    const refCell = f => ro
-        ? `<td class="vert-ref">${escapeHtml(f.ref || '')}</td>`
-        : `<td>${refSelectHtml(f.ref)}</td>`;
     const trs = rows.map(f => f.custom && !ro
         ? `<tr data-tkey="${encTableKey(tableKey)}" data-cidx="${f.cidx}">
             <td><input class="cell-input" value="${escapeHtml(f.field)}" data-f="field" placeholder="字段名"></td>
             ${typeCell(f)}
             <td><input class="cell-input" value="${escapeHtml(String(f.value ?? ''))}" data-f="value" placeholder="字段值"></td>
-            ${refCell(f)}
+            <td>${refSelectHtml(f.ref)}</td>
             <td><input class="cell-input" value="${escapeHtml(f.desc ?? '')}" data-f="desc" placeholder="说明"></td>
             <td><span class="cell-del" onclick="removeStructRow('${encTableKey(tableKey)}', ${f.cidx})">删除</span></td>
           </tr>`
@@ -1934,7 +1931,7 @@ function vertCardHtml(displayName, rows, tableKey) {
             <td>${escapeHtml(f.field)}</td>
             ${typeCell(f)}
             <td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td>
-            ${refCell(f)}
+            <td class="vert-ref">${escapeHtml(f.ref || '')}</td>
             <td>${escapeHtml(f.desc)}</td>
             <td></td>
           </tr>`).join('');
@@ -2909,7 +2906,7 @@ document.getElementById('structPreviewModal')?.addEventListener('click', functio
 // 表名输入即时刷新结构化摘要
 document.getElementById('edStdTable')?.addEventListener('input', renderStructSummary);
 
-// 结构化表行内编辑：自定义行（data-cidx）直接改数据；解析行（data-field）的「类型/引用字段」整列可编辑，
+// 结构化表行内编辑：自定义行（data-cidx）直接改数据；解析行（data-field）的「类型」整列可编辑，
 // 写入 structFieldOverrides 覆盖（input 不触发重渲染，避免输入丢焦点）
 document.getElementById('structSummary')?.addEventListener('input', function (e) {
     const cell = e.target.closest('.cell-input, .cell-select');
@@ -2924,8 +2921,8 @@ document.getElementById('structSummary')?.addEventListener('input', function (e)
         if (row) row[f] = cell.value;
         return;
     }
-    // 解析生成行：仅「类型」「引用字段」两列开放编辑，按 表名||字段名 记录人工覆盖
-    if (tr.dataset.field !== undefined && (f === 'dbType' || f === 'ref')) {
+    // 解析生成行：仅「类型」列开放编辑，按 表名||字段名 记录人工覆盖（引用字段仅自定义行可选）
+    if (tr.dataset.field !== undefined && f === 'dbType') {
         const okey = tkey + '||' + decodeURIComponent(tr.dataset.field);
         (structFieldOverrides[okey] = structFieldOverrides[okey] || {})[f] = cell.value;
     }
