@@ -275,7 +275,7 @@
             <div class="modal-body">
                 <div class="form-row"><label>任务名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><input type="text" id="taskName" placeholder="请输入任务名称"></div></div>
                 <div class="form-row"><label>任务描述</label><div class="form-content"><input type="text" id="taskDesc" placeholder="请输入任务描述"></div></div>
-                <div class="form-row"><label>Bean名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="beanNameSelect" onchange="onBeanChange()"><option value="">请选择Bean名称</option></select></div></div>
+                <div class="form-row"><label>Bean名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="beanNameSelect" onchange="onBeanChange()"><option value="" disabled hidden>请选择Bean名称</option></select></div></div>
                 <div class="form-row" id="taskServiceRow" style="display:none;"><label>服务 <span style="color:#f5222d;">*</span></label><div class="form-content">
                     <div class="msel">
                         <div class="msel-control" onclick="toggleServiceDropdown('task')"><span class="msel-placeholder" id="taskServicePlaceholder">请选择服务</span><span class="msel-arrow"><i class="el-icon-arrow-down"></i></span></div>
@@ -289,7 +289,7 @@
                     <span class="file-hint" id="taskParamFileHint">请导入Excel参数文件，执行时自动解析为请求入参</span>
                     <div id="taskFileInfo" class="file-info" style="display: none;"><div id="taskFileList" style="width:100%;"></div></div>
                 </div></div>
-                <div class="form-row"><label>参数 <span style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{
+                <div class="form-row"><label>参数 <span id="taskParamsReq" style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{
 "param":"请求入参"
 }' style="font-family: monospace;font-size:12px;"></textarea></div></div>
                 <div class="form-row" id="cronRow"><label>调度规则</label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则（可选）" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
@@ -319,7 +319,7 @@
                     <span class="file-hint" id="runOnceParamFileHint">请导入Excel参数文件，本次执行将解析其内容作为请求入参</span>
                     <div id="runOnceFileInfo" class="file-info" style="display: none;"><div id="runOnceFileList" style="width:100%;"></div></div>
                 </div></div>
-                <div class="form-row"><label>参数 <span style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="runOnceParams" rows="4" placeholder='{
+                <div class="form-row"><label>参数 <span id="runOnceParamsReq" style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="runOnceParams" rows="4" placeholder='{
 "param":"请求入参"
 }' style="font-family: monospace;font-size:12px;"></textarea></div></div>
             </div>
@@ -402,10 +402,11 @@ function showToast(message, type) {
 
 // ======================== Bean类配置（业务功能类） ========================
 // hasService=true 的 Bean（定时调用服务任务）需要在下方选择要调用的服务（可多选）
+// hasService=true 的 Bean（定时调用服务任务）需要在下方选择要调用的服务（可多选）
 let serviceList = ['企业画像查询服务', '金融风控服务', '身份核验服务', '信用报告查询服务', '舆情监控服务'];
 let beanClassList = [
     { id: "scheduledServiceInvokeTask", name: "定时调用服务任务", className: "ScheduledServiceInvokeTask", description: "定时批量调用所选外数服务，拉取数据并入库", hasService: true, params: [] },
-    { id: "structuredCompensateTask", name: "结构化补偿任务", className: "StructuredCompensateTask", description: "对结构化失败/漏解析的原始报文进行补偿解析入库", hasService: false, params: [] }
+    { id: "structuredCompensateTask", name: "结构化补偿任务", className: "StructuredCompensateTask", description: "对未完成结构化的API历史原始报文批量补偿解析入库", params: [] }
 ];
 
 // ======================== 数据库配置 ========================
@@ -424,9 +425,9 @@ let taskList = [
     { id: 2, taskName: "服务用量预警", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["金融风控服务"], description: "每日扫描服务用量并预警", paramType: "数据库参数", paramDb: "crds_report", paramFileName: "", params: JSON.stringify({ paramSQL: "SELECT tenant_id, service_name, used_count FROM svc_usage WHERE used_ratio >= 80" }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
     { id: 3, taskName: "企业违法记录查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["金融风控服务", "舆情监控服务"], description: "按清单每周批量查询企业严重违法记录", paramType: "Excel参数", paramDb: "", paramFileName: "企业违法查询清单2026Q2.xlsx", params: JSON.stringify({}, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
     { id: 4, taskName: "身份核验批量查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["身份核验服务"], description: "每日批量核验存量客户身份", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ param: '{"batchSize":200}' }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" },
-    { id: 5, taskName: "数据结构化补偿", beanName: "structuredCompensateTask", beanNameCn: "结构化补偿任务", beanClassName: "StructuredCompensateTask", serviceNames: [], description: "对未解析/解析失败报文进行补偿解析入库", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ startTime: "", endTime: "", id: {}, param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "0 30 2 * * ?", cronDesc: "每日2:30", lastExecute: "2026/4/29", status: "启用" },
+    { id: 5, taskName: "数据结构化补偿", beanName: "structuredCompensateTask", beanNameCn: "结构化补偿任务", beanClassName: "StructuredCompensateTask", serviceNames: [], description: "对未完成结构化API的历史报文批量补偿解析入库", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ startTime: "", endTime: "", id: {}, param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "0 30 2 * * ?", cronDesc: "每日2:30", lastExecute: "2026/4/29", status: "启用" },
     { id: 6, taskName: "企业名单批量查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["企业画像查询服务", "信用报告查询服务"], description: "按Excel名单手动批量查询工商信息", paramType: "Excel参数", paramDb: "", paramFileName: "重点监控企业名单.xlsx", params: JSON.stringify({}, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/25", status: "启用" },
-    { id: 7, taskName: "存量报文补解析", beanName: "structuredCompensateTask", beanNameCn: "结构化补偿任务", beanClassName: "StructuredCompensateTask", serviceNames: [], description: "历史失败报文手动补解析", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ startTime: "2026-01-01 00:00:00", endTime: "2026-03-31 23:59:59", id: {}, param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/20", status: "停用" }
+    { id: 7, taskName: "存量报文补解析", beanName: "structuredCompensateTask", beanNameCn: "结构化补偿任务", beanClassName: "StructuredCompensateTask", serviceNames: [], description: "2026Q1 存量未结构化报文手动补解析", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ startTime: "2026-01-01 00:00:00", endTime: "2026-03-31 23:59:59", id: {}, param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/20", status: "停用" }
 ];
 
 // 任务执行日志：参数模式、参数内容、开始/结束执行时间、执行结果、执行返回结果（后端返回）
@@ -508,6 +509,13 @@ function syncTaskTableHeight() {
     tableBox.style.maxHeight = Math.max(120, Math.floor(avail)) + 'px';
 }
 
+// 列表编号是"序列号"：按当前结果集从下往上数，最新一条在最上且编号最大（自上而下读为倒序）。
+// 与内部唯一标识 id 无关，所以删除一条后编号自动补齐、不留空号
+function taskSerialNo(id) {
+    const idx = taskFiltered.findIndex(i => i.id === id);
+    return idx === -1 ? '-' : (taskFiltered.length - idx);
+}
+
 function renderTaskTable() {
     const taskName = document.getElementById('taskNameFilter')?.value.trim() || '';
     const beanName = document.getElementById('beanNameFilter')?.value.trim() || '';
@@ -517,8 +525,10 @@ function renderTaskTable() {
     const pageData = taskFiltered.slice((taskPage-1)*pageSize, taskPage*pageSize);
     const tbody = document.getElementById('taskTableBody');
     if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;">暂无数据</td></tr>'; updateTaskPagination(total, taskFiltered.length); syncTaskTableHeight(); return; }
-    tbody.innerHTML = pageData.map(i => `<tr>
-        <td>${i.id}</td>
+    // 编号按结果集倒序编号：最新一条（第一条）编号最大，末条为 1；跨页连续
+    const baseIndex = (taskPage - 1) * pageSize;
+    tbody.innerHTML = pageData.map((i, idx) => `<tr>
+        <td>${taskFiltered.length - baseIndex - idx}</td>
         <td>${escapeHtml(i.taskName)}</td>
         <td>${escapeHtml(i.description || '-')}</td>
         <td style="font-size:12px;max-width:200px;word-break:break-all;">${escapeHtml(((i.beanNameCn || '') + ' (' + (i.beanClassName || '') + ')').trim())}</td>
@@ -550,10 +560,12 @@ function changeTaskPageSize(size) { pageSize = parseInt(size); taskPage = 1; ren
 function jumpTaskPage() { let p = parseInt(document.getElementById('taskJumpPage')?.value); if(p>=1 && p<=Math.ceil(taskFiltered.length/pageSize)) { taskPage = p; renderTaskTable(); } }
 
 // 初始化Bean下拉选择（选项格式：中文名 (类名)）
+// 提示文案用 disabled+hidden 的占位项：未选择时显示为灰色占位文字，展开下拉时不作为可选项出现
 function initBeanSelect() {
     const select = document.getElementById('beanNameSelect');
-    select.innerHTML = '<option value="">请选择Bean名称</option>';
+    select.innerHTML = '<option value="" disabled hidden>请选择Bean名称</option>';
     beanClassList.forEach(bean => { select.innerHTML += `<option value="${bean.id}">${bean.name} (${bean.className})</option>`; });
+    syncSelectPlaceholder(select);
 }
 // 初始化数据库下拉选择
 function initDbSelect() {
@@ -569,26 +581,44 @@ function syncSelectPlaceholder(select) {
     if (select.value === '') select.classList.add('select-placeholder');
     else select.classList.remove('select-placeholder');
 }
-// 各参数类型的参考示例（直接作为placeholder展示）
+// 各参数类型的输入框提示（数据库参数直接写SQL，保存时再包成 paramSQL）
 const PARAM_PLACEHOLDERS = {
     '输入参数': '{\n"param":"请求入参"\n}',
-    '数据库参数': '{\n"paramSQL":"输入SQL语句SELECT * FROM TABLE_NAME ..."\n}',
+    '数据库参数': '请输入SQL语句',
     'Excel参数': '{}'
 };
 // 结构化补偿任务的参数模板（选择该Bean后自动展示）
 const COMPENSATE_PARAM_TEMPLATE = '{\n  "startTime":"",\n  "endTime":"",\n  "id":{},\n  "param": "{\\"retryScope\\":\\"2026Q1\\",\\"maxRetry\\":3}"\n}';
-// 参数类型切换：输入参数直接编辑JSON；数据库参数需选库并填写paramSQL；Excel参数需上传附件且参数无需param字段
+// 编辑/执行弹窗回显参数：数据库参数只回填纯SQL（与输入框的填写方式一致），Excel参数非必填留空，输入参数回填原JSON串
+function paramsForEdit(item) {
+    const type = item.paramType || '输入参数';
+    if (type === '数据库参数') {
+        try { return JSON.parse(item.params).paramSQL || ''; } catch(e) { return item.params || ''; }
+    }
+    if (type === 'Excel参数') return '';
+    return item.params || '';
+}
+// 参数类型切换：输入参数填JSON；数据库参数直接写SQL（保存时包成 paramSQL）；Excel参数由附件决定、参数非必填
 function onParamTypeChange(scope) {
     const prefix = scope === 'task' ? 'task' : 'runOnce';
     const type = document.getElementById(prefix + 'ParamType').value;
     const dbRow = document.getElementById(prefix + 'DbRow');
     const fileRow = document.getElementById(prefix + 'FileRow');
     const textarea = document.getElementById(prefix + 'Params');
+    const reqMark = document.getElementById(prefix + 'ParamsReq');
     dbRow.style.display = type === '数据库参数' ? '' : 'none';
     fileRow.style.display = type === 'Excel参数' ? '' : 'none';
     textarea.placeholder = PARAM_PLACEHOLDERS[type] || '';
-    // 新增任务时，示例值直接作为默认内容填充文本框
-    if (scope === 'task' && currentTaskId === null) textarea.value = PARAM_PLACEHOLDERS[type] || '';
+    if (reqMark) reqMark.style.display = type === 'Excel参数' ? 'none' : ''; // Excel参数非必填，隐藏必填星号
+    if (type === '输入参数') {
+        // 新增任务时用示例JSON作为编辑起点；编辑态保留原内容（由编辑流程回填）
+        if (scope === 'task' && currentTaskId === null) {
+            const bean = beanClassList.find(b => b.id === document.getElementById('beanNameSelect').value);
+            textarea.value = (bean && !bean.hasService) ? COMPENSATE_PARAM_TEMPLATE : PARAM_PLACEHOLDERS['输入参数'];
+        }
+    } else {
+        textarea.value = ''; // 切到数据库参数/Excel参数时清空输入框
+    }
 }
 // 参数附件：上传按钮+提示不变，已选文件在下方展示文件名+大小，可点删除图标移除
 // paramFileState[scope] = null 或 { name, size, isExisting }
@@ -634,36 +664,45 @@ function initParamFileUpload() {
     });
 }
 function onBeanChange() {
-    // 仅"定时调用服务任务"（hasService=true）显示服务多选
-    const beanId = document.getElementById('beanNameSelect').value;
+    const select = document.getElementById('beanNameSelect');
+    syncSelectPlaceholder(select); // 占位项被选中时显示为灰色占位文字
+    const beanId = select.value;
     const bean = beanClassList.find(b => b.id === beanId);
+    // 仅"定时调用服务任务"（hasService=true）显示服务多选
     const row = document.getElementById('taskServiceRow');
     if (bean && bean.hasService) { row.style.display = ''; renderServiceOptions('task'); }
-    else { row.style.display = 'none'; serviceState.task = []; closeServiceDropdown('task'); renderServiceTags('task'); }
-    // 新增任务时：选择结构化补偿任务，参数区展示补偿参数模板；切回其他Bean恢复参数类型示例
-    if (currentTaskId === null) {
-        const textarea = document.getElementById('taskParams');
-        if (bean && !bean.hasService) textarea.value = COMPENSATE_PARAM_TEMPLATE;
-        else textarea.value = PARAM_PLACEHOLDERS[document.getElementById('taskParamType').value] || '';
-    }
+    else { row.style.display = 'none'; mselState.service.task = []; closeServiceDropdown('task'); renderServiceTags('task'); }
+    // 新增任务时：切换Bean后按当前参数类型重置参数区默认值（结构化补偿任务用补偿参数模板）
+    if (currentTaskId === null) onParamTypeChange('task');
 }
 
-// ======================== 服务多选下拉（任务弹窗/执行弹窗共用，交互对齐计费管理API多选） ========================
-// serviceState[scope] = ['服务A','服务B']
-const serviceState = { task: [], runOnce: [] };
+// ======================== 多选下拉（任务弹窗/执行弹窗共用，交互对齐计费管理API多选） ========================
+// kind='service' 定时调用服务任务选择要调用的服务
+// mselState[kind][scope] = ['选项A','选项B']
+const mselState = { service: { task: [], runOnce: [] } };
+const MSEL_KIND = {
+    service: { dd: s => s + 'ServiceDropdown', ph: s => s + 'ServicePlaceholder', opt: (s, i) => s + 'SvcOpt' + i, list: () => serviceList }
+};
 // 下拉选项纵向排列，自定义复选框（cb-box），点击整行切换
-function renderServiceOptions(scope) {
-    const dropdown = document.getElementById(scope + 'ServiceDropdown');
-    const selected = serviceState[scope];
-    dropdown.innerHTML = serviceList.map((s, i) => `<div class="msel-option" onclick="toggleServiceOption(event, '${scope}', ${i})">
-        <input type="checkbox" id="${scope}SvcOpt${i}" value="${escapeHtml(s)}" ${selected.includes(s) ? 'checked' : ''}><span class="cb-box"></span><span class="msel-label">${escapeHtml(s)}</span>
+function renderMselOptions(kind, scope) {
+    const cfg = MSEL_KIND[kind];
+    const dropdown = document.getElementById(cfg.dd(scope));
+    if (!dropdown) return;
+    const selected = mselState[kind][scope];
+    const list = cfg.list();
+    if (!list.length) { dropdown.innerHTML = '<div class="msel-option is-disabled"><span class="msel-label">暂无可选项</span></div>'; return; }
+    dropdown.innerHTML = list.map((s, i) => `<div class="msel-option" onclick="toggleMselOption(event, '${kind}', '${scope}', ${i})">
+        <input type="checkbox" id="${cfg.opt(scope, i)}" value="${escapeHtml(s)}" ${selected.includes(s) ? 'checked' : ''}><span class="cb-box"></span><span class="msel-label">${escapeHtml(s)}</span>
     </div>`).join('');
 }
-// 回显：控制框内以标签展示已选服务，放不下的折叠为 +N（同计费管理API）
-function renderServiceTags(scope) {
-    const control = document.getElementById(scope + 'ServiceDropdown').previousElementSibling;
-    const ph = document.getElementById(scope + 'ServicePlaceholder');
-    const selected = serviceState[scope];
+// 回显：控制框内以标签展示已选项，放不下的折叠为 +N（同计费管理API）
+function renderMselTags(kind, scope) {
+    const cfg = MSEL_KIND[kind];
+    const dropdown = document.getElementById(cfg.dd(scope));
+    if (!dropdown) return;
+    const control = dropdown.previousElementSibling;
+    const ph = document.getElementById(cfg.ph(scope));
+    const selected = mselState[kind][scope];
     control.querySelectorAll('.msel-tag, .msel-tag-more').forEach(el => el.remove());
     if (selected.length === 0) { ph.style.display = ''; return; }
     ph.style.display = 'none';
@@ -678,7 +717,7 @@ function renderServiceTags(scope) {
         const close = document.createElement('span');
         close.className = 'tag-close';
         close.innerHTML = '×';
-        close.addEventListener('click', (function(name) { return function(e) { e.stopPropagation(); removeServiceTag(scope, name); }; })(selected[i]));
+        close.addEventListener('click', (function(name) { return function(e) { e.stopPropagation(); removeMselTag(kind, scope, name); }; })(selected[i]));
         tag.appendChild(close);
         tag.style.visibility = 'hidden';
         control.appendChild(tag);
@@ -696,37 +735,46 @@ function renderServiceTags(scope) {
         usedWidth += tagWidth;
     }
 }
-function toggleServiceOption(e, scope, idx) {
+function toggleMselOption(e, kind, scope, idx) {
     e.stopPropagation();
-    const name = serviceList[idx];
-    const cb = document.getElementById(scope + 'SvcOpt' + idx);
-    const checked = !serviceState[scope].includes(name);
-    serviceState[scope] = checked ? [...serviceState[scope], name] : serviceState[scope].filter(s => s !== name);
+    const name = MSEL_KIND[kind].list()[idx];
+    const cb = document.getElementById(MSEL_KIND[kind].opt(scope, idx));
+    const checked = !mselState[kind][scope].includes(name);
+    mselState[kind][scope] = checked ? [...mselState[kind][scope], name] : mselState[kind][scope].filter(s => s !== name);
     if (cb) cb.checked = checked;
-    renderServiceTags(scope);
+    renderMselTags(kind, scope);
 }
-function removeServiceTag(scope, name) {
-    serviceState[scope] = serviceState[scope].filter(s => s !== name);
-    renderServiceTags(scope);
-    renderServiceOptions(scope);
+function removeMselTag(kind, scope, name) {
+    mselState[kind][scope] = mselState[kind][scope].filter(s => s !== name);
+    renderMselTags(kind, scope);
+    renderMselOptions(kind, scope);
 }
-function toggleServiceDropdown(scope) {
-    const msel = document.getElementById(scope + 'ServiceDropdown').parentElement;
-    if (msel.classList.contains('open')) { closeServiceDropdown(scope); return; }
-    document.querySelectorAll('.msel.open').forEach(el => el.classList.remove('open'));
-    renderServiceOptions(scope);
+function toggleMselDropdown(kind, scope) {
+    const dd = document.getElementById(MSEL_KIND[kind].dd(scope));
+    if (!dd) return;
+    const msel = dd.parentElement;
+    if (msel.classList.contains('open')) { closeMselDropdown(kind, scope); return; }
+    document.querySelectorAll('.msel.open').forEach(el => { el.classList.remove('open'); const d = el.querySelector('.msel-dropdown'); if (d) d.classList.remove('show'); });
+    renderMselOptions(kind, scope);
     msel.classList.add('open');
-    document.getElementById(scope + 'ServiceDropdown').classList.add('show');
+    dd.classList.add('show');
 }
-function closeServiceDropdown(scope) {
-    const dd = document.getElementById(scope + 'ServiceDropdown');
+function closeMselDropdown(kind, scope) {
+    const dd = document.getElementById(MSEL_KIND[kind].dd(scope));
     if (dd) { dd.classList.remove('show'); dd.parentElement.classList.remove('open'); }
 }
+// 兼容原有调用点（服务多选）
+function renderServiceOptions(scope) { renderMselOptions('service', scope); }
+function renderServiceTags(scope) { renderMselTags('service', scope); }
+function toggleServiceDropdown(scope) { toggleMselDropdown('service', scope); }
+function closeServiceDropdown(scope) { closeMselDropdown('service', scope); }
+function removeServiceTag(scope, name) { removeMselTag('service', scope, name); }
 // 点击页面其他位置收起多选面板
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.msel')) document.querySelectorAll('.msel.open').forEach(el => { el.classList.remove('open'); el.querySelector('.msel-dropdown').classList.remove('show'); });
+    if (!e.target.closest('.msel')) document.querySelectorAll('.msel.open').forEach(el => { el.classList.remove('open'); const d = el.querySelector('.msel-dropdown'); if (d) d.classList.remove('show'); });
 });
-// 按参数类型校验并返回参数内容；返回 null 表示校验失败
+// 按参数类型校验并返回落库的参数内容；返回 null 表示校验失败
+// 数据库参数：输入框里是纯SQL，落库时包成 {"paramSQL":"..."}；Excel参数：非必填，留空按 {} 存储
 function getParamByType(scope) {
     const prefix = scope === 'task' ? 'task' : 'runOnce';
     const type = document.getElementById(prefix + 'ParamType').value;
@@ -734,16 +782,19 @@ function getParamByType(scope) {
     const val = textarea.value.trim();
     if (type === 'Excel参数') {
         if (!paramFileState[scope]) { showToast('参数类型为Excel参数，请导入Excel参数附件', 'warning'); return null; }
-        if (!val) { textarea.value = '{}'; return textarea.value; }
+        if (!val) return '{}';
+        try { JSON.parse(val); } catch(e) { showToast('参数格式不正确，请输入有效的JSON格式', 'error'); return null; }
+        return val;
+    }
+    if (type === '数据库参数') {
+        if (!document.getElementById(prefix + 'ParamDb').value) { showToast('参数类型为数据库参数，请选择数据库', 'warning'); return null; }
+        if (!val) { showToast('请输入SQL语句', 'warning'); return null; }
+        return JSON.stringify({ paramSQL: val }, null, 2);
     }
     if (!val) { showToast('请填写参数', 'warning'); return null; }
     let obj;
     try { obj = JSON.parse(val); } catch(e) { showToast('参数格式不正确，请输入有效的JSON格式', 'error'); return null; }
-    if (type === '输入参数' && !obj.param) { showToast('输入参数需要 param 字段（请求入参json串）', 'warning'); return null; }
-    if (type === '数据库参数') {
-        if (!document.getElementById(prefix + 'ParamDb').value) { showToast('参数类型为数据库参数，请选择数据库', 'warning'); return null; }
-        if (!obj.paramSQL) { showToast('数据库参数需要 paramSQL 字段（sql内容）', 'warning'); return null; }
-    }
+    if (!obj.param) { showToast('输入参数需要 param 字段（请求入参json串）', 'warning'); return null; }
     return val;
 }
 
@@ -758,7 +809,7 @@ function editTask(id) {
         document.getElementById('taskDesc').value=item.description||'';
         document.getElementById('beanNameSelect').value=item.beanName;
         onBeanChange();
-        serviceState.task = [...(item.serviceNames || [])];
+        mselState.service.task = [...(item.serviceNames || [])];
         renderServiceTags('task');
         renderServiceOptions('task');
         document.getElementById('taskParamType').value=item.paramType||'输入参数';
@@ -768,7 +819,7 @@ function editTask(id) {
         paramFileState.task = item.paramFileName ? { name: item.paramFileName, size: 0, isExisting: true } : null;
         document.getElementById('taskParamFile').value='';
         renderParamFileList('task');
-        document.getElementById('taskParams').value=item.params||'';
+        document.getElementById('taskParams').value=paramsForEdit(item);
         document.getElementById('cronDesc').value=item.cronDesc||'';
         document.getElementById('cronExpr').value=item.cron;
         document.getElementById('taskStatus').value=item.status;
@@ -786,10 +837,10 @@ function runOnceTask(id) {
         const row = document.getElementById('runOnceServiceRow');
         if (bean && bean.hasService) {
             row.style.display = '';
-            serviceState.runOnce = [...(item.serviceNames || [])];
+            mselState.service.runOnce = [...(item.serviceNames || [])];
             renderServiceTags('runOnce');
             renderServiceOptions('runOnce');
-        } else { row.style.display = 'none'; serviceState.runOnce = []; }
+        } else { row.style.display = 'none'; mselState.service.runOnce = []; }
         document.getElementById('runOnceParamType').value = item.paramType || '输入参数';
         onParamTypeChange('runOnce');
         document.getElementById('runOnceParamDb').value = item.paramDb || '';
@@ -797,7 +848,7 @@ function runOnceTask(id) {
         paramFileState.runOnce = item.paramFileName ? { name: item.paramFileName, size: 0, isExisting: true } : null;
         document.getElementById('runOnceParamFile').value='';
         renderParamFileList('runOnce');
-        document.getElementById('runOnceParams').value = item.params||'';
+        document.getElementById('runOnceParams').value = paramsForEdit(item);
         document.getElementById('runOnceModal').classList.add('active');
         setTimeout(function(){ renderServiceTags('runOnce'); }, 50); // 弹窗可见后按实际宽度重算标签折叠
     }
@@ -808,7 +859,7 @@ function confirmRunOnce() {
     const item = taskList.find(i=>i.id===currentTaskId);
     const bean = item ? beanClassList.find(b => b.id === item.beanName) : null;
     // 定时调用服务任务必须先选择要执行的服务
-    if (bean && bean.hasService && serviceState.runOnce.length === 0) { showToast('请至少选择一个要执行的服务', 'warning'); return; }
+    if (bean && bean.hasService && mselState.service.runOnce.length === 0) { showToast('请至少选择一个要执行的服务', 'warning'); return; }
     const params = getParamByType(prefix);
     if (params === null) return;
     const st = paramFileState.runOnce;
@@ -827,7 +878,7 @@ function confirmRunOnce() {
         if (!taskLogMap[currentTaskId]) taskLogMap[currentTaskId] = [];
         taskLogMap[currentTaskId].unshift({ paramType: type, paramContent: content, startTime: fmt(now), endTime: fmt(endTime), result: fail > 0 ? '失败' : '成功', resultDetail: resultDetail });
     }
-    showToast('任务 #' + currentTaskId + ' 已执行（' + type + '）', 'success');
+    showToast('任务 #' + taskSerialNo(currentTaskId) + ' 已执行（' + type + '）', 'success');
     renderTaskTable();
     closeRunOnceModal();
 }
@@ -886,7 +937,7 @@ function addTask() {
     document.getElementById('taskDesc').value='';
     document.getElementById('beanNameSelect').value='';
     onBeanChange();
-    serviceState.task = [];
+    mselState.service.task = [];
     renderServiceTags('task');
     renderServiceOptions('task');
     document.getElementById('taskParamType').value='输入参数';
@@ -932,8 +983,8 @@ function saveTask() {
     if(!name||!beanId){ showToast('请填写任务名称和选择Bean名称', 'warning'); return; }
     const bean=beanClassList.find(b=>b.id===beanId);
     // 定时调用服务任务必须至少选择一个服务
-    if(bean && bean.hasService && serviceState.task.length===0){ showToast('请至少选择一个要调用的服务', 'warning'); return; }
-    const serviceNames = bean && bean.hasService ? [...serviceState.task] : [];
+    if(bean && bean.hasService && mselState.service.task.length===0){ showToast('请至少选择一个要调用的服务', 'warning'); return; }
+    const serviceNames = bean && bean.hasService ? [...mselState.service.task] : [];
     const paramType=document.getElementById('taskParamType').value;
     const params = getParamByType('task'); if(params === null) return;
     const paramDb = paramType==='数据库参数' ? document.getElementById('taskParamDb').value : '';

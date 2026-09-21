@@ -62,7 +62,7 @@
         .btn-default:hover { border-color: #f89d34; color: #f89d34; }
 
         /* 内容区域 */
-        .table-container { margin-top: 16px; border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; padding: 0; max-height: 460px; }
+        .table-container { border: 1px solid #ebeef5; border-radius: 2px; overflow-x: auto; overflow-y: auto; padding: 0; max-height: 460px; }
         .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .data-table th, .data-table td { padding: 14px 12px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #666666; text-align: center; }
         .data-table th:last-child, .data-table td:last-child { border-right: none; }
@@ -82,17 +82,28 @@
         .num-ok { color: #52c41a; font-weight: 500; }
         .num-fail { color: #f5222d; font-weight: 500; }
 
-        /* 分页 */
-        .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 13px; color: #333333; }
+        /* 触发来源 / 解析方式 标签 */
+        .src-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; white-space: nowrap; }
+        .src-api-add { background: #eef4ff; color: #2f6fed; }
+        .src-api-call { background: #f0fbff; color: #1592c9; }
+        .src-task { background: #f4f0ff; color: #7a5af5; }
+        .src-comp { background: #fff7e6; color: #d97706; }
+        .mode-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; white-space: nowrap; background: #f2f4f7; color: #666; }
+        .mode-tag.comp { background: #fff7e6; color: #d97706; }
+        .cell-mono { font-size: 12px; font-family: 'Consolas','Monaco',monospace; }
+
+        /* 分页（对齐计费管理） */
+        .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
         .pagination .total-text { margin-right: 16px; color: #666666; }
-        .pagination button { min-width: 28px; height: 28px; padding: 0; background: transparent; border: none; border-radius: 0; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
-        .pagination button:disabled { cursor: not-allowed; opacity: 0.4; }
-        .pagination button:not(:disabled):hover { background: #f5f7fa; color: #f89d34; }
-        .pagination .page-number { min-width: 28px; height: 28px; padding: 0 6px; border: none; border-radius: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; background: transparent; color: #666666; }
-        .pagination .page-number.active { background: transparent; color: #f89d34; cursor: default; font-weight: 500; }
-        .pagination .page-number:not(.active):hover { background: #f5f7fa; color: #f89d34; }
-        .pagination .page-size-select { margin-left: 16px; padding: 4px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #666666; background: #fff; cursor: pointer; outline: none; }
-        .pagination .page-size-select:focus { border-color: #f89d34; }
+        .pagination .page-btn { min-width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #666666; display: inline-flex; align-items: center; justify-content: center; }
+        .pagination .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination .page-btn:hover:not(:disabled) { color: #f89d34; }
+        .pagination .page-number { min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #666666; background: transparent; border: none; }
+        .pagination .page-number.active { color: #f89d34; font-weight: 600; }
+        .pagination .page-number:hover:not(.active) { color: #f89d34; }
+        .pagination .page-size-select { padding: 5px 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; color: #333333; background: #fff; cursor: pointer; margin-left: 16px; }
+        .pagination .jump-section { margin-left: 16px; display: inline-flex; align-items: center; gap: 6px; }
+        .pagination .jump-section input { width: 60px; height: 32px; padding: 0 8px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; }
 
         /* 弹窗 */
         .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.2s; }
@@ -102,7 +113,7 @@
         .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
         .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 16px; }
         .detail-item { display: flex; gap: 8px; font-size: 14px; }
-        .detail-item .dl { color: #999999; flex-shrink: 0; width: 92px; text-align: right; }
+        .detail-item .dl { color: #999999; flex-shrink: 0; width: 100px; text-align: right; }
         .detail-item .dv { color: #333333; word-break: break-all; }
         .detail-block-title { font-size: 13px; color: #999999; margin: 14px 0 6px; }
         .json-box { background: #f8f8f9; border: 1px solid #ebeef5; border-radius: 6px; padding: 12px 14px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; color: #476582; white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow-y: auto; }
@@ -156,11 +167,9 @@
             <div class="filter-section">
                 <div class="filter-bar">
                     <div class="filter-left">
-                        <div class="filter-item"><label>服务名称</label><select id="svcFilter"><option value="">全部</option></select></div>
+                        <div class="filter-item"><label>API名称</label><select id="apiFilter"><option value="">全部</option></select></div>
+                        <div class="filter-item"><label>触发来源</label><select id="triggerFilter"><option value="">全部</option><option>新增API解析</option><option>API在线调用</option><option>定时调用服务任务</option><option>结构化补偿任务</option></select></div>
                         <div class="filter-item"><label>结构化状态</label><select id="statusFilter"><option value="">全部</option><option>成功</option><option>部分失败</option><option>失败</option></select></div>
-                        <div class="filter-item"><label>来源任务</label><select id="taskFilter"><option value="">全部</option><option>定时调用服务任务</option><option>结构化补偿任务</option></select></div>
-                        <div class="filter-item"><label>开始时间</label><input type="date" id="startDateFilter"></div>
-                        <div class="filter-item"><label>至</label><input type="date" id="endDateFilter"></div>
                     </div>
                     <div class="filter-right"><button class="btn-primary" id="searchBtn">查询</button><button class="btn-default" id="resetBtn">重置</button></div>
                 </div>
@@ -172,7 +181,8 @@
                     <div class="table-container">
                         <table class="data-table">
                             <thead><tr>
-                                <th>编号</th><th>日志ID</th><th>批次号</th><th>服务名称</th><th>来源任务</th>
+                                <th>编号</th><th>日志ID</th><th>供应商</th><th>API名称</th>
+                                <th>触发来源</th><th>目标库.表</th>
                                 <th>处理条数</th><th>成功条数</th><th>失败条数</th>
                                 <th>开始执行时间</th><th>结束执行时间</th><th>结构化状态</th><th style="width:70px;">操作</th>
                             </tr></thead>
@@ -207,88 +217,144 @@
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script>
 // ======================== 数据结构化日志数据 ========================
-// 记录外数原始报文结构化解析入库的执行明细，来源任务：定时调用服务任务（调用即解析）/ 结构化补偿任务（补偿解析）
+// 记录外数原始报文结构化解析入库的执行明细。
+// 触发来源 trigger：
+//   新增API解析      —— API服务配置「新增/编辑API」开启「是否结构化」后，对返回示例报文执行的解析（parseMode=实时解析）
+//   API在线调用      —— API服务配置「API在线测试」调用API后，对本次真实响应报文执行的解析（parseMode=实时解析）
+//   定时调用服务任务 —— 任务管理「定时调用服务任务」批量调用API后逐条解析入库（parseMode=实时解析）
+//   结构化补偿任务   —— 任务管理「结构化补偿任务」对未结构化/解析失败的API报文批量补偿（parseMode=补偿解析）
+// 目标库.表 targetDb/targetTable：来自 API 结构化配置的数据库与表名
 let structLogList = [
-    { id: 1, logId: "STRUCT-20260429-0001", batchNo: "BATCH-20260429-001", service: "企业基本信息查询", sourceTask: "定时调用服务任务", total: 10, success: 10, fail: 0, startTime: "2026-04-29 09:00:00", endTime: "2026-04-29 09:00:36", status: "成功", rawSample: '{"OrderNumber":"...","Status":"200","Message":"【有效无违规】","Result":{"Name":"某某金融控股有限公司","CreditCode":"91110000MA01XXXX","RegistCapi":"500000万元"}}', structured: '{"table":"ent_base_info","rows":[{"name":"某某金融控股有限公司","credit_code":"91110000MA01XXXX","regist_capi":500000,"source":"qcc"}]}' },
-    { id: 2, logId: "STRUCT-20260429-0002", batchNo: "BATCH-20260429-002", service: "司法风险查询", sourceTask: "定时调用服务任务", total: 32, success: 32, fail: 0, startTime: "2026-04-29 09:00:01", endTime: "2026-04-29 09:00:58", status: "成功", rawSample: '{"OrderNumber":"...","Result":{"RiskInfo":{"SelfAndRelated":{"Zhixxinxi":{"Count":2}}}}}', structured: '{"table":"ent_judicial_risk","rows":[{"credit_code":"91310...","zhixx_count":2,"source":"qcc"}]}' },
-    { id: 3, logId: "STRUCT-20260429-0003", batchNo: "COMP-20260429-001", service: "企业图谱查询", sourceTask: "结构化补偿任务", total: 50, success: 49, fail: 1, startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "部分失败", failReason: "1条记录报文JSON格式异常（截断），已重新入队等待下次补偿", rawSample: '{"OrderNumber":"...","Result":{"Nodes":[...],"Edges":[...]}}', structured: '{"table":"ent_relation_graph","rows":[{"node_id":"N001","edge_type":"股东"}]}' },
-    { id: 4, logId: "STRUCT-20260428-0011", batchNo: "BATCH-20260428-001", service: "企业基本信息查询", sourceTask: "定时调用服务任务", total: 10, success: 8, fail: 2, startTime: "2026-04-28 09:00:00", endTime: "2026-04-28 09:01:12", status: "部分失败", failReason: "2条记录供应商接口超时（HTTP 504），报文未完整返回", rawSample: '{"OrderNumber":"...","Message":"请求超时"}', structured: '{"table":"ent_base_info","rows":[{"name":"某某科技有限公司","source":"qcc"}]}' },
-    { id: 5, logId: "STRUCT-20260428-0012", batchNo: "COMP-20260428-001", service: "信用评分查询", sourceTask: "结构化补偿任务", total: 50, success: 49, fail: 1, startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "部分失败", failReason: "1条报文Result节点缺失Score字段，解析规则未匹配", rawSample: '{"OrderNumber":"...","Result":{"CreditNo":"...","ScoreLevel":"A"}}', structured: '{"table":"ent_credit_score","rows":[{"credit_no":"...","score_level":"A"}]}' },
-    { id: 6, logId: "STRUCT-20260428-0013", batchNo: "BATCH-20260428-002", service: "经营状况查询", sourceTask: "定时调用服务任务", total: 28, success: 28, fail: 0, startTime: "2026-04-28 03:00:00", endTime: "2026-04-28 03:01:05", status: "成功", rawSample: '{"OrderNumber":"...","Result":{"OperInfoName":"张某某","OperInfoPost":"董事长"}}', structured: '{"table":"ent_oper_info","rows":[{"oper_name":"张某某","oper_post":"董事长"}]}' },
-    { id: 7, logId: "STRUCT-20260427-0021", batchNo: "COMP-20260427-001", service: "企业图谱查询", sourceTask: "结构化补偿任务", total: 62, success: 62, fail: 0, startTime: "2026-04-27 02:30:00", endTime: "2026-04-27 02:31:50", status: "成功", rawSample: '{"OrderNumber":"...","Result":{"Nodes":[...]}}', structured: '{"table":"ent_relation_graph","rows":[{"node_id":"N002"}]}' },
-    { id: 8, logId: "STRUCT-20260427-0022", batchNo: "BATCH-20260427-003", service: "司法风险查询", sourceTask: "定时调用服务任务", total: 128, success: 126, fail: 2, startTime: "2026-04-27 09:00:02", endTime: "2026-04-27 09:02:47", status: "部分失败", failReason: "2条记录企业不存在（Result为空对象），无法生成结构化数据", rawSample: '{"OrderNumber":"...","Result":{}}', structured: '{"table":"ent_judicial_risk","rows":[]}' },
-    { id: 9, logId: "STRUCT-20260426-0031", batchNo: "COMP-20260426-001", service: "企业基本信息查询", sourceTask: "结构化补偿任务", total: 45, success: 45, fail: 0, startTime: "2026-04-26 02:30:00", endTime: "2026-04-26 02:31:11", status: "成功", rawSample: '{"OrderNumber":"...","Result":{"Name":"某某信托有限责任公司"}}', structured: '{"table":"ent_base_info","rows":[{"name":"某某信托有限责任公司"}]}' },
-    { id: 10, logId: "STRUCT-20260425-0041", batchNo: "BATCH-20260425-001", service: "信用评分查询", sourceTask: "定时调用服务任务", total: 86, success: 86, fail: 0, startTime: "2026-04-25 14:20:31", endTime: "2026-04-25 14:22:04", status: "成功", rawSample: '{"OrderNumber":"...","Result":{"Score":820}}', structured: '{"table":"ent_credit_score","rows":[{"score":820}]}' },
-    { id: 11, logId: "STRUCT-20260423-0051", batchNo: "COMP-20260423-001", service: "经营状况查询", sourceTask: "结构化补偿任务", total: 40, success: 37, fail: 3, startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "部分失败", failReason: "3条报文结构版本为v3旧版，解析规则未匹配（需补充规则映射）", rawSample: '{"OrderId":"...","Data":{"OperName":"..."}}', structured: '{"table":"ent_oper_info","rows":[]}' },
-    { id: 12, logId: "STRUCT-20260420-0061", batchNo: "COMP-20260420-001", service: "企业图谱查询", sourceTask: "结构化补偿任务", total: 120, success: 0, fail: 120, startTime: "2026-04-20 16:40:08", endTime: "2026-04-20 16:41:52", status: "失败", failReason: "原始报文存储表批量缺失（raw_json为NULL），本批全部补偿失败，已告警", rawSample: '（原始报文缺失）', structured: '（未生成结构化数据）' }
+    { id: 1, logId: "STRUCT-20260429-0001", batchNo: "APIADD-20260429-001", api: "企业基本信息", supplier: "企查查", trigger: "新增API解析", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", total: 1, success: 1, fail: 0, startTime: "2026-04-29 10:12:03", endTime: "2026-04-29 10:12:04", status: "成功", operator: "席某", rawSample: '{"code":"200","msg":"查询成功","data":{"entName":"某某金融控股有限公司","creditCode":"91110000MA01XXXX","regCapital":"500000万元","estDate":"2015-03-18"}}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某金融控股有限公司","CREDIT_CODE":"91110000MA01XXXX","REGIST_CAPI":500000,"TENANT":"某某金控","COMPANY":"某某金控","DEPARTMENT":"数据管理部","SYSTEM":"外数平台"}]}' },
+    { id: 2, logId: "STRUCT-20260429-0002", batchNo: "APICALL-20260429-001", api: "司法风险", supplier: "天眼查", trigger: "API在线调用", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_JUDICIAL_RISK", total: 1, success: 1, fail: 0, startTime: "2026-04-29 11:03:41", endTime: "2026-04-29 11:03:42", status: "成功", operator: "席某", rawSample: '{"code":"200","msg":"查询成功","data":{"entName":"某某科技有限公司","lawsuitCount":5,"executedCount":0,"dishonestCount":0,"riskLevel":"中风险"}}', structured: '{"table":"ENT_JUDICIAL_RISK","rows":[{"ENT_NAME":"某某科技有限公司","LAWSUIT_COUNT":5,"EXECUTED_COUNT":0,"RISK_LEVEL":"中风险","TENANT":"某某金控","SYSTEM":"外数平台"}]}' },
+    { id: 3, logId: "STRUCT-20260429-0003", batchNo: "BATCH-20260429-001", api: "企业基本信息", supplier: "企查查", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "工商变更", total: 10, success: 10, fail: 0, startTime: "2026-04-29 09:00:00", endTime: "2026-04-29 09:00:36", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Status":"200","Message":"【有效无违规】","Result":{"Name":"某某金融控股有限公司","CreditCode":"91110000MA01XXXX","RegistCapi":"500000万元"}}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某金融控股有限公司","CREDIT_CODE":"91110000MA01XXXX","REGIST_CAPI":500000,"TENANT":"某某金控","COMPANY":"某某金控","DEPARTMENT":"数据管理部","SYSTEM":"外数平台"}]}' },
+    { id: 4, logId: "STRUCT-20260429-0004", batchNo: "BATCH-20260429-002", api: "经营风险", supplier: "天眼查", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", sourceTask: "服务用量预警", total: 32, success: 32, fail: 0, startTime: "2026-04-29 09:00:01", endTime: "2026-04-29 09:00:58", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"RiskInfo":{"SelfAndRelated":{"Zhixxinxi":{"Count":2}}}}}', structured: '{"table":"ENT_OPER_INFO","rows":[{"CREDIT_CODE":"91310...","ZHIXX_COUNT":2,"TENANT":"某某金控","SYSTEM":"外数平台"}]}' },
+    { id: 5, logId: "STRUCT-20260429-0005", batchNo: "COMP-20260429-001", api: "企业图谱、舆情（2个API）", supplier: "企查查、第三方数据公司", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH、ENT_SENTIMENT", sourceTask: "数据结构化补偿", total: 50, success: 49, fail: 1, startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "部分失败", operator: "系统", failReason: "1条记录报文JSON格式异常（截断），已重新入队等待下次补偿", rawSample: '{"OrderNumber":"...","Result":{"Nodes":[...],"Edges":[...]}}', structured: '{"table":"ENT_RELATION_GRAPH","rows":[{"NODE_ID":"N001","EDGE_TYPE":"股东","TENANT":"某某金控"}]}' },
+    { id: 6, logId: "STRUCT-20260428-0011", batchNo: "BATCH-20260428-001", api: "企业基本信息", supplier: "外部数据供应商", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "工商变更", total: 10, success: 8, fail: 2, startTime: "2026-04-28 09:00:00", endTime: "2026-04-28 09:01:12", status: "部分失败", operator: "系统", failReason: "2条记录供应商接口超时（HTTP 504），报文未完整返回，已转入待补偿队列", rawSample: '{"OrderNumber":"...","Message":"请求超时"}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某科技有限公司","TENANT":"某某金控"}]}' },
+    { id: 7, logId: "STRUCT-20260428-0012", batchNo: "COMP-20260428-001", api: "信用评分、企业规模（2个API）", supplier: "数据服务提供商", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_CREDIT_SCORE、ENT_SCALE", sourceTask: "数据结构化补偿", total: 50, success: 49, fail: 1, startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "部分失败", operator: "系统", failReason: "1条报文Result节点缺失Score字段，解析规则未匹配", rawSample: '{"OrderNumber":"...","Result":{"CreditNo":"...","ScoreLevel":"A"}}', structured: '{"table":"ENT_CREDIT_SCORE","rows":[{"CREDIT_NO":"...","SCORE_LEVEL":"A","TENANT":"某某金控"}]}' },
+    { id: 8, logId: "STRUCT-20260428-0013", batchNo: "APICALL-20260428-002", api: "经营状况", supplier: "天眼查", trigger: "API在线调用", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", total: 1, success: 0, fail: 1, startTime: "2026-04-28 15:22:10", endTime: "2026-04-28 15:22:11", status: "失败", operator: "张三", failReason: "在线调用响应报文中 data 节点为空，未匹配到任何「解析属性=字段」的返回参数，未生成结构化数据", rawSample: '{"code":"200","msg":"查询成功","data":{}}', structured: '（未生成结构化数据）' },
+    { id: 9, logId: "STRUCT-20260428-0014", batchNo: "BATCH-20260428-002", api: "身份核验", supplier: "外部数据供应商", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", sourceTask: "身份核验批量查询", total: 28, success: 28, fail: 0, startTime: "2026-04-28 03:00:00", endTime: "2026-04-28 03:01:05", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"OperInfoName":"张某某","OperInfoPost":"董事长"}}', structured: '{"table":"ENT_OPER_INFO","rows":[{"OPER_NAME":"张某某","OPER_POST":"董事长","TENANT":"某某金控"}]}' },
+    { id: 10, logId: "STRUCT-20260427-0021", batchNo: "COMP-20260427-001", api: "企业图谱", supplier: "企查查", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH", sourceTask: "数据结构化补偿", total: 62, success: 62, fail: 0, startTime: "2026-04-27 02:30:00", endTime: "2026-04-27 02:31:50", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"Nodes":[...]}}', structured: '{"table":"ENT_RELATION_GRAPH","rows":[{"NODE_ID":"N002","TENANT":"某某金控"}]}' },
+    { id: 11, logId: "STRUCT-20260427-0022", batchNo: "BATCH-20260427-003", api: "司法风险", supplier: "天眼查", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_JUDICIAL_RISK", sourceTask: "企业违法记录查询", total: 128, success: 126, fail: 2, startTime: "2026-04-27 09:00:02", endTime: "2026-04-27 09:02:47", status: "部分失败", operator: "系统", failReason: "2条记录企业不存在（Result为空对象），无法生成结构化数据", rawSample: '{"OrderNumber":"...","Result":{}}', structured: '{"table":"ENT_JUDICIAL_RISK","rows":[]}' },
+    { id: 12, logId: "STRUCT-20260426-0031", batchNo: "APIADD-20260426-002", api: "融资历史", supplier: "数据服务提供商", trigger: "新增API解析", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_FINANCE", total: 1, success: 1, fail: 0, startTime: "2026-04-26 16:41:20", endTime: "2026-04-26 16:41:21", status: "成功", operator: "李四", rawSample: '{"code":"200","msg":"查询成功","data":{"entName":"某某科技有限公司","totalRound":3,"latestRound":"B轮","latestAmount":"1.5亿元人民币"}}', structured: '{"table":"ENT_FINANCE","rows":[{"ENT_NAME":"某某科技有限公司","TOTAL_ROUND":3,"LATEST_ROUND":"B轮","TENANT":"某某金控","SYSTEM":"外数平台"}]}' },
+    { id: 13, logId: "STRUCT-20260426-0032", batchNo: "COMP-20260426-001", api: "企业基本信息", supplier: "企查查", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "数据结构化补偿", total: 45, success: 45, fail: 0, startTime: "2026-04-26 02:30:00", endTime: "2026-04-26 02:31:11", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"Name":"某某信托有限责任公司"}}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某信托有限责任公司","TENANT":"某某金控"}]}' },
+    { id: 14, logId: "STRUCT-20260425-0041", batchNo: "BATCH-20260425-001", api: "信用评分", supplier: "数据服务提供商", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_CREDIT_SCORE", sourceTask: "企业名单批量查询", total: 86, success: 86, fail: 0, startTime: "2026-04-25 14:20:31", endTime: "2026-04-25 14:22:04", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"Score":820}}', structured: '{"table":"ENT_CREDIT_SCORE","rows":[{"SCORE":820,"TENANT":"某某金控"}]}' },
+    { id: 15, logId: "STRUCT-20260423-0051", batchNo: "COMP-20260423-001", api: "经营状况、严重违法记录（2个API）", supplier: "天眼查、外部数据供应商", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO、ENT_VIOLATION", sourceTask: "存量报文补解析", total: 40, success: 37, fail: 3, startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "部分失败", operator: "系统", failReason: "3条报文结构版本为v3旧版，解析规则未匹配（需在API结构化配置中补充规则映射）", rawSample: '{"OrderId":"...","Data":{"OperName":"..."}}', structured: '{"table":"ENT_OPER_INFO","rows":[]}' },
+    { id: 16, logId: "STRUCT-20260420-0061", batchNo: "COMP-20260420-001", api: "企业图谱", supplier: "企查查", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH", sourceTask: "存量报文补解析", total: 120, success: 0, fail: 120, startTime: "2026-04-20 16:40:08", endTime: "2026-04-20 16:41:52", status: "失败", operator: "系统", failReason: "原始报文存储表批量缺失（raw_json为NULL），本批全部补偿失败，已告警", rawSample: '（原始报文缺失）', structured: '（未生成结构化数据）' }
 ];
 
 let filtered = [...structLogList];
 let page = 1, pageSize = 10;
 
-// 初始化筛选下拉
+// 触发来源 → 标签样式
+const TRIGGER_CLASS = { '新增API解析': 'src-api-add', 'API在线调用': 'src-api-call', '定时调用服务任务': 'src-task', '结构化补偿任务': 'src-comp' };
+function triggerTag(t) { return `<span class="src-tag ${TRIGGER_CLASS[t] || 'src-task'}">${escapeHtml(t)}</span>`; }
+function modeTag(m) { return `<span class="mode-tag ${m === '补偿解析' ? 'comp' : ''}">${escapeHtml(m)}</span>`; }
+function statusTag(s) { return `<span class="status-badge ${s==='成功'?'status-running':(s==='部分失败'?'status-partial':'status-not-enabled')}">${s}</span>`; }
+
+// 初始化筛选下拉（API名称：补偿类日志一条记录含多个API，拆开去重后作为选项，查询按包含匹配）
 (function initFilters() {
-    const svc = document.getElementById('svcFilter');
-    [...new Set(structLogList.map(l => l.service))].forEach(s => { svc.innerHTML += `<option>${s}</option>`; });
+    const api = document.getElementById('apiFilter');
+    const names = new Set();
+    structLogList.forEach(l => String(l.api).replace(/（\d+个API）/g, '').split('、').forEach(n => { if (n) names.add(n.trim()); }));
+    [...names].forEach(s => { api.innerHTML += `<option>${escapeHtml(s)}</option>`; });
 })();
 
 function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]); }
 function tryFormatJson(s) { try { return JSON.stringify(JSON.parse(s), null, 2); } catch(e) { return s; } }
 
 function renderTable() {
-    const svc = document.getElementById('svcFilter').value;
+    const api = document.getElementById('apiFilter').value;
+    const tg = document.getElementById('triggerFilter').value;
     const st = document.getElementById('statusFilter').value;
-    const tk = document.getElementById('taskFilter').value;
-    const sd = document.getElementById('startDateFilter').value;
-    const ed = document.getElementById('endDateFilter').value;
     filtered = structLogList.filter(l =>
-        (!svc || l.service === svc) && (!st || l.status === st) && (!tk || l.sourceTask === tk) &&
-        (!sd || l.startTime.slice(0,10) >= sd) && (!ed || l.startTime.slice(0,10) <= ed));
+        (!api || l.api.includes(api)) && (!tg || l.trigger === tg) && (!st || l.status === st));
     const total = Math.ceil(filtered.length / pageSize) || 1;
     if (page > total) page = total;
     const pageData = filtered.slice((page-1)*pageSize, page*pageSize);
     const tbody = document.getElementById('logTableBody');
-    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;">暂无数据</td></tr>'; }
+    if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;">暂无数据</td></tr>'; }
     else {
         tbody.innerHTML = pageData.map((l, idx) => `<tr>
             <td>${(page-1)*pageSize + idx + 1}</td>
-            <td style="font-size:12px;font-family:monospace;">${escapeHtml(l.logId)}</td>
-            <td style="font-size:12px;font-family:monospace;">${escapeHtml(l.batchNo)}</td>
-            <td>${escapeHtml(l.service)}</td>
-            <td style="white-space:nowrap;">${escapeHtml(l.sourceTask)}</td>
+            <td class="cell-mono">${escapeHtml(l.logId)}</td>
+            <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.supplier)}">${escapeHtml(l.supplier)}</td>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.api)}">${escapeHtml(l.api)}</td>
+            <td style="white-space:nowrap;">${triggerTag(l.trigger)}</td>
+            <td class="cell-mono" style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.targetDb + '.' + l.targetTable)}">${escapeHtml(l.targetDb)}.${escapeHtml(l.targetTable)}</td>
             <td>${l.total}</td>
             <td class="num-ok">${l.success}</td>
             <td class="${l.fail > 0 ? 'num-fail' : ''}">${l.fail}</td>
             <td style="white-space:nowrap;">${escapeHtml(l.startTime)}</td>
             <td style="white-space:nowrap;">${escapeHtml(l.endTime)}</td>
-            <td><span class="status-badge ${l.status==='成功'?'status-running':(l.status==='部分失败'?'status-partial':'status-not-enabled')}">${l.status}</span></td>
+            <td>${statusTag(l.status)}</td>
             <td><a class="action-link" onclick="viewDetail(${l.id})">查看</a></td>
         </tr>`).join('');
     }
     renderPagination(total, filtered.length);
+    syncLogTableHeight();
+}
+// 表格最大高度 = 白卡内表格上方剩余的全部空间（与任务管理一致）：
+// 内容少时表格按内容高度收窄、分页栏紧随其下；内容超出时才出现内部滚动条
+function syncLogTableHeight() {
+    const card = document.querySelector('.struct-white-card');
+    const tableBox = document.querySelector('.table-container');
+    const pagination = document.getElementById('logPagination');
+    if (!card || !tableBox) return;
+    const cardRect = card.getBoundingClientRect();
+    const padBottom = parseFloat(getComputedStyle(card).paddingBottom) || 0;
+    const pagH = pagination ? pagination.offsetHeight : 0;
+    const avail = cardRect.bottom - padBottom - tableBox.getBoundingClientRect().top - pagH;
+    if (!isFinite(avail)) return;
+    tableBox.style.maxHeight = Math.max(120, Math.floor(avail)) + 'px';
 }
 function renderPagination(total, totalCount) {
     const container = document.getElementById('logPagination');
     let html = `<span class="total-text">共 ${totalCount} 条</span>`;
-    html += `<button ${page===1?'disabled':''} onclick="changePage(${page-1})"><i class="el-icon-arrow-left"></i></button>`;
-    const start = Math.max(1, page-2), end = Math.min(total, page+2);
-    for (let i=start; i<=end; i++) html += `<span class="page-number ${i===page?'active':''}" onclick="changePage(${i})">${i}</span>`;
-    html += `<button ${page===total?'disabled':''} onclick="changePage(${page+1})"><i class="el-icon-arrow-right"></i></button>`;
+    html += `<button class="page-btn" ${page===1?'disabled':''} onclick="changePage(${page-1})">&lt;</button>`;
+    // 页码窗口最多 5 个（对齐计费管理）
+    let startP = Math.max(1, page - 2);
+    let endP = Math.min(total, startP + 4);
+    if (endP - startP < 4) startP = Math.max(1, endP - 4);
+    for (let i=startP; i<=endP; i++) html += `<span class="page-number ${i===page?'active':''}" onclick="changePage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${page===total?'disabled':''} onclick="changePage(${page+1})">&gt;</button>`;
     html += `<select class="page-size-select" onchange="changePageSize(this.value)"><option value="10" ${pageSize===10?'selected':''}>10条/页</option><option value="20" ${pageSize===20?'selected':''}>20条/页</option><option value="50" ${pageSize===50?'selected':''}>50条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="text" id="jumpPageInput" value="${page}" onkeydown="if(event.key==='Enter') jumpToPage()"><span>页</span></div>`;
     container.innerHTML = html;
 }
 function changePage(p) { page = p; renderTable(); }
 function changePageSize(size) { pageSize = parseInt(size); page = 1; renderTable(); }
+function jumpToPage() {
+    const val = parseInt(document.getElementById('jumpPageInput').value);
+    const total = Math.ceil(filtered.length / pageSize) || 1;
+    if (!isNaN(val) && val >= 1 && val <= total) { page = val; renderTable(); }
+}
 
 function viewDetail(id) {
     const l = structLogList.find(x => x.id === id);
     if (!l) return;
-    document.getElementById('detailGrid').innerHTML = [
-        ['日志ID', l.logId], ['批次号', l.batchNo], ['服务名称', l.service], ['来源任务', l.sourceTask],
-        ['处理条数', l.total], ['成功条数', `<span class="num-ok">${l.success}</span>`], ['失败条数', l.fail > 0 ? `<span class="num-fail">${l.fail}</span>` : '0'],
-        ['结构化状态', `<span class="status-badge ${l.status==='成功'?'status-running':(l.status==='部分失败'?'status-partial':'status-not-enabled')}">${l.status}</span>`],
-        ['开始执行时间', l.startTime], ['结束执行时间', l.endTime]
-    ].map(([k, v]) => `<div class="detail-item"><span class="dl">${k}：</span><span class="dv">${v}</span></div>`).join('');
+    const rows = [
+        ['日志ID', `<span class="cell-mono">${escapeHtml(l.logId)}</span>`],
+        ['批次号', `<span class="cell-mono">${escapeHtml(l.batchNo)}</span>`],
+        ['API名称', escapeHtml(l.api)],
+        ['供应商', escapeHtml(l.supplier)],
+        ['触发来源', triggerTag(l.trigger)],
+        ['解析方式', modeTag(l.parseMode)],
+        ['目标数据库', `<span class="cell-mono">${escapeHtml(l.targetDb)}</span>`],
+        ['目标表', `<span class="cell-mono">${escapeHtml(l.targetTable)}</span>`],
+        ['处理条数', l.total],
+        ['成功条数', `<span class="num-ok">${l.success}</span>`],
+        ['失败条数', l.fail > 0 ? `<span class="num-fail">${l.fail}</span>` : '0'],
+        ['结构化状态', statusTag(l.status)],
+        ['开始执行时间', escapeHtml(l.startTime)],
+        ['结束执行时间', escapeHtml(l.endTime)],
+        ['操作人', escapeHtml(l.operator || '系统')]
+    ];
+    // 补偿解析额外展示关联的补偿任务；实时解析（任务触发）展示来源任务
+    if (l.parseMode === '补偿解析' && l.sourceTask) rows.push(['补偿任务', escapeHtml(l.sourceTask)]);
+    else if (l.sourceTask) rows.push(['来源任务', escapeHtml(l.sourceTask)]);
+    document.getElementById('detailGrid').innerHTML = rows
+        .map(([k, v]) => `<div class="detail-item"><span class="dl">${k}：</span><span class="dv">${v}</span></div>`).join('');
     document.getElementById('detailRaw').textContent = l.rawSample;
     document.getElementById('detailStructured').textContent = tryFormatJson(l.structured);
     document.getElementById('detailFailWrap').style.display = l.failReason ? '' : 'none';
@@ -298,13 +364,14 @@ function viewDetail(id) {
 
 document.getElementById('searchBtn').addEventListener('click', () => { page = 1; renderTable(); });
 document.getElementById('resetBtn').addEventListener('click', () => {
-    ['svcFilter','statusFilter','taskFilter','startDateFilter','endDateFilter'].forEach(id => document.getElementById(id).value = '');
+    ['apiFilter','triggerFilter','statusFilter'].forEach(id => document.getElementById(id).value = '');
     page = 1; renderTable();
 });
 document.getElementById('closeDetailModal').addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
 document.getElementById('closeDetailBtn').addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
 
 renderTable();
+window.addEventListener('resize', syncLogTableHeight);
 </script>
 </body>
 </html>
