@@ -90,6 +90,10 @@
         .mode-tag.comp { background: #fff7e6; color: #d97706; }
         .cell-mono { font-size: 12px; font-family: 'Consolas','Monaco',monospace; }
 
+        /* 失败条数可点击下钻 */
+        .fail-link { color: #f5222d; font-weight: 600; text-decoration: underline; cursor: pointer; }
+        .fail-link:hover { color: #cf1322; }
+
         /* 分页（对齐计费管理） */
         .pagination { padding: 8px 0 0 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: #333333; }
         .pagination .total-text { margin-right: 16px; color: #666666; }
@@ -106,17 +110,36 @@
         /* 弹窗 */
         .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.2s; }
         .modal-mask.active { visibility: visible; opacity: 1; }
-        .modal-container { background: #fff; width: 760px; max-width: 92%; border-radius: 4px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); }
+        .modal-container { background: #fff; width: 760px; max-width: 92%; border-radius: 4px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); display: flex; flex-direction: column; max-height: 85vh; }
         .modal-header { padding: 16px 20px; display: flex; justify-content: space-between; font-weight: 600; font-size: 16px; color: #333333; background: #fff; }
-        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 16px; }
-        .detail-item { display: flex; gap: 8px; font-size: 14px; }
-        .detail-item .dl { color: #999999; flex-shrink: 0; width: 100px; text-align: right; }
-        .detail-item .dv { color: #333333; word-break: break-all; }
-        .detail-block-title { font-size: 13px; color: #999999; margin: 14px 0 6px; }
-        .json-box { background: #f8f8f9; border: 1px solid #ebeef5; border-radius: 6px; padding: 12px 14px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; color: #476582; white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow-y: auto; }
-        .fail-reason { background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; border-radius: 6px; padding: 10px 14px; font-size: 13px; }
-        .modal-footer { padding: 12px 20px; display: flex; justify-content: center; gap: 12px; background: #fff; }
+        .modal-body { padding: 20px; flex: 1; overflow-y: auto; }
+        .modal-container.detail-modal { width: 1120px; max-width: 96%; }
+        .modal-footer { padding: 12px 20px; display: flex; justify-content: center; gap: 12px; background: #fff; border-top: 1px solid #f0f2f6; }
+
+        /* ===== 详情表格（仅解析明细） ===== */
+        /* 响应结果：成功 / 失败 + 具体原因 */
+        .resp-block { text-align: left; }
+        .resp-status { font-weight: 600; white-space: nowrap; }
+        .resp-status.resp-ok { color: #52c41a; }
+        .resp-status.resp-note { color: #f5222d; }
+        .resp-detail { display: block; margin-top: 2px; font-size: 12px; color: #666666; line-height: 1.5; word-break: break-word; }
+        .comp-tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; white-space: nowrap; margin-left: 4px; }
+        .comp-tag.comp-ok { background: #e6f7e6; color: #52c41a; }
+        .comp-tag.comp-wait { background: #fff7e6; color: #fa8c16; }
+        /* 原始报文单元格：单行截断，点击展开（减少行高） */
+        .raw-cell { display: block; max-height: 120px; overflow-y: auto; text-align: left; font-family: 'Consolas','Monaco',monospace; font-size: 12px; line-height: 1.5; color: #476582; white-space: pre-wrap; word-break: break-all; }
+        .raw-empty { color: #c53030; font-style: normal; }
+        /* 详情表格：固定布局，列宽按百分比分配，无需横向滚动条 */
+        .detail-tbl { table-layout: fixed; width: 100%; }
+        .detail-tbl th, .detail-tbl td { padding: 8px 10px; word-break: break-all; }
+        .detail-tbl .c-no { width: 6%; }
+        .detail-tbl .c-supplier { width: 10%; }
+        .detail-tbl .c-api { width: 12%; }
+        .detail-tbl .c-url { width: 24%; }
+        .detail-tbl .c-table { width: 11%; }
+        .detail-tbl .c-raw { width: 22%; }
+        .detail-tbl .c-resp { width: 15%; }
+        .detail-pagination { margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -165,7 +188,7 @@
             <div class="filter-section">
                 <div class="filter-bar">
                     <div class="filter-left">
-                        <div class="filter-item"><label>API名称</label><select id="apiFilter"><option value="">全部</option></select></div>
+                        <div class="filter-item"><label>API名称</label><input type="text" id="apiFilter" placeholder="请输入API名称" onkeydown="if(event.key==='Enter'){page=1;renderTable();}"></div>
                         <div class="filter-item"><label>触发来源</label><select id="triggerFilter"><option value="">全部</option><option>定时调用服务任务</option><option>结构化补偿任务</option></select></div>
                         <div class="filter-item"><label>结构化状态</label><select id="statusFilter"><option value="">全部</option><option>成功</option><option>部分失败</option><option>失败</option></select></div>
                     </div>
@@ -195,17 +218,26 @@
         </div>
     </div>
 
-    <!-- 详情弹窗 -->
+    <!-- 详情弹窗：仅解析明细表格 -->
     <div id="detailModal" class="modal-mask">
-        <div class="modal-container">
+        <div class="modal-container detail-modal">
             <div class="modal-header"><span>结构化日志详情</span><i class="el-icon-close" id="closeDetailModal" style="cursor:pointer;"></i></div>
             <div class="modal-body">
-                <div class="detail-grid" id="detailGrid"></div>
-                <div class="detail-block-title">原始报文样例</div>
-                <div class="json-box" id="detailRaw"></div>
-                <div class="detail-block-title">结构化结果</div>
-                <div class="json-box" id="detailStructured"></div>
-                <div id="detailFailWrap" style="display:none;"><div class="detail-block-title">失败原因</div><div class="fail-reason" id="detailFail"></div></div>
+                <div class="table-container">
+                    <table class="data-table detail-tbl">
+                        <thead><tr>
+                            <th class="c-no">编号</th>
+                            <th class="c-supplier">供应商</th>
+                            <th class="c-api">API名称</th>
+                            <th class="c-url">URL</th>
+                            <th class="c-table">目标表</th>
+                            <th class="c-raw">原始报文</th>
+                            <th class="c-resp">响应结果</th>
+                        </tr></thead>
+                        <tbody id="detailTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="detailPagination" class="pagination detail-pagination"></div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="closeDetailBtn">关闭</button></div>
         </div>
@@ -217,22 +249,82 @@
 // ======================== 数据结构化日志数据 ========================
 // 记录外数原始报文结构化解析入库的执行明细。
 // 触发来源 trigger（仅两类，均来自「运营管理-任务管理」）：
-//   定时调用服务任务 —— 任务管理「定时调用服务任务」批量调用API后逐条解析入库（parseMode=实时解析）
-//   结构化补偿任务   —— 任务管理「结构化补偿任务」对未结构化/解析失败的API报文批量补偿（parseMode=补偿解析）
-// 目标库.表 targetDb/targetTable：来自 API 结构化配置的数据库与表名
+//   定时调用服务任务 —— 任务管理「定时调用服务任务」批量调用API后逐条解析入库
+//   结构化补偿任务   —— 任务管理「结构化补偿任务」对未结构化/解析失败的API报文批量补偿
+// 目标库.表 targetDb/targetTable：来自 API 结构化配置的数据库与表名；url：API地址
+// records：本批逐条解析明细（真实环境按批次分页从后端加载）
+//   一条明细对应 1 个 API + 1 个供应商：api/supplier/url 取该 API 自身的地址与名称
+//   status: 成功/失败；raw: 原始报文快照；失败记录附加 category(失败分类)/reason(失败原因)；不含补偿标记
 let structLogList = [
-    { id: 3, logId: "STRUCT-20260429-0003", batchNo: "BATCH-20260429-001", api: "企业基本信息", supplier: "企查查", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "工商变更", total: 10, success: 10, fail: 0, startTime: "2026-04-29 09:00:00", endTime: "2026-04-29 09:00:36", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Status":"200","Message":"【有效无违规】","Result":{"Name":"某某金融控股有限公司","CreditCode":"91110000MA01XXXX","RegistCapi":"500000万元"}}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某金融控股有限公司","CREDIT_CODE":"91110000MA01XXXX","REGIST_CAPI":500000,"TENANT":"某某金控","COMPANY":"某某金控","DEPARTMENT":"数据管理部","SYSTEM":"外数平台"}]}' },
-    { id: 4, logId: "STRUCT-20260429-0004", batchNo: "BATCH-20260429-002", api: "经营风险", supplier: "天眼查", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", sourceTask: "服务用量预警", total: 32, success: 32, fail: 0, startTime: "2026-04-29 09:00:01", endTime: "2026-04-29 09:00:58", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"RiskInfo":{"SelfAndRelated":{"Zhixxinxi":{"Count":2}}}}}', structured: '{"table":"ENT_OPER_INFO","rows":[{"CREDIT_CODE":"91310...","ZHIXX_COUNT":2,"TENANT":"某某金控","SYSTEM":"外数平台"}]}' },
-    { id: 5, logId: "STRUCT-20260429-0005", batchNo: "COMP-20260429-001", api: "企业图谱、舆情（2个API）", supplier: "企查查、第三方数据公司", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH、ENT_SENTIMENT", sourceTask: "数据结构化补偿", total: 50, success: 49, fail: 1, startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "部分失败", operator: "系统", failReason: "1条记录报文JSON格式异常（截断），已重新入队等待下次补偿", rawSample: '{"OrderNumber":"...","Result":{"Nodes":[...],"Edges":[...]}}', structured: '{"table":"ENT_RELATION_GRAPH","rows":[{"NODE_ID":"N001","EDGE_TYPE":"股东","TENANT":"某某金控"}]}' },
-    { id: 6, logId: "STRUCT-20260428-0011", batchNo: "BATCH-20260428-001", api: "企业基本信息", supplier: "外部数据供应商", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "工商变更", total: 10, success: 8, fail: 2, startTime: "2026-04-28 09:00:00", endTime: "2026-04-28 09:01:12", status: "部分失败", operator: "系统", failReason: "2条记录供应商接口超时（HTTP 504），报文未完整返回，已转入待补偿队列", rawSample: '{"OrderNumber":"...","Message":"请求超时"}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某科技有限公司","TENANT":"某某金控"}]}' },
-    { id: 7, logId: "STRUCT-20260428-0012", batchNo: "COMP-20260428-001", api: "信用评分、企业规模（2个API）", supplier: "数据服务提供商", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_CREDIT_SCORE、ENT_SCALE", sourceTask: "数据结构化补偿", total: 50, success: 49, fail: 1, startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "部分失败", operator: "系统", failReason: "1条报文Result节点缺失Score字段，解析规则未匹配", rawSample: '{"OrderNumber":"...","Result":{"CreditNo":"...","ScoreLevel":"A"}}', structured: '{"table":"ENT_CREDIT_SCORE","rows":[{"CREDIT_NO":"...","SCORE_LEVEL":"A","TENANT":"某某金控"}]}' },
-    { id: 9, logId: "STRUCT-20260428-0014", batchNo: "BATCH-20260428-002", api: "身份核验", supplier: "外部数据供应商", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", sourceTask: "身份核验批量查询", total: 28, success: 28, fail: 0, startTime: "2026-04-28 03:00:00", endTime: "2026-04-28 03:01:05", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"OperInfoName":"张某某","OperInfoPost":"董事长"}}', structured: '{"table":"ENT_OPER_INFO","rows":[{"OPER_NAME":"张某某","OPER_POST":"董事长","TENANT":"某某金控"}]}' },
-    { id: 10, logId: "STRUCT-20260427-0021", batchNo: "COMP-20260427-001", api: "企业图谱", supplier: "企查查", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH", sourceTask: "数据结构化补偿", total: 62, success: 62, fail: 0, startTime: "2026-04-27 02:30:00", endTime: "2026-04-27 02:31:50", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"Nodes":[...]}}', structured: '{"table":"ENT_RELATION_GRAPH","rows":[{"NODE_ID":"N002","TENANT":"某某金控"}]}' },
-    { id: 11, logId: "STRUCT-20260427-0022", batchNo: "BATCH-20260427-003", api: "司法风险", supplier: "天眼查", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_JUDICIAL_RISK", sourceTask: "企业违法记录查询", total: 128, success: 126, fail: 2, startTime: "2026-04-27 09:00:02", endTime: "2026-04-27 09:02:47", status: "部分失败", operator: "系统", failReason: "2条记录企业不存在（Result为空对象），无法生成结构化数据", rawSample: '{"OrderNumber":"...","Result":{}}', structured: '{"table":"ENT_JUDICIAL_RISK","rows":[]}' },
-    { id: 13, logId: "STRUCT-20260426-0032", batchNo: "COMP-20260426-001", api: "企业基本信息", supplier: "企查查", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "数据结构化补偿", total: 45, success: 45, fail: 0, startTime: "2026-04-26 02:30:00", endTime: "2026-04-26 02:31:11", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"Name":"某某信托有限责任公司"}}', structured: '{"table":"ENT_BASE_INFO","rows":[{"ENT_NAME":"某某信托有限责任公司","TENANT":"某某金控"}]}' },
-    { id: 14, logId: "STRUCT-20260425-0041", batchNo: "BATCH-20260425-001", api: "信用评分", supplier: "数据服务提供商", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_CREDIT_SCORE", sourceTask: "企业名单批量查询", total: 86, success: 86, fail: 0, startTime: "2026-04-25 14:20:31", endTime: "2026-04-25 14:22:04", status: "成功", operator: "系统", rawSample: '{"OrderNumber":"...","Result":{"Score":820}}', structured: '{"table":"ENT_CREDIT_SCORE","rows":[{"SCORE":820,"TENANT":"某某金控"}]}' },
-    { id: 15, logId: "STRUCT-20260423-0051", batchNo: "COMP-20260423-001", api: "经营状况、严重违法记录（2个API）", supplier: "天眼查、外部数据供应商", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO、ENT_VIOLATION", sourceTask: "存量报文补解析", total: 40, success: 37, fail: 3, startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "部分失败", operator: "系统", failReason: "3条报文结构版本为v3旧版，解析规则未匹配（需在API结构化配置中补充规则映射）", rawSample: '{"OrderId":"...","Data":{"OperName":"..."}}', structured: '{"table":"ENT_OPER_INFO","rows":[]}' },
-    { id: 16, logId: "STRUCT-20260420-0061", batchNo: "COMP-20260420-001", api: "企业图谱", supplier: "企查查", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH", sourceTask: "存量报文补解析", total: 120, success: 0, fail: 120, startTime: "2026-04-20 16:40:08", endTime: "2026-04-20 16:41:52", status: "失败", operator: "系统", failReason: "原始报文存储表批量缺失（raw_json为NULL），本批全部补偿失败，已告警", rawSample: '（原始报文缺失）', structured: '（未生成结构化数据）' }
+    { id: 3, logId: "STRUCT-20260429-0003", batchNo: "BATCH-20260429-001", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "工商变更", total: 10, success: 10, fail: 0, startTime: "2026-04-29 09:00:00", endTime: "2026-04-29 09:00:36", status: "成功", operator: "系统",
+      records: [
+        { no: 1, status: "成功", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetTable: "ENT_BASE_INFO", raw: '{"OrderNumber":"ORD-260429-WS0001","Status":"200","Message":"【有效无违规】","Result":{"Name":"某某金融控股有限公司","CreditCode":"91110000MA01XXXX","RegistCapi":"500000万元"}}' },
+        { no: 2, status: "成功", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetTable: "ENT_BASE_INFO", raw: '{"OrderNumber":"ORD-260429-WS0002","Status":"200","Message":"OK","Result":{"Name":"某某集团有限公司","CreditCode":"91110100MA02XXXX"}}' }
+      ] },
+    { id: 4, logId: "STRUCT-20260429-0004", batchNo: "BATCH-20260429-002", api: "经营风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/risk", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", sourceTask: "服务用量预警", total: 32, success: 32, fail: 0, startTime: "2026-04-29 09:00:01", endTime: "2026-04-29 09:00:58", status: "成功", operator: "系统",
+      records: [
+        { no: 1, status: "成功", api: "经营风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/risk", targetTable: "ENT_OPER_INFO", raw: '{"OrderNumber":"ORD-260429-OP0001","Result":{"Zhixxinxi":{"Count":2}}}' },
+        { no: 2, status: "成功", api: "经营风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/risk", targetTable: "ENT_OPER_INFO", raw: '{"OrderNumber":"ORD-260429-OP0002","Result":{"Zhixxinxi":{"Count":0}}}' }
+      ] },
+    { id: 5, logId: "STRUCT-20260429-0005", batchNo: "COMP-20260429-001", api: "企业图谱、舆情（2个API）", supplier: "企查查、第三方数据公司", url: "https://api.qichacha.com/v1/ent/graph；https://api.qichacha.com/v1/ent/sentiment", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH、ENT_SENTIMENT", sourceTask: "数据结构化补偿", total: 50, success: 49, fail: 1, startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "部分失败", operator: "系统", failReason: "1条记录报文JSON格式异常（截断），已重新入队等待下次补偿",
+      records: [
+        { no: 1, status: "成功", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", raw: '{"OrderNumber":"ORD-260429-TU0001","Result":{"Nodes":[{"Id":"N001","Name":"某某集团"}],"Edges":[{"Type":"股东"}]}}' },
+        { no: 2, status: "成功", api: "舆情", supplier: "第三方数据公司", url: "https://api.qichacha.com/v1/ent/sentiment", targetTable: "ENT_SENTIMENT", raw: '{"OrderNumber":"ORD-260429-TU0004","Result":{"Sentiment":{"Polarity":"中性","Hot":-3}}}' },
+        { no: 3, status: "失败", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", category: "报文截断", reason: "报文体长度 570 < Content-Length 612，JSON 截断无法解析", raw: '{"OrderNumber":"ORD-260429-TU0031","Status":"200","Message":"OK","Result":{"Nodes":[{"Id":"N"' }
+      ] },
+    { id: 6, logId: "STRUCT-20260428-0011", batchNo: "BATCH-20260428-001", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "工商变更", total: 10, success: 8, fail: 2, startTime: "2026-04-28 09:00:00", endTime: "2026-04-28 09:01:12", status: "部分失败", operator: "系统", failReason: "2条记录供应商接口超时（HTTP 504），报文未完整返回，已转入待补偿队列",
+      records: [
+        { no: 1, status: "成功", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", targetTable: "ENT_BASE_INFO", raw: '{"OrderNumber":"ORD-260428-XX0001","Result":{"Name":"某某科技有限公司"}}' },
+        { no: 2, status: "成功", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", targetTable: "ENT_BASE_INFO", raw: '{"OrderNumber":"ORD-260428-XX0002","Result":{"Name":"某某网络技术有限公司"}}' },
+        { no: 7, status: "失败", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", targetTable: "ENT_BASE_INFO", category: "接口超时", reason: "供应商接口超时（HTTP 504），报文未完整返回", raw: '{"Status":"504","Message":"Gateway Timeout"}' },
+        { no: 9, status: "失败", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", targetTable: "ENT_BASE_INFO", category: "报文不完整", reason: "返回报文缺少 Result 节点，无法解析", raw: '{"OrderNumber":"ORD-260428-XX0009","Status":"200","Message":"OK"}' }
+      ] },
+    { id: 7, logId: "STRUCT-20260428-0012", batchNo: "COMP-20260428-001", api: "信用评分、企业规模（2个API）", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score；https://api.dataservice.cn/v1/ent/scale", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_CREDIT_SCORE、ENT_SCALE", sourceTask: "数据结构化补偿", total: 50, success: 49, fail: 1, startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "部分失败", operator: "系统", failReason: "1条报文Result节点缺失Score字段，解析规则未匹配",
+      records: [
+        { no: 1, status: "成功", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetTable: "ENT_CREDIT_SCORE", raw: '{"OrderNumber":"ORD-260428-SC0001","Result":{"CreditNo":"CC-001","ScoreLevel":"A","Score":820}}' },
+        { no: 2, status: "成功", api: "企业规模", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/ent/scale", targetTable: "ENT_SCALE", raw: '{"OrderNumber":"ORD-260428-SC0002","Result":{"Scale":"大型"}}' },
+        { no: 18, status: "失败", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetTable: "ENT_CREDIT_SCORE", category: "字段缺失", reason: "Result 节点缺失 Score 字段，解析规则未匹配", raw: '{"OrderNumber":"ORD-260428-SC0018","Result":{"CreditNo":"CC-018","ScoreLevel":"A"}}' }
+      ] },
+    { id: 9, logId: "STRUCT-20260428-0014", batchNo: "BATCH-20260428-002", api: "身份核验", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/verify/identity", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO", sourceTask: "身份核验批量查询", total: 28, success: 28, fail: 0, startTime: "2026-04-28 03:00:00", endTime: "2026-04-28 03:01:05", status: "成功", operator: "系统",
+      records: [
+        { no: 1, status: "成功", api: "身份核验", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/verify/identity", targetTable: "ENT_OPER_INFO", raw: '{"OrderNumber":"ORD-260428-OP0001","Result":{"OperInfoName":"张某某","OperInfoPost":"董事长"}}' },
+        { no: 2, status: "成功", api: "身份核验", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/verify/identity", targetTable: "ENT_OPER_INFO", raw: '{"OrderNumber":"ORD-260428-OP0002","Result":{"OperInfoName":"李某某","OperInfoPost":"监事"}}' }
+      ] },
+    { id: 10, logId: "STRUCT-20260427-0021", batchNo: "COMP-20260427-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH", sourceTask: "数据结构化补偿", total: 62, success: 62, fail: 0, startTime: "2026-04-27 02:30:00", endTime: "2026-04-27 02:31:50", status: "成功", operator: "系统",
+      records: [
+        { no: 1, status: "成功", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", raw: '{"OrderNumber":"ORD-260427-TU0001","Result":{"Nodes":[{"Id":"N002","Name":"某某集团"}]}}' },
+        { no: 2, status: "成功", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", raw: '{"OrderNumber":"ORD-260427-TU0002","Result":{"Nodes":[{"Id":"N003","Name":"某某科技"}]}}' }
+      ] },
+    { id: 11, logId: "STRUCT-20260427-0022", batchNo: "BATCH-20260427-003", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_JUDICIAL_RISK", sourceTask: "企业违法记录查询", total: 128, success: 126, fail: 2, startTime: "2026-04-27 09:00:02", endTime: "2026-04-27 09:02:47", status: "部分失败", operator: "系统", failReason: "2条记录企业不存在（Result为空对象），无法生成结构化数据",
+      records: [
+        { no: 1, status: "成功", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", targetTable: "ENT_JUDICIAL_RISK", raw: '{"OrderNumber":"ORD-260427-JR0001","Result":{"RiskList":[{"CaseNo":"(2025)京03执1234号"}]}}' },
+        { no: 2, status: "成功", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", targetTable: "ENT_JUDICIAL_RISK", raw: '{"OrderNumber":"ORD-260427-JR0002","Result":{"RiskList":[]}}' },
+        { no: 17, status: "失败", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", targetTable: "ENT_JUDICIAL_RISK", category: "企业不存在", reason: "企业不存在（Result 为空对象），无法生成结构化数据", raw: '{"OrderNumber":"ORD-260427-JR0017","Result":{}}' },
+        { no: 33, status: "失败", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", targetTable: "ENT_JUDICIAL_RISK", category: "企业不存在", reason: "企业不存在（Result 为空对象），无法生成结构化数据", raw: '{"OrderNumber":"ORD-260427-JR0033","Result":{}}' }
+      ] },
+    { id: 13, logId: "STRUCT-20260426-0032", batchNo: "COMP-20260426-001", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_BASE_INFO", sourceTask: "数据结构化补偿", total: 45, success: 45, fail: 0, startTime: "2026-04-26 02:30:00", endTime: "2026-04-26 02:31:11", status: "成功", operator: "系统",
+      records: [
+        { no: 1, status: "成功", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetTable: "ENT_BASE_INFO", raw: '{"OrderNumber":"ORD-260426-BS0001","Result":{"Name":"某某信托有限责任公司"}}' },
+        { no: 2, status: "成功", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetTable: "ENT_BASE_INFO", raw: '{"OrderNumber":"ORD-260426-BS0002","Result":{"Name":"某某资产管理有限公司"}}' }
+      ] },
+    { id: 14, logId: "STRUCT-20260425-0041", batchNo: "BATCH-20260425-001", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", trigger: "定时调用服务任务", parseMode: "实时解析", targetDb: "crds_master", targetTable: "ENT_CREDIT_SCORE", sourceTask: "企业名单批量查询", total: 86, success: 86, fail: 0, startTime: "2026-04-25 14:20:31", endTime: "2026-04-25 14:22:04", status: "成功", operator: "系统",
+      records: [
+        { no: 1, status: "成功", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetTable: "ENT_CREDIT_SCORE", raw: '{"OrderNumber":"ORD-260425-SC0001","Result":{"Score":820}}' },
+        { no: 2, status: "成功", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetTable: "ENT_CREDIT_SCORE", raw: '{"OrderNumber":"ORD-260425-SC0002","Result":{"Score":756}}' }
+      ] },
+    { id: 15, logId: "STRUCT-20260423-0051", batchNo: "COMP-20260423-001", api: "经营状况、严重违法记录（2个API）", supplier: "天眼查、外部数据供应商", url: "https://api.tianyancha.com/v1/ent/oper/info；https://api.dataservice.cn/v1/ent/violation", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_OPER_INFO、ENT_VIOLATION", sourceTask: "存量报文补解析", total: 40, success: 37, fail: 3, startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "部分失败", operator: "系统", failReason: "3条报文结构版本为v3旧版，解析规则未匹配（需在API结构化配置中补充规则映射）",
+      records: [
+        { no: 1, status: "成功", api: "经营状况", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/info", targetTable: "ENT_OPER_INFO", raw: '{"OrderNumber":"ORD-260423-OP0001","Result":{"OperName":"王某强制隔离戒毒","OperStatus":"在营"}}' },
+        { no: 5, status: "失败", api: "经营状况", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/info", targetTable: "ENT_OPER_INFO", category: "版本不兼容", reason: "报文结构版本为 v3 旧版，解析规则未匹配（需在API结构化配置中补充规则映射）", raw: '{"OrderId":"V3-260423-005","Data":{"OperName":"…"}}' },
+        { no: 12, status: "失败", api: "严重违法记录", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/violation", targetTable: "ENT_VIOLATION", category: "版本不兼容", reason: "报文结构版本为 v3 旧版，解析规则未匹配（需在API结构化配置中补充规则映射）", raw: '{"OrderId":"V3-260423-012","Data":{"Violations":[]}}' },
+        { no: 28, status: "失败", api: "经营状况", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/info", targetTable: "ENT_OPER_INFO", category: "版本不兼容", reason: "报文结构版本为 v3 旧版，解析规则未匹配（需在API结构化配置中补充规则映射）", raw: '{"OrderId":"V3-260423-028","Data":{"OperName":"…"}}' }
+      ] },
+    { id: 16, logId: "STRUCT-20260420-0061", batchNo: "COMP-20260420-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", trigger: "结构化补偿任务", parseMode: "补偿解析", targetDb: "crds_master", targetTable: "ENT_RELATION_GRAPH", sourceTask: "存量报文补解析", total: 120, success: 0, fail: 120, startTime: "2026-04-20 16:40:08", endTime: "2026-04-20 16:41:52", status: "失败", operator: "系统", failReason: "原始报文存储表批量缺失（raw_json为NULL），本批全部补偿失败，已告警",
+      records: [
+        { no: 1, status: "失败", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", category: "原始报文缺失", reason: "原始报文存储表批量缺失（raw_json 为 NULL），本批全部补偿失败，已告警", raw: '（原始报文缺失）' },
+        { no: 2, status: "失败", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", category: "原始报文缺失", reason: "原始报文存储表批量缺失（raw_json 为 NULL），本批全部补偿失败，已告警", raw: '（原始报文缺失）' },
+        { no: 3, status: "失败", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTable: "ENT_RELATION_GRAPH", category: "原始报文缺失", reason: "原始报文存储表批量缺失（raw_json 为 NULL），本批全部补偿失败，已告警", raw: '（原始报文缺失）' }
+      ] }
 ];
 
 let filtered = [...structLogList];
@@ -244,31 +336,30 @@ function triggerTag(t) { return `<span class="src-tag ${TRIGGER_CLASS[t] || 'src
 function modeTag(m) { return `<span class="mode-tag ${m === '补偿解析' ? 'comp' : ''}">${escapeHtml(m)}</span>`; }
 function statusTag(s) { return `<span class="status-badge ${s==='成功'?'status-running':(s==='部分失败'?'status-partial':'status-not-enabled')}">${s}</span>`; }
 
-// 初始化筛选下拉（API名称：补偿类日志一条记录含多个API，拆开去重后作为选项，查询按包含匹配）
-(function initFilters() {
-    const api = document.getElementById('apiFilter');
-    const names = new Set();
-    structLogList.forEach(l => String(l.api).replace(/（\d+个API）/g, '').split('、').forEach(n => { if (n) names.add(n.trim()); }));
-    [...names].forEach(s => { api.innerHTML += `<option>${escapeHtml(s)}</option>`; });
-})();
-
-function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]); }
-function tryFormatJson(s) { try { return JSON.stringify(JSON.parse(s), null, 2); } catch(e) { return s; } }
+function escapeHtml(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]); }
+function tryFormatJson(s) { if (typeof s !== 'string') return s; try { return JSON.stringify(JSON.parse(s), null, 2); } catch(e) { return s; } }
 
 function renderTable() {
-    const api = document.getElementById('apiFilter').value;
+    const api = document.getElementById('apiFilter').value.trim();
     const tg = document.getElementById('triggerFilter').value;
     const st = document.getElementById('statusFilter').value;
+    // API名称为模糊匹配（补偿类日志一条记录含多个API）；排序按开始执行时间倒序，编号倒序（第1页第1行=总条数，最后一条=1）
     filtered = structLogList.filter(l =>
-        (!api || l.api.includes(api)) && (!tg || l.trigger === tg) && (!st || l.status === st));
+        (!api || l.api.includes(api)) && (!tg || l.trigger === tg) && (!st || l.status === st))
+        .sort((a, b) => b.startTime.localeCompare(a.startTime));
     const total = Math.ceil(filtered.length / pageSize) || 1;
     if (page > total) page = total;
     const pageData = filtered.slice((page-1)*pageSize, page*pageSize);
     const tbody = document.getElementById('logTableBody');
     if (pageData.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;">暂无数据</td></tr>'; }
     else {
-        tbody.innerHTML = pageData.map((l, idx) => `<tr>
-            <td>${(page-1)*pageSize + idx + 1}</td>
+        tbody.innerHTML = pageData.map((l, idx) => {
+            // 失败条数 > 0 时数字可点击，直接打开详情查看失败原因
+            const failCell = l.fail > 0
+                ? `<a class="fail-link" title="查看失败原因" onclick="viewDetail(${l.id}, true)">${l.fail}</a>`
+                : '0';
+            return `<tr>
+            <td>${filtered.length - ((page-1)*pageSize + idx)}</td>
             <td class="cell-mono">${escapeHtml(l.logId)}</td>
             <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.supplier)}">${escapeHtml(l.supplier)}</td>
             <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.api)}">${escapeHtml(l.api)}</td>
@@ -276,12 +367,13 @@ function renderTable() {
             <td class="cell-mono" style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.targetDb + '.' + l.targetTable)}">${escapeHtml(l.targetDb)}.${escapeHtml(l.targetTable)}</td>
             <td>${l.total}</td>
             <td class="num-ok">${l.success}</td>
-            <td class="${l.fail > 0 ? 'num-fail' : ''}">${l.fail}</td>
+            <td class="${l.fail > 0 ? 'num-fail' : ''}">${failCell}</td>
             <td style="white-space:nowrap;">${escapeHtml(l.startTime)}</td>
             <td style="white-space:nowrap;">${escapeHtml(l.endTime)}</td>
             <td>${statusTag(l.status)}</td>
-            <td><a class="action-link" onclick="viewDetail(${l.id})">查看</a></td>
-        </tr>`).join('');
+            <td><a class="action-link" onclick="viewDetail(${l.id})">详情</a></td>
+        </tr>`;
+        }).join('');
     }
     renderPagination(total, filtered.length);
     syncLogTableHeight();
@@ -322,38 +414,80 @@ function jumpToPage() {
     if (!isNaN(val) && val >= 1 && val <= total) { page = val; renderTable(); }
 }
 
-function viewDetail(id) {
+// ======================== 详情弹窗（仅解析明细表格） ========================
+// 表格字段：编号 / 供应商 / API名称 / URL / 目标表 / 原始报文 / 响应结果
+// 一条明细对应 1 个 API + 1 个供应商（明细自带 api/supplier/url，不用批次聚合字段）
+// 响应结果：成功 → 绿色「成功」；失败 → 红色「失败」+ 具体原因（无补偿标记）
+// 打开方式：列表「详情」→ 展示该批全部明细；点击「失败条数」→ 仅展示失败明细
+// 弹窗分页栏与页面表格分页栏一致（共N条/页码/10·20·50条每页/跳页）
+let detailRecs = [];          // 当前批次明细（已按打开方式过滤）
+let detailPage = 1;
+let detailPageSize = 10;      // 与页面表格分页栏一致，可切换 10/20/50 条/页
+let detailOwnerId = null;     // 当前详情弹窗属于哪一批（供 viewDetail 取批次公共字段）
+
+// isFailOnly：true = 仅失败明细（点击失败条数进入）；false = 全部明细（点击详情进入）
+function viewDetail(id, isFailOnly) {
     const l = structLogList.find(x => x.id === id);
     if (!l) return;
-    const rows = [
-        ['日志ID', `<span class="cell-mono">${escapeHtml(l.logId)}</span>`],
-        ['批次号', `<span class="cell-mono">${escapeHtml(l.batchNo)}</span>`],
-        ['API名称', escapeHtml(l.api)],
-        ['供应商', escapeHtml(l.supplier)],
-        ['触发来源', triggerTag(l.trigger)],
-        ['解析方式', modeTag(l.parseMode)],
-        ['目标数据库', `<span class="cell-mono">${escapeHtml(l.targetDb)}</span>`],
-        ['目标表', `<span class="cell-mono">${escapeHtml(l.targetTable)}</span>`],
-        ['处理条数', l.total],
-        ['成功条数', `<span class="num-ok">${l.success}</span>`],
-        ['失败条数', l.fail > 0 ? `<span class="num-fail">${l.fail}</span>` : '0'],
-        ['结构化状态', statusTag(l.status)],
-        ['开始执行时间', escapeHtml(l.startTime)],
-        ['结束执行时间', escapeHtml(l.endTime)],
-        ['操作人', escapeHtml(l.operator || '系统')]
-    ];
-    // 补偿解析额外展示关联的补偿任务；实时解析（任务触发）展示来源任务
-    if (l.parseMode === '补偿解析' && l.sourceTask) rows.push(['补偿任务', escapeHtml(l.sourceTask)]);
-    else if (l.sourceTask) rows.push(['来源任务', escapeHtml(l.sourceTask)]);
-    document.getElementById('detailGrid').innerHTML = rows
-        .map(([k, v]) => `<div class="detail-item"><span class="dl">${k}：</span><span class="dv">${v}</span></div>`).join('');
-    document.getElementById('detailRaw').textContent = l.rawSample;
-    document.getElementById('detailStructured').textContent = tryFormatJson(l.structured);
-    document.getElementById('detailFailWrap').style.display = l.failReason ? '' : 'none';
-    document.getElementById('detailFail').textContent = l.failReason || '';
+    detailOwnerId = id;
+    let recs = l.records || [];
+    if (isFailOnly) recs = recs.filter(r => r.status !== '成功');
+    detailRecs = recs;
+    detailPage = 1;
+    renderDetail();
     document.getElementById('detailModal').classList.add('active');
 }
+function renderDetail() {
+    const total = Math.ceil(detailRecs.length / detailPageSize) || 1;
+    if (detailPage > total) detailPage = total;
+    const pageData = detailRecs.slice((detailPage-1)*detailPageSize, detailPage*detailPageSize);
+    document.getElementById('detailTableBody').innerHTML = pageData.map(r => {
+        // 原始报文单元格：格式化 JSON，内部滚动
+        const rawHtml = r.raw === '（原始报文缺失）'
+            ? `<div class="raw-cell raw-empty">（原始报文缺失）</div>`
+            : `<div class="raw-cell">${escapeHtml(tryFormatJson(r.raw))}</div>`;
+        // 响应结果：成功 / 失败 + 具体原因（一条明细对应 1 个 API / 1 个供应商）
+        let respHtml;
+        if (r.status === '成功') {
+            respHtml = `<div class="resp-block"><span class="resp-status resp-ok">成功</span><span class="resp-detail">报文解析成功，已写入目标表</span></div>`;
+        } else {
+            respHtml = `<div class="resp-block"><span class="resp-status resp-note">失败</span><span class="resp-detail">${escapeHtml((r.category ? r.category + '：' : '') + (r.reason || '解析失败'))}</span></div>`;
+        }
+        return `<tr>
+            <td class="c-no">${r.no}</td>
+            <td class="c-supplier" style="word-break:break-all;">${escapeHtml(r.supplier || '')}</td>
+            <td class="c-api" style="word-break:break-all;">${escapeHtml(r.api || '')}</td>
+            <td class="c-url cell-mono" style="word-break:break-all;text-align:left;">${escapeHtml(r.url || '')}</td>
+            <td class="c-table cell-mono">${escapeHtml(r.targetTable)}</td>
+            <td class="c-raw">${rawHtml}</td>
+            <td class="c-resp">${respHtml}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;">暂无明细数据</td></tr>';
+    renderDetailPagination(total);
+}
+function renderDetailPagination(total) {
+    const container = document.getElementById('detailPagination');
+    // 与主列表分页栏完全一致：不论页数多少都渲染完整控件（共N条/翻页/页码/每页条数/跳页）
+    let html = `<span class="total-text">共 ${detailRecs.length} 条</span>`;
+    html += `<button class="page-btn" ${detailPage===1?'disabled':''} onclick="changeDetailPage(${detailPage-1})">&lt;</button>`;
+    let startP = Math.max(1, detailPage - 2);
+    let endP = Math.min(total, startP + 4);
+    if (endP - startP < 4) startP = Math.max(1, endP - 4);
+    for (let i=startP; i<=endP; i++) html += `<span class="page-number ${i===detailPage?'active':''}" onclick="changeDetailPage(${i})">${i}</span>`;
+    html += `<button class="page-btn" ${detailPage===total?'disabled':''} onclick="changeDetailPage(${detailPage+1})">&gt;</button>`;
+    html += `<select class="page-size-select" onchange="changeDetailPageSize(this.value)"><option value="10" ${detailPageSize===10?'selected':''}>10条/页</option><option value="20" ${detailPageSize===20?'selected':''}>20条/页</option><option value="50" ${detailPageSize===50?'selected':''}>50条/页</option></select>`;
+    html += `<div class="jump-section"><span>前往</span><input type="text" id="jumpDetailPageInput" value="${detailPage}" onkeydown="if(event.key==='Enter') jumpDetailPage()"><span>页</span></div>`;
+    container.innerHTML = html;
+}
+function changeDetailPage(p) { detailPage = p; renderDetail(); }
+function changeDetailPageSize(size) { detailPageSize = parseInt(size); detailPage = 1; renderDetail(); }
+function jumpDetailPage() {
+    const val = parseInt(document.getElementById('jumpDetailPageInput').value);
+    const total = Math.ceil(detailRecs.length / detailPageSize) || 1;
+    if (!isNaN(val) && val >= 1 && val <= total) { detailPage = val; renderDetail(); }
+}
 
+// ======================== 事件绑定 ========================
 document.getElementById('searchBtn').addEventListener('click', () => { page = 1; renderTable(); });
 document.getElementById('resetBtn').addEventListener('click', () => {
     ['apiFilter','triggerFilter','statusFilter'].forEach(id => document.getElementById(id).value = '');
