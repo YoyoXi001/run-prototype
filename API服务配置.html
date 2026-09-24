@@ -781,6 +781,19 @@
         .struct-preview-table-cell .pt-label { color: #999; margin-right: 8px; }
         .struct-preview-table-cell .pt-val { color: #333; font-weight: 600; word-break: break-all; }
 
+        /* 调用API（在线测试）时的结构化解析 */
+        .struct-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; white-space: nowrap; }
+        .struct-badge.ok { background: #e6f7e6; color: #52c41a; }
+        .struct-badge.no { background: #fff7e6; color: #d97706; }
+        .struct-test-tip { font-size: 12px; color: #999; }
+        .struct-test-tip b { color: #f89d34; font-weight: 500; }
+        .struct-test-empty { background: #fafbfc; border: 1px dashed #dcdfe6; border-radius: 6px; padding: 18px; text-align: center; color: #999; font-size: 13px; }
+        .struct-src-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; background: #f0fbff; color: #1592c9; margin-left: 12px; }
+        /* 复用表标记：该表不新建，仅把解析值写入已存在的字段 */
+        .struct-reuse-tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 12px; font-weight: 400; background: #eef6ff; color: #0d6cff; margin-left: 6px; }
+        /* 复用表上「新增字段」标记：字段名不在该表已有字段清单中（复用时将在该表上新增此字段） */
+        .struct-new-tag { display: inline-block; padding: 0 6px; border-radius: 3px; font-size: 11px; font-weight: 400; background: #fff7e6; color: #d97706; margin-left: 6px; vertical-align: middle; }
+
         /* 结构化结果表（一个表一张卡片，字段横向排布，数据一行） */
         .struct-table-card {
             border: 1px solid #e4e7ed;
@@ -931,6 +944,66 @@
             color: #8c8f99;
             cursor: not-allowed;
         }
+        /* 占位文案（未选择时的提示）统一淡灰：下拉未选值置灰、输入框 placeholder 同色 */
+        .cell-select.is-placeholder:not(:disabled) { color: #bfc5cd; }
+        .cell-select.is-placeholder:not(:disabled) option { color: #333333; }
+        .cell-input::placeholder { color: #bfc5cd; }
+
+        /* 复用表字段「可输入下拉」：输入框 + 自定义下拉面板（原生 datalist 下拉无法定制样式） */
+        .combo { position: relative; }
+        .combo .combo-input { padding-right: 24px; }
+        .combo .combo-caret {
+            position: absolute;
+            right: 7px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #c0c4cc;
+            cursor: pointer;
+            transition: transform 0.15s, color 0.15s;
+        }
+        .combo.open .combo-caret { transform: translateY(-50%) rotate(180deg); color: #f89d34; }
+        .combo-panel {
+            display: none;
+            position: absolute;
+            z-index: 30;
+            left: 0;
+            right: 0;
+            top: calc(100% + 2px);
+            background: #fff;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            max-height: 236px;
+            overflow-y: auto;
+        }
+        .combo.open .combo-panel { display: block; }
+        .combo-hint {
+            position: sticky;
+            top: 0;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #a5abb2;
+            background: #fafbfc;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .combo-opt {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 6px 10px;
+            font-size: 13px;
+            color: #333333;
+            cursor: pointer;
+        }
+        .combo-opt:hover { background: #fef5ec; }
+        .combo-opt.active { color: #f89d34; font-weight: 600; background: #fefaf4; }
+        .combo-opt .opt-type { font-family: Consolas, Monaco, monospace; font-size: 12px; font-weight: 400; color: #a5abb2; }
+        .combo-opt.is-new { color: #d97706; background: #fffaf1; }
+        .combo-opt.is-new .opt-type { color: #d97706; }
+        .combo-opt.is-new b { font-weight: 600; }
+        .combo-empty { padding: 10px; font-size: 12px; color: #a5abb2; text-align: center; }
         .cell-del {
             color: #f5222d;
             cursor: pointer;
@@ -1187,6 +1260,7 @@
                             <div class="action-bar"><button class="btn-add" id="addApiBtn">新增</button></div>
                             <div class="table-container">
                                 <table class="data-table">
+                                    <!-- 「结构化」列已隐藏（按设计确认）：如需恢复，加回 <th>结构化</th> 与行内徽标 td -->
                                     <thead><tr><th>编号</th><th>API名称</th><th>供应商</th><th>URL</th><th>创建时间</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
                                     <tbody id="apiTableBody"></tbody>
                                 </table>
@@ -1254,12 +1328,6 @@
                                     <span class="sub-label">数据库 <b>*</b></span>
                                     <select id="edStdDb" class="fc" disabled>
                                         <option value="">请选择数据库</option>
-                                        <option value="MySQL">MySQL</option>
-                                        <option value="Oracle">Oracle</option>
-                                        <option value="PostgreSQL">PostgreSQL</option>
-                                        <option value="SQL Server">SQL Server</option>
-                                        <option value="达梦">达梦</option>
-                                        <option value="GaussDB">GaussDB</option>
                                     </select>
                                 </div>
                                 <div class="struct-table-field">
@@ -1390,6 +1458,18 @@
                     </div>
                 </div>
 
+                <!-- 返回结果数据结构化（调用API时对真实响应报文做结构化解析） -->
+                <div class="section-card" id="testStructCard" style="display:none;">
+                    <div class="section-title"><span>返回结果数据结构化</span></div>
+                    <div class="param-toolbar">
+                        <div class="toolbar-links" style="margin-left:0;gap:12px;">
+                            <button class="btn-mini primary" id="testStructBtn" onclick="testStructParse()">结构化解析</button>
+                        </div>
+                        <span class="struct-test-tip" id="testStructTip"></span>
+                    </div>
+                    <div id="testStructBody"></div>
+                </div>
+
                 <div class="form-footer">
                     <button class="btn-default" onclick="showListView()">取消</button>
                     <button class="btn-primary" id="runTestBtn" onclick="runTest()">测试</button>
@@ -1465,13 +1545,13 @@ const SUPPLIERS = ['企查查', '天眼查', '外部数据供应商', '数据服
 const LOGIN_INFO = { tenant: '某某金控', company: '某某金控', department: '数据管理部', system: '外数平台' };
 
 let apiList = [
-    { id: 1, apiName: '企业基本信息', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/BaseInfo', method: 'GET', status: '启用', desc: '根据企业名称/统一社会信用代码查询工商登记基本信息', createdAt: '2026-06-12 10:23:45', updater: '席某', updatedAt: '2026-08-18 14:32:10' },
+    { id: 1, apiName: '企业基本信息', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/BaseInfo', method: 'GET', status: '启用', desc: '根据企业名称/统一社会信用代码查询工商登记基本信息', structured: true, stdDb: 'crds_ent_base', stdTable: 'ENT_BASE_INFO', createdAt: '2026-06-12 10:23:45', updater: '席某', updatedAt: '2026-08-18 14:32:10' },
     { id: 2, apiName: '企业图谱', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/RelationGraph', method: 'GET', status: '启用', desc: '查询企业股权关系、对外投资等图谱数据', createdAt: '2026-06-12 10:31:08', updater: '席某', updatedAt: '2026-07-02 09:15:33' },
     { id: 3, apiName: '风险预警', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/RiskWarning', method: 'POST', status: '启用', desc: '订阅企业风险事件，实时推送预警信息', createdAt: '2026-06-15 14:02:56', updater: '张三', updatedAt: '2026-08-05 16:40:21' },
     { id: 4, apiName: '资质荣誉', supplier: '企查查', url: 'https://api.qichacha.com/ECIV4/Qualification', method: 'GET', status: '停用', desc: '查询企业资质认证、荣誉奖项等信息', createdAt: '2026-06-20 09:48:12', updater: '席某', updatedAt: '2026-06-20 09:48:12' },
     { id: 5, apiName: '融资历史', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1107', method: 'GET', status: '启用', desc: '查询企业历次融资轮次、金额及投资方', createdAt: '2026-06-25 11:12:30', updater: '李四', updatedAt: '2026-08-10 10:05:47' },
-    { id: 6, apiName: '司法风险', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1032', method: 'GET', status: '启用', desc: '查询企业涉诉、被执行、失信等司法风险', createdAt: '2026-06-25 11:20:04', updater: '李四', updatedAt: '2026-07-18 15:22:09' },
-    { id: 7, apiName: '经营状况', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1116', method: 'GET', status: '启用', desc: '查询企业经营异常、行政处罚等经营状况信息', createdAt: '2026-07-01 16:35:28', updater: '席某', updatedAt: '2026-08-21 11:18:55' },
+    { id: 6, apiName: '司法风险', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1032', method: 'GET', status: '启用', desc: '查询企业涉诉、被执行、失信等司法风险', structured: true, stdDb: 'crds_risk', stdTable: 'ENT_JUDICIAL_RISK', createdAt: '2026-06-25 11:20:04', updater: '李四', updatedAt: '2026-07-18 15:22:09' },
+    { id: 7, apiName: '经营状况', supplier: '天眼查', url: 'https://open.tianyancha.com/open/1116', method: 'GET', status: '启用', desc: '查询企业经营异常、行政处罚等经营状况信息', structured: true, stdDb: 'crds_ent_base', stdTable: 'ENT_OPER_INFO', createdAt: '2026-07-01 16:35:28', updater: '席某', updatedAt: '2026-08-21 11:18:55' },
     { id: 8, apiName: '严重违法记录', supplier: '外部数据供应商', url: 'https://ds.example-data.com/api/violation/records', method: 'POST', status: '启用', desc: '查询企业严重违法失信记录', createdAt: '2026-07-08 09:05:41', updater: '王五', updatedAt: '2026-07-30 14:52:36' },
     { id: 9, apiName: '企业基本信息', supplier: '外部数据供应商', url: 'https://ds.example-data.com/api/enterprise/basic', method: 'POST', status: '启用', desc: '备用通道：企业工商登记基本信息查询', createdAt: '2026-07-15 10:44:19', updater: '王五', updatedAt: '2026-08-12 09:30:02' },
     { id: 10, apiName: '企业规模', supplier: '数据服务提供商', url: 'https://api.dataprovider.cn/v2/enterprise/scale', method: 'POST', status: '启用', desc: '基于营收、人数等维度评估企业规模等级', createdAt: '2026-07-22 14:26:53', updater: '席某', updatedAt: '2026-08-15 17:08:44' },
@@ -1485,6 +1565,7 @@ let editMode = 'add';      // add | edit | copy | detail
 let editId = null;
 let deleteApiId = null;
 let testId = null;
+let lastTestResp = null;   // 最近一次在线调用的响应报文（供「结构化解析」使用）
 let currentReqTab = 'params';   // 编辑页请求参数 tab
 let currentTestTab = 'params';  // 测试页请求参数 tab
 let attachFileName = '';
@@ -1556,6 +1637,7 @@ function renderApiTable() {
         updateApiPagination(total, list.length);
         return;
     }
+    // 「结构化」列与操作列「结构化」入口已隐藏（按设计确认）：如需恢复，加回下面的结构化徽标 td 与操作列链接 openEdit('struct', id)
     tbody.innerHTML = pageData.map((item, idx) => `<tr>
         <td>${startIdx + idx + 1}</td>
         <td>${escapeHtml(item.apiName)}</td>
@@ -1587,10 +1669,11 @@ function changeApiPageSize(s) { apiPageSize = parseInt(s); apiPage = 1; renderAp
 
 // ---------- 编辑/新增/复制/详情 视图 ----------
 const TYPE_OPTIONS = ['string', 'number', 'boolean', 'object', 'array'];
-const PARSE_TYPES = ['表', '字段', 'JSON串', '不解析'];
-/* 「解析类型」：与「类型」对应，用作数据库表字段的类型 */
+const PARSE_TYPES = ['新建表', '复用表', '字段', 'JSON串', '不解析'];
+/* 「解析类型」：与「类型」对应，用作数据库表字段的类型；带长度/精度，可直接拼进建表语句
+ * （长度取值偏大，避免解析值写入时被截断） */
 function dbTypeOf(type) {
-    return ({ string: 'VARCHAR', number: 'DECIMAL', boolean: 'BOOLEAN', object: 'JSON', array: 'JSON' })[type] || 'VARCHAR';
+    return ({ string: 'VARCHAR(4000)', number: 'DECIMAL(38,10)', boolean: 'CHAR(1)', object: 'JSON', array: 'JSON' })[type] || 'VARCHAR(4000)';
 }
 
 function openEdit(mode, id) {
@@ -1617,7 +1700,7 @@ function openEdit(mode, id) {
     respData = (item && item.responseParams ? JSON.parse(JSON.stringify(item.responseParams)) : [])
         .map(r => ({ ...r, level: r.level || 0, expanded: true, parseAttr: r.parseAttr || r.stdTable || '', parseResult: r.parseResult || r.stdField || '', dbType: r.dbType || '' }));
     respData.forEach((r, i) => normalizeParseAttr(r, respData, i));
-    applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」（加载旧数据归一化）
+    applyTableCascade(); // 容器「新建表 / 复用表」→ 其下所有参数解析属性自动归一化（加载旧数据归一化）
     structCustomRows = item && item.structCustomRows ? JSON.parse(JSON.stringify(item.structCustomRows)) : {};
     structFieldOverrides = item && item.structFieldOverrides ? JSON.parse(JSON.stringify(item.structFieldOverrides)) : {};
     attachFileName = '';
@@ -1628,10 +1711,11 @@ function openEdit(mode, id) {
     // 是否结构化 + 表名（struct 模式自动打开开关，数据库/表名只读带出原值）
     const structured = mode === 'struct' || !!(item && item.structured);
     document.getElementById('edStructured').checked = structured;
-    document.getElementById('edStdDb').value = item && item.stdDb ? item.stdDb : '';
+    setStdDbOptions(item && item.stdDb ? item.stdDb : ''); // 数据库下拉：具体库名（历史值不在候选内时自动补一项）
     document.getElementById('edStdDb').disabled = !structured;
     document.getElementById('edStdTable').value = item && item.stdTable ? item.stdTable : '';
     document.getElementById('edStdTable').disabled = !structured;
+    resolveReuseMapping(); // 复用表映射行：按所选数据库重新带出目标字段类型（数据库此时已回填）
 
     renderParamTables();
     setEditReadonly(mode === 'detail');
@@ -1704,6 +1788,147 @@ function toggleStructured() {
     renderStructSummary();
 }
 
+/* ---------- 复用表（解析属性=「复用表」） ----------
+ * 「新建表」按现状：自动创建表与字段；
+ * 「复用表」不建表：容器行「解析结果」下拉选择所选数据库中已存在的表名，
+ *   其下字段行的「解析结果」下拉选择该表的字段名，「解析类型」自动带出目标字段在该库中的类型（只读）。
+ * mock：标准表在各库中命名一致，仅字段类型写法随库类型渲染（VARCHAR→VARCHAR2/NVARCHAR…） */
+const REUSE_AUDIT_COLS = [['TENANT', 'VARCHAR(500)'], ['COMPANY', 'VARCHAR(500)'], ['DEPARTMENT', 'VARCHAR(500)'], ['SYSTEM', 'VARCHAR(500)']];
+const REUSE_TABLES = {
+    ENT_BASE_INFO: {
+        label: '企业基本信息表',
+        cols: [['ID', 'BIGINT'], ['ENT_NAME', 'VARCHAR(500)'], ['CREDIT_CODE', 'VARCHAR(64)'], ['LEGAL_PERSON', 'VARCHAR(200)'], ['REG_CAPITAL', 'VARCHAR(200)'], ['EST_DATE', 'VARCHAR(50)'], ['REG_STATUS', 'VARCHAR(100)'], ['ENT_SCALE', 'VARCHAR(100)'], ...REUSE_AUDIT_COLS]
+    },
+    ENT_RELATION_GRAPH: {
+        label: '企业图谱表',
+        cols: [['ID', 'BIGINT'], ['ENT_NAME', 'VARCHAR(500)'], ['INVEST_COUNT', 'BIGINT'], ['BRANCH_COUNT', 'BIGINT'], ['SHAREHOLDER_COUNT', 'BIGINT'], ['RELATION_LEVEL', 'VARCHAR(100)'], ...REUSE_AUDIT_COLS]
+    },
+    ENT_RISK_WARNING: {
+        label: '风险预警表',
+        cols: [['ID', 'BIGINT'], ['ENT_NAME', 'VARCHAR(500)'], ['RISK_LEVEL', 'VARCHAR(100)'], ['RISK_COUNT', 'BIGINT'], ['LATEST_RISK_TYPE', 'VARCHAR(200)'], ['LATEST_RISK_DATE', 'VARCHAR(50)'], ...REUSE_AUDIT_COLS]
+    },
+    ENT_JUDICIAL_RISK: {
+        label: '司法风险表',
+        cols: [['ID', 'BIGINT'], ['ENT_NAME', 'VARCHAR(500)'], ['LAWSUIT_COUNT', 'BIGINT'], ['EXECUTED_COUNT', 'BIGINT'], ['DISHONEST_COUNT', 'BIGINT'], ['RISK_LEVEL', 'VARCHAR(100)'], ...REUSE_AUDIT_COLS]
+    },
+    ENT_OPER_INFO: {
+        label: '经营状况表',
+        cols: [['ID', 'BIGINT'], ['ENT_NAME', 'VARCHAR(500)'], ['ABNORMAL_COUNT', 'BIGINT'], ['PENALTY_COUNT', 'BIGINT'], ['TAX_LEVEL', 'VARCHAR(100)'], ...REUSE_AUDIT_COLS]
+    },
+    ENT_FINANCE: {
+        label: '融资历史表',
+        cols: [['ID', 'BIGINT'], ['ENT_NAME', 'VARCHAR(500)'], ['TOTAL_ROUND', 'BIGINT'], ['LATEST_ROUND', 'VARCHAR(100)'], ['LATEST_AMOUNT', 'VARCHAR(200)'], ['LATEST_DATE', 'VARCHAR(50)'], ...REUSE_AUDIT_COLS]
+    },
+    ENT_SENTIMENT: {
+        label: '舆情表',
+        cols: [['ID', 'BIGINT'], ['KEYWORD', 'VARCHAR(500)'], ['TOTAL_COUNT', 'BIGINT'], ['NEGATIVE_COUNT', 'BIGINT'], ['LATEST_TITLE', 'VARCHAR(4000)'], ['LATEST_DATE', 'VARCHAR(50)'], ...REUSE_AUDIT_COLS]
+    }
+};
+/* 「是否结构化」选择的数据库（具体库名，mock）：每套库标注所辖标准表与数据库类型
+ * 解析类型写法随库类型渲染（Oracle/达梦 → VARCHAR2、SQL Server → NVARCHAR…） */
+const STD_DATABASES = [
+    { name: 'crds_master', desc: '外数主库', type: 'MySQL', tables: ['ENT_BASE_INFO', 'ENT_RELATION_GRAPH', 'ENT_RISK_WARNING', 'ENT_JUDICIAL_RISK', 'ENT_OPER_INFO', 'ENT_FINANCE', 'ENT_SENTIMENT'] },
+    { name: 'crds_ent_base', desc: '企业基础库', type: 'Oracle', tables: ['ENT_BASE_INFO', 'ENT_OPER_INFO'] },
+    { name: 'crds_risk', desc: '风险数据库', type: '达梦', tables: ['ENT_RISK_WARNING', 'ENT_JUDICIAL_RISK'] },
+    { name: 'crds_relation', desc: '图谱数据库', type: 'PostgreSQL', tables: ['ENT_RELATION_GRAPH'] },
+    { name: 'crds_sentiment', desc: '舆情数据库', type: 'GaussDB', tables: ['ENT_SENTIMENT'] },
+    { name: 'crds_ods', desc: '贴源库', type: 'SQL Server', tables: ['ENT_BASE_INFO', 'ENT_FINANCE', 'ENT_SENTIMENT'] }
+];
+/* 字段类型写法：复用表字段类型随所选数据库的库类型渲染 */
+const DB_TYPE_STYLE = {
+    MySQL: t => t,
+    PostgreSQL: t => t,
+    'SQL Server': t => t.replace(/^VARCHAR/, 'NVARCHAR'),
+    Oracle: t => t.replace(/^VARCHAR/, 'VARCHAR2'),
+    达梦: t => t.replace(/^VARCHAR/, 'VARCHAR2'),
+    GaussDB: t => t
+};
+function stdDbDef(name) { return STD_DATABASES.find(d => d.name === name) || null; }
+function currentStdDb() { const el = document.getElementById('edStdDb'); return el ? el.value : ''; }
+/* 指定数据库的字段类型写法（未识别的库名按原样输出） */
+function dbTypeStyle(dbName) {
+    const d = stdDbDef(dbName === undefined ? currentStdDb() : dbName);
+    return (d && DB_TYPE_STYLE[d.type]) || null;
+}
+/* 数据库下拉选项：展示具体库名（历史数据中不在候选列表的库名补一项，保证回填可见） */
+function setStdDbOptions(cur) {
+    const sel = document.getElementById('edStdDb');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">请选择数据库</option>'
+        + STD_DATABASES.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}（${escapeHtml(d.desc)}）</option>`).join('')
+        + (cur && !stdDbDef(cur) ? `<option value="${escapeHtml(cur)}">${escapeHtml(cur)}</option>` : '');
+    sel.value = cur || '';
+}
+/* 复用候选表名（所选数据库中的表）；未选数据库时无可选项 */
+function reuseTableNames() {
+    const d = stdDbDef(currentStdDb());
+    return d ? d.tables.filter(t => REUSE_TABLES[t]) : [];
+}
+function reuseTableLabel(tname) { return REUSE_TABLES[tname] ? REUSE_TABLES[tname].label : ''; }
+/* 指定表在指定数据库下的字段清单 [{ name, type }] */
+function reuseTableCols(tname, db) {
+    const t = REUSE_TABLES[tname];
+    if (!t) return [];
+    const style = dbTypeStyle(db);
+    return t.cols.map(c => ({ name: c[0], type: style ? style(c[1]) : c[1] }));
+}
+/* 指定表的目标字段在该库中的类型；容器行/未选中字段返回 '' */
+function reuseColType(tname, colName, db) {
+    const col = reuseTableCols(tname, db).find(c => c.name === (colName || '').trim());
+    return col ? col.type : '';
+}
+/* 行 i 归属的复用表行：最近的「表类」祖先为「复用表」时返回该行，否则 null
+ * （中间隔着「新建表」则不属于复用表） */
+function reuseHostOf(rows, i) {
+    let lvl = rows[i].level || 0;
+    for (let j = i - 1; j >= 0 && lvl > 0; j--) {
+        const l = rows[j].level || 0;
+        if (l >= lvl) continue;
+        const a = rows[j].parseAttr;
+        if (a === '复用表') return rows[j];
+        if (a === '新建表') return null;
+        lvl = l;
+    }
+    return null;
+}
+/* 行 i 归属的复用表名（复用表尚未选表名时返回空串） */
+function reusedTableOf(rows, i) {
+    const host = reuseHostOf(rows, i);
+    return host ? (host.parseResult || '').trim() : '';
+}
+/* 本API「新建表」的表名（返回参数中解析属性=新建表 归组出的表，含主表）：复用表也可选择这些表 */
+function newTableNames() {
+    return getStructGroups().filter(g => !g.reused).map(g => g.displayName);
+}
+/* 复用目标字段清单：
+ * - 数据库已有表 → REUSE_TABLES 中的字段；
+ * - 本API「新建表」→ 该表当前配置出的字段（含主键/关联/审计字段）
+ * 注：内部只用 REUSE_TABLES 查询，不可反向调用本函数，避免与 getStructGroups 相互递归 */
+function reuseSourceCols(tname) {
+    if (!tname) return [];
+    if (REUSE_TABLES[tname]) return reuseTableCols(tname);
+    const g = getStructGroups().find(x => x.name === tname && !x.reused);
+    return g ? g.rows.map(x => ({ name: x.field, type: x.dbType })) : [];
+}
+/* 复用目标字段在目标表中的类型；未命中（= 在该复用表上新增字段）返回空串 */
+function reuseSourceColType(tname, colName) {
+    const col = reuseSourceCols(tname).find(c => c.name === (colName || '').trim());
+    return col ? col.type : '';
+}
+/* 复用映射行的「解析类型」写回数据：随配置持久化，供结构化结果与在线测试解析使用
+ * 命中已有字段 → 取该字段类型；未命中 → 视为在复用表上新增字段，取默认类型（可人工修改） */
+function resolveReuseMapping() {
+    respData.forEach((r, i) => {
+        if (isArrElementRow(respData, i)) return;
+        if (r.parseAttr === '复用表') { r.dbType = ''; return; }
+        const tb = reusedTableOf(respData, i);
+        if (!tb) return;
+        const name = (r.parseResult || '').trim();
+        if (!name) { r.dbType = ''; return; }
+        r.dbType = reuseSourceColType(tb, name) || r.dbType || (r.parseAttr === 'JSON串' ? 'CLOB' : dbTypeOf(r.type));
+    });
+}
+
 /* ---------- 结构化解析 ---------- */
 /* 参数名 → 数据库字段名/表名（大驼峰转大写蛇形） */
 function upperSnake(n) {
@@ -1723,20 +1948,24 @@ function structParse() {
         if (isArrElementRow(respData, i)) { r.parseAttr = ''; r.parseResult = ''; r.dbType = ''; return; }
         const untouched = !r.parseAttr || (r.parseAttr === '不解析' && !r.dbType);
         if (untouched) {
-            r.parseAttr = r.children ? '表' : '字段';
+            r.parseAttr = r.children ? '新建表' : '字段';
             r.parseResult = upperSnake(r.name);
-            r.dbType = r.children ? '' : dbTypeOf(r.type); // 解析属性=表：解析类型清空置灰（类型交由归组决定）
+            r.dbType = r.children ? '' : dbTypeOf(r.type); // 解析属性=新建表：解析类型清空置灰（类型交由建表语句决定）
         } else if (r.parseAttr !== '不解析' && !r.parseResult) {
-            r.parseResult = upperSnake(r.name);
+            // 复用表不做新字段名推断：仅当推断名恰好命中目标表已有字段时才带出
+            const guess = upperSnake(r.name);
+            const rt = reusedTableOf(respData, i);
+            if (!rt || reuseTableCols(rt).some(c => c.name === guess)) r.parseResult = guess;
         }
         if (r.parseAttr === '不解析') {
             r.parseResult = '';
-        } else if (r.parseAttr !== '表') {
-            // 解析属性=表：解析类型保持清空置灰
+        } else if (r.parseAttr !== '新建表' && r.parseAttr !== '复用表') {
+            // 解析属性=新建表：解析类型保持清空置灰；复用表：解析类型取所选目标字段在库中的类型
             r.dbType = r.dbType || (r.parseAttr === 'JSON串' ? 'CLOB' : dbTypeOf(r.type));
         }
     });
-    applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」
+    applyTableCascade(); // 容器「新建表 / 复用表」→ 其下参数解析属性自动归一化
+    resolveReuseMapping(); // 复用表映射行：解析类型取目标字段类型
     renderRespRows();
     const groups = getStructGroups();
     if (!groups.length) { alert('请先维护返回参数的「解析属性 / 解析结果」'); return; }
@@ -1765,9 +1994,11 @@ function subtreeJson(r, i) {
 }
 
 /* 按层级把已解析行归组为「主表 + 若干子表」
- * 解析属性=表     -> 解析结果为该子表的表名，子级字段归入该表（创建表和字段）
+ * 解析属性=新建表 -> 解析结果为该子表的表名，子级字段归入该表（创建表和字段）
  *                  该行在子表内生成关联字段「参数名_id」= 上级表主键id值（a.id = data.data_id）；
  *                  上级表不新增该字段，同层级表互不新增字段
+ * 解析属性=复用表 -> 解析结果为该数据库已存在的表名，不建表、不新增主键与关联字段，
+ *                  其下字段行按「解析结果」选定的已有字段名映射写入（复用表在结构化结果中单独标记）
  * 解析属性=字段   -> 数组/JSON对象整体作为JSON对象存储在字段中（子树被吸收）
  * 解析属性=JSON串 -> 该字段与字段值整体作为JSON串存储（子树被吸收）
  * 解析属性=不解析 -> 跳过
@@ -1797,7 +2028,7 @@ function getStructGroups() {
         const attr = r.parseAttr || '';
         if (attr === '不解析') return;
         while (stack.length && stack[stack.length - 1].level >= lvl) stack.pop();
-        if (attr === '表') {
+        if (attr === '新建表') {
             const mainBase = formTable || '主表';
             const custom = (r.parseResult || '').trim();
             // 子表名 = 主表表名 + 参数名（如主表 a + 参数 data → a_data）；手工自定义解析结果优先
@@ -1805,23 +2036,35 @@ function getStructGroups() {
             const parentName = stack.length ? stack[stack.length - 1].name : '主表';
             stack.push({ level: lvl, name: tname });
             const tg = getGroup(tname);
+            tg.created = true;   // 本API「新建表」：会被创建
+            tg.reused = false;   // 同一张表若也被「复用表」引用，以「建表」为准（表确实由本API创建）
             // 关联逻辑：上级表主键 id 关联下级表字段 id —— 仅子表新增「参数名_id」= 上级表主键id值
             // （上级表不新增字段、同层级表互不新增字段），如 a.id = data.data_id
             const parentGroup = getGroup(parentName);
             const parentDisp = parentName === '主表' ? (formTable || '主表') : parentName;
             // 关联字段赋值：取「父级表名」+ "_id" 作为当前表的关联字段，值 = 父表主键 id
-            // （如父表 a + 参数 data(表) → a.id = data.a_id；上级表不新增字段、同层级表互不新增字段）
-            tg.rows.push({ field: `${parentDisp}_id`, desc: `关联${parentDisp}主键id`, dbType: 'INT', value: parentGroup.tableId, ref: seg ? `#Result#.${seg}` : '' });
+            // （如父表 a + 参数 data(新建表) → a.id = data.a_id；上级表不新增字段、同层级表互不新增字段）
+            tg.rows.push({ field: `${parentDisp}_id`, desc: `关联${parentDisp}主键id`, dbType: 'BIGINT', value: parentGroup.tableId, ref: seg ? `#Result#.${seg}` : '' });
+        } else if (attr === '复用表') {
+            // 复用表：不建表 —— 仅登记目标表并把其下映射字段归入该表（不加主键/关联/审计字段）；
+            // 目标表可以是数据库中已有表，也可以是本API返回参数中的「新建表」
+            const tname = (r.parseResult || '').trim();
+            if (!tname) return;
+            stack.push({ level: lvl, name: tname });
+            const tg = getGroup(tname);
+            if (!tg.created) tg.reused = true; // 该表同时由本API「新建表」创建时不标「复用表」
         } else if (attr === '字段' || attr === 'JSON串') {
             const field = (r.parseResult || '').trim();
             if (!field) return;
             skipAbove = lvl; // 数组/JSON对象整体作为一个字段存储，子树不再拆分
             const raw = r.children ? subtreeJson(r, i) : (r.example ?? '');
             const value = (typeof raw === 'string') ? raw : JSON.stringify(raw);
+            // 复用表下的映射行：命中已有字段 → 取该字段类型；未命中 → 视为在复用表上新增字段（用行上已定类型）
+            const reuseTb = reusedTableOf(respData, i);
             getGroup(stack.length ? stack[stack.length - 1].name : '主表').rows.push({
                 field,
                 desc: r.desc,
-                dbType: attr === 'JSON串' ? 'CLOB' : (r.dbType || dbTypeOf(r.type)),
+                dbType: reuseTb ? (reuseColType(reuseTb, field) || r.dbType || '') : (attr === 'JSON串' ? 'CLOB' : (r.dbType || dbTypeOf(r.type))),
                 value,
                 ref: seg ? `#Result#.${seg}` : '' // 引用字段：对应返回参数名（点分路径）
             });
@@ -1837,28 +2080,45 @@ function getStructGroups() {
             const ov = structFieldOverrides[g.name + '||' + r.field];
             if (ov && ov.dbType !== undefined) r.dbType = ov.dbType;
         });
-        // 每张表默认增加主键 id 字段（首列；BIGINT；值=表序号，子表「参数名_id」关联引用上级表该值）
-        g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键', ref: '' });
+        // 每张「新建表」默认增加主键 id 字段（首列；BIGINT；值=表序号，子表「参数名_id」关联引用上级表该值）
+        // 复用表不建表：不加主键，仅展示按「解析结果」映射到的已有字段
+        if (!g.reused) g.rows.unshift({ field: 'id', dbType: 'BIGINT', value: String(g.tableId), desc: '主键', ref: '' });
         // 追加该表手工添加的自定义行（可编辑）
         (structCustomRows[g.name] || []).forEach((cr, ci) => g.rows.push({ ...cr, custom: true, cidx: ci }));
+        // 复用表：标注「在该表上新增的字段」—— 字段名不在该表已有字段清单中（映射行直接输入新字段名/自定义行）
+        const reuseDef = g.reused ? REUSE_TABLES[g.name] : null;
+        if (reuseDef) {
+            const known = reuseDef.cols.map(c => c[0]);
+            g.rows.forEach(row => { if (known.indexOf(row.field) < 0) row.isNew = true; });
+            g.newCount = g.rows.filter(row => row.isNew).length;
+        }
     });
     // 主表追加登录账户审计字段（租户/公司/部门/系统，值取自当前登录账户信息）
     const mainGroup = groups.find(g => g.name === '主表');
     if (mainGroup) {
         const audit = [['TENANT', LOGIN_INFO.tenant], ['COMPANY', LOGIN_INFO.company], ['DEPARTMENT', LOGIN_INFO.department], ['SYSTEM', LOGIN_INFO.system]];
-        audit.forEach(([name, value]) => mainGroup.rows.push({ field: name, dbType: 'VARCHAR', value, desc: '登录账户', ref: '' }));
+        audit.forEach(([name, value]) => mainGroup.rows.push({ field: name, dbType: 'VARCHAR(500)', value, desc: '登录账户', ref: '' }));
     }
     return groups;
 }
 
+/* 复用表卡片标题标记：该表不新建（有新增字段时一并给出数量） */
+function reuseTagHtml(reused, rows) {
+    if (!reused) return '';
+    const n = (rows || []).filter(r => r.isNew).length;
+    return `<span class="struct-reuse-tag">复用表 · 不建表${n ? ' · 新增字段 ' + n + ' 个' : ''}</span>`;
+}
+/* 字段名后的「新增」标记：该字段将被新增到复用表上（不在其已有字段清单中） */
+function fieldNewTagHtml(f) { return f && f.isNew ? '<span class="struct-new-tag">新增</span>' : ''; }
+
 /* 一个结构化表的卡片（横向）：表名标题 + 字段横向成一列、数据一行 */
-function tableCardHtml(displayName, rows) {
+function tableCardHtml(displayName, rows, reused) {
     if (!rows.length) rows = [{ field: '暂无字段', type: '', value: '', desc: '' }];
     return `<div class="struct-table-card">
-        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span></div>
+        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span>${reuseTagHtml(reused, rows)}</div>
         <div class="struct-table-card-body">
             <table class="sub-table struct-horiz">
-                <thead><tr>${rows.map(f => `<th>${escapeHtml(f.field)}</th>`).join('')}</tr></thead>
+                <thead><tr>${rows.map(f => `<th>${escapeHtml(f.field)}${fieldNewTagHtml(f)}</th>`).join('')}</tr></thead>
                 <tbody><tr>${rows.map(f => `<td>${escapeHtml(f.value)}</td>`).join('')}</tr></tbody>
             </table>
         </div>
@@ -1902,7 +2162,7 @@ function structAddBtnHtml(tableKey) {
 function addStructRow(encKey) {
     if (editMode === 'detail') return;
     const tkey = decodeURIComponent(encKey);
-    (structCustomRows[tkey] = structCustomRows[tkey] || []).push({ field: '', dbType: 'VARCHAR', value: '', ref: '', desc: '' });
+    (structCustomRows[tkey] = structCustomRows[tkey] || []).push({ field: '', dbType: 'VARCHAR(500)', value: '', ref: '', desc: '' });
     renderStructSummary();
 }
 function removeStructRow(encKey, ci) {
@@ -1913,14 +2173,14 @@ function removeStructRow(encKey, ci) {
 /* 一个结构化表的卡片（纵向）：表名标题(+添加行) + 逐字段一行（字段名/类型/字段值/引用字段/说明）
  * 「类型」整列可编辑（自由输入，无下拉候选）；「引用字段」仅「＋ 添加行」新增行可选（解析行只读展示）；
  * 其余列解析行只读，仅「＋ 添加行」新增的行可编辑 */
-function vertCardHtml(displayName, rows, tableKey) {
+function vertCardHtml(displayName, rows, tableKey, reused) {
     const ro = editMode === 'detail';
     const typeCell = f => ro
         ? `<td>${escapeHtml(f.dbType)}</td>`
         : `<td><input class="cell-input" value="${escapeHtml(f.dbType || '')}" data-f="dbType" placeholder="类型"></td>`;
     const trs = rows.map(f => f.custom && !ro
         ? `<tr data-tkey="${encTableKey(tableKey)}" data-cidx="${f.cidx}">
-            <td><input class="cell-input" value="${escapeHtml(f.field)}" data-f="field" placeholder="字段名"></td>
+            <td><input class="cell-input" value="${escapeHtml(f.field)}" data-f="field" placeholder="字段名">${fieldNewTagHtml(f)}</td>
             ${typeCell(f)}
             <td><input class="cell-input" value="${escapeHtml(String(f.value ?? ''))}" data-f="value" placeholder="字段值"></td>
             <td>${refSelectHtml(f.ref)}</td>
@@ -1928,7 +2188,7 @@ function vertCardHtml(displayName, rows, tableKey) {
             <td><span class="cell-del" onclick="removeStructRow('${encTableKey(tableKey)}', ${f.cidx})">删除</span></td>
           </tr>`
         : `<tr data-tkey="${encTableKey(tableKey)}" data-field="${encTableKey(f.field)}">
-            <td>${escapeHtml(f.field)}</td>
+            <td>${escapeHtml(f.field)}${fieldNewTagHtml(f)}</td>
             ${typeCell(f)}
             <td style="word-break:break-all;">${escapeHtml(String(f.value ?? ''))}</td>
             <td class="vert-ref">${escapeHtml(f.ref || '')}</td>
@@ -1936,7 +2196,7 @@ function vertCardHtml(displayName, rows, tableKey) {
             <td></td>
           </tr>`).join('');
     return `<div class="struct-table-card">
-        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span>${structAddBtnHtml(tableKey)}</div>
+        <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(displayName)}</span>${reuseTagHtml(reused, rows)}${structAddBtnHtml(tableKey)}</div>
         <div class="struct-table-card-body" style="padding:10px;">
             <table class="sub-table">
                 <thead><tr><th style="width:16%;">字段名</th><th style="width:11%;">类型</th><th style="width:23%;">字段值</th><th style="width:23%;">引用字段</th><th>说明</th><th style="width:72px;">操作</th></tr></thead>
@@ -1946,12 +2206,14 @@ function vertCardHtml(displayName, rows, tableKey) {
     </div>`;
 }
 
-/* 结构化表集合的公共摘要行：数据库表名 + 字段总数 */
+/* 结构化表集合的公共摘要行：数据库表名 + 字段总数（复用表单独列出） */
 function structMetaHtml(groups) {
-    const tables = groups.map(g => g.displayName);
+    const news = groups.filter(g => !g.reused).map(g => g.displayName);
+    const reuses = groups.filter(g => g.reused).map(g => g.displayName);
     const totalFields = groups.reduce((s, g) => s + g.rows.length, 0);
     return `<div class="struct-meta">
-        <span class="m-label">数据库表名：</span><b>${escapeHtml(tables.join('、'))}</b>
+        <span class="m-label">数据库表名：</span><b>${escapeHtml(news.join('、') || '—')}</b>
+        ${reuses.length ? `<span style="margin-left:16px;" class="m-label">复用表：</span><b>${escapeHtml(reuses.join('、'))}</b><span class="struct-reuse-tag">不建表：字段映射到已有字段，新字段将追加到该表</span>` : ''}
         <span style="margin-left:16px;" class="m-label">字段总数：</span><b>${totalFields}</b>
     </div>`;
 }
@@ -1965,14 +2227,14 @@ function renderStructSummary() {
         box.innerHTML = '<div class="struct-empty">开启「是否结构化」，Json数据转成Form表单自动填充「解析属性 / 解析结果」；也可点击上方「结构化解析」生成表结构</div>';
         return;
     }
-    box.innerHTML = structMetaHtml(groups) + groups.map(g => vertCardHtml(g.displayName, g.rows, g.name)).join('');
+    box.innerHTML = structMetaHtml(groups) + groups.map(g => vertCardHtml(g.displayName, g.rows, g.name, !!g.reused)).join('');
 }
 
 /* 「结构化示例预览」弹窗：按表展示（卡片区分，表与表间隔明显），横向表格字段横排、数据一行 */
 function showStructPreview() {
     const groups = getStructGroups();
     if (!groups.reduce((s, g) => s + g.rows.length, 0)) { alert('请先点击「结构化解析」或维护返回参数的「解析属性 / 解析结果」'); return; }
-    const html = structMetaHtml(groups) + `<div class="struct-preview-info">${groups.map(g => tableCardHtml(g.displayName, g.rows)).join('')}</div>`;
+    const html = structMetaHtml(groups) + `<div class="struct-preview-info">${groups.map(g => tableCardHtml(g.displayName, g.rows, !!g.reused)).join('')}</div>`;
     document.getElementById('structPreviewContent').innerHTML = html;
     document.getElementById('structPreviewModal').classList.add('active');
 }
@@ -2052,8 +2314,8 @@ function renderRespRows() {
                 <td><input class="cell-input" value="${escapeHtml(r.example)}" ${ro || sro || (r.type === 'array' || r.type === 'object') ? 'disabled' : ''} data-f="example" placeholder="示例值"></td>
                 <td><select class="cell-select" ${ro || sro ? 'disabled' : ''} data-f="type">${TYPE_OPTIONS.map(t => `<option value="${t}" ${r.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
                 <td class="col-parse"><select class="cell-select" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseAttr">${parseAttrOptions(r, i, rows)}</select></td>
-                <td class="col-parse"><input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${ro || isArrElementRow(rows, i) ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果"></td>
-                <td class="col-parse"><input class="cell-input" value="${escapeHtml(r.parseAttr === '表' || isArrElementRow(rows, i) ? '' : (r.dbType || dbTypeOf(r.type)))}" ${ro || isArrElementRow(rows, i) || r.parseAttr === '表' ? 'disabled' : ''} data-f="dbType" placeholder="解析类型"></td>
+                <td class="col-parse">${parseResultCellHtml(r, i, rows, ro)}</td>
+                <td class="col-parse">${parseTypeCellHtml(r, i, rows, ro)}</td>
                 <td><input class="cell-input" value="${escapeHtml(r.desc)}" ${ro || sro ? 'disabled' : ''} data-f="desc" placeholder="说明"></td>
                 <td>${rowOpsHtml(i, rows, 'resp', ro || sro)}</td>
             </tr>`;
@@ -2168,10 +2430,10 @@ function addSiblingNode(section, i) {
     let end = i + 1;
     while (end < rows.length && (rows[end].level || 0) > lvl) end++;
     const row = section === 'req' ? newReqRow(lvl) : newRespRow(lvl);
-    // 「表」容器下的参数解析属性统一为「字段」：新增相邻节点自动带出
+    // 表类容器下的参数解析属性统一为「字段」（复用表下同规则）：新增相邻节点自动带出
     if (section === 'resp') {
         const pi = parentIdx(rows, i);
-        if (pi >= 0 && rows[pi].parseAttr === '表') row.parseAttr = '字段';
+        if (pi >= 0 && (rows[pi].parseAttr === '新建表' || rows[pi].parseAttr === '复用表')) row.parseAttr = '字段';
     }
     rows.splice(end, 0, row);
     if (section === 'req') renderReqRows(); else renderRespRows();
@@ -2191,35 +2453,153 @@ function addChildNode(section, i) {
     if (r.type === 'array') row = section === 'req' ? newReqElemRow(lv) : newRespElemRow(lv);
     else {
         row = section === 'req' ? newReqRow(lv) : newRespRow(lv);
-        if (r.parseAttr === '表') row.parseAttr = '字段'; // 容器为「表」：其下参数解析属性自动为「字段」
+        if (r.parseAttr === '新建表' || r.parseAttr === '复用表') row.parseAttr = '字段'; // 容器为表类：其下参数解析属性自动为「字段」
     }
     rows.splice(i + 1, 0, row);
     if (section === 'req') renderReqRows(); else renderRespRows();
 }
 
 /* 解析属性下拉：
- * - array/object 行：可选「表」「字段」「不解析」，「JSON串」禁用
- * - 非 array/object 行（string/number/boolean）：仅可选「字段」「不解析」，「表」「JSON串」禁用
- * - 「JSON串」不可手动选择，但容器行选择「字段」时级联带出，下拉展示为选中禁用态
+ * - array/object 行：可选「新建表」「复用表」「字段」「不解析」，「JSON串」禁用
+ * - 非 array/object 行（string/number/boolean）：仅可选「字段」「不解析」，「新建表」「复用表」「JSON串」禁用
+ * - 「JSON串」不可手动选择，但容器行选择「字段」/「复用表」时级联带出，下拉展示为选中禁用态
  * - array 元素行（透明节点）：解析属性/解析结果/解析类型清空置灰禁用
  * 非法当前值仅显示回退，不改数据 */
 function parseAttrOptions(r, i, rows) {
     if (isArrElementRow(rows, i)) return '<option value="" selected disabled></option>';
     const canTable = r.type === 'array' || r.type === 'object';
-    const invalid = (a) => a === '表' && !canTable;
-    const cur = invalid(r.parseAttr) ? '字段' : (r.parseAttr || '不解析');
+    const isTableKind = (a) => a === '新建表' || a === '复用表';
+    const cur = (isTableKind(r.parseAttr) && !canTable) ? '字段' : (r.parseAttr || '不解析');
     return PARSE_TYPES.map(t => {
-        const dis = (t === '表' && !canTable) || t === 'JSON串';
+        const dis = (isTableKind(t) && !canTable) || t === 'JSON串';
         return `<option value="${t}" ${cur === t ? 'selected' : ''} ${dis ? 'disabled' : ''}>${t}</option>`;
     }).join('');
 }
 /* 解析属性合法性校正（类型变更/加载旧数据时归一化数据）；array 元素行恒为清空禁用态；
- * 「JSON串」为容器「字段」级联带出的内部态，不做归一化 */
+ * 「JSON串」为容器「字段」/「复用表」级联带出的内部态，不做归一化 */
 function normalizeParseAttr(r, rows, i) {
     if (isArrElementRow(rows, i)) { r.parseAttr = ''; r.parseResult = ''; r.dbType = ''; return; }
     const canTable = r.type === 'array' || r.type === 'object';
-    if (r.parseAttr === '表' && !canTable) r.parseAttr = '字段';
-    if (r.parseAttr === '表') r.dbType = ''; // 解析属性=表：解析类型清空
+    if ((r.parseAttr === '新建表' || r.parseAttr === '复用表') && !canTable) r.parseAttr = '字段';
+    if (r.parseAttr === '新建表') r.dbType = ''; // 解析属性=新建表：解析类型清空（由建表语句决定）
+}
+
+/* 「解析结果」单元格：
+ * - 解析属性=复用表：下拉选择目标表 —— 可选「本API返回参数中的新建表」或「数据库中已有表」
+ * - 解析属性=字段/JSON串 且位于「复用表」之下：可输入下拉 —— 选已有字段＝引用该字段，
+ *   输入新字段名＝在该复用表上新增字段（此时「解析类型」可自行填写）
+ * - 其余（新建表）：保持文本输入（表名 / 字段名） */
+function parseResultCellHtml(r, i, rows, ro) {
+    const dis = ro || isArrElementRow(rows, i);
+    const cur = (r.parseResult || '').trim();
+    const opt = (v, label) => `<option value="${escapeHtml(v)}" ${cur === v ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    if (!isArrElementRow(rows, i) && r.parseAttr === '复用表') {
+        if (!currentStdDb()) {
+            return `<select class="cell-select is-placeholder" data-f="parseResult" ${dis ? 'disabled' : ''}><option value="">请先选择数据库</option></select>`;
+        }
+        const news = newTableNames();
+        const dbs = reuseTableNames().filter(n => news.indexOf(n) < 0); // 同名表只在「本API新建表」中出现一次
+        const groups =
+            (news.length ? `<optgroup label="本API返回参数中的新建表">${news.map(n => opt(n, n)).join('')}</optgroup>` : '') +
+            (dbs.length ? `<optgroup label="数据库中已有表">${dbs.map(n => opt(n, n + '（' + reuseTableLabel(n) + '）')).join('')}</optgroup>` : '');
+        const inList = news.indexOf(cur) >= 0 || dbs.indexOf(cur) >= 0;
+        return `<select class="cell-select${cur ? '' : ' is-placeholder'}" data-f="parseResult" ${dis ? 'disabled' : ''}>
+            <option value="">请选择表名</option>${groups}${cur && !inList ? opt(cur, cur) : ''}
+        </select>`;
+    }
+    if ((r.parseAttr === '字段' || r.parseAttr === 'JSON串') && reuseHostOf(rows, i)) {
+        const reuseTb = reusedTableOf(rows, i);
+        if (!reuseTb) return `<input class="cell-input" data-f="parseResult" value="" disabled placeholder="请先选择复用表表名">`;
+        if (dis) return `<input class="cell-input" data-f="parseResult" value="${escapeHtml(cur)}" disabled>`;
+        return comboHtml(i, cur, reuseSourceCols(reuseTb));
+    }
+    return `<input class="cell-input" value="${escapeHtml(r.parseResult || '')}" ${dis ? 'disabled' : ''} data-f="parseResult" placeholder="解析结果">`;
+}
+
+/* 复用表下「解析结果」的可输入下拉：
+ * 点开列出该表已有字段（选中＝引用该字段），也可直接输入新字段名（在复用表上新增字段） */
+function comboHtml(i, cur, cols) {
+    const opt = c => `<div class="combo-opt${c.name === cur ? ' active' : ''}" data-val="${escapeHtml(c.name)}"><span class="opt-name">${escapeHtml(c.name)}</span><span class="opt-type">${escapeHtml(c.type)}</span></div>`;
+    return `<div class="combo">
+        <input class="cell-input combo-input" data-f="parseResult" value="${escapeHtml(cur)}" placeholder="选择已有字段或输入新字段名" autocomplete="off">
+        <i class="combo-caret el-icon-arrow-down"></i>
+        <div class="combo-panel">
+            <div class="combo-hint">选择已有字段＝引用该字段；直接输入字段名＝在复用表上新增字段</div>
+            <div class="combo-opt is-new" data-new="1" style="display:none;"><span class="opt-name">新增字段 <b></b></span><span class="opt-type"></span></div>
+            <div class="combo-list">${cols.map(opt).join('') || '<div class="combo-empty">该表暂无可选字段</div>'}</div>
+        </div>
+    </div>`;
+}
+/* 下拉筛选：按输入隐藏不匹配的已有字段；输入的名字不是已有字段时给出「新增字段」提示行 */
+function comboFilter(combo, text) {
+    const t = (text || '').trim().toUpperCase();
+    let hit = 0, exact = false;
+    combo.querySelectorAll('.combo-opt[data-val]').forEach(o => {
+        const v = o.dataset.val.toUpperCase();
+        const show = !t || v.indexOf(t) >= 0;
+        o.style.display = show ? '' : 'none';
+        if (show) hit++;
+        o.classList.toggle('active', v === t);
+        if (v === t) exact = true;
+    });
+    const empty = combo.querySelector('.combo-empty');
+    if (empty) empty.style.display = hit ? 'none' : '';
+    const nw = combo.querySelector('.combo-new');
+    if (nw) {
+        const show = !!t && !exact;
+        nw.style.display = show ? '' : 'none';
+        if (show) {
+            const tr = combo.closest('tr');
+            const row = tr ? respData[parseInt(tr.dataset.idx, 10)] : null;
+            nw.querySelector('.opt-name b').textContent = (text || '').trim();
+            nw.querySelector('.opt-type').textContent = row ? (row.parseAttr === 'JSON串' ? 'CLOB' : dbTypeOf(row.type)) : '';
+        }
+    }
+}
+
+/* 「解析类型」单元格：
+ * - 新建表行 / array 元素行：留空置灰（类型由建表语句决定）
+ * - 复用表映射行：引用已有字段 → 只读展示该字段类型；输入新字段名 → 可自行填写（默认按返回参数类型）
+ * - 其余：默认类型（带长度/精度，可直接用于建表语句） */
+function parseTypeCellHtml(r, i, rows, ro) {
+    const elem = isArrElementRow(rows, i);
+    const tableKind = r.parseAttr === '新建表' || r.parseAttr === '复用表';
+    if (elem || tableKind) return `<input class="cell-input" value="" disabled data-f="dbType" placeholder="解析类型">`;
+    const reuseTb = reusedTableOf(rows, i);
+    if (reuseTb) {
+        const st = reuseTypeCellState(r, rows, i);
+        return `<input class="cell-input" value="${escapeHtml(st.value)}" ${ro || st.disabled ? 'disabled' : ''} data-f="dbType" placeholder="${st.placeholder}">`;
+    }
+    return `<input class="cell-input" value="${escapeHtml(r.dbType || dbTypeOf(r.type))}" ${ro ? 'disabled' : ''} data-f="dbType" placeholder="解析类型">`;
+}
+/* 复用表映射行的「解析类型」取值/是否只读：
+ * 命中已有字段 → 取该字段类型且只读；输入新字段名 → 按返回参数类型给出默认值，可自行修改 */
+function reuseTypeCellState(row, rows, i) {
+    const name = (row.parseResult || '').trim();
+    const colType = reuseSourceColType(reusedTableOf(rows, i), name);
+    return {
+        value: colType || (name ? (row.dbType || dbTypeOf(row.type)) : ''),
+        disabled: !name || !!colType,
+        placeholder: colType ? '解析类型' : '新增字段类型'
+    };
+}
+/* 复用表下的字段单元格输入时，即时联动同行「解析类型」（不重渲染整表，避免输入过程丢失焦点） */
+function syncReuseTypeCell(idx) {
+    const ty = document.querySelector(`#respTbody tr[data-idx="${idx}"] [data-f="dbType"]`);
+    if (!ty) return;
+    const st = reuseTypeCellState(respData[idx], respData, idx);
+    ty.value = st.value;
+    ty.disabled = st.disabled;
+    ty.placeholder = st.placeholder;
+}
+/* 复用表字段值写回：命中所选表已有字段 → 引用该字段（类型取该字段类型）；否则在复用表上新增字段（类型可改） */
+function applyReuseFieldValue(idx, val) {
+    const row = respData[idx];
+    if (!row) return;
+    row.parseResult = val;
+    resolveReuseMapping();
+    syncReuseTypeCell(idx);
+    renderStructSummary();
 }
 /* 选择「不解析」：该字段与其下所有层级全部置为不解析（结构保留，层级不提升）；array 元素行保持清空禁用态 */
 function cascadeSkipParse(i) {
@@ -2238,8 +2618,8 @@ function cascadeSkipParse(i) {
     }
 }
 
-/* 容器行选择「表」：其下叶子参数解析属性自动变为「字段」（成为该表的数据列）；
- * 嵌套 array/object 容器保持默认「表」（各自建表、按层级链式关联，同 getStructGroups 栈式归组）；
+/* 容器行选择「新建表」：其下叶子参数解析属性自动变为「字段」（成为该表的数据列）；
+ * 嵌套 array/object 容器保持默认「新建表」（各自建表、按层级链式关联，同 getStructGroups 栈式归组）；
  * array 元素行保持清空禁用态 */
 function cascadeTableAttr(i) {
     const base = respData[i].level || 0;
@@ -2251,18 +2631,41 @@ function cascadeTableAttr(i) {
             respData[j].parseResult = '';
             respData[j].dbType = '';
         } else if (respData[j].type === 'array' || respData[j].type === 'object') {
-            // 嵌套容器：默认「表」，解析类型清空置灰（类型交由结构化归组决定）
-            respData[j].parseAttr = '表';
+            // 嵌套容器：默认「新建表」，解析类型清空置灰（类型交由建表语句决定）
+            respData[j].parseAttr = '新建表';
             respData[j].dbType = '';
         } else {
             respData[j].parseAttr = '字段';
         }
     }
 }
-/* 归一化：所有「表」容器行对其子树执行「→字段」级联（选择时刻/结构化解析/Json转Form/加载回填多入口统一） */
+/* 容器行选择「复用表」：不建表 —— 其下叶子参数解析属性自动变为「字段」（映射到已有表的已有字段），
+ * 嵌套 array/object 容器整体作为「JSON串」存入所选已有字段（复用表下不再新建表）；array 元素行保持清空禁用态
+ * clearMapped=true（用户主动切换）时，同时清空子级已选的表/字段名（旧的新建表字段名不再适用）；
+ * 加载回填/Json转Form 走 false，仅归一化解析属性，保留已保存的映射结果 */
+function cascadeReuseTableAttr(i, clearMapped) {
+    const base = respData[i].level || 0;
+    let end = i + 1;
+    while (end < respData.length && (respData[end].level || 0) > base) end++;
+    for (let j = i + 1; j < end; j++) {
+        const c = respData[j];
+        if (isArrElementRow(respData, j)) {
+            c.parseAttr = '';
+            c.parseResult = '';
+            c.dbType = '';
+            continue;
+        }
+        c.parseAttr = (c.type === 'array' || c.type === 'object') ? 'JSON串' : '字段';
+        if (clearMapped) { c.parseResult = ''; c.dbType = ''; }
+    }
+}
+/* 归一化：所有表类容器行对其子树执行级联（选择时刻/结构化解析/Json转Form/加载回填多入口统一）
+ * 「新建表」→ 其下参数解析属性归为「字段」；「复用表」→ 叶子归为「字段」、嵌套容器整体作为「JSON串」 */
 function applyTableCascade() {
     respData.forEach((r, i) => {
-        if (r.children && (r.type === 'array' || r.type === 'object') && r.parseAttr === '表') cascadeTableAttr(i);
+        if (!r.children || (r.type !== 'array' && r.type !== 'object')) return;
+        if (r.parseAttr === '新建表') cascadeTableAttr(i);
+        else if (r.parseAttr === '复用表') cascadeReuseTableAttr(i, false);
     });
 }
 
@@ -2329,30 +2732,41 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
             // 选择「不解析」：解析结果清空；该字段与其下所有层级全部置为不解析（结构保留）
             row.parseResult = '';
             if (row.children) cascadeSkipParse(idx);
-            renderRespRows();
-            return;
-        }
-        if (cell.value === '字段' && row.children) {
+        } else if (cell.value === '字段' && row.children) {
             // 容器行选择「字段」：该容器下的所有字段解析属性自动变为「JSON串」（整体作为JSON对象/串存储）
             cascadeFieldAttr(idx);
-            renderRespRows();
-            return;
-        }
-        if (cell.value === 'JSON串') {
+        } else if (cell.value === 'JSON串') {
             // 选择「JSON串」：该字段与字段值整体作为JSON串存储（CLOB），其下所有字段解析属性一并变为JSON串
             row.dbType = 'CLOB';
             if (row.children) cascadeJsonAttr(idx);
-            renderRespRows();
-            return;
-        }
-        if (cell.value === '表') {
-            // 选择「表」：解析类型清空并置灰禁用（表的类型由结构化归组生成，不在此列填写）；
-            // 该字段下的所有参数解析属性自动变为「字段」
+        } else if (cell.value === '新建表') {
+            // 选择「新建表」：保持现状，自动创建表与字段；解析类型清空置灰禁用（类型由建表语句决定）
             row.dbType = '';
             if (row.children) cascadeTableAttr(idx);
-            renderRespRows();
-            return;
+        } else if (cell.value === '复用表') {
+            // 选择「复用表」：不建表，解析结果为已有表名（需重新选择，旧的字段名不再适用）；
+            // 其下字段映射到已有字段、嵌套容器整体作为JSON串存入已有字段
+            row.dbType = '';
+            row.parseResult = '';
+            if (row.children) cascadeReuseTableAttr(idx, true);
         }
+        resolveReuseMapping(); // 复用表映射行：解析类型取所选目标字段在库中的类型
+        renderRespRows();
+        return;
+    }
+    if (f === 'parseResult' && cell.tagName === 'SELECT') {
+        // 复用表选择目标表：重置映射并重渲染（其下字段的可选项随所选表刷新）
+        resolveReuseMapping();
+        renderRespRows();
+        return;
+    }
+    if (f === 'parseResult' && reusedTableOf(respData, idx)) {
+        // 复用表下的字段为可输入下拉：不重渲染整表（避免输入过程丢失焦点），即时联动「解析类型」与下拉筛选
+        // 命中已有字段 → 引用该字段（类型只读）；输入新字段名 → 在复用表上新增字段（类型可改）
+        applyReuseFieldValue(idx, cell.value);
+        const combo = cell.closest('#respTbody .combo');
+        if (combo) { combo.classList.add('open'); comboFilter(combo, cell.value); }
+        return;
     }
     // 「解析类型」与「类型」对应：类型变更时自动联动并重渲染（示例值禁用/操作列切换/解析属性合法性校正）
     if (f === 'type') {
@@ -2366,14 +2780,62 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
             row.expanded = true;
         }
         row.dbType = (cell.value === 'array' || cell.value === 'object') ? '' : dbTypeOf(cell.value); // 容器类型不预写dbType，交由结构化解析决定（表/字段）
-        // 类型为 array/object 时解析属性默认「表」：包含嵌套容器（array/object 的子节点为 array/object 同样默认「表」，各自建表并链式关联）；
+        // 类型为 array/object 时解析属性默认「新建表」：包含嵌套容器（array/object 的子节点为 array/object 同样默认「新建表」，各自建表并链式关联）；
         // 禁用的 array 元素行（[0]）不考虑
-        if ((cell.value === 'array' || cell.value === 'object') && !isArrElementRow(respData, idx)) row.parseAttr = '表';
+        if ((cell.value === 'array' || cell.value === 'object') && !isArrElementRow(respData, idx)) row.parseAttr = '新建表';
         normalizeParseAttr(row, respData, idx);
         renderRespRows();
         return;
     }
     renderStructSummary(); // 结构化结果实时联动
+});
+
+/* ---------- 复用表字段「可输入下拉」交互 ---------- */
+function closeReuseCombos(except) {
+    document.querySelectorAll('#respTbody .combo.open').forEach(c => { if (c !== except) c.classList.remove('open'); });
+}
+/* 点击输入框/箭头展开，点箭头可再次收起；点开时列出全部候选字段 */
+document.getElementById('respTbody')?.addEventListener('click', function (e) {
+    const combo = e.target.closest ? e.target.closest('#respTbody .combo') : null;
+    if (!combo) return;
+    const input = combo.querySelector('.combo-input');
+    if (!input || input.disabled) return;
+    if (e.target.closest('.combo-caret')) {
+        const opened = combo.classList.contains('open');
+        closeReuseCombos(combo);
+        combo.classList.toggle('open', !opened);
+        if (!opened) comboFilter(combo, '');
+        return;
+    }
+    if (e.target.classList.contains('combo-input')) {
+        closeReuseCombos(combo);
+        combo.classList.add('open');
+        comboFilter(combo, '');
+    }
+});
+/* 选中已有字段：mousedown 抢在输入框失焦前写回（引用该字段，解析类型只读带出该字段类型） */
+document.getElementById('respTbody')?.addEventListener('mousedown', function (e) {
+    const opt = e.target.closest ? e.target.closest('.combo-opt[data-val]') : null;
+    const combo = opt && opt.closest('.combo');
+    if (!combo) return;
+    e.preventDefault();
+    const input = combo.querySelector('.combo-input');
+    if (input) input.value = opt.dataset.val;
+    combo.querySelectorAll('.combo-opt').forEach(o => o.classList.toggle('active', o === opt));
+    const tr = combo.closest('tr');
+    applyReuseFieldValue(tr ? parseInt(tr.dataset.idx, 10) : -1, opt.dataset.val);
+    combo.classList.remove('open');
+});
+/* Esc / 回车：收起下拉（回车保留已输入值，直接输入即新增字段） */
+document.getElementById('respTbody')?.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' && e.key !== 'Enter') return;
+    const combo = e.target.closest ? e.target.closest('#respTbody .combo') : null;
+    if (combo) combo.classList.remove('open');
+});
+/* 点击页面其他位置：收起所有下拉 */
+document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('#respTbody .combo')) return;
+    closeReuseCombos();
 });
 
 function addParamRow(section) {
@@ -2466,9 +2928,9 @@ function parseJsonToRespData(parsed) {
             level: level,
             type: type,
             example: childKeys.length ? '' : (isObj || isArr ? JSON.stringify(value) : String(value)),
-            parseAttr: childKeys.length ? '表' : '字段',
+            parseAttr: childKeys.length ? '新建表' : '字段',
             parseResult: upperSnake(name),
-            dbType: childKeys.length ? '' : dbTypeOf(type), // 解析属性=表：解析类型清空置灰
+            dbType: childKeys.length ? '' : dbTypeOf(type), // 解析属性=新建表：解析类型清空置灰
             desc: '',
             children: childKeys.length > 0,
             expanded: true
@@ -2512,7 +2974,7 @@ function confirmJsonToForm() {
     try { parsed = JSON.parse(text); } catch (e) { alert('JSON格式不正确，请检查后重试'); return; }
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) { alert('请输入JSON对象，如 {"code":"200","msg":"查询成功"}'); return; }
     respData = parseJsonToRespData(parsed);
-    applyTableCascade(); // 容器「表」→ 其下所有参数解析属性自动变为「字段」
+    applyTableCascade(); // 容器「新建表 / 复用表」→ 其下所有参数解析属性自动归一化
     renderRespRows();
     closeJsonFormModal();
 }
@@ -2628,6 +3090,18 @@ function openTest(id) {
     document.getElementById('respMeta').classList.remove('show');
     document.getElementById('respPre').className = 'resp-pre placeholder';
     document.getElementById('respPre').textContent = '0';
+    // 重置结构化解析区：仅已开启「是否结构化」的API可在此对调用结果做结构化解析
+    lastTestResp = null;
+    const card = document.getElementById('testStructCard');
+    if (item.structured) {
+        card.style.display = '';
+        document.getElementById('testStructBtn').disabled = true;
+        document.getElementById('testStructTip').textContent = '该API已开启结构化，目标表：' + testTargetTable(item);
+        document.getElementById('testStructBody').innerHTML = '<div class="struct-test-empty">请先点击「测试」调用API，再对本次响应报文执行「结构化解析」</div>';
+    } else {
+        card.style.display = 'none';
+        document.getElementById('testStructBody').innerHTML = '';
+    }
     const btn = document.getElementById('runTestBtn');
     btn.disabled = false;
     btn.textContent = '测试';
@@ -2722,7 +3196,87 @@ function runTest() {
         document.getElementById('respTime').textContent = elapsed;
         respPre.className = 'resp-pre';
         respPre.textContent = JSON.stringify(resp, null, 2);
+        // 已开启结构化的API：本次响应可立即做结构化解析
+        lastTestResp = resp;
+        if (item.structured) {
+            document.getElementById('testStructCard').style.display = '';
+            const sbtn = document.getElementById('testStructBtn');
+            sbtn.disabled = false;
+            document.getElementById('testStructTip').innerHTML = '本次调用已返回报文，可执行<b>结构化解析</b>并写入目标表';
+            document.getElementById('testStructBody').innerHTML = '<div class="struct-test-empty">点击「结构化解析」，按该API的解析配置将本次响应报文解析为目标表数据</div>';
+        }
     }, elapsed + 300);
+}
+
+/* ---------- 调用API时的结构化解析 ---------- */
+/* 目标表：库名取API结构化配置的数据库（具体库名，未配置时落外数主库 crds_master），表名取配置的表名，
+ * 未配置时按API名称给出默认表名 */
+const TEST_STRUCT_TABLE = {
+    '企业基本信息': 'ENT_BASE_INFO', '企业图谱': 'ENT_RELATION_GRAPH', '风险预警': 'ENT_RISK_WARNING',
+    '资质荣誉': 'ENT_QUALIFICATION', '融资历史': 'ENT_FINANCE', '司法风险': 'ENT_JUDICIAL_RISK',
+    '经营状况': 'ENT_OPER_INFO', '严重违法记录': 'ENT_VIOLATION', '企业规模': 'ENT_SCALE', '舆情': 'ENT_SENTIMENT'
+};
+function testTargetTable(item) {
+    const tb = item.stdTable || TEST_STRUCT_TABLE[item.apiName] || upperSnake(item.apiName);
+    return (item.stdDb || 'crds_master') + '.' + tb;
+}
+/* 按点分路径从响应对象取值 */
+function pickByPath(obj, path) {
+    return String(path || '').split('.').reduce((o, k) => (o === null || o === undefined ? undefined : o[k]), obj);
+}
+/* 点击「结构化解析」：把本次调用的响应报文按该API的解析配置解析为目标表数据行 */
+function testStructParse() {
+    const item = apiList.find(i => i.id === testId);
+    if (!item) return;
+    if (!item.structured) { alert('该API未开启「是否结构化」，请先在API配置中开启并完成结构化解析'); return; }
+    if (!lastTestResp) { alert('请先点击「测试」调用API获取响应报文'); return; }
+    const data = lastTestResp.data || {};
+    // 字段映射：优先使用API结构化配置中「解析属性=字段」的返回参数；未配置时按响应 data 节点自动推断
+    const saved = (item.responseParams || []).filter(r => r.parseAttr === '字段' && r.name);
+    let cols;
+    if (saved.length) {
+        cols = saved.map(r => ({ field: r.parseResult || upperSnake(r.name), dbType: r.dbType || dbTypeOf(r.type), src: r.name, value: pickByPath(data, r.name) }));
+    } else {
+        cols = Object.keys(data)
+            .filter(k => data[k] === null || typeof data[k] !== 'object')
+            .map(k => ({ field: upperSnake(k), dbType: dbTypeOf(typeof data[k] === 'number' ? 'number' : (typeof data[k] === 'boolean' ? 'boolean' : 'string')), src: k, value: data[k] }));
+    }
+    // 主键 + 登录账户审计字段（与新增API时的结构化结果保持一致）
+    const rows = [{ field: 'id', dbType: 'BIGINT', src: '—', value: '1' }].concat(cols).concat([
+        { field: 'TENANT', dbType: 'VARCHAR(500)', src: '登录账户', value: LOGIN_INFO.tenant },
+        { field: 'COMPANY', dbType: 'VARCHAR(500)', src: '登录账户', value: LOGIN_INFO.company },
+        { field: 'DEPARTMENT', dbType: 'VARCHAR(500)', src: '登录账户', value: LOGIN_INFO.department },
+        { field: 'SYSTEM', dbType: 'VARCHAR(500)', src: '登录账户', value: LOGIN_INFO.system }
+    ]);
+    const target = testTargetTable(item);
+    const body = document.getElementById('testStructBody');
+    if (!cols.length) {
+        body.innerHTML = '<div class="struct-test-empty">本次响应报文中未匹配到可解析字段（data 节点为空或返回参数未配置「解析属性=字段」），未生成结构化数据</div>';
+        document.getElementById('testStructTip').innerHTML = '解析失败：未生成结构化数据，该条记录将转入<b>待补偿队列</b>';
+        return;
+    }
+    body.innerHTML = `<div class="struct-meta">
+            <span class="m-label">目标数据库表名：</span><b>${escapeHtml(target)}</b>
+            <span class="m-label" style="margin-left:16px;">解析字段数：</span><b>${rows.length}</b>
+            <span class="struct-src-tag">触发来源：API在线调用 · 实时解析</span>
+        </div>
+        <div class="struct-table-card">
+            <div class="struct-table-card-title"><i class="el-icon-collection"></i><span>${escapeHtml(target)}</span></div>
+            <div class="struct-table-card-body" style="padding:10px;">
+                <table class="sub-table">
+                    <thead><tr><th style="width:60px;">序号</th><th style="width:22%;">字段名</th><th style="width:14%;">类型</th><th style="width:22%;">取值来源</th><th>解析值</th></tr></thead>
+                    <tbody>${rows.map((r, i) => `<tr>
+                        <td>${i + 1}</td>
+                        <td>${escapeHtml(r.field)}</td>
+                        <td>${escapeHtml(r.dbType)}</td>
+                        <td class="mono">${escapeHtml(r.src)}</td>
+                        <td style="word-break:break-all;">${escapeHtml(r.value === undefined || r.value === null || r.value === '' ? '—' : String(r.value))}</td>
+                    </tr>`).join('')}</tbody>
+                </table>
+            </div>
+        </div>
+        <div class="struct-test-tip" style="margin-top:-4px;">解析结果已写入 <b>${escapeHtml(target)}</b>，并在「系统管理-数据结构化日志」生成一条 触发来源=API在线调用 的记录</div>`;
+    document.getElementById('testStructTip').innerHTML = '解析成功：<b>1</b> 条报文 → <b>' + cols.length + '</b> 个业务字段';
 }
 
 // ---------- 导航 ----------
@@ -2907,6 +3461,13 @@ document.getElementById('structPreviewModal')?.addEventListener('click', functio
 // 表名输入即时刷新结构化摘要
 document.getElementById('edStdTable')?.addEventListener('input', renderStructSummary);
 
+// 数据库切换：复用表的候选表名/字段名（及字段类型写法）随库类型刷新，重渲染「解析结果」下拉
+document.getElementById('edStdDb')?.addEventListener('change', function () {
+    if (editMode === 'detail') return;
+    resolveReuseMapping();
+    renderRespRows();
+});
+
 // 结构化表行内编辑：自定义行（data-cidx）直接改数据；解析行（data-field）的「类型」整列可编辑，
 // 写入 structFieldOverrides 覆盖（input 不触发重渲染，避免输入丢焦点）
 document.getElementById('structSummary')?.addEventListener('input', function (e) {
@@ -2930,6 +3491,7 @@ document.getElementById('structSummary')?.addEventListener('input', function (e)
 });
 
 initFilterSupplier();
+setStdDbOptions(''); // 数据库下拉：具体库名
 renderApiTable();
 
 document.addEventListener('DOMContentLoaded', function () {
