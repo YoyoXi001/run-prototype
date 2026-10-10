@@ -978,15 +978,6 @@
             overflow-y: auto;
         }
         .combo.open .combo-panel { display: block; }
-        .combo-hint {
-            position: sticky;
-            top: 0;
-            padding: 6px 10px;
-            font-size: 12px;
-            color: #a5abb2;
-            background: #fafbfc;
-            border-bottom: 1px solid #f0f2f5;
-        }
         .combo-opt {
             display: flex;
             align-items: center;
@@ -1929,6 +1920,26 @@ function resolveReuseMapping() {
     });
 }
 
+/* 复用表容器行选定目标表后：其下映射到该表的字段，按「参数名（驼峰接口字段名）→ 表字段名（大写且下划线拼接）」自动匹配选中，
+ * 并与目标表已有字段名完全匹配才带出；未命中 → 置空不选中 */
+function autoMatchReuseFields(i) {
+    const host = respData[i];
+    if (!host || host.parseAttr !== '复用表') return;
+    const tname = (host.parseResult || '').trim();
+    if (!tname) return;
+    const cols = reuseSourceCols(tname);
+    if (!cols.length) return;
+    const base = host.level || 0;
+    for (let j = i + 1; j < respData.length && (respData[j].level || 0) > base; j++) {
+        const c = respData[j];
+        if (isArrElementRow(respData, j)) continue;      // array 元素行（透明节点）不参与映射
+        if (reuseHostOf(respData, j) !== host) continue; // 仅归属该复用表的字段（嵌套独立建表/复用表不动）
+        if (c.parseAttr !== '字段' && c.parseAttr !== 'JSON串') continue;
+        const guess = upperSnake(c.name);                // 参数名：驼峰 → 大写下划线
+        c.parseResult = cols.some(x => x.name === guess) ? guess : '';
+    }
+}
+
 /* ---------- 结构化解析 ---------- */
 /* 参数名 → 数据库字段名/表名（大驼峰转大写蛇形） */
 function upperSnake(n) {
@@ -2050,9 +2061,13 @@ function getStructGroups() {
             // 目标表可以是数据库中已有表，也可以是本API返回参数中的「新建表」
             const tname = (r.parseResult || '').trim();
             if (!tname) return;
-            stack.push({ level: lvl, name: tname });
-            const tg = getGroup(tname);
-            if (!tg.created) tg.reused = true; // 该表同时由本API「新建表」创建时不标「复用表」
+            // 复用目标 = 「是否结构化」后方的表名（主表）时：其下映射字段直接并入主表，
+            // 「结构化解析」与「结构化示例预览」中同一张表内容合并为一张卡片（主表由本API创建，不标「复用表」）
+            const isMain = tname === (formTable || '主表') || tname === '主表';
+            const effName = isMain ? '主表' : tname;
+            stack.push({ level: lvl, name: effName });
+            const tg = getGroup(effName);
+            if (!isMain && !tg.created) tg.reused = true; // 该表同时由本API「新建表」创建时不标「复用表」
         } else if (attr === '字段' || attr === 'JSON串') {
             const field = (r.parseResult || '').trim();
             if (!field) return;
@@ -2482,6 +2497,7 @@ function normalizeParseAttr(r, rows, i) {
     const canTable = r.type === 'array' || r.type === 'object';
     if ((r.parseAttr === '新建表' || r.parseAttr === '复用表') && !canTable) r.parseAttr = '字段';
     if (r.parseAttr === '新建表') r.dbType = ''; // 解析属性=新建表：解析类型清空（由建表语句决定）
+    if (r.parseAttr === '不解析') { r.parseResult = ''; r.dbType = ''; } // 不解析：解析结果/解析类型一并清空（该字段不落库）
 }
 
 /* 「解析结果」单元格：
@@ -2493,6 +2509,10 @@ function parseResultCellHtml(r, i, rows, ro) {
     const dis = ro || isArrElementRow(rows, i);
     const cur = (r.parseResult || '').trim();
     const opt = (v, label) => `<option value="${escapeHtml(v)}" ${cur === v ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    // 解析属性=不解析：该字段不落库，解析结果为只读置灰不可输入
+    if (!isArrElementRow(rows, i) && r.parseAttr === '不解析') {
+        return `<input class="cell-input" value="${escapeHtml(r.parseResult || '')}" disabled data-f="parseResult" placeholder="解析结果">`;
+    }
     if (!isArrElementRow(rows, i) && r.parseAttr === '复用表') {
         if (!currentStdDb()) {
             return `<select class="cell-select is-placeholder" data-f="parseResult" ${dis ? 'disabled' : ''}><option value="">请先选择数据库</option></select>`;
@@ -2524,7 +2544,6 @@ function comboHtml(i, cur, cols) {
         <input class="cell-input combo-input" data-f="parseResult" value="${escapeHtml(cur)}" placeholder="选择已有字段或输入新字段名" autocomplete="off">
         <i class="combo-caret el-icon-arrow-down"></i>
         <div class="combo-panel">
-            <div class="combo-hint">选择已有字段＝引用该字段；直接输入字段名＝在复用表上新增字段</div>
             <div class="combo-opt is-new" data-new="1" style="display:none;"><span class="opt-name">新增字段 <b></b></span><span class="opt-type"></span></div>
             <div class="combo-list">${cols.map(opt).join('') || '<div class="combo-empty">该表暂无可选字段</div>'}</div>
         </div>
@@ -2558,13 +2577,14 @@ function comboFilter(combo, text) {
 }
 
 /* 「解析类型」单元格：
- * - 新建表行 / array 元素行：留空置灰（类型由建表语句决定）
+ * - 新建表行 / 不解析行 / array 元素行：留空置灰（新建表类型由建表语句决定，不解析行不落库无类型）
  * - 复用表映射行：引用已有字段 → 只读展示该字段类型；输入新字段名 → 可自行填写（默认按返回参数类型）
  * - 其余：默认类型（带长度/精度，可直接用于建表语句） */
 function parseTypeCellHtml(r, i, rows, ro) {
     const elem = isArrElementRow(rows, i);
     const tableKind = r.parseAttr === '新建表' || r.parseAttr === '复用表';
-    if (elem || tableKind) return `<input class="cell-input" value="" disabled data-f="dbType" placeholder="解析类型">`;
+    const skip = r.parseAttr === '不解析'; // 不解析：该字段不落库，解析类型一并清空置灰
+    if (elem || tableKind || skip) return `<input class="cell-input" value="" disabled data-f="dbType" placeholder="解析类型">`;
     const reuseTb = reusedTableOf(rows, i);
     if (reuseTb) {
         const st = reuseTypeCellState(r, rows, i);
@@ -2614,14 +2634,17 @@ function cascadeSkipParse(i) {
         } else {
             respData[j].parseAttr = '不解析';
             respData[j].parseResult = '';
+            respData[j].dbType = ''; // 不解析：该字段不落库，解析类型一并清空
         }
     }
 }
 
 /* 容器行选择「新建表」：其下叶子参数解析属性自动变为「字段」（成为该表的数据列）；
  * 嵌套 array/object 容器保持默认「新建表」（各自建表、按层级链式关联，同 getStructGroups 栈式归组）；
- * array 元素行保持清空禁用态 */
-function cascadeTableAttr(i) {
+ * array 元素行保持清空禁用态
+ * fillResult=true（用户主动选择「新建表」）时，同步递归自动带出其下所有字段的解析结果（同 Json转Form：参数名 → 大写下划线）；
+ * 加载回填/结构化解析归一化走 false，仅归一化解析属性、保留已保存的映射结果 */
+function cascadeTableAttr(i, fillResult) {
     const base = respData[i].level || 0;
     let end = i + 1;
     while (end < respData.length && (respData[end].level || 0) > base) end++;
@@ -2633,9 +2656,14 @@ function cascadeTableAttr(i) {
         } else if (respData[j].type === 'array' || respData[j].type === 'object') {
             // 嵌套容器：默认「新建表」，解析类型清空置灰（类型交由建表语句决定）
             respData[j].parseAttr = '新建表';
+            if (fillResult) {
+                respData[j].parseResult = upperSnake(respData[j].name);
+                cascadeTableAttr(j, true); // 递归：嵌套子表的字段也自动带出解析结果
+            }
             respData[j].dbType = '';
         } else {
             respData[j].parseAttr = '字段';
+            if (fillResult) respData[j].parseResult = upperSnake(respData[j].name);
         }
     }
 }
@@ -2729,8 +2757,9 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
     row[f] = cell.value;
     if (f === 'parseAttr') {
         if (cell.value === '不解析') {
-            // 选择「不解析」：解析结果清空；该字段与其下所有层级全部置为不解析（结构保留）
+            // 选择「不解析」：解析结果/解析类型清空；该字段与其下所有层级全部置为不解析（结构保留）
             row.parseResult = '';
+            row.dbType = '';
             if (row.children) cascadeSkipParse(idx);
         } else if (cell.value === '字段' && row.children) {
             // 容器行选择「字段」：该容器下的所有字段解析属性自动变为「JSON串」（整体作为JSON对象/串存储）
@@ -2740,9 +2769,14 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
             row.dbType = 'CLOB';
             if (row.children) cascadeJsonAttr(idx);
         } else if (cell.value === '新建表') {
-            // 选择「新建表」：保持现状，自动创建表与字段；解析类型清空置灰禁用（类型由建表语句决定）
+            // 选择「新建表」：自动带出解析结果（同 Json数据转成Form表单：参数名 → 大写下划线），
+            // 并级联其下参数解析属性归为「字段」、递归自动带出其下字段的解析结果；解析类型清空置灰禁用（类型由建表语句决定）
+            row.parseResult = upperSnake(row.name);
             row.dbType = '';
-            if (row.children) cascadeTableAttr(idx);
+            if (row.children) cascadeTableAttr(idx, true);
+        } else if (cell.value === '字段') {
+            // 从「不解析」等切换为「字段」：自动带出该字段的解析结果（参数名 → 大写下划线，未填写时）
+            if (!row.parseResult) row.parseResult = upperSnake(row.name);
         } else if (cell.value === '复用表') {
             // 选择「复用表」：不建表，解析结果为已有表名（需重新选择，旧的字段名不再适用）；
             // 其下字段映射到已有字段、嵌套容器整体作为JSON串存入已有字段
@@ -2755,7 +2789,8 @@ document.getElementById('respTbody')?.addEventListener('input', function (e) {
         return;
     }
     if (f === 'parseResult' && cell.tagName === 'SELECT') {
-        // 复用表选择目标表：重置映射并重渲染（其下字段的可选项随所选表刷新）
+        // 复用表选择目标表：其下字段按「参数名」自动匹配选中（命中目标表已有字段才带出，未命中不选中），再重置映射并重渲染
+        autoMatchReuseFields(idx);
         resolveReuseMapping();
         renderRespRows();
         return;
