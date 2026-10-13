@@ -188,6 +188,25 @@
         .msel-tag .tag-close { cursor: pointer; color: #999; font-size: 14px; line-height: 1; }
         .msel-tag .tag-close:hover { color: #f5222d; }
         .msel-tag-more { display: inline-flex; align-items: center; background: #e8eaed; border-radius: 3px; padding: 2px 8px; font-size: 12px; color: #666; white-space: nowrap; flex-shrink: 0; }
+        /* 服务单选：控制框内直接展示已选服务名 */
+        .msel-single-value { font-size: 14px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .msel-option.is-selected { background: #fef5ec; }
+        .msel-option.is-selected .msel-label { color: #f89d34; font-weight: 500; }
+        .msel-option .msel-check { color: #f89d34; font-size: 14px; }
+
+        /* 服务选择行：下拉框 + 「预览参数」按钮 */
+        .svc-pick { display: flex; align-items: center; gap: 8px; }
+        .svc-pick .msel { flex: 1; min-width: 0; }
+        .btn-svc-preview, .btn-sql-tpl { flex-shrink: 0; white-space: nowrap; padding: 8px 14px; }
+
+        /* 参数行：文本框 + 「生成SQL模板」按钮 */
+        .param-field { display: flex; align-items: flex-start; gap: 8px; }
+        .param-field textarea { flex: 1; width: auto; min-width: 0; }
+
+        /* 入参 JSON / SQL 模板展示块 */
+        .code-meta { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 10px; font-size: 13px; color: #666666; }
+        .code-meta b { color: #333333; font-weight: 500; }
+        .code-block { background: #f7f8fa; border: 1px solid #ebeef5; border-radius: 4px; padding: 12px 14px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; line-height: 1.6; color: #333333; white-space: pre-wrap; word-break: break-all; max-height: 46vh; overflow: auto; }
     </style>
 </head>
 <body>
@@ -277,9 +296,12 @@
                 <div class="form-row"><label>任务描述</label><div class="form-content"><input type="text" id="taskDesc" placeholder="请输入任务描述"></div></div>
                 <div class="form-row"><label>Bean名称 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="beanNameSelect" onchange="onBeanChange()"><option value="" disabled hidden>请选择Bean名称</option></select></div></div>
                 <div class="form-row" id="taskServiceRow" style="display:none;"><label>服务 <span style="color:#f5222d;">*</span></label><div class="form-content">
-                    <div class="msel">
-                        <div class="msel-control" onclick="toggleServiceDropdown('task')"><span class="msel-placeholder" id="taskServicePlaceholder">请选择服务</span><span class="msel-arrow"><i class="el-icon-arrow-down"></i></span></div>
-                        <div class="msel-dropdown" id="taskServiceDropdown"></div>
+                    <div class="svc-pick">
+                        <div class="msel">
+                            <div class="msel-control" onclick="toggleServiceDropdown('task')"><span class="msel-placeholder" id="taskServicePlaceholder">请选择服务</span><span class="msel-single-value" id="taskServiceValue" style="display:none;"></span><span class="msel-arrow"><i class="el-icon-arrow-down"></i></span></div>
+                            <div class="msel-dropdown" id="taskServiceDropdown"></div>
+                        </div>
+                        <button type="button" class="btn-default btn-svc-preview" id="taskPreviewParamBtn" style="display:none;" onclick="previewServiceParams()">预览参数</button>
                     </div>
                 </div></div>
                 <div class="form-row"><label>参数类型 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="taskParamType" onchange="onParamTypeChange('task')"><option value="输入参数">输入参数</option><option value="数据库参数">数据库参数</option><option value="Excel参数">Excel参数</option></select></div></div>
@@ -289,9 +311,14 @@
                     <span class="file-hint" id="taskParamFileHint">请导入Excel参数文件，执行时自动解析为请求入参</span>
                     <div id="taskFileInfo" class="file-info" style="display: none;"><div id="taskFileList" style="width:100%;"></div></div>
                 </div></div>
-                <div class="form-row"><label>参数 <span id="taskParamsReq" style="color:#f5222d;">*</span></label><div class="form-content"><textarea id="taskParams" rows="4" placeholder='{
+                <div class="form-row"><label>参数 <span id="taskParamsReq" style="color:#f5222d;">*</span></label><div class="form-content">
+                    <div class="param-field">
+                        <textarea id="taskParams" rows="4" placeholder='{
 "param":"请求入参"
-}' style="font-family: monospace;font-size:12px;"></textarea></div></div>
+}' style="font-family: monospace;font-size:12px;"></textarea>
+                        <button type="button" class="btn-default btn-sql-tpl" id="taskGenSqlBtn" style="display:none;" onclick="openSqlTemplate()">生成SQL模板</button>
+                    </div>
+                </div></div>
                 <div class="form-row" id="cronRow"><label>调度规则</label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则（可选）" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
                 <input type="hidden" id="cronExpr">
                 <div class="form-row"><label>状态</label><div class="form-content"><select id="taskStatus"><option value="启用">启用</option><option value="停用">停用</option></select></div></div>
@@ -348,6 +375,31 @@
         </div>
     </div>
 
+    <!-- 服务入参预览弹窗 -->
+    <div id="serviceParamModal" class="modal-mask">
+        <div class="modal-container" style="width: 660px;">
+            <div class="modal-header"><span>服务入参预览</span><i class="el-icon-close" id="closeServiceParamModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="code-meta"><span>服务：<b id="svcParamService"></b></span><span>版本：<b id="svcParamVersion"></b></span></div>
+                <div class="code-block" id="svcParamJson"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="copySvcParamBtn">复制</button><button class="btn-primary" id="closeServiceParamBtn">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- SQL 模板弹窗 -->
+    <div id="sqlTemplateModal" class="modal-mask">
+        <div class="modal-container" style="width: 700px;">
+            <div class="modal-header"><span>SQL 模板</span><i class="el-icon-close" id="closeSqlTemplateModal" style="cursor:pointer;"></i></div>
+            <div class="modal-body">
+                <div class="code-meta"><span>服务：<b id="sqlTplService"></b></span><span>取数表：<b id="sqlTplTable"></b></span></div>
+                <div class="code-block" id="sqlTplText"></div>
+                <div style="margin-top:10px;font-size:12px;color:#999999;">模板中字段别名即该服务的请求入参名，可按实际业务补充过滤条件后填入参数框。</div>
+            </div>
+            <div class="modal-footer"><button class="btn-default" id="copySqlTplBtn">复制</button><button class="btn-primary" id="closeSqlTemplateBtn">关闭</button></div>
+        </div>
+    </div>
+
     <!-- 任务日志弹窗 -->
     <div id="taskLogModal" class="modal-mask">
         <div class="modal-container" style="width: 1000px; max-width: 94%;">
@@ -401,9 +453,41 @@ function showToast(message, type) {
 }
 
 // ======================== Bean类配置（业务功能类） ========================
-// hasService=true 的 Bean（定时调用服务任务）需要在下方选择要调用的服务（可多选）
-// hasService=true 的 Bean（定时调用服务任务）需要在下方选择要调用的服务（可多选）
-let serviceList = ['企业画像查询服务', '金融风控服务', '身份核验服务', '信用报告查询服务', '舆情监控服务'];
+// hasService=true 的 Bean（定时调用服务任务）需要在下方选择要调用的服务（单选）
+// 服务清单：下拉选项来源。每个服务带请求入参定义（供「预览参数」展示）与取数表（供「生成SQL模板」）
+// params[].column = 取数表中与入参对应的字段名，生成SQL模板时作为别名映射（column AS 入参名）
+let serviceList = [
+    { name: '企业画像查询服务', version: 'v2.1', sourceTable: 'crds_master.ENT_QUERY_LIST', params: [
+        { name: 'companyName', column: 'ENT_NAME', type: 'String', required: true, example: '某某金融控股有限公司', desc: '企业名称，与统一社会信用代码二选一' },
+        { name: 'creditCode', column: 'CREDIT_CODE', type: 'String', required: false, example: '91110000MA01XXXX', desc: '统一社会信用代码' },
+        { name: 'queryScope', column: 'QUERY_SCOPE', type: 'String', required: false, example: 'basic', desc: '查询范围：basic-基本信息 / shareholder-股东信息 / scale-企业规模' }
+    ] },
+    { name: '金融风控服务', version: 'v3.0', sourceTable: 'crds_master.RISK_QUERY_LIST', params: [
+        { name: 'companyName', column: 'ENT_NAME', type: 'String', required: true, example: '某某集团有限公司', desc: '企业名称' },
+        { name: 'creditCode', column: 'CREDIT_CODE', type: 'String', required: false, example: '91110000MA01XXXX', desc: '统一社会信用代码' },
+        { name: 'riskType', column: 'RISK_TYPE', type: 'String', required: true, example: 'judicial', desc: '风险类型：finance-融资历史 / violation-严重违法 / score-信用评分 / judicial-司法风险' },
+        { name: 'threshold', column: 'RISK_THRESHOLD', type: 'Number', required: false, example: '60', desc: '风险分阈值，低于该值不返回明细' }
+    ] },
+    { name: '身份核验服务', version: 'v1.5', sourceTable: 'crds_master.IDENTITY_QUERY_LIST', params: [
+        { name: 'name', column: 'PERSON_NAME', type: 'String', required: true, example: '张某某', desc: '姓名' },
+        { name: 'idCard', column: 'ID_CARD', type: 'String', required: true, example: '4201**********1234', desc: '身份证号' },
+        { name: 'mobile', column: 'MOBILE', type: 'String', required: false, example: '13800000000', desc: '手机号，手机三要素核验时必填' }
+    ] },
+    { name: '信用报告查询服务', version: 'v2.0', sourceTable: 'crds_master.CREDIT_QUERY_LIST', params: [
+        { name: 'queryType', column: 'QUERY_TYPE', type: 'String', required: true, example: 'enterprise', desc: '报告类型：person-个人信用报告 / enterprise-企业信用报告' },
+        { name: 'name', column: 'ENT_NAME', type: 'String', required: true, example: '某某信托有限责任公司', desc: '企业名称或个人姓名' },
+        { name: 'certNo', column: 'CERT_NO', type: 'String', required: false, example: '91110000MA01XXXX', desc: '统一社会信用代码或身份证号' }
+    ] },
+    { name: '舆情监控服务', version: 'v1.2', sourceTable: 'crds_master.OPINION_QUERY_LIST', params: [
+        { name: 'keyword', column: 'KEYWORD', type: 'String', required: true, example: '某某金融控股有限公司', desc: '监控主体名称或关键词' },
+        { name: 'sentiment', column: 'SENTIMENT', type: 'String', required: false, example: 'negative', desc: '情感倾向过滤：negative-负面 / neutral-中性 / positive-正面' },
+        { name: 'beginDate', column: 'BEGIN_DATE', type: 'String', required: false, example: '2026-01-01', desc: '检索起始日期（yyyy-MM-dd）' },
+        { name: 'endDate', column: 'END_DATE', type: 'String', required: false, example: '2026-03-31', desc: '检索截止日期（yyyy-MM-dd）' }
+    ] }
+];
+function getServiceByName(name) { return serviceList.find(s => s.name === name) || null; }
+// 当前新增/编辑弹窗选中的服务（服务为单选，取第一项）
+function currentTaskService() { return getServiceByName(mselState.service.task[0]); }
 let beanClassList = [
     { id: "scheduledServiceInvokeTask", name: "定时调用服务任务", className: "ScheduledServiceInvokeTask", description: "定时批量调用所选外数服务，拉取数据并入库", hasService: true, params: [] },
     { id: "structuredCompensateTask", name: "结构化补偿任务", className: "StructuredCompensateTask", description: "对未完成结构化的API历史原始报文批量补偿解析入库", params: [] }
@@ -423,10 +507,10 @@ let dbList = [
 let taskList = [
     { id: 1, taskName: "工商变更", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["企业画像查询服务"], description: "定时拉取工商信息变更数据并推送", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ param: '{"keyword":"某某金融控股有限公司","key":"***"}' }, null, 2), cron: "0 0 9 1 * ?", cronDesc: "每月1号09:00", lastExecute: "2026/4/1", status: "启用" },
     { id: 2, taskName: "服务用量预警", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["金融风控服务"], description: "每日扫描服务用量并预警", paramType: "数据库参数", paramDb: "crds_report", paramFileName: "", params: JSON.stringify({ paramSQL: "SELECT tenant_id, service_name, used_count FROM svc_usage WHERE used_ratio >= 80" }, null, 2), cron: "0 0 9 * * ?", cronDesc: "每日9:00", lastExecute: "2026/4/29", status: "启用" },
-    { id: 3, taskName: "企业违法记录查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["金融风控服务", "舆情监控服务"], description: "按清单每周批量查询企业严重违法记录", paramType: "Excel参数", paramDb: "", paramFileName: "企业违法查询清单2026Q2.xlsx", params: JSON.stringify({}, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
+    { id: 3, taskName: "企业违法记录查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["金融风控服务"], description: "按清单每周批量查询企业严重违法记录", paramType: "Excel参数", paramDb: "", paramFileName: "企业违法查询清单2026Q2.xlsx", params: JSON.stringify({}, null, 2), cron: "0 0 9 * * 1", cronDesc: "每周星期一9:00", lastExecute: "2026/4/27", status: "停用" },
     { id: 4, taskName: "身份核验批量查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["身份核验服务"], description: "每日批量核验存量客户身份", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ param: '{"batchSize":200}' }, null, 2), cron: "0 0 3 * * ?", cronDesc: "每日3:00", lastExecute: "2026/4/28", status: "启用" },
     { id: 5, taskName: "数据结构化补偿", beanName: "structuredCompensateTask", beanNameCn: "结构化补偿任务", beanClassName: "StructuredCompensateTask", serviceNames: [], description: "对未完成结构化API的历史报文批量补偿解析入库", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ startTime: "", endTime: "", id: {}, param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "0 30 2 * * ?", cronDesc: "每日2:30", lastExecute: "2026/4/29", status: "启用" },
-    { id: 6, taskName: "企业名单批量查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["企业画像查询服务", "信用报告查询服务"], description: "按Excel名单手动批量查询工商信息", paramType: "Excel参数", paramDb: "", paramFileName: "重点监控企业名单.xlsx", params: JSON.stringify({}, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/25", status: "启用" },
+    { id: 6, taskName: "企业名单批量查询", beanName: "scheduledServiceInvokeTask", beanNameCn: "定时调用服务任务", beanClassName: "ScheduledServiceInvokeTask", serviceNames: ["企业画像查询服务"], description: "按Excel名单手动批量查询工商信息", paramType: "Excel参数", paramDb: "", paramFileName: "重点监控企业名单.xlsx", params: JSON.stringify({}, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/25", status: "启用" },
     { id: 7, taskName: "存量报文补解析", beanName: "structuredCompensateTask", beanNameCn: "结构化补偿任务", beanClassName: "StructuredCompensateTask", serviceNames: [], description: "2026Q1 存量未结构化报文手动补解析", paramType: "输入参数", paramDb: "", paramFileName: "", params: JSON.stringify({ startTime: "2026-01-01 00:00:00", endTime: "2026-03-31 23:59:59", id: {}, param: '{"retryScope":"2026Q1","maxRetry":3}' }, null, 2), cron: "", cronDesc: "", lastExecute: "2026/4/20", status: "停用" }
 ];
 
@@ -608,6 +692,9 @@ function onParamTypeChange(scope) {
     const reqMark = document.getElementById(prefix + 'ParamsReq');
     dbRow.style.display = type === '数据库参数' ? '' : 'none';
     fileRow.style.display = type === 'Excel参数' ? '' : 'none';
+    // 数据库参数：参数文本框后方提供「生成SQL模板」
+    const sqlBtn = document.getElementById(prefix + 'GenSqlBtn');
+    if (sqlBtn) sqlBtn.style.display = type === '数据库参数' ? '' : 'none';
     textarea.placeholder = PARAM_PLACEHOLDERS[type] || '';
     if (reqMark) reqMark.style.display = type === 'Excel参数' ? 'none' : ''; // Excel参数非必填，隐藏必填星号
     if (type === '输入参数') {
@@ -668,34 +755,44 @@ function onBeanChange() {
     syncSelectPlaceholder(select); // 占位项被选中时显示为灰色占位文字
     const beanId = select.value;
     const bean = beanClassList.find(b => b.id === beanId);
-    // 仅"定时调用服务任务"（hasService=true）显示服务多选
+    // 仅"定时调用服务任务"（hasService=true）显示服务选择
     const row = document.getElementById('taskServiceRow');
-    if (bean && bean.hasService) { row.style.display = ''; renderServiceOptions('task'); }
+    if (bean && bean.hasService) { row.style.display = ''; renderServiceOptions('task'); renderServiceTags('task'); }
     else { row.style.display = 'none'; mselState.service.task = []; closeServiceDropdown('task'); renderServiceTags('task'); }
     // 新增任务时：切换Bean后按当前参数类型重置参数区默认值（结构化补偿任务用补偿参数模板）
     if (currentTaskId === null) onParamTypeChange('task');
 }
 
-// ======================== 多选下拉（任务弹窗/执行弹窗共用，交互对齐计费管理API多选） ========================
+// ======================== 服务下拉（任务弹窗单选 / 执行弹窗多选） ========================
 // kind='service' 定时调用服务任务选择要调用的服务
-// mselState[kind][scope] = ['选项A','选项B']
+// mselState[kind][scope] = ['选项A','选项B']；单选场景下数组长度恒为 0 或 1
 const mselState = { service: { task: [], runOnce: [] } };
+// 单选开关：任务新增/编辑弹窗的服务为单选，执行弹窗保持多选
+const MSEL_SINGLE = { service: { task: true, runOnce: false } };
+function isMselSingle(kind, scope) { return !!(MSEL_SINGLE[kind] && MSEL_SINGLE[kind][scope]); }
 const MSEL_KIND = {
-    service: { dd: s => s + 'ServiceDropdown', ph: s => s + 'ServicePlaceholder', opt: (s, i) => s + 'SvcOpt' + i, list: () => serviceList }
+    service: { dd: s => s + 'ServiceDropdown', ph: s => s + 'ServicePlaceholder', val: s => s + 'ServiceValue', opt: (s, i) => s + 'SvcOpt' + i, list: () => serviceList.map(s => s.name) }
 };
-// 下拉选项纵向排列，自定义复选框（cb-box），点击整行切换
+// 下拉选项：多选为纵向排列的复选框，单选为整行点选（选中项高亮 + 勾选图标）
 function renderMselOptions(kind, scope) {
     const cfg = MSEL_KIND[kind];
     const dropdown = document.getElementById(cfg.dd(scope));
     if (!dropdown) return;
+    const single = isMselSingle(kind, scope);
     const selected = mselState[kind][scope];
     const list = cfg.list();
     if (!list.length) { dropdown.innerHTML = '<div class="msel-option is-disabled"><span class="msel-label">暂无可选项</span></div>'; return; }
-    dropdown.innerHTML = list.map((s, i) => `<div class="msel-option" onclick="toggleMselOption(event, '${kind}', '${scope}', ${i})">
-        <input type="checkbox" id="${cfg.opt(scope, i)}" value="${escapeHtml(s)}" ${selected.includes(s) ? 'checked' : ''}><span class="cb-box"></span><span class="msel-label">${escapeHtml(s)}</span>
-    </div>`).join('');
+    dropdown.innerHTML = list.map((s, i) => {
+        const on = selected.includes(s);
+        if (single) return `<div class="msel-option ${on ? 'is-selected' : ''}" onclick="toggleMselOption(event, '${kind}', '${scope}', ${i})">
+            <span class="msel-label">${escapeHtml(s)}</span>${on ? '<i class="el-icon-check msel-check"></i>' : ''}
+        </div>`;
+        return `<div class="msel-option" onclick="toggleMselOption(event, '${kind}', '${scope}', ${i})">
+            <input type="checkbox" id="${cfg.opt(scope, i)}" value="${escapeHtml(s)}" ${on ? 'checked' : ''}><span class="cb-box"></span><span class="msel-label">${escapeHtml(s)}</span>
+        </div>`;
+    }).join('');
 }
-// 回显：控制框内以标签展示已选项，放不下的折叠为 +N（同计费管理API）
+// 回显：单选直接展示已选服务名；多选以标签展示已选项，放不下的折叠为 +N（同计费管理API）
 function renderMselTags(kind, scope) {
     const cfg = MSEL_KIND[kind];
     const dropdown = document.getElementById(cfg.dd(scope));
@@ -703,6 +800,16 @@ function renderMselTags(kind, scope) {
     const control = dropdown.previousElementSibling;
     const ph = document.getElementById(cfg.ph(scope));
     const selected = mselState[kind][scope];
+    if (isMselSingle(kind, scope)) {
+        const valEl = cfg.val ? document.getElementById(cfg.val(scope)) : null;
+        if (valEl) {
+            valEl.textContent = selected[0] || '';
+            valEl.style.display = selected.length ? '' : 'none';
+        }
+        if (ph) ph.style.display = selected.length ? 'none' : '';
+        updateServicePreviewBtn(scope);
+        return;
+    }
     control.querySelectorAll('.msel-tag, .msel-tag-more').forEach(el => el.remove());
     if (selected.length === 0) { ph.style.display = ''; return; }
     ph.style.display = 'none';
@@ -738,6 +845,13 @@ function renderMselTags(kind, scope) {
 function toggleMselOption(e, kind, scope, idx) {
     e.stopPropagation();
     const name = MSEL_KIND[kind].list()[idx];
+    if (isMselSingle(kind, scope)) {
+        // 单选：仅保留当前项（服务为必填，再次点击已选项不取消），选完即收起面板
+        mselState[kind][scope] = [name];
+        renderMselTags(kind, scope);
+        closeMselDropdown(kind, scope);
+        return;
+    }
     const cb = document.getElementById(MSEL_KIND[kind].opt(scope, idx));
     const checked = !mselState[kind][scope].includes(name);
     mselState[kind][scope] = checked ? [...mselState[kind][scope], name] : mselState[kind][scope].filter(s => s !== name);
@@ -769,6 +883,61 @@ function renderServiceTags(scope) { renderMselTags('service', scope); }
 function toggleServiceDropdown(scope) { toggleMselDropdown('service', scope); }
 function closeServiceDropdown(scope) { closeMselDropdown('service', scope); }
 function removeServiceTag(scope, name) { removeMselTag('service', scope, name); }
+// 「预览参数」按钮：仅在选择服务后出现（服务为必填项）
+function updateServicePreviewBtn(scope) {
+    if (scope !== 'task') return;
+    const btn = document.getElementById('taskPreviewParamBtn');
+    if (btn) btn.style.display = mselState.service.task.length ? '' : 'none';
+}
+// ======================== 服务入参预览 / SQL 模板 ========================
+// 预览参数：以 JSON 展示当前选中服务的请求入参定义（参数名、类型、是否必填、示例值、说明）
+function previewServiceParams() {
+    const svc = currentTaskService();
+    if (!svc) { showToast('请先选择服务', 'warning'); return; }
+    document.getElementById('svcParamService').textContent = svc.name;
+    document.getElementById('svcParamVersion').textContent = svc.version;
+    document.getElementById('svcParamJson').textContent = JSON.stringify({
+        serviceName: svc.name,
+        serviceVersion: svc.version,
+        requestParams: svc.params.map(p => ({ name: p.name, type: p.type, required: p.required, example: p.example, desc: p.desc }))
+    }, null, 2);
+    document.getElementById('serviceParamModal').classList.add('active');
+}
+// 生成SQL模板：按服务的取数表生成「SELECT 字段 AS 入参名 ... FROM 库.表 WHERE ...」模板
+// 未选择服务（如结构化补偿任务）时给出通用模板，字段别名即该服务的请求入参名
+const GENERIC_SQL_TEMPLATE = 'SELECT A AS 参数1,\n       B AS 参数2\nFROM 表名\nWHERE ...;';
+function buildSqlTemplate(svc) {
+    if (!svc || !svc.params.length) return GENERIC_SQL_TEMPLATE;
+    const pad = Math.max(...svc.params.map(p => p.column.length));
+    const cols = svc.params.map((p, i) => {
+        const col = (p.column + ' '.repeat(pad)).slice(0, pad);
+        return col + ' AS ' + p.name + (i === svc.params.length - 1 ? '' : ',');
+    });
+    return 'SELECT ' + cols[0] + '\n' + cols.slice(1).map(c => '       ' + c).join('\n')
+        + '\nFROM ' + svc.sourceTable
+        + "\nWHERE 1 = 1;   -- 可按需替换为实际过滤条件，如 AND STATUS = '1'";
+}
+function openSqlTemplate() {
+    const svc = currentTaskService();
+    document.getElementById('sqlTplService').textContent = svc ? svc.name : '未选择服务（通用模板）';
+    document.getElementById('sqlTplTable').textContent = svc ? svc.sourceTable : '表名';
+    document.getElementById('sqlTplText').textContent = buildSqlTemplate(svc);
+    document.getElementById('sqlTemplateModal').classList.add('active');
+}
+function copyText(text, tip) {
+    function done() { showToast(tip, 'success'); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+    } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+    }
+}
 // 点击页面其他位置收起多选面板
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.msel')) document.querySelectorAll('.msel.open').forEach(el => { el.classList.remove('open'); const d = el.querySelector('.msel-dropdown'); if (d) d.classList.remove('show'); });
@@ -809,7 +978,7 @@ function editTask(id) {
         document.getElementById('taskDesc').value=item.description||'';
         document.getElementById('beanNameSelect').value=item.beanName;
         onBeanChange();
-        mselState.service.task = [...(item.serviceNames || [])];
+        mselState.service.task = (item.serviceNames || []).slice(0, 1); // 服务为单选，取已保存的第一个
         renderServiceTags('task');
         renderServiceOptions('task');
         document.getElementById('taskParamType').value=item.paramType||'输入参数';
@@ -982,9 +1151,9 @@ function saveTask() {
     const cronDesc=document.getElementById('cronDesc').value.trim();
     if(!name||!beanId){ showToast('请填写任务名称和选择Bean名称', 'warning'); return; }
     const bean=beanClassList.find(b=>b.id===beanId);
-    // 定时调用服务任务必须至少选择一个服务
-    if(bean && bean.hasService && mselState.service.task.length===0){ showToast('请至少选择一个要调用的服务', 'warning'); return; }
-    const serviceNames = bean && bean.hasService ? [...mselState.service.task] : [];
+    // 定时调用服务任务必须选择一个服务
+    if(bean && bean.hasService && mselState.service.task.length===0){ showToast('请选择要调用的服务', 'warning'); return; }
+    const serviceNames = bean && bean.hasService ? mselState.service.task.slice(0, 1) : [];
     const paramType=document.getElementById('taskParamType').value;
     const params = getParamByType('task'); if(params === null) return;
     const paramDb = paramType==='数据库参数' ? document.getElementById('taskParamDb').value : '';
@@ -1065,6 +1234,8 @@ function confirmDelete() { if (deleteCallback) deleteCallback(); closeDeleteModa
 function closeTaskModal() { document.getElementById('taskModal').classList.remove('active'); }
 function closeTaskViewModal() { document.getElementById('taskViewModal').classList.remove('active'); }
 function closeTaskLogModal() { document.getElementById('taskLogModal').classList.remove('active'); }
+function closeServiceParamModal() { document.getElementById('serviceParamModal').classList.remove('active'); }
+function closeSqlTemplateModal() { document.getElementById('sqlTemplateModal').classList.remove('active'); }
 
 function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]); }
 function navigateTo(url) {
@@ -1108,6 +1279,12 @@ document.getElementById('closeTaskLogBtn')?.addEventListener('click', closeTaskL
 document.getElementById('closeDeleteModal')?.addEventListener('click', closeDeleteModal);
 document.getElementById('cancelDeleteBtn')?.addEventListener('click', closeDeleteModal);
 document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+document.getElementById('closeServiceParamModal')?.addEventListener('click', closeServiceParamModal);
+document.getElementById('closeServiceParamBtn')?.addEventListener('click', closeServiceParamModal);
+document.getElementById('copySvcParamBtn')?.addEventListener('click', () => copyText(document.getElementById('svcParamJson').textContent, '入参已复制'));
+document.getElementById('closeSqlTemplateModal')?.addEventListener('click', closeSqlTemplateModal);
+document.getElementById('closeSqlTemplateBtn')?.addEventListener('click', closeSqlTemplateModal);
+document.getElementById('copySqlTplBtn')?.addEventListener('click', () => copyText(document.getElementById('sqlTplText').textContent, 'SQL模板已复制'));
 
 // 窗口尺寸变化时白卡剩余空间随之变化，重算表格上限（侧边栏折叠、缩放、旋转屏都覆盖）
 window.addEventListener('resize', syncTaskTableHeight);

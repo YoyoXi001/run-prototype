@@ -257,60 +257,61 @@
 <script>
 // ======================== 数据结构化日志数据 ========================
 // 记录外数原始报文结构化解析入库的执行明细：一条日志对应「1 个供应商 + 1 个 API」的一次结构化解析入库。
-// targetDb：来自 API 结构化配置的目标库；url：该 API 的地址（单条日志仅一个地址、一份响应报文）
+// targetTables：本次解析写入的目标库.表（来自 API 结构化配置）；一个 API 的字段可解析写入多张表，故为数组，列表内多表换行展示
+// url：该 API 的地址（单条日志仅一个地址、一份响应报文）
 // status：结构化状态，仅「成功 / 失败」；失败记录附加 failReason（失败原因）
 // reqParams：本次解析的请求参数（详情-请求参数页签）
 // respBody：本次解析的响应报文（详情-响应参数页签，按接口原样展示）
 let structLogList = [
-    { id: 3, logId: "STRUCT-20260429-0003", batchNo: "BATCH-20260429-001", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetDb: "crds_master", startTime: "2026-04-29 09:00:00", endTime: "2026-04-29 09:00:36", status: "成功",
+    { id: 3, logId: "STRUCT-20260429-0003", batchNo: "BATCH-20260429-001", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetTables: ["crds_ent_base.ENT_BASE_INFO", "crds_ent_base.ENT_SHAREHOLDER"], startTime: "2026-04-29 09:00:00", endTime: "2026-04-29 09:00:36", status: "成功",
       reqParams: { taskId: "TASK-20260429-0001", batchNo: "BATCH-20260429-001", companyName: "某某金融控股有限公司" },
       respBody: '{"OrderNumber":"ORD-260429-WS0001","Status":"200","Message":"【有效无违规】","Result":{"Name":"某某金融控股有限公司","CreditCode":"91110000MA01XXXX","RegistCapi":"500000万元"}}' },
-    { id: 4, logId: "STRUCT-20260429-0004", batchNo: "BATCH-20260429-002", api: "经营风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/risk", targetDb: "crds_master", startTime: "2026-04-29 09:00:01", endTime: "2026-04-29 09:00:58", status: "成功",
+    { id: 4, logId: "STRUCT-20260429-0004", batchNo: "BATCH-20260429-002", api: "经营风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/risk", targetTables: ["crds_risk.ENT_OPER_RISK"], startTime: "2026-04-29 09:00:01", endTime: "2026-04-29 09:00:58", status: "成功",
       reqParams: { taskId: "TASK-20260429-0002", batchNo: "BATCH-20260429-002", companyName: "某某集团有限公司" },
       respBody: '{"OrderNumber":"ORD-260429-OP0001","Status":"200","Message":"OK","Result":{"Zhixxinxi":{"Count":2}}}' },
-    { id: 5, logId: "STRUCT-20260429-0005", batchNo: "COMP-20260429-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetDb: "crds_master", startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "失败",
+    { id: 5, logId: "STRUCT-20260429-0005", batchNo: "COMP-20260429-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTables: ["crds_ent_base.ENT_GRAPH_NODE", "crds_ent_base.ENT_GRAPH_EDGE"], startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "失败",
       reqParams: { taskId: "TASK-20260429-0003", batchNo: "COMP-20260429-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderNumber":"ORD-260429-TU0031","Status":"200","Message":"OK","Result":{"Nodes":[{"Id":"N"',
       failReason: "报文JSON格式异常（截断），已重新入队等待下次补偿" },
-    { id: 17, logId: "STRUCT-20260429-0006", batchNo: "COMP-20260429-001", api: "舆情", supplier: "第三方数据公司", url: "https://api.qichacha.com/v1/ent/sentiment", targetDb: "crds_master", startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "成功",
+    { id: 17, logId: "STRUCT-20260429-0006", batchNo: "COMP-20260429-001", api: "舆情", supplier: "第三方数据公司", url: "https://api.qichacha.com/v1/ent/sentiment", targetTables: ["crds_opinion.ENT_SENTIMENT"], startTime: "2026-04-29 02:30:00", endTime: "2026-04-29 02:31:42", status: "成功",
       reqParams: { taskId: "TASK-20260429-0003", batchNo: "COMP-20260429-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderNumber":"ORD-260429-TU0044","Status":"200","Message":"OK","Result":{"Sentiment":{"Polarity":"中性","Hot":-3}}}' },
-    { id: 6, logId: "STRUCT-20260428-0011", batchNo: "BATCH-20260428-001", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", targetDb: "crds_master", startTime: "2026-04-28 09:00:00", endTime: "2026-04-28 09:01:12", status: "失败",
+    { id: 6, logId: "STRUCT-20260428-0011", batchNo: "BATCH-20260428-001", api: "企业基本信息", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/base/info", targetTables: ["crds_ent_base.ENT_BASE_INFO", "crds_ent_base.ENT_SHAREHOLDER"], startTime: "2026-04-28 09:00:00", endTime: "2026-04-28 09:01:12", status: "失败",
       reqParams: { taskId: "TASK-20260428-0001", batchNo: "BATCH-20260428-001", companyName: "某某科技有限公司" },
       respBody: '{"Status":"504","Message":"Gateway Timeout"}',
       failReason: "2条记录供应商接口超时（HTTP 504），报文未完整返回，已转入待补偿队列" },
-    { id: 7, logId: "STRUCT-20260428-0012", batchNo: "COMP-20260428-001", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetDb: "crds_master", startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "失败",
+    { id: 7, logId: "STRUCT-20260428-0012", batchNo: "COMP-20260428-001", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetTables: ["crds_risk.ENT_CREDIT_SCORE"], startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "失败",
       reqParams: { taskId: "TASK-20260428-0002", batchNo: "COMP-20260428-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderNumber":"ORD-260428-SC0018","Status":"200","Message":"OK","Result":{"CreditNo":"CC-018","ScoreLevel":"A"}}',
       failReason: "报文Result节点缺失Score字段，解析规则未匹配" },
-    { id: 18, logId: "STRUCT-20260428-0013", batchNo: "COMP-20260428-001", api: "企业规模", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/ent/scale", targetDb: "crds_master", startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "成功",
+    { id: 18, logId: "STRUCT-20260428-0013", batchNo: "COMP-20260428-001", api: "企业规模", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/ent/scale", targetTables: ["crds_ent_base.ENT_SCALE"], startTime: "2026-04-28 02:30:00", endTime: "2026-04-28 02:31:38", status: "成功",
       reqParams: { taskId: "TASK-20260428-0002", batchNo: "COMP-20260428-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderNumber":"ORD-260428-SC0002","Status":"200","Message":"OK","Result":{"Scale":"大型"}}' },
-    { id: 9, logId: "STRUCT-20260428-0014", batchNo: "BATCH-20260428-002", api: "身份核验", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/verify/identity", targetDb: "crds_master", startTime: "2026-04-28 03:00:00", endTime: "2026-04-28 03:01:05", status: "成功",
+    { id: 9, logId: "STRUCT-20260428-0014", batchNo: "BATCH-20260428-002", api: "身份核验", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/verify/identity", targetTables: ["crds_verify.ENT_IDENTITY_VERIFY"], startTime: "2026-04-28 03:00:00", endTime: "2026-04-28 03:01:05", status: "成功",
       reqParams: { taskId: "TASK-20260428-0003", batchNo: "BATCH-20260428-002", name: "张某某", idCard: "4201**********1234" },
       respBody: '{"OrderNumber":"ORD-260428-OP0001","Status":"200","Message":"OK","Result":{"OperInfoName":"张某某","OperInfoPost":"董事长"}}' },
-    { id: 10, logId: "STRUCT-20260427-0021", batchNo: "COMP-20260427-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetDb: "crds_master", startTime: "2026-04-27 02:30:00", endTime: "2026-04-27 02:31:50", status: "成功",
+    { id: 10, logId: "STRUCT-20260427-0021", batchNo: "COMP-20260427-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTables: ["crds_ent_base.ENT_GRAPH_NODE", "crds_ent_base.ENT_GRAPH_EDGE"], startTime: "2026-04-27 02:30:00", endTime: "2026-04-27 02:31:50", status: "成功",
       reqParams: { taskId: "TASK-20260427-0001", batchNo: "COMP-20260427-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderNumber":"ORD-260427-TU0001","Status":"200","Message":"OK","Result":{"Nodes":[{"Id":"N002","Name":"某某集团"}]}}' },
-    { id: 11, logId: "STRUCT-20260427-0022", batchNo: "BATCH-20260427-003", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", targetDb: "crds_master", startTime: "2026-04-27 09:00:02", endTime: "2026-04-27 09:02:47", status: "失败",
+    { id: 11, logId: "STRUCT-20260427-0022", batchNo: "BATCH-20260427-003", api: "司法风险", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/judicial/risk", targetTables: ["crds_risk.ENT_JUDICIAL_RISK"], startTime: "2026-04-27 09:00:02", endTime: "2026-04-27 09:02:47", status: "失败",
       reqParams: { taskId: "TASK-20260427-0002", batchNo: "BATCH-20260427-003", companyName: "某某实业有限公司" },
       respBody: '{"OrderNumber":"ORD-260427-JR0017","Status":"200","Message":"OK","Result":{}}',
       failReason: "2条记录企业不存在（Result为空对象），无法生成结构化数据" },
-    { id: 13, logId: "STRUCT-20260426-0032", batchNo: "COMP-20260426-001", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetDb: "crds_master", startTime: "2026-04-26 02:30:00", endTime: "2026-04-26 02:31:11", status: "成功",
+    { id: 13, logId: "STRUCT-20260426-0032", batchNo: "COMP-20260426-001", api: "企业基本信息", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/base/info", targetTables: ["crds_ent_base.ENT_BASE_INFO", "crds_ent_base.ENT_SHAREHOLDER"], startTime: "2026-04-26 02:30:00", endTime: "2026-04-26 02:31:11", status: "成功",
       reqParams: { taskId: "TASK-20260426-0001", batchNo: "COMP-20260426-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderNumber":"ORD-260426-BS0001","Status":"200","Message":"OK","Result":{"Name":"某某信托有限责任公司"}}' },
-    { id: 14, logId: "STRUCT-20260425-0041", batchNo: "BATCH-20260425-001", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetDb: "crds_master", startTime: "2026-04-25 14:20:31", endTime: "2026-04-25 14:22:04", status: "成功",
+    { id: 14, logId: "STRUCT-20260425-0041", batchNo: "BATCH-20260425-001", api: "信用评分", supplier: "数据服务提供商", url: "https://api.dataservice.cn/v1/credit/score", targetTables: ["crds_risk.ENT_CREDIT_SCORE"], startTime: "2026-04-25 14:20:31", endTime: "2026-04-25 14:22:04", status: "成功",
       reqParams: { taskId: "TASK-20260425-0001", batchNo: "BATCH-20260425-001", name: "王五", idCard: "1101**********8765" },
       respBody: '{"OrderNumber":"ORD-260425-SC0001","Status":"200","Message":"OK","Result":{"Score":820}}' },
-    { id: 15, logId: "STRUCT-20260423-0051", batchNo: "COMP-20260423-001", api: "经营状况", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/info", targetDb: "crds_master", startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "失败",
+    { id: 15, logId: "STRUCT-20260423-0051", batchNo: "COMP-20260423-001", api: "经营状况", supplier: "天眼查", url: "https://api.tianyancha.com/v1/ent/oper/info", targetTables: ["crds_ent_base.ENT_OPER_INFO"], startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "失败",
       reqParams: { taskId: "TASK-20260423-0001", batchNo: "COMP-20260423-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderId":"V3-260423-005","Data":{"OperName":"…"}}',
       failReason: "报文结构版本为v3旧版，解析规则未匹配（需在API结构化配置中补充规则映射）" },
-    { id: 19, logId: "STRUCT-20260423-0052", batchNo: "COMP-20260423-001", api: "严重违法记录", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/violation", targetDb: "crds_master", startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "失败",
+    { id: 19, logId: "STRUCT-20260423-0052", batchNo: "COMP-20260423-001", api: "严重违法记录", supplier: "外部数据供应商", url: "https://api.dataservice.cn/v1/ent/violation", targetTables: ["crds_risk.ENT_VIOLATION"], startTime: "2026-04-23 02:30:00", endTime: "2026-04-23 02:30:47", status: "失败",
       reqParams: { taskId: "TASK-20260423-0001", batchNo: "COMP-20260423-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '{"OrderId":"V3-260423-012","Data":{"Violations":[]}}',
       failReason: "报文结构版本为v3旧版，解析规则未匹配（需在API结构化配置中补充规则映射）" },
-    { id: 16, logId: "STRUCT-20260420-0061", batchNo: "COMP-20260420-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetDb: "crds_master", startTime: "2026-04-20 16:40:08", endTime: "2026-04-20 16:41:52", status: "失败",
+    { id: 16, logId: "STRUCT-20260420-0061", batchNo: "COMP-20260420-001", api: "企业图谱", supplier: "企查查", url: "https://api.qichacha.com/v1/ent/graph", targetTables: ["crds_ent_base.ENT_GRAPH_NODE", "crds_ent_base.ENT_GRAPH_EDGE"], startTime: "2026-04-20 16:40:08", endTime: "2026-04-20 16:41:52", status: "失败",
       reqParams: { taskId: "TASK-20260420-0001", batchNo: "COMP-20260420-001", retryScope: "2026Q1", maxRetry: 3 },
       respBody: '（原始报文缺失：raw_json 为 NULL）',
       failReason: "原始报文存储表批量缺失（raw_json为NULL），本批全部补偿失败，已告警" }
@@ -349,7 +350,7 @@ function renderTable() {
             <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.supplier)}">${escapeHtml(l.supplier)}</td>
             <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.api)}">${escapeHtml(l.api)}</td>
             <td class="cell-mono" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.url)}">${escapeHtml(l.url)}</td>
-            <td class="cell-mono">${escapeHtml(l.targetDb)}</td>
+            <td class="cell-mono">${(l.targetTables || []).map(t => escapeHtml(t)).join('<br>') || '-'}</td>
             <td style="white-space:nowrap;">${escapeHtml(l.startTime)}</td>
             <td style="white-space:nowrap;">${escapeHtml(l.endTime)}</td>
             <td>${statusTag(l.status)}</td>
@@ -422,7 +423,7 @@ function retryStruct(id) {
         id: Math.max(...structLogList.map(x => x.id)) + 1,
         logId: `STRUCT-${dateKey}-${String(seq).padStart(4, '0')}`,
         batchNo: l.batchNo,
-        api: l.api, supplier: l.supplier, url: l.url, targetDb: l.targetDb,
+        api: l.api, supplier: l.supplier, url: l.url, targetTables: [...(l.targetTables || [])],
         startTime: fmtTime(now), endTime: fmtTime(done), status: "成功",
         reqParams: l.reqParams, respBody: l.respBody
     };
