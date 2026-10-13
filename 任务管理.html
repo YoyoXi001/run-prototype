@@ -203,14 +203,17 @@
         .param-field { display: flex; align-items: flex-start; gap: 8px; }
         .param-field textarea { flex: 1; width: auto; min-width: 0; }
 
-        /* 入参 JSON / SQL 模板展示块 */
-        .code-meta { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 10px; font-size: 13px; color: #666666; }
-        .code-meta b { color: #333333; font-weight: 500; }
-        .code-block { background: #f7f8fa; border: 1px solid #ebeef5; border-radius: 4px; padding: 12px 14px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; line-height: 1.6; color: #333333; white-space: pre-wrap; word-break: break-all; max-height: 46vh; overflow: auto; }
+        /* 入参 JSON 提示气泡：深色悬浮层（对齐用量预测「服务到期日」的提示效果），默认挂在「预览参数」按钮左侧 */
+        .hover-tooltip { position: fixed; z-index: 3000; display: none; background: #333333; color: #fff; border-radius: 4px; padding: 8px 12px; font-family: 'Consolas', 'Monaco', monospace; font-size: 11px; line-height: 1.6; font-weight: normal; white-space: pre-wrap; word-break: break-all; max-width: 560px; max-height: 320px; overflow: auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); }
+        .hover-tooltip.show { display: block; }
+        .hover-tooltip::after { content: ''; position: absolute; left: -10px; top: 14px; border-width: 5px; border-style: solid; border-color: transparent #333333 transparent transparent; }
+        .hover-tooltip.pos-right::after { left: auto; right: -10px; border-color: transparent transparent transparent #333333; }
     </style>
 </head>
 <body>
 <div class="toast-container" id="toastContainer"></div>
+<!-- 服务入参 JSON 提示气泡（「预览参数」的「？」效果），挂 body 下避免被弹窗滚动区裁切 -->
+<div class="hover-tooltip" id="svcParamTip"></div>
 <div class="app-layout">
     <!-- 顶部导航栏 -->
     <div class="top-nav">
@@ -301,7 +304,7 @@
                             <div class="msel-control" onclick="toggleServiceDropdown('task')"><span class="msel-placeholder" id="taskServicePlaceholder">请选择服务</span><span class="msel-single-value" id="taskServiceValue" style="display:none;"></span><span class="msel-arrow"><i class="el-icon-arrow-down"></i></span></div>
                             <div class="msel-dropdown" id="taskServiceDropdown"></div>
                         </div>
-                        <button type="button" class="btn-default btn-svc-preview" id="taskPreviewParamBtn" style="display:none;" onclick="previewServiceParams()">预览参数</button>
+                        <button type="button" class="btn-default btn-svc-preview" id="taskPreviewParamBtn" style="display:none;" onclick="toggleSvcParamTip(event)">预览参数</button>
                     </div>
                 </div></div>
                 <div class="form-row"><label>参数类型 <span style="color:#f5222d;">*</span></label><div class="form-content"><select id="taskParamType" onchange="onParamTypeChange('task')"><option value="输入参数">输入参数</option><option value="数据库参数">数据库参数</option><option value="Excel参数">Excel参数</option></select></div></div>
@@ -316,7 +319,7 @@
                         <textarea id="taskParams" rows="4" placeholder='{
 "param":"请求入参"
 }' style="font-family: monospace;font-size:12px;"></textarea>
-                        <button type="button" class="btn-default btn-sql-tpl" id="taskGenSqlBtn" style="display:none;" onclick="openSqlTemplate()">生成SQL模板</button>
+                        <button type="button" class="btn-default btn-sql-tpl" id="taskGenSqlBtn" style="display:none;" onclick="generateSqlTemplate()">生成SQL模板</button>
                     </div>
                 </div></div>
                 <div class="form-row" id="cronRow"><label>调度规则</label><div class="form-content"><input type="text" id="cronDesc" placeholder="请配置调度规则（可选）" readonly style="cursor: not-allowed;"><a class="action-link" onclick="openCronConfig()" style="margin-left: 8px;">规则配置</a></div></div>
@@ -372,31 +375,6 @@
                 <div class="form-row"><label>状态：</label><div class="form-content"><span id="viewTaskStatus" class="readonly-value"></span></div></div>
             </div>
             <div class="modal-footer"><button class="btn-default" id="closeTaskViewBtn">关闭</button></div>
-        </div>
-    </div>
-
-    <!-- 服务入参预览弹窗 -->
-    <div id="serviceParamModal" class="modal-mask">
-        <div class="modal-container" style="width: 660px;">
-            <div class="modal-header"><span>服务入参预览</span><i class="el-icon-close" id="closeServiceParamModal" style="cursor:pointer;"></i></div>
-            <div class="modal-body">
-                <div class="code-meta"><span>服务：<b id="svcParamService"></b></span><span>版本：<b id="svcParamVersion"></b></span></div>
-                <div class="code-block" id="svcParamJson"></div>
-            </div>
-            <div class="modal-footer"><button class="btn-default" id="copySvcParamBtn">复制</button><button class="btn-primary" id="closeServiceParamBtn">关闭</button></div>
-        </div>
-    </div>
-
-    <!-- SQL 模板弹窗 -->
-    <div id="sqlTemplateModal" class="modal-mask">
-        <div class="modal-container" style="width: 700px;">
-            <div class="modal-header"><span>SQL 模板</span><i class="el-icon-close" id="closeSqlTemplateModal" style="cursor:pointer;"></i></div>
-            <div class="modal-body">
-                <div class="code-meta"><span>服务：<b id="sqlTplService"></b></span><span>取数表：<b id="sqlTplTable"></b></span></div>
-                <div class="code-block" id="sqlTplText"></div>
-                <div style="margin-top:10px;font-size:12px;color:#999999;">模板中字段别名即该服务的请求入参名，可按实际业务补充过滤条件后填入参数框。</div>
-            </div>
-            <div class="modal-footer"><button class="btn-default" id="copySqlTplBtn">复制</button><button class="btn-primary" id="closeSqlTemplateBtn">关闭</button></div>
         </div>
     </div>
 
@@ -758,7 +736,7 @@ function onBeanChange() {
     // 仅"定时调用服务任务"（hasService=true）显示服务选择
     const row = document.getElementById('taskServiceRow');
     if (bean && bean.hasService) { row.style.display = ''; renderServiceOptions('task'); renderServiceTags('task'); }
-    else { row.style.display = 'none'; mselState.service.task = []; closeServiceDropdown('task'); renderServiceTags('task'); }
+    else { row.style.display = 'none'; mselState.service.task = []; closeServiceDropdown('task'); renderServiceTags('task'); hideSvcParamTip(); }
     // 新增任务时：切换Bean后按当前参数类型重置参数区默认值（结构化补偿任务用补偿参数模板）
     if (currentTaskId === null) onParamTypeChange('task');
 }
@@ -850,6 +828,8 @@ function toggleMselOption(e, kind, scope, idx) {
         mselState[kind][scope] = [name];
         renderMselTags(kind, scope);
         closeMselDropdown(kind, scope);
+        // 提示气泡已展开时，换服务后同步刷新内容
+        if (document.getElementById('svcParamTip').classList.contains('show')) showSvcParamTip();
         return;
     }
     const cb = document.getElementById(MSEL_KIND[kind].opt(scope, idx));
@@ -890,21 +870,45 @@ function updateServicePreviewBtn(scope) {
     if (btn) btn.style.display = mselState.service.task.length ? '' : 'none';
 }
 // ======================== 服务入参预览 / SQL 模板 ========================
-// 预览参数：以 JSON 展示当前选中服务的请求入参定义（参数名、类型、是否必填、示例值、说明）
-function previewServiceParams() {
-    const svc = currentTaskService();
-    if (!svc) { showToast('请先选择服务', 'warning'); return; }
-    document.getElementById('svcParamService').textContent = svc.name;
-    document.getElementById('svcParamVersion').textContent = svc.version;
-    document.getElementById('svcParamJson').textContent = JSON.stringify({
+// 预览参数：点击「预览参数」后，以深色提示气泡（对齐用量预测-服务到期日的提示效果）展示服务的入参 JSON，再点一次收起
+function serviceParamsJson(svc) {
+    return JSON.stringify({
         serviceName: svc.name,
         serviceVersion: svc.version,
         requestParams: svc.params.map(p => ({ name: p.name, type: p.type, required: p.required, example: p.example, desc: p.desc }))
     }, null, 2);
-    document.getElementById('serviceParamModal').classList.add('active');
+}
+let svcParamTipPinned = false;
+function showSvcParamTip() {
+    const svc = currentTaskService();
+    const btn = document.getElementById('taskPreviewParamBtn');
+    const tip = document.getElementById('svcParamTip');
+    if (!svc || !btn || !tip || !mselState.service.task.length || btn.style.display === 'none') return;
+    tip.textContent = serviceParamsJson(svc);
+    tip.classList.add('show');
+    tip.classList.remove('pos-right');
+    const r = btn.getBoundingClientRect();
+    const gap = 10;
+    let left = r.left - tip.offsetWidth - gap;
+    if (left < 8) { left = r.right + gap; tip.classList.add('pos-right'); } // 左侧放不下时改挂右侧
+    let top = r.top - 6;
+    if (top + tip.offsetHeight > window.innerHeight - 8) top = Math.max(8, window.innerHeight - 8 - tip.offsetHeight);
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top = Math.max(8, top) + 'px';
+}
+function hideSvcParamTip() {
+    svcParamTipPinned = false;
+    const tip = document.getElementById('svcParamTip');
+    if (tip) tip.classList.remove('show');
+}
+function toggleSvcParamTip(e) {
+    if (e) e.stopPropagation();
+    if (svcParamTipPinned) { hideSvcParamTip(); return; }
+    svcParamTipPinned = true;
+    showSvcParamTip();
 }
 // 生成SQL模板：按服务的取数表生成「SELECT 字段 AS 入参名 ... FROM 库.表 WHERE ...」模板
-// 未选择服务（如结构化补偿任务）时给出通用模板，字段别名即该服务的请求入参名
+// 点击后清空参数文本框并填入模板；未选择服务（如结构化补偿任务）时给出通用模板
 const GENERIC_SQL_TEMPLATE = 'SELECT A AS 参数1,\n       B AS 参数2\nFROM 表名\nWHERE ...;';
 function buildSqlTemplate(svc) {
     if (!svc || !svc.params.length) return GENERIC_SQL_TEMPLATE;
@@ -915,33 +919,23 @@ function buildSqlTemplate(svc) {
     });
     return 'SELECT ' + cols[0] + '\n' + cols.slice(1).map(c => '       ' + c).join('\n')
         + '\nFROM ' + svc.sourceTable
-        + "\nWHERE 1 = 1;   -- 可按需替换为实际过滤条件，如 AND STATUS = '1'";
+        + '\nWHERE 1 = 1;';
 }
-function openSqlTemplate() {
+function generateSqlTemplate() {
     const svc = currentTaskService();
-    document.getElementById('sqlTplService').textContent = svc ? svc.name : '未选择服务（通用模板）';
-    document.getElementById('sqlTplTable').textContent = svc ? svc.sourceTable : '表名';
-    document.getElementById('sqlTplText').textContent = buildSqlTemplate(svc);
-    document.getElementById('sqlTemplateModal').classList.add('active');
+    const textarea = document.getElementById('taskParams');
+    textarea.value = '';                       // 先清空，再填入本次生成的模板
+    textarea.value = buildSqlTemplate(svc);
+    showToast(svc ? '已生成「' + svc.name + '」SQL模板' : '已生成通用SQL模板', 'success');
 }
-function copyText(text, tip) {
-    function done() { showToast(tip, 'success'); }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done, done);
-    } else {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        done();
-    }
-}
-// 点击页面其他位置收起多选面板
+// 点击页面其他位置收起多选面板 / 入参提示
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.msel')) document.querySelectorAll('.msel.open').forEach(el => { el.classList.remove('open'); const d = el.querySelector('.msel-dropdown'); if (d) d.classList.remove('show'); });
+    if (!e.target.closest('#taskPreviewParamBtn') && !e.target.closest('#svcParamTip')) hideSvcParamTip();
 });
+// 弹窗滚动 / 窗口缩放时提示气泡跟随「？」图标重新定位
+window.addEventListener('scroll', function() { if (document.getElementById('svcParamTip').classList.contains('show')) showSvcParamTip(); }, true);
+window.addEventListener('resize', function() { if (document.getElementById('svcParamTip').classList.contains('show')) showSvcParamTip(); });
 // 按参数类型校验并返回落库的参数内容；返回 null 表示校验失败
 // 数据库参数：输入框里是纯SQL，落库时包成 {"paramSQL":"..."}；Excel参数：非必填，留空按 {} 存储
 function getParamByType(scope) {
@@ -1231,11 +1225,9 @@ function closeDeleteModal() { document.getElementById('deleteConfirmModal').clas
 function confirmDelete() { if (deleteCallback) deleteCallback(); closeDeleteModal(); }
 
 // 关闭弹窗
-function closeTaskModal() { document.getElementById('taskModal').classList.remove('active'); }
+function closeTaskModal() { hideSvcParamTip(); document.getElementById('taskModal').classList.remove('active'); }
 function closeTaskViewModal() { document.getElementById('taskViewModal').classList.remove('active'); }
 function closeTaskLogModal() { document.getElementById('taskLogModal').classList.remove('active'); }
-function closeServiceParamModal() { document.getElementById('serviceParamModal').classList.remove('active'); }
-function closeSqlTemplateModal() { document.getElementById('sqlTemplateModal').classList.remove('active'); }
 
 function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m]); }
 function navigateTo(url) {
@@ -1279,12 +1271,6 @@ document.getElementById('closeTaskLogBtn')?.addEventListener('click', closeTaskL
 document.getElementById('closeDeleteModal')?.addEventListener('click', closeDeleteModal);
 document.getElementById('cancelDeleteBtn')?.addEventListener('click', closeDeleteModal);
 document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
-document.getElementById('closeServiceParamModal')?.addEventListener('click', closeServiceParamModal);
-document.getElementById('closeServiceParamBtn')?.addEventListener('click', closeServiceParamModal);
-document.getElementById('copySvcParamBtn')?.addEventListener('click', () => copyText(document.getElementById('svcParamJson').textContent, '入参已复制'));
-document.getElementById('closeSqlTemplateModal')?.addEventListener('click', closeSqlTemplateModal);
-document.getElementById('closeSqlTemplateBtn')?.addEventListener('click', closeSqlTemplateModal);
-document.getElementById('copySqlTplBtn')?.addEventListener('click', () => copyText(document.getElementById('sqlTplText').textContent, 'SQL模板已复制'));
 
 // 窗口尺寸变化时白卡剩余空间随之变化，重算表格上限（侧边栏折叠、缩放、旋转屏都覆盖）
 window.addEventListener('resize', syncTaskTableHeight);
