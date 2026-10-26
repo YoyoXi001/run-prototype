@@ -543,6 +543,10 @@
             flex-direction: column;
             max-height: 85vh;
         }
+        /* 剩余天数预警详情：列数较多，加宽弹窗 */
+        .modal-container.modal-wide {
+            width: 940px;
+        }
         .modal-header {
             padding: 20px 24px 12px 24px;
             border-bottom: none;
@@ -986,7 +990,7 @@
                 <div class="filter-bar">
                     <div class="filter-left">
                         <div class="filter-item"><label>租户</label><input type="text" id="msgFilterTenant" placeholder="请输入租户名称"></div>
-                        <div class="filter-item"><label>消息类型</label><select id="msgFilterType"><option value="全部">全部</option><option value="额度用量预警">额度用量预警</option><option value="用量预测预警">用量预测预警</option><option value="服务用量预警">服务用量预警</option><option value="服务失败异常">服务失败异常</option><option value="服务超时异常">服务超时异常</option><option value="系统性能异常">系统性能异常</option><option value="告警摘要">告警摘要</option><option value="合同到期提醒">合同到期提醒</option><option value="服务审批通知">服务审批通知</option></select></div>
+                        <div class="filter-item"><label>消息类型</label><select id="msgFilterType"><option value="全部">全部</option><option value="额度用量预警">额度用量预警</option><option value="用量预测预警">用量预测预警</option><option value="剩余天数预警">剩余天数预警</option><option value="服务用量预警">服务用量预警</option><option value="服务失败异常">服务失败异常</option><option value="服务超时异常">服务超时异常</option><option value="系统性能异常">系统性能异常</option><option value="告警摘要">告警摘要</option><option value="合同到期提醒">合同到期提醒</option><option value="服务审批通知">服务审批通知</option></select></div>
                         <div class="filter-item"><label>状态</label><select id="msgFilterReadStatus"><option value="全部">全部</option><option value="已读">已读</option><option value="未读">未读</option></select></div>
                     </div>
                     <div class="filter-right"><button class="btn-primary" id="msgSearchBtn">查询</button><button class="btn-default" id="msgResetBtn">重置</button></div>
@@ -1049,7 +1053,7 @@
 
     <!-- 消息详情弹窗 -->
     <div id="detailModal" class="modal-mask">
-        <div class="modal-container">
+        <div class="modal-container" id="detailModalContainer">
             <div class="modal-header">
                 <span>消息详情</span>
             </div>
@@ -1091,6 +1095,15 @@ let messageList = [
     { id: 21, tenant: "某某金控", type: "服务用量预警", summary: "【服务用量预警】2项服务用量提醒通知", time: "2026-07-02 09:00:00", level: "medium", levelText: "警告", read: false, detail: { count: 2, services: [
         { service: "企业画像查询服务", supplier: "企查查", api: "企业基本信息", quota: 2000000, used: 1800000, remain: 200000, percent: 10 },
         { service: "金融风控服务", supplier: "天眼查", api: "融资历史", quota: 1500000, used: 1485000, remain: 15000, percent: 1 }
+    ] } },
+    { id: 22, tenant: "某某金控", type: "剩余天数预警", summary: "【剩余天数预警】3个外部数据接口剩余可用天数不足", time: "2026-07-02 10:00:00", level: "medium", levelText: "警告", read: false, detail: { count: 3, items: [
+        { supplier: "企查查", tenant: "某某金控", api: "企业规模", quota: 1000000, used: 800000, remain: 200000, percent: 20, remainDays: 7 },
+        { supplier: "企查查", tenant: "某某金控", api: "严重违法记录", quota: 800000, used: 720000, remain: 80000, percent: 10, remainDays: 4 },
+        { supplier: "天眼查", tenant: "某某金控", api: "舆情", quota: 500000, used: 480000, remain: 20000, percent: 4, remainDays: 2 }
+    ] } },
+    { id: 23, tenant: "招商金控", type: "剩余天数预警", summary: "【剩余天数预警】2个外部数据接口剩余可用天数不足", time: "2026-07-02 10:00:00", level: "medium", levelText: "警告", read: false, detail: { count: 2, items: [
+        { supplier: "天眼查", tenant: "招商金控", api: "融资历史", quota: 900000, used: 750000, remain: 150000, percent: 17, remainDays: 12 },
+        { supplier: "企查查", tenant: "招商金控", api: "企业画像", quota: 1200000, used: 1020000, remain: 180000, percent: 15, remainDays: 15 }
     ] } }
 ];
 
@@ -1245,6 +1258,35 @@ function viewMessageDetail(id) {
             </table></div>
             <div class="detail-actions"><a href="我的服务.html" onclick="closeModal()">查看详情&gt;&gt;</a><span style="color:#999;font-size:12px;margin-left:8px;">（跳转至外数平台【我的服务】页面）</span></div>`;
 
+    } else if (item.type === '剩余天数预警') {
+        const count = d.count || (d.items ? d.items.length : 0);
+        let dayRows = '';
+        if (d.items && d.items.length) {
+            dayRows = d.items.map(s => {
+                const remain = (s.remain !== undefined) ? s.remain : (s.quota - s.used);
+                const pct = (s.percent !== undefined) ? s.percent : (s.quota ? Math.round((remain / s.quota) * 100) : 0);
+                const pctClass = pct <= 10 ? 'val-highlight' : (pct <= 20 ? 'val-warning' : 'val-normal');
+                const dayClass = s.remainDays <= 7 ? 'val-highlight' : (s.remainDays <= 15 ? 'val-warning' : 'val-normal');
+                return `<tr>
+                    <td>${escapeHtml(s.supplier)}</td>
+                    <td>${escapeHtml(s.tenant)}</td>
+                    <td style="text-align:left;">${escapeHtml(s.api)}</td>
+                    <td>${formatNum(s.quota)} 次</td>
+                    <td>${formatNum(s.used)} 次</td>
+                    <td>${formatNum(remain)} 次</td>
+                    <td class="${pctClass}">${pct}%</td>
+                    <td class="${dayClass}">${s.remainDays} 天</td>
+                </tr>`;
+            }).join('');
+        }
+        detailHTML = `
+            <div class="detail-greeting">您好：</div>
+            <div class="detail-desc">您有${count}个外部数据接口剩余可用天数不足，请合理规划后续调用量，如需增加额度请提前申请。</div>
+            <div class="detail-table-wrap"><table class="detail-table">
+                <thead><tr><th>供应商</th><th>租户</th><th>API接口</th><th>额度总量</th><th>已用额度</th><th>剩余额度</th><th>剩余%</th><th>预测剩余天数</th></tr></thead>
+                <tbody>${dayRows}</tbody>
+            </table></div>`;
+
     } else if (item.type === '服务失败异常' || item.type === '服务超时异常' || item.type === '系统性能异常' || item.type === '告警摘要') {
         if (item.type === '服务失败异常') {
             detailHTML = `
@@ -1392,6 +1434,8 @@ function viewMessageDetail(id) {
         }
     }
 
+    const detailModalContainer = document.getElementById('detailModalContainer');
+    if (detailModalContainer) detailModalContainer.classList.toggle('modal-wide', item.type === '剩余天数预警');
     document.getElementById('modalBody').innerHTML = `
         <div class="message-detail-content">
             <div class="detail-header">
